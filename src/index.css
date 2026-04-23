@@ -103,3 +103,13 @@ All colors MUST be HSL.
     @apply bg-background text-foreground;
   }
 }
+
+@layer utilities {
+  @keyframes pulse-border-red {
+    0%, 100% { border-left-color: hsl(0 84% 60%); box-shadow: -2px 0 8px -2px hsl(0 84% 60% / 0.4); }
+    50% { border-left-color: hsl(0 84% 70%); box-shadow: -2px 0 12px 0 hsl(0 84% 60% / 0.7); }
+  }
+  .animate-pulse-border {
+    animation: pulse-border-red 1.6s ease-in-out infinite;
+  }
+}

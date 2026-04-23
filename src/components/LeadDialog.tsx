@@ -5,9 +5,11 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { LEAD_STATUSES, Lead, LeadPriority, LeadStatus, supabase } from "@/lib/supabase";
 import { useAuth } from "@/hooks/useAuth";
 import { toast } from "@/hooks/use-toast";
+import { Copy, Sparkles } from "lucide-react";
 
 interface Props {
   open: boolean;
@@ -26,6 +28,7 @@ export function LeadDialog({ open, onOpenChange, lead, defaultStatus, onSaved }:
   const [status, setStatus] = useState<LeadStatus>("Novo Lead");
   const [priority, setPriority] = useState<LeadPriority>("Média");
   const [notes, setNotes] = useState("");
+  const [saleValue, setSaleValue] = useState<string>("");
   const [saving, setSaving] = useState(false);
 
   useEffect(() => {
@@ -35,8 +38,11 @@ export function LeadDialog({ open, onOpenChange, lead, defaultStatus, onSaved }:
       setStatus((lead?.status as LeadStatus) ?? defaultStatus ?? "Novo Lead");
       setPriority((lead?.priority as LeadPriority) ?? "Média");
       setNotes(lead?.notes ?? "");
+      setSaleValue(lead?.sale_value != null ? String(lead.sale_value) : "");
     }
   }, [open, lead, defaultStatus]);
+
+  const showSaleValue = status === "Compareceu e Comprou";
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -45,7 +51,7 @@ export function LeadDialog({ open, onOpenChange, lead, defaultStatus, onSaved }:
       return;
     }
     setSaving(true);
-    const payload = {
+    const payload: any = {
       name,
       phone: phone || null,
       status,
@@ -53,6 +59,8 @@ export function LeadDialog({ open, onOpenChange, lead, defaultStatus, onSaved }:
       notes: notes || null,
       company_id: profile.company_id,
       responsible_id: lead?.responsible_id ?? user.id,
+      sale_value: showSaleValue && saleValue ? Number(saleValue) : null,
+      last_interaction: new Date().toISOString(),
     };
     const { error } = lead
       ? await supabase.from("leads").update(payload).eq("id", lead.id)
@@ -80,61 +88,125 @@ export function LeadDialog({ open, onOpenChange, lead, defaultStatus, onSaved }:
     onOpenChange(false);
   }
 
+  function copyApproachScript() {
+    const leadName = name || "[Nome do Lead]";
+    const text = `Perfeito ${leadName}, esse é justamente o gargalo que mais trava as óticas hoje. Podemos agendar uma reunião onde vamos mostrar como funciona nosso Método Ótica Dominante e fazer uma análise da sua ótica?`;
+    navigator.clipboard.writeText(text).then(
+      () => toast({ title: "Script copiado!", description: "Cole no WhatsApp do lead." }),
+      () => toast({ title: "Erro", description: "Não foi possível copiar.", variant: "destructive" })
+    );
+  }
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-md">
+      <DialogContent className="max-w-md max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>{lead ? "Editar Lead" : "Novo Lead"}</DialogTitle>
         </DialogHeader>
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <div className="space-y-2">
-            <Label htmlFor="name">Nome</Label>
-            <Input id="name" value={name} onChange={(e) => setName(e.target.value)} required />
-          </div>
-          <div className="space-y-2">
-            <Label htmlFor="phone">Telefone</Label>
-            <Input id="phone" value={phone} onChange={(e) => setPhone(e.target.value)} />
-          </div>
-          <div className="grid grid-cols-2 gap-3">
-            <div className="space-y-2">
-              <Label>Status</Label>
-              <Select value={status} onValueChange={(v) => setStatus(v as LeadStatus)}>
-                <SelectTrigger><SelectValue /></SelectTrigger>
-                <SelectContent>
-                  {LEAD_STATUSES.map((s) => (
-                    <SelectItem key={s} value={s}>{s}</SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-            <div className="space-y-2">
-              <Label>Prioridade</Label>
-              <Select value={priority} onValueChange={(v) => setPriority(v as LeadPriority)}>
-                <SelectTrigger><SelectValue /></SelectTrigger>
-                <SelectContent>
-                  {PRIORITIES.map((p) => (
-                    <SelectItem key={p} value={p}>{p}</SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-          </div>
-          <div className="space-y-2">
-            <Label htmlFor="notes">Observações</Label>
-            <Textarea id="notes" value={notes} onChange={(e) => setNotes(e.target.value)} rows={3} />
-          </div>
-          <DialogFooter className="gap-2 sm:gap-2">
-            {lead && (
-              <Button type="button" variant="destructive" onClick={handleDelete}>
-                Excluir
+
+        <Tabs defaultValue="dados" className="w-full">
+          <TabsList className="grid w-full grid-cols-2">
+            <TabsTrigger value="dados">Dados</TabsTrigger>
+            <TabsTrigger value="scripts" className="gap-1">
+              <Sparkles className="h-3.5 w-3.5" />
+              Scripts Dominantes
+            </TabsTrigger>
+          </TabsList>
+
+          <TabsContent value="dados">
+            <form onSubmit={handleSubmit} className="space-y-4 pt-2">
+              <div className="space-y-2">
+                <Label htmlFor="name">Nome</Label>
+                <Input id="name" value={name} onChange={(e) => setName(e.target.value)} required />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="phone">Telefone</Label>
+                <Input id="phone" value={phone} onChange={(e) => setPhone(e.target.value)} />
+              </div>
+              <div className="grid grid-cols-2 gap-3">
+                <div className="space-y-2">
+                  <Label>Status</Label>
+                  <Select value={status} onValueChange={(v) => setStatus(v as LeadStatus)}>
+                    <SelectTrigger><SelectValue /></SelectTrigger>
+                    <SelectContent>
+                      {LEAD_STATUSES.map((s) => (
+                        <SelectItem key={s} value={s}>{s}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="space-y-2">
+                  <Label>Prioridade</Label>
+                  <Select value={priority} onValueChange={(v) => setPriority(v as LeadPriority)}>
+                    <SelectTrigger><SelectValue /></SelectTrigger>
+                    <SelectContent>
+                      {PRIORITIES.map((p) => (
+                        <SelectItem key={p} value={p}>{p}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+
+              {showSaleValue && (
+                <div className="space-y-2 rounded-md border border-emerald-500/30 bg-emerald-50/50 dark:bg-emerald-950/20 p-3">
+                  <Label htmlFor="sale_value" className="text-emerald-700 dark:text-emerald-300 font-medium">
+                    💰 Valor da Venda (R$)
+                  </Label>
+                  <Input
+                    id="sale_value"
+                    type="number"
+                    step="0.01"
+                    min="0"
+                    placeholder="0,00"
+                    value={saleValue}
+                    onChange={(e) => setSaleValue(e.target.value)}
+                  />
+                  <p className="text-[11px] text-muted-foreground">
+                    Será somado no Faturamento Gerado (ROI).
+                  </p>
+                </div>
+              )}
+
+              <div className="space-y-2">
+                <Label htmlFor="notes">Observações</Label>
+                <Textarea id="notes" value={notes} onChange={(e) => setNotes(e.target.value)} rows={3} />
+              </div>
+              <DialogFooter className="gap-2 sm:gap-2">
+                {lead && (
+                  <Button type="button" variant="destructive" onClick={handleDelete}>
+                    Excluir
+                  </Button>
+                )}
+                <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
+                  Cancelar
+                </Button>
+                <Button type="submit" disabled={saving}>{saving ? "Salvando..." : "Salvar"}</Button>
+              </DialogFooter>
+            </form>
+          </TabsContent>
+
+          <TabsContent value="scripts" className="space-y-3 pt-4">
+            <div className="rounded-lg border bg-muted/40 p-4 space-y-3">
+              <div className="flex items-center gap-2">
+                <Sparkles className="h-4 w-4 text-primary" />
+                <h4 className="text-sm font-semibold">Abordagem Inicial</h4>
+              </div>
+              <p className="text-sm text-muted-foreground italic leading-relaxed">
+                "Perfeito {name || "[Nome do Lead]"}, esse é justamente o gargalo que mais trava as óticas hoje.
+                Podemos agendar uma reunião onde vamos mostrar como funciona nosso Método Ótica Dominante e fazer
+                uma análise da sua ótica?"
+              </p>
+              <Button type="button" onClick={copyApproachScript} className="w-full gap-2">
+                <Copy className="h-4 w-4" />
+                Copiar Abordagem Inicial
               </Button>
-            )}
-            <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
-              Cancelar
-            </Button>
-            <Button type="submit" disabled={saving}>{saving ? "Salvando..." : "Salvar"}</Button>
-          </DialogFooter>
-        </form>
+            </div>
+            <p className="text-[11px] text-center text-muted-foreground">
+              Cole no WhatsApp e dispare conversões. Método Ótica Dominante.
+            </p>
+          </TabsContent>
+        </Tabs>
       </DialogContent>
     </Dialog>
   );
