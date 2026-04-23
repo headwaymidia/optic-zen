@@ -1,6 +1,6 @@
-import { useEffect, useState } from "react";
-import { Lead, supabase } from "@/lib/supabase";
-import { useAuth } from "@/hooks/useAuth";
+import { useState } from "react";
+import { Lead } from "@/lib/supabase";
+import { useLeads } from "@/hooks/useLeads";
 import { Card } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
@@ -10,29 +10,10 @@ import { LeadDialog } from "@/components/LeadDialog";
 import { Plus, MessageCircle } from "lucide-react";
 
 export default function Contatos() {
-  const { profile } = useAuth();
-  const [leads, setLeads] = useState<Lead[]>([]);
-  const [loading, setLoading] = useState(true);
+  const { leads, loading, refetch } = useLeads();
   const [search, setSearch] = useState("");
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editingLead, setEditingLead] = useState<Lead | null>(null);
-
-  async function fetchLeads() {
-    if (!profile?.company_id) return;
-    setLoading(true);
-    const { data } = await supabase
-      .from("leads")
-      .select("*")
-      .eq("company_id", profile.company_id)
-      .order("created_at", { ascending: false });
-    setLeads((data ?? []) as Lead[]);
-    setLoading(false);
-  }
-
-  useEffect(() => {
-    fetchLeads();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [profile?.company_id]);
 
   const filtered = leads.filter(
     (l) =>
