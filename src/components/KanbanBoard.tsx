@@ -4,7 +4,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Plus, Phone, GripVertical } from "lucide-react";
+import { Plus, Phone, GripVertical, MessageCircle, Pencil } from "lucide-react";
 import { LeadDialog } from "./LeadDialog";
 import { toast } from "@/hooks/use-toast";
 import { cn } from "@/lib/utils";
@@ -145,6 +145,29 @@ export function KanbanBoard() {
                         {lead.notes && (
                           <p className="text-xs text-muted-foreground line-clamp-2">{lead.notes}</p>
                         )}
+                        <div className="flex items-center gap-1 pt-1">
+                          <Button
+                            size="sm"
+                            variant="ghost"
+                            className="h-7 px-2"
+                            onClick={(e) => { e.stopPropagation(); openEdit(lead); }}
+                          >
+                            <Pencil className="h-3.5 w-3.5" />
+                          </Button>
+                          {lead.phone && (
+                            <Button
+                              size="sm"
+                              variant="ghost"
+                              className="h-7 px-2 text-emerald-600 hover:text-emerald-700"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                window.open(`https://wa.me/${lead.phone!.replace(/\D/g, "")}`, "_blank");
+                              }}
+                            >
+                              <MessageCircle className="h-3.5 w-3.5" />
+                            </Button>
+                          )}
+                        </div>
                       </div>
                     </div>
                   </Card>
