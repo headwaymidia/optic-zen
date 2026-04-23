@@ -26,15 +26,15 @@ export function AppSidebar() {
 
   return (
     <Sidebar collapsible="icon">
-      <SidebarContent>
+      <SidebarContent className="flex flex-col h-full">
         <div className="flex items-center gap-2 px-3 py-4 border-b">
           <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-md bg-primary text-primary-foreground">
             <Eye className="h-5 w-5" />
           </div>
           {!collapsed && (
             <div className="min-w-0">
-              <p className="text-sm font-semibold truncate">CRM Ótica</p>
-              <p className="text-xs text-muted-foreground truncate">Gestão de leads</p>
+              <p className="text-sm font-semibold truncate">Ótica Dominante CRM</p>
+              <p className="text-[11px] text-muted-foreground truncate">Powered by Headway Mídia</p>
             </div>
           )}
         </div>
@@ -55,6 +55,15 @@ export function AppSidebar() {
             </SidebarMenu>
           </SidebarGroupContent>
         </SidebarGroup>
+        <div className="mt-auto border-t px-3 py-3 text-center">
+          {collapsed ? (
+            <p className="text-[10px] font-semibold text-muted-foreground">HM</p>
+          ) : (
+            <p className="text-xs text-muted-foreground">
+              <span className="font-medium text-foreground">Headway Mídia</span>
+            </p>
+          )}
+        </div>
       </SidebarContent>
     </Sidebar>
   );
