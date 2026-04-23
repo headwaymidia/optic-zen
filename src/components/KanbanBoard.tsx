@@ -1,12 +1,11 @@
-import { useEffect, useState } from "react";
-import { LEAD_STATUSES, Lead, LeadStatus, supabase } from "@/lib/supabase";
-import { useAuth } from "@/hooks/useAuth";
+import { useState } from "react";
+import { LEAD_STATUSES, Lead, LeadStatus } from "@/lib/supabase";
+import { useLeads } from "@/hooks/useLeads";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Plus, Phone, GripVertical, MessageCircle, Pencil } from "lucide-react";
 import { LeadDialog } from "./LeadDialog";
-import { toast } from "@/hooks/use-toast";
 import { cn } from "@/lib/utils";
 
 const STATUS_COLORS: Record<LeadStatus, string> = {
@@ -37,35 +36,12 @@ function formatPhoneBR(phone: string): string {
 }
 
 export function KanbanBoard() {
-  const { profile } = useAuth();
-  const [leads, setLeads] = useState<Lead[]>([]);
-  const [loading, setLoading] = useState(true);
+  const { leads, loading, refetch, updateStatus } = useLeads();
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editingLead, setEditingLead] = useState<Lead | null>(null);
   const [defaultStatus, setDefaultStatus] = useState<LeadStatus>("Novo Lead");
   const [draggedId, setDraggedId] = useState<string | null>(null);
   const [dragOverCol, setDragOverCol] = useState<LeadStatus | null>(null);
-
-  async function fetchLeads() {
-    if (!profile?.company_id) return;
-    setLoading(true);
-    const { data, error } = await supabase
-      .from("leads")
-      .select("*")
-      .eq("company_id", profile.company_id)
-      .order("created_at", { ascending: false });
-    setLoading(false);
-    if (error) {
-      toast({ title: "Erro ao carregar leads", description: error.message, variant: "destructive" });
-      return;
-    }
-    setLeads((data ?? []) as Lead[]);
-  }
-
-  useEffect(() => {
-    fetchLeads();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [profile?.company_id]);
 
   function openNew(status: LeadStatus) {
     setEditingLead(null);
@@ -81,12 +57,7 @@ export function KanbanBoard() {
   async function moveLead(leadId: string, newStatus: LeadStatus) {
     const lead = leads.find((l) => l.id === leadId);
     if (!lead || lead.status === newStatus) return;
-    setLeads((prev) => prev.map((l) => (l.id === leadId ? { ...l, status: newStatus } : l)));
-    const { error } = await supabase.from("leads").update({ status: newStatus }).eq("id", leadId);
-    if (error) {
-      toast({ title: "Erro ao mover lead", description: error.message, variant: "destructive" });
-      fetchLeads();
-    }
+    await updateStatus(leadId, newStatus);
   }
 
   if (loading) {
@@ -201,7 +172,7 @@ export function KanbanBoard() {
         onOpenChange={setDialogOpen}
         lead={editingLead}
         defaultStatus={defaultStatus}
-        onSaved={fetchLeads}
+        onSaved={refetch}
       />
     </>
   );
