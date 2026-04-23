@@ -4,9 +4,21 @@ import { useLeads } from "@/hooks/useLeads";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Plus, Phone, GripVertical, MessageCircle, Pencil } from "lucide-react";
+import { Plus, Phone, MessageCircle, Pencil } from "lucide-react";
 import { LeadDialog } from "./LeadDialog";
 import { cn } from "@/lib/utils";
+import {
+  DndContext,
+  DragEndEvent,
+  DragOverlay,
+  DragStartEvent,
+  MouseSensor,
+  TouchSensor,
+  useDraggable,
+  useDroppable,
+  useSensor,
+  useSensors,
+} from "@dnd-kit/core";
 
 const STATUS_COLORS: Record<LeadStatus, string> = {
   "Novo Lead": "bg-blue-500",
@@ -26,7 +38,6 @@ const PRIORITY_VARIANT: Record<string, "default" | "secondary" | "destructive" |
 
 function formatPhoneBR(phone: string): string {
   const digits = phone.replace(/\D/g, "");
-  // Remove country code 55 if present and length matches
   const local = digits.length > 11 && digits.startsWith("55") ? digits.slice(2) : digits;
   if (local.length === 11) return `(${local.slice(0, 2)}) ${local.slice(2, 7)}-${local.slice(7)}`;
   if (local.length === 10) return `(${local.slice(0, 2)}) ${local.slice(2, 6)}-${local.slice(6)}`;
@@ -35,13 +46,146 @@ function formatPhoneBR(phone: string): string {
   return phone;
 }
 
+function whatsappUrl(phone: string) {
+  let digits = phone.replace(/\D/g, "");
+  if (digits.length <= 11) digits = "55" + digits; // assume Brazil
+  return `https://api.whatsapp.com/send?phone=${digits}`;
+}
+
+interface LeadCardProps {
+  lead: Lead;
+  onEdit: (l: Lead) => void;
+  dragging?: boolean;
+}
+
+function LeadCardContent({ lead, onEdit, dragging }: LeadCardProps) {
+  return (
+    <Card
+      className={cn(
+        "p-3 select-none transition-shadow hover:shadow-md bg-card",
+        dragging && "shadow-lg ring-2 ring-primary/40 rotate-1"
+      )}
+    >
+      <div className="space-y-2">
+        <div className="flex items-start justify-between gap-2">
+          <p className="text-sm font-medium truncate flex-1">{lead.name}</p>
+          {lead.priority && (
+            <Badge
+              variant={PRIORITY_VARIANT[lead.priority] ?? "outline"}
+              className="shrink-0 text-[10px] px-1.5 py-0"
+            >
+              {lead.priority}
+            </Badge>
+          )}
+        </div>
+        {lead.phone && (
+          <p className="flex items-center gap-1 text-xs text-muted-foreground">
+            <Phone className="h-3 w-3" />
+            {formatPhoneBR(lead.phone)}
+          </p>
+        )}
+        {lead.status === "Repescagem" && (
+          <Badge className="bg-indigo-500 hover:bg-indigo-500 text-white text-[10px] px-1.5 py-0">
+            Repescagem
+          </Badge>
+        )}
+        <div className="flex items-center justify-end gap-1 pt-1">
+          <Button
+            type="button"
+            size="icon"
+            variant="outline"
+            className="h-7 w-7 rounded-full"
+            onPointerDown={(e) => e.stopPropagation()}
+            onClick={(e) => {
+              e.stopPropagation();
+              onEdit(lead);
+            }}
+            aria-label="Editar lead"
+          >
+            <Pencil className="h-3.5 w-3.5" />
+          </Button>
+          {lead.phone && (
+            <Button
+              type="button"
+              size="icon"
+              variant="outline"
+              className="h-7 w-7 rounded-full text-emerald-600 hover:text-emerald-700"
+              onPointerDown={(e) => e.stopPropagation()}
+              onClick={(e) => {
+                e.stopPropagation();
+                window.open(whatsappUrl(lead.phone!), "_blank");
+              }}
+              aria-label="Abrir WhatsApp"
+            >
+              <MessageCircle className="h-3.5 w-3.5" />
+            </Button>
+          )}
+        </div>
+      </div>
+    </Card>
+  );
+}
+
+function DraggableLeadCard({ lead, onEdit }: { lead: Lead; onEdit: (l: Lead) => void }) {
+  const { attributes, listeners, setNodeRef, isDragging } = useDraggable({ id: lead.id });
+  return (
+    <div
+      ref={setNodeRef}
+      {...listeners}
+      {...attributes}
+      className={cn("touch-none cursor-grab active:cursor-grabbing", isDragging && "opacity-40")}
+    >
+      <LeadCardContent lead={lead} onEdit={onEdit} />
+    </div>
+  );
+}
+
+function DroppableColumn({
+  status,
+  count,
+  children,
+  onAdd,
+}: {
+  status: LeadStatus;
+  count: number;
+  children: React.ReactNode;
+  onAdd: () => void;
+}) {
+  const { setNodeRef, isOver } = useDroppable({ id: `col-${status}` });
+  return (
+    <div
+      ref={setNodeRef}
+      className={cn(
+        "flex w-72 shrink-0 snap-start flex-col rounded-lg bg-muted/40 transition-colors",
+        isOver && "bg-muted ring-2 ring-primary/40"
+      )}
+    >
+      <div className="flex items-center justify-between gap-2 border-b p-3">
+        <div className="flex items-center gap-2 min-w-0">
+          <span className={cn("h-2.5 w-2.5 shrink-0 rounded-full", STATUS_COLORS[status])} />
+          <h3 className="truncate text-sm font-semibold">{status}</h3>
+          <span className="text-xs text-muted-foreground">{count}</span>
+        </div>
+        <Button size="icon" variant="ghost" className="h-7 w-7" onClick={onAdd}>
+          <Plus className="h-4 w-4" />
+        </Button>
+      </div>
+      <div className="flex flex-col gap-2 p-2 min-h-[200px]">{children}</div>
+    </div>
+  );
+}
+
 export function KanbanBoard() {
   const { leads, loading, refetch, updateStatus } = useLeads();
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editingLead, setEditingLead] = useState<Lead | null>(null);
   const [defaultStatus, setDefaultStatus] = useState<LeadStatus>("Novo Lead");
-  const [draggedId, setDraggedId] = useState<string | null>(null);
-  const [dragOverCol, setDragOverCol] = useState<LeadStatus | null>(null);
+  const [activeId, setActiveId] = useState<string | null>(null);
+
+  const sensors = useSensors(
+    useSensor(MouseSensor, { activationConstraint: { distance: 6 } }),
+    useSensor(TouchSensor, { activationConstraint: { delay: 180, tolerance: 6 } })
+  );
 
   function openNew(status: LeadStatus) {
     setEditingLead(null);
@@ -54,119 +198,61 @@ export function KanbanBoard() {
     setDialogOpen(true);
   }
 
-  async function moveLead(leadId: string, newStatus: LeadStatus) {
-    const lead = leads.find((l) => l.id === leadId);
-    if (!lead || lead.status === newStatus) return;
-    await updateStatus(leadId, newStatus);
+  function handleDragStart(e: DragStartEvent) {
+    setActiveId(String(e.active.id));
+  }
+
+  async function handleDragEnd(e: DragEndEvent) {
+    setActiveId(null);
+    const overId = e.over?.id;
+    if (!overId || typeof overId !== "string" || !overId.startsWith("col-")) return;
+    const newStatus = overId.slice(4) as LeadStatus;
+    await updateStatus(String(e.active.id), newStatus);
   }
 
   if (loading) {
     return <div className="p-8 text-center text-muted-foreground">Carregando leads...</div>;
   }
 
+  const activeLead = activeId ? leads.find((l) => l.id === activeId) : null;
+
   return (
     <>
-      <div className="flex gap-4 overflow-x-auto p-4 pb-8">
-        {LEAD_STATUSES.map((status) => {
-          const colLeads = leads.filter((l) => l.status === status);
-          return (
-            <div
-              key={status}
-              className={cn(
-                "flex w-72 shrink-0 flex-col rounded-lg bg-muted/40 transition-colors",
-                dragOverCol === status && "bg-muted ring-2 ring-primary/40"
-              )}
-              onDragOver={(e) => {
-                e.preventDefault();
-                setDragOverCol(status);
-              }}
-              onDragLeave={() => setDragOverCol((c) => (c === status ? null : c))}
-              onDrop={() => {
-                setDragOverCol(null);
-                if (draggedId) moveLead(draggedId, status);
-                setDraggedId(null);
-              }}
-            >
-              <div className="flex items-center justify-between gap-2 border-b p-3">
-                <div className="flex items-center gap-2 min-w-0">
-                  <span className={cn("h-2.5 w-2.5 shrink-0 rounded-full", STATUS_COLORS[status])} />
-                  <h3 className="truncate text-sm font-semibold">{status}</h3>
-                  <span className="text-xs text-muted-foreground">{colLeads.length}</span>
-                </div>
-                <Button size="icon" variant="ghost" className="h-7 w-7" onClick={() => openNew(status)}>
-                  <Plus className="h-4 w-4" />
-                </Button>
-              </div>
-              <div className="flex flex-col gap-2 p-2 min-h-[200px]">
+      <DndContext
+        sensors={sensors}
+        onDragStart={handleDragStart}
+        onDragEnd={handleDragEnd}
+        onDragCancel={() => setActiveId(null)}
+      >
+        <div
+          className="flex gap-4 overflow-x-auto px-4 pb-8 snap-x snap-mandatory md:snap-none scroll-smooth"
+          style={{ WebkitOverflowScrolling: "touch" }}
+        >
+          {LEAD_STATUSES.map((status) => {
+            const colLeads = leads.filter((l) => l.status === status);
+            return (
+              <DroppableColumn
+                key={status}
+                status={status}
+                count={colLeads.length}
+                onAdd={() => openNew(status)}
+              >
                 {colLeads.map((lead) => (
-                  <Card
-                    key={lead.id}
-                    draggable
-                    onDragStart={() => setDraggedId(lead.id)}
-                    onDragEnd={() => setDraggedId(null)}
-                    onClick={() => openEdit(lead)}
-                    className="group cursor-pointer p-3 hover:shadow-md transition-shadow"
-                  >
-                    <div className="flex items-start gap-2">
-                      <GripVertical className="h-4 w-4 text-muted-foreground/50 mt-0.5 opacity-0 group-hover:opacity-100" />
-                      <div className="flex-1 min-w-0 space-y-1.5">
-                        <div className="flex items-start justify-between gap-2">
-                          <p className="text-sm font-medium truncate">{lead.name}</p>
-                          {lead.priority && (
-                            <Badge variant={PRIORITY_VARIANT[lead.priority] ?? "outline"} className="shrink-0 text-[10px] px-1.5 py-0">
-                              {lead.priority}
-                            </Badge>
-                          )}
-                        </div>
-                        {lead.phone && (
-                          <p className="flex items-center gap-1 text-xs text-muted-foreground">
-                            <Phone className="h-3 w-3" />
-                            {formatPhoneBR(lead.phone)}
-                          </p>
-                        )}
-                        {lead.status === "Repescagem" && (
-                          <Badge className="bg-indigo-500 hover:bg-indigo-500 text-white text-[10px] px-1.5 py-0">
-                            Repescagem
-                          </Badge>
-                        )}
-                        {lead.notes && (
-                          <p className="text-xs text-muted-foreground line-clamp-2">{lead.notes}</p>
-                        )}
-                        <div className="flex items-center gap-1 pt-1">
-                          <Button
-                            size="sm"
-                            variant="ghost"
-                            className="h-7 px-2"
-                            onClick={(e) => { e.stopPropagation(); openEdit(lead); }}
-                          >
-                            <Pencil className="h-3.5 w-3.5" />
-                          </Button>
-                          {lead.phone && (
-                            <Button
-                              size="sm"
-                              variant="ghost"
-                              className="h-7 px-2 text-emerald-600 hover:text-emerald-700"
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                window.open(`https://wa.me/${lead.phone!.replace(/\D/g, "")}`, "_blank");
-                              }}
-                            >
-                              <MessageCircle className="h-3.5 w-3.5" />
-                            </Button>
-                          )}
-                        </div>
-                      </div>
-                    </div>
-                  </Card>
+                  <DraggableLeadCard key={lead.id} lead={lead} onEdit={openEdit} />
                 ))}
                 {colLeads.length === 0 && (
-                  <p className="px-2 py-6 text-center text-xs text-muted-foreground">Nenhum lead</p>
+                  <p className="px-2 py-6 text-center text-xs text-muted-foreground">
+                    Nenhum lead
+                  </p>
                 )}
-              </div>
-            </div>
-          );
-        })}
-      </div>
+              </DroppableColumn>
+            );
+          })}
+        </div>
+        <DragOverlay dropAnimation={null}>
+          {activeLead ? <LeadCardContent lead={activeLead} onEdit={() => {}} dragging /> : null}
+        </DragOverlay>
+      </DndContext>
       <LeadDialog
         open={dialogOpen}
         onOpenChange={setDialogOpen}
