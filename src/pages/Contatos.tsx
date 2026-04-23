@@ -91,7 +91,7 @@ export default function Contatos() {
         open={dialogOpen}
         onOpenChange={setDialogOpen}
         lead={editingLead}
-        onSaved={fetchLeads}
+        onSaved={refetch}
       />
     </div>
   );
