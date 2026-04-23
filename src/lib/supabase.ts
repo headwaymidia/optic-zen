@@ -2,7 +2,7 @@ import { createClient } from "@supabase/supabase-js";
 
 export const supabase = createClient(
   "https://fxcgvlukzjmwzpzuvzcp.supabase.co",
-  "COLE_AQUI_SUA_ANON_KEY"
+  "sb_publishable_BgnFYgwfBCXxZcqO2rQJWA_qDAjT4_R"
 );
 
 export type LeadStatus =
