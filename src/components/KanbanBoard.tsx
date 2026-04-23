@@ -4,7 +4,7 @@ import { useLeads } from "@/hooks/useLeads";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Plus, Phone, MessageCircle, Pencil } from "lucide-react";
+import { Plus, Phone, MessageCircle, Pencil, Flame } from "lucide-react";
 import { LeadDialog } from "./LeadDialog";
 import { cn } from "@/lib/utils";
 import {
@@ -36,6 +36,15 @@ const PRIORITY_VARIANT: Record<string, "default" | "secondary" | "destructive" |
   Baixa: "secondary",
 };
 
+const COOLING_STATUSES: LeadStatus[] = ["Novo Lead", "Aguardando Resposta"];
+const COOLING_THRESHOLD_MS = 2 * 60 * 60 * 1000; // 2h
+
+function isCooling(lead: Lead): boolean {
+  if (!COOLING_STATUSES.includes(lead.status)) return false;
+  const created = new Date(lead.created_at).getTime();
+  return Date.now() - created > COOLING_THRESHOLD_MS;
+}
+
 function formatPhoneBR(phone: string): string {
   const digits = phone.replace(/\D/g, "");
   const local = digits.length > 11 && digits.startsWith("55") ? digits.slice(2) : digits;
@@ -48,7 +57,7 @@ function formatPhoneBR(phone: string): string {
 
 function whatsappUrl(phone: string) {
   let digits = phone.replace(/\D/g, "");
-  if (digits.length <= 11) digits = "55" + digits; // assume Brazil
+  if (digits.length <= 11) digits = "55" + digits;
   return `https://api.whatsapp.com/send?phone=${digits}`;
 }
 
@@ -59,10 +68,12 @@ interface LeadCardProps {
 }
 
 function LeadCardContent({ lead, onEdit, dragging }: LeadCardProps) {
+  const cooling = isCooling(lead);
   return (
     <Card
       className={cn(
-        "p-3 select-none transition-shadow hover:shadow-md bg-card",
+        "p-3 select-none transition-shadow hover:shadow-md bg-card relative overflow-hidden",
+        cooling && "border-l-4 border-l-red-500 animate-pulse-border",
         dragging && "shadow-lg ring-2 ring-primary/40 rotate-1"
       )}
     >
@@ -84,32 +95,30 @@ function LeadCardContent({ lead, onEdit, dragging }: LeadCardProps) {
             {formatPhoneBR(lead.phone)}
           </p>
         )}
-        {lead.status === "Repescagem" && (
-          <Badge className="bg-indigo-500 hover:bg-indigo-500 text-white text-[10px] px-1.5 py-0">
-            Repescagem
-          </Badge>
-        )}
-        <div className="flex items-center justify-end gap-1 pt-1">
-          <Button
-            type="button"
-            size="icon"
-            variant="outline"
-            className="h-7 w-7 rounded-full"
-            onPointerDown={(e) => e.stopPropagation()}
-            onClick={(e) => {
-              e.stopPropagation();
-              onEdit(lead);
-            }}
-            aria-label="Editar lead"
-          >
-            <Pencil className="h-3.5 w-3.5" />
-          </Button>
-          {lead.phone && (
+        <div className="flex flex-wrap gap-1">
+          {cooling && (
+            <Badge className="bg-red-500 hover:bg-red-500 text-white text-[10px] px-1.5 py-0 gap-1">
+              <Flame className="h-3 w-3" />
+              ESFRIANDO
+            </Badge>
+          )}
+          {lead.status === "Repescagem" && (
+            <Badge className="bg-indigo-500 hover:bg-indigo-500 text-white text-[10px] px-1.5 py-0">
+              Repescagem
+            </Badge>
+          )}
+          {lead.status === "Compareceu e Comprou" && lead.sale_value ? (
+            <Badge className="bg-emerald-500 hover:bg-emerald-500 text-white text-[10px] px-1.5 py-0">
+              {Number(lead.sale_value).toLocaleString("pt-BR", { style: "currency", currency: "BRL" })}
+            </Badge>
+          ) : null}
+        </div>
+        <div className="flex items-center justify-between gap-1 pt-1">
+          {lead.phone ? (
             <Button
               type="button"
-              size="icon"
-              variant="outline"
-              className="h-7 w-7 rounded-full text-emerald-600 hover:text-emerald-700"
+              size="sm"
+              className="h-9 flex-1 rounded-full bg-emerald-500 hover:bg-emerald-600 text-white gap-1.5 md:flex-initial md:h-7 md:w-7 md:p-0"
               onPointerDown={(e) => e.stopPropagation()}
               onClick={(e) => {
                 e.stopPropagation();
@@ -117,9 +126,26 @@ function LeadCardContent({ lead, onEdit, dragging }: LeadCardProps) {
               }}
               aria-label="Abrir WhatsApp"
             >
-              <MessageCircle className="h-3.5 w-3.5" />
+              <MessageCircle className="h-4 w-4" />
+              <span className="md:hidden">WhatsApp</span>
             </Button>
+          ) : (
+            <span />
           )}
+          <Button
+            type="button"
+            size="icon"
+            variant="outline"
+            className="h-9 w-9 md:h-7 md:w-7 rounded-full"
+            onPointerDown={(e) => e.stopPropagation()}
+            onClick={(e) => {
+              e.stopPropagation();
+              onEdit(lead);
+            }}
+            aria-label="Editar lead"
+          >
+            <Pencil className="h-4 w-4 md:h-3.5 md:w-3.5" />
+          </Button>
         </div>
       </div>
     </Card>

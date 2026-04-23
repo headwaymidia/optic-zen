@@ -35,6 +35,8 @@ export interface Lead {
   priority: LeadPriority | null;
   notes: string | null;
   responsible_id: string | null;
+  sale_value: number | null;
+  last_interaction: string | null;
   created_at: string;
   updated_at: string;
 }
