@@ -25,6 +25,17 @@ const PRIORITY_VARIANT: Record<string, "default" | "secondary" | "destructive" |
   Baixa: "secondary",
 };
 
+function formatPhoneBR(phone: string): string {
+  const digits = phone.replace(/\D/g, "");
+  // Remove country code 55 if present and length matches
+  const local = digits.length > 11 && digits.startsWith("55") ? digits.slice(2) : digits;
+  if (local.length === 11) return `(${local.slice(0, 2)}) ${local.slice(2, 7)}-${local.slice(7)}`;
+  if (local.length === 10) return `(${local.slice(0, 2)}) ${local.slice(2, 6)}-${local.slice(6)}`;
+  if (local.length === 9) return `${local.slice(0, 5)}-${local.slice(5)}`;
+  if (local.length === 8) return `${local.slice(0, 4)}-${local.slice(4)}`;
+  return phone;
+}
+
 export function KanbanBoard() {
   const { profile } = useAuth();
   const [leads, setLeads] = useState<Lead[]>([]);
@@ -139,8 +150,13 @@ export function KanbanBoard() {
                         {lead.phone && (
                           <p className="flex items-center gap-1 text-xs text-muted-foreground">
                             <Phone className="h-3 w-3" />
-                            {lead.phone}
+                            {formatPhoneBR(lead.phone)}
                           </p>
+                        )}
+                        {lead.status === "Repescagem" && (
+                          <Badge className="bg-indigo-500 hover:bg-indigo-500 text-white text-[10px] px-1.5 py-0">
+                            Repescagem
+                          </Badge>
                         )}
                         {lead.notes && (
                           <p className="text-xs text-muted-foreground line-clamp-2">{lead.notes}</p>
