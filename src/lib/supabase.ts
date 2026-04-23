@@ -1,15 +1,11 @@
 import { createClient } from "@supabase/supabase-js";
 
-const SUPABASE_URL = "https://fxcgvulukzjmwzpzuvzcp.supabase.co";
-const SUPABASE_PUBLISHABLE_KEY = "sb_publishable_BgnFYgwfBCXxZcqO2rQJWA_qDAjT4_R";
+const SUPABASE_URL =
+  import.meta.env.VITE_PROJECT_URL ?? "https://fxcgvulukzjmwzpzuvzcp.supabase.co";
+const SUPABASE_PUBLISHABLE_KEY =
+  import.meta.env.VITE_PROJECT_ANON_KEY ?? "sb_publishable_BgnFYgwfBCXxZcqO2rQJWA_qDAjT4_R";
 
-export const supabase = createClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY, {
-  auth: {
-    persistSession: true,
-    autoRefreshToken: true,
-    storage: localStorage,
-  },
-});
+export const supabase = createClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY);
 
 export type LeadStatus =
   | "Novo Lead"
