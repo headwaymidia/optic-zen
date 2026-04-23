@@ -172,7 +172,7 @@ export function KanbanBoard() {
         onOpenChange={setDialogOpen}
         lead={editingLead}
         defaultStatus={defaultStatus}
-        onSaved={fetchLeads}
+        onSaved={refetch}
       />
     </>
   );
