@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { INTEREST_TAGS, LEAD_SOURCES, Lead, LEAD_STATUSES, LeadStatus } from "@/lib/supabase";
+import { INTEREST_TAGS, LEAD_SOURCES, Lead, LEAD_STATUSES, LeadStatus, SALESPEOPLE } from "@/lib/supabase";
 import { useLeads } from "@/hooks/useLeads";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -37,11 +37,12 @@ export function ChatPanel({
 
   const firstName = lead.name.split(" ")[0];
 
-  const applyScript = (scriptType: "agendar" | "receita" | "resgate") => {
+  const applyScript = (scriptType: "agendar" | "receita" | "resgate" | "confirmar") => {
     const scripts = {
       agendar: `Olá ${firstName}! Tudo bem? Vi que você tem interesse em cuidar da sua visão. Temos alguns horários disponíveis para o exame de vista esta semana. Qual o melhor período para você: manhã ou tarde?`,
       receita: `Oi ${firstName}! Para eu conseguir te passar o orçamento certinho e te indicar a melhor tecnologia de lentes para o seu grau, você consegue me mandar uma foto nítida da sua receita oftalmológica?`,
       resgate: `Olá ${firstName}! Estou passando para avisar que consegui uma condição especial com o nosso gerente para aquela armação que você gostou. Conseguimos fechar o seu óculos novo hoje?`,
+      confirmar: `Olá ${firstName}, tudo bem? Sua consulta com o nosso especialista está confirmada! 🕒 Nosso endereço é [Endereço da Ótica]. Podemos confirmar sua presença para deixar tudo pronto?`,
     };
     setMessage(scripts[scriptType]);
     setScriptsOpen(false);
@@ -126,6 +127,22 @@ export function ChatPanel({
               <SelectItem value="__none__" className="text-xs">— Sem tag —</SelectItem>
               {INTEREST_TAGS.map((t) => (
                 <SelectItem key={t} value={t} className="text-xs">{t}</SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+          <Select
+            value={lead.assigned_to || "__none__"}
+            onValueChange={(v) =>
+              updateLead(lead.id, { assigned_to: v === "__none__" ? null : v })
+            }
+          >
+            <SelectTrigger className="h-7 flex-1 text-[11px]">
+              <SelectValue placeholder="Vendedora" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="__none__" className="text-xs">— Sem vendedora —</SelectItem>
+              {SALESPEOPLE.map((s) => (
+                <SelectItem key={s} value={s} className="text-xs">{s}</SelectItem>
               ))}
             </SelectContent>
           </Select>
@@ -216,6 +233,16 @@ export function ChatPanel({
                 <div className="font-medium">Resgate de Orçamento</div>
                 <div className="text-[11px] text-muted-foreground line-clamp-2 mt-0.5">
                   Repescagem com condição especial do gerente.
+                </div>
+              </button>
+              <button
+                type="button"
+                onClick={() => applyScript("confirmar")}
+                className="w-full text-left rounded-md px-2 py-2 text-sm hover:bg-accent hover:text-accent-foreground transition-colors"
+              >
+                <div className="font-medium">Confirmar Exame</div>
+                <div className="text-[11px] text-muted-foreground line-clamp-2 mt-0.5">
+                  Combate ao no-show: confirma presença na consulta.
                 </div>
               </button>
             </div>
