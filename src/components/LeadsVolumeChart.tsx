@@ -2,8 +2,17 @@ import { useMemo } from "react";
 import { eachDayOfInterval, format, isSameDay, parseISO } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { ResponsiveContainer, BarChart, Bar, XAxis, YAxis, Tooltip, CartesianGrid } from "recharts";
-import { Lead } from "@/lib/supabase";
+import {
+  ResponsiveContainer,
+  BarChart,
+  Bar,
+  XAxis,
+  YAxis,
+  Tooltip,
+  CartesianGrid,
+  Legend,
+} from "recharts";
+import { Lead, LEAD_STATUSES, LeadStatus } from "@/lib/supabase";
 
 interface Props {
   leads: Lead[];
@@ -11,18 +20,78 @@ interface Props {
   to: Date;
 }
 
+// Semantic colors per status (HSL strings so we can use them directly in Recharts)
+const STATUS_COLORS: Record<LeadStatus, string> = {
+  "Novo Lead": "hsl(217 91% 60%)", // azul
+  "Aguardando Resposta": "hsl(45 93% 55%)", // amarelo
+  "Agendou Exame": "hsl(262 83% 62%)", // roxo
+  "Não Compareceu": "hsl(0 75% 60%)", // vermelho
+  "Compareceu e Comprou": "hsl(142 71% 42%)", // verde
+  "Compareceu e Não Comprou": "hsl(220 9% 55%)", // cinza
+  Repescagem: "hsl(25 95% 58%)", // laranja
+};
+
+interface DayDatum {
+  date: string;
+  weekday: string;
+  total: number;
+  [status: string]: string | number;
+}
+
 export function LeadsVolumeChart({ leads, from, to }: Props) {
-  const data = useMemo(() => {
+  const data = useMemo<DayDatum[]>(() => {
     const days = eachDayOfInterval({ start: from, end: to });
     return days.map((d) => {
-      const count = leads.filter((l) => l.created_at && isSameDay(parseISO(l.created_at), d)).length;
-      return {
+      const dayLeads = leads.filter(
+        (l) => l.created_at && isSameDay(parseISO(l.created_at), d)
+      );
+      const base: DayDatum = {
         date: format(d, "dd/MM", { locale: ptBR }),
         weekday: format(d, "EEE", { locale: ptBR }),
-        leads: count,
+        total: dayLeads.length,
       };
+      LEAD_STATUSES.forEach((s) => {
+        base[s] = dayLeads.filter((l) => l.status === s).length;
+      });
+      return base;
     });
   }, [leads, from, to]);
+
+  const renderTooltip = ({ active, payload, label }: any) => {
+    if (!active || !payload || !payload.length) return null;
+    const datum = payload[0]?.payload as DayDatum | undefined;
+    if (!datum) return null;
+    const breakdown = LEAD_STATUSES.filter((s) => Number(datum[s]) > 0);
+    return (
+      <div className="rounded-lg border bg-card p-3 shadow-md text-xs min-w-[180px]">
+        <div className="font-semibold mb-1">
+          {label} <span className="text-muted-foreground font-normal">({datum.weekday})</span>
+        </div>
+        <div className="flex items-center justify-between mb-2 pb-2 border-b">
+          <span className="text-muted-foreground">Total de Leads</span>
+          <span className="font-semibold">{datum.total}</span>
+        </div>
+        {breakdown.length === 0 ? (
+          <div className="text-muted-foreground">Sem leads neste dia</div>
+        ) : (
+          <ul className="space-y-1">
+            {breakdown.map((s) => (
+              <li key={s} className="flex items-center justify-between gap-3">
+                <div className="flex items-center gap-2 min-w-0">
+                  <span
+                    className="h-2.5 w-2.5 rounded-sm shrink-0"
+                    style={{ background: STATUS_COLORS[s] }}
+                  />
+                  <span className="truncate">{s}</span>
+                </div>
+                <span className="font-medium tabular-nums">{datum[s]}</span>
+              </li>
+            ))}
+          </ul>
+        )}
+      </div>
+    );
+  };
 
   return (
     <Card>
@@ -30,26 +99,27 @@ export function LeadsVolumeChart({ leads, from, to }: Props) {
         <CardTitle className="text-base">Volume de leads por dia</CardTitle>
       </CardHeader>
       <CardContent>
-        <div className="h-[260px] w-full">
+        <div className="h-[320px] w-full">
           <ResponsiveContainer width="100%" height="100%">
             <BarChart data={data} margin={{ top: 8, right: 12, left: -12, bottom: 0 }}>
               <CartesianGrid strokeDasharray="3 3" className="stroke-border" vertical={false} />
               <XAxis dataKey="date" tick={{ fontSize: 11 }} className="fill-muted-foreground" />
               <YAxis allowDecimals={false} tick={{ fontSize: 11 }} className="fill-muted-foreground" />
-              <Tooltip
-                contentStyle={{
-                  background: "hsl(var(--card))",
-                  border: "1px solid hsl(var(--border))",
-                  borderRadius: 8,
-                  fontSize: 12,
-                }}
-                formatter={(v: number) => [v, "Leads"]}
-                labelFormatter={(l, p) => {
-                  const wd = (p?.[0]?.payload as any)?.weekday;
-                  return wd ? `${l} (${wd})` : l;
-                }}
+              <Tooltip content={renderTooltip} cursor={{ fill: "hsl(var(--muted) / 0.4)" }} />
+              <Legend
+                wrapperStyle={{ fontSize: 11, paddingTop: 8 }}
+                iconType="circle"
+                iconSize={8}
               />
-              <Bar dataKey="leads" fill="hsl(var(--primary))" radius={[4, 4, 0, 0]} />
+              {LEAD_STATUSES.map((s, idx) => (
+                <Bar
+                  key={s}
+                  dataKey={s}
+                  stackId="a"
+                  fill={STATUS_COLORS[s]}
+                  radius={idx === LEAD_STATUSES.length - 1 ? [4, 4, 0, 0] : [0, 0, 0, 0]}
+                />
+              ))}
             </BarChart>
           </ResponsiveContainer>
         </div>
