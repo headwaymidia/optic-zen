@@ -26,6 +26,27 @@ export const LEAD_STATUSES: LeadStatus[] = [
   "Repescagem",
 ];
 
+export const LEAD_SOURCES = [
+  "Instagram",
+  "Google Ads",
+  "WhatsApp",
+  "Indicação",
+  "Facebook",
+  "Loja Física",
+  "Outro",
+] as const;
+export type LeadSource = (typeof LEAD_SOURCES)[number];
+
+export const INTEREST_TAGS = [
+  "Exame",
+  "Multifocal",
+  "Solar",
+  "Lentes de Contato",
+  "Armação",
+  "Infantil",
+] as const;
+export type InterestTag = (typeof INTEREST_TAGS)[number];
+
 export interface Lead {
   id: string;
   company_id: string;
@@ -37,6 +58,8 @@ export interface Lead {
   responsible_id: string | null;
   sale_value: number | null;
   last_interaction: string | null;
+  lead_source: LeadSource | string | null;
+  interest_tag: InterestTag | string | null;
   created_at: string;
   updated_at: string;
 }
