@@ -139,6 +139,66 @@ export default function WhatsAppPage() {
           <ChatPanel lead={selected} onBack={() => setSelectedId(null)} />
         )}
       </section>
+
+      <Dialog open={newChatOpen} onOpenChange={setNewChatOpen}>
+        <DialogContent className="max-w-md p-0 gap-0">
+          <DialogHeader className="p-4 border-b">
+            <DialogTitle>Iniciar Nova Conversa</DialogTitle>
+          </DialogHeader>
+          <div className="p-4 border-b">
+            <div className="relative">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+              <Input
+                autoFocus
+                value={newChatSearch}
+                onChange={(e) => setNewChatSearch(e.target.value)}
+                placeholder="Buscar por nome ou telefone..."
+                className="pl-9 bg-muted/50 border-0"
+              />
+            </div>
+          </div>
+          <div className="max-h-[50vh] overflow-y-auto">
+            {leads
+              .filter((l) => {
+                const q = newChatSearch.toLowerCase().trim();
+                if (!q) return true;
+                return (
+                  l.name.toLowerCase().includes(q) ||
+                  (l.phone ?? "").toLowerCase().includes(q)
+                );
+              })
+              .map((lead) => (
+                <button
+                  key={lead.id}
+                  onClick={() => {
+                    setSelectedId(lead.id);
+                    setNewChatOpen(false);
+                  }}
+                  className="w-full flex items-center gap-3 px-4 py-3 hover:bg-muted/50 transition-colors text-left border-b last:border-b-0"
+                >
+                  <Avatar className="h-10 w-10 shrink-0">
+                    <AvatarFallback className="bg-primary/10 text-primary text-sm font-medium">
+                      {initials(lead.name)}
+                    </AvatarFallback>
+                  </Avatar>
+                  <div className="flex-1 min-w-0">
+                    <p className="font-medium text-sm truncate">{lead.name}</p>
+                    <p className="text-xs text-muted-foreground truncate">
+                      {lead.phone ?? "Sem telefone"}
+                    </p>
+                  </div>
+                </button>
+              ))}
+            {leads.filter((l) => {
+              const q = newChatSearch.toLowerCase().trim();
+              if (!q) return true;
+              return l.name.toLowerCase().includes(q) || (l.phone ?? "").toLowerCase().includes(q);
+            }).length === 0 && (
+              <p className="p-6 text-center text-sm text-muted-foreground">Nenhum contato encontrado</p>
+            )}
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
