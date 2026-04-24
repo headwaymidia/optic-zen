@@ -96,20 +96,20 @@ function LeadCardContent({ lead, onEdit, dragging, selected }: LeadCardProps) {
   return (
     <Card
       className={cn(
-        "p-3 select-none transition-shadow hover:shadow-md bg-card relative overflow-hidden",
-        cooling && "border-l-4 border-l-red-500 animate-pulse-border",
-        dragging && "shadow-lg ring-2 ring-primary/40 rotate-1",
-        selected && !dragging && "ring-2 ring-primary"
+        "p-3 select-none bg-white rounded-xl shadow-[0_2px_10px_-3px_rgba(6,81,237,0.08)] hover:shadow-[0_8px_24px_-6px_rgba(6,81,237,0.12)] transition-all duration-300 relative overflow-hidden border-0",
+        cooling && "ring-1 ring-red-500/50 animate-pulse-border",
+        dragging && "shadow-xl ring-2 ring-primary/30 rotate-1 scale-[1.02]",
+        selected && !dragging && "ring-2 ring-primary shadow-[0_8px_24px_-6px_rgba(6,81,237,0.15)]"
       )}
     >
       <div className="space-y-2">
         <div className="flex items-start justify-between gap-2">
-          <p className="text-sm font-medium truncate flex-1">{lead.name}</p>
+          <p className="text-sm font-semibold text-slate-900 truncate flex-1 leading-tight">{lead.name}</p>
           <div className="flex items-center gap-1 shrink-0">
             {lead.priority && (
               <Badge
                 variant={PRIORITY_VARIANT[lead.priority] ?? "outline"}
-                className="text-[10px] px-1.5 py-0"
+                className="text-[10px] px-2 py-0.5 rounded-full font-semibold"
               >
                 {lead.priority}
               </Badge>
@@ -139,13 +139,13 @@ function LeadCardContent({ lead, onEdit, dragging, selected }: LeadCardProps) {
             {formatPhoneBR(lead.phone)}
           </p>
         )}
-        <div className="flex flex-wrap gap-1">
+        <div className="flex flex-wrap gap-1.5">
           {lead.interest_tag && (
             <span
               className={cn(
-                "inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[10px] font-medium",
+                "inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-[10px] font-semibold tracking-wide",
                 INTEREST_TAG_STYLES[lead.interest_tag as string] ??
-                  "bg-muted text-muted-foreground"
+                  "bg-slate-100 text-slate-700"
               )}
             >
               <Tag className="h-2.5 w-2.5" />
@@ -153,18 +153,18 @@ function LeadCardContent({ lead, onEdit, dragging, selected }: LeadCardProps) {
             </span>
           )}
           {cooling && (
-            <Badge className="bg-red-500 hover:bg-red-500 text-white text-[10px] px-1.5 py-0 gap-1">
+            <Badge className="bg-red-50 hover:bg-red-100 text-red-600 text-[10px] px-2 py-0.5 gap-1 rounded-full border-0 font-semibold">
               <Flame className="h-3 w-3" />
               ESFRIANDO
             </Badge>
           )}
           {lead.status === "Repescagem" && (
-            <Badge className="bg-indigo-500 hover:bg-indigo-500 text-white text-[10px] px-1.5 py-0">
+            <Badge className="bg-indigo-50 hover:bg-indigo-100 text-indigo-600 text-[10px] px-2 py-0.5 rounded-full border-0 font-semibold">
               Repescagem
             </Badge>
           )}
           {lead.status === "Compareceu e Comprou" && lead.sale_value ? (
-            <Badge className="bg-emerald-500 hover:bg-emerald-500 text-white text-[10px] px-1.5 py-0">
+            <Badge className="bg-emerald-50 hover:bg-emerald-100 text-emerald-600 text-[10px] px-2 py-0.5 rounded-full border-0 font-semibold">
               {Number(lead.sale_value).toLocaleString("pt-BR", { style: "currency", currency: "BRL" })}
             </Badge>
           ) : null}
@@ -270,18 +270,18 @@ function DroppableColumn({
     <div
       ref={setNodeRef}
       className={cn(
-        "flex w-72 shrink-0 snap-start flex-col rounded-lg bg-muted/40 transition-colors",
-        isOver && "bg-muted ring-2 ring-primary/40"
+        "flex w-72 shrink-0 snap-start flex-col rounded-2xl bg-slate-50/70 border border-slate-100 transition-colors",
+        isOver && "bg-slate-100 ring-2 ring-primary/20"
       )}
     >
-      <div className="flex items-center justify-between gap-2 border-b p-3">
-        <div className="flex items-center gap-2 min-w-0">
-          <span className={cn("h-2.5 w-2.5 shrink-0 rounded-full", STATUS_COLORS[status])} />
-          <h3 className="truncate text-sm font-semibold">{status}</h3>
-          <span className="text-xs text-muted-foreground">{count}</span>
+      <div className="flex items-center justify-between gap-2 border-b border-slate-100/60 p-3">
+        <div className="flex items-center gap-2.5 min-w-0">
+          <span className={cn("h-2 w-2 shrink-0 rounded-full", STATUS_COLORS[status])} />
+          <h3 className="truncate text-sm font-bold tracking-wide text-slate-800">{status}</h3>
+          <span className="text-xs font-semibold text-slate-400 bg-white px-1.5 py-0.5 rounded-full shadow-sm">{count}</span>
         </div>
-        <Button size="icon" variant="ghost" className="h-7 w-7" onClick={onAdd}>
-          <Plus className="h-4 w-4" />
+        <Button size="icon" variant="ghost" className="h-7 w-7 hover:bg-white hover:shadow-sm rounded-lg" onClick={onAdd}>
+          <Plus className="h-4 w-4 text-slate-500" />
         </Button>
       </div>
       <div className="flex flex-col gap-2 p-2 min-h-[200px]">{children}</div>

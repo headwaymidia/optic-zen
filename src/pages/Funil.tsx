@@ -19,8 +19,8 @@ export default function Funil() {
       <div className="flex-1 flex flex-col min-w-0 min-h-0">
         <div className="p-3 sm:p-6 space-y-3 sm:space-y-4 flex-1 flex flex-col min-h-0">
           <div>
-            <h1 className="text-xl sm:text-2xl font-semibold tracking-tight">Funil de vendas</h1>
-            <p className="text-xs sm:text-sm text-muted-foreground">
+            <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-slate-900">Funil de vendas</h1>
+            <p className="text-xs sm:text-sm text-slate-500 font-medium">
               {isMobile ? "Toque em um card para conversar." : "Arraste para mover · Clique para conversar."}
             </p>
           </div>
@@ -38,7 +38,7 @@ export default function Funil() {
       {!isMobile && (
         <aside
           className={cn(
-            "hidden lg:flex shrink-0 border-l bg-card flex-col min-h-0 overflow-hidden transition-[width] duration-300 ease-in-out",
+            "hidden lg:flex shrink-0 border-l border-slate-100 bg-white flex-col min-h-0 overflow-hidden transition-[width] duration-300 ease-in-out shadow-[-4px_0_24px_rgba(0,0,0,0.02)]",
             selected ? "w-[380px] xl:w-[420px]" : "w-0 border-l-0"
           )}
           aria-hidden={!selected}
