@@ -97,9 +97,9 @@ function LeadCardContent({ lead, onEdit, dragging, selected }: LeadCardProps) {
   return (
     <Card
       className={cn(
-        "p-3 select-none bg-white rounded-xl shadow-[0_2px_10px_-3px_rgba(6,81,237,0.08)] hover:shadow-[0_8px_24px_-6px_rgba(6,81,237,0.12)] transition-all duration-300 relative overflow-hidden border-0",
+        "p-3 select-none bg-white rounded-xl shadow-[0_2px_10px_-3px_rgba(6,81,237,0.08)] transition-all duration-300 ease-out hover:-translate-y-1 hover:shadow-md relative overflow-hidden border-0",
         cooling && "ring-1 ring-red-500/50 animate-pulse-border",
-        dragging && "shadow-xl ring-2 ring-primary/30 rotate-1 scale-[1.02]",
+        dragging && "shadow-xl ring-2 ring-primary/30 -rotate-1 scale-105",
         selected && !dragging && "ring-2 ring-primary shadow-[0_8px_24px_-6px_rgba(6,81,237,0.15)]"
       )}
     >
