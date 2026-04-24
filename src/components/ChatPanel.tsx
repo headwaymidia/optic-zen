@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { Lead, LEAD_STATUSES, LeadStatus } from "@/lib/supabase";
 import { useLeads } from "@/hooks/useLeads";
 import { Button } from "@/components/ui/button";
@@ -5,7 +6,8 @@ import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { ArrowLeft, Paperclip, Send, Smile, X } from "lucide-react";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { ArrowLeft, Paperclip, Send, Smile, X, Zap } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 function initials(name: string) {
