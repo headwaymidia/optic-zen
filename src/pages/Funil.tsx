@@ -6,6 +6,7 @@ import { useLeads } from "@/hooks/useLeads";
 import { Lead } from "@/lib/supabase";
 import { Sheet, SheetContent } from "@/components/ui/sheet";
 import { useIsMobile } from "@/hooks/use-mobile";
+import { cn } from "@/lib/utils";
 
 export default function Funil() {
   const { leads, loading } = useLeads();
@@ -33,14 +34,18 @@ export default function Funil() {
         </div>
       </div>
 
-      {/* Direita: Chat panel — desktop fixo */}
+      {/* Direita: Chat panel — desktop, empurra o funil ao abrir */}
       {!isMobile && (
-        <aside className="hidden lg:flex w-[380px] xl:w-[420px] shrink-0 border-l bg-card flex-col min-h-0">
-          {selected ? (
-            <ChatPanel lead={selected} onClose={() => setSelected(null)} />
-          ) : (
-            <div className="flex-1 flex items-center justify-center p-6 text-center text-sm text-muted-foreground">
-              Selecione um lead no funil para iniciar o atendimento.
+        <aside
+          className={cn(
+            "hidden lg:flex shrink-0 border-l bg-card flex-col min-h-0 overflow-hidden transition-[width] duration-300 ease-in-out",
+            selected ? "w-[380px] xl:w-[420px]" : "w-0 border-l-0"
+          )}
+          aria-hidden={!selected}
+        >
+          {selected && (
+            <div className="flex-1 min-h-0 flex flex-col animate-slide-in-right">
+              <ChatPanel lead={selected} onClose={() => setSelected(null)} />
             </div>
           )}
         </aside>
