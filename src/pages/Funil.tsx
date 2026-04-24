@@ -35,30 +35,14 @@ export default function Funil() {
         </div>
       </div>
 
-      {/* Direita: Chat panel — desktop, empurra o funil ao abrir */}
-      {!isMobile && (
+      {/* Direita: Chat panel — desktop, só renderiza quando há lead selecionado */}
+      {!isMobile && selected && (
         <aside
-          className={cn(
-            "hidden lg:flex shrink-0 border-l border-slate-100 bg-white flex-col min-h-0 overflow-hidden transition-[width] duration-300 ease-in-out shadow-[-4px_0_24px_rgba(0,0,0,0.02)]",
-            selected ? "w-[380px] xl:w-[420px]" : "w-[320px] xl:w-[360px]"
-          )}
-          aria-hidden={!selected}
+          className="hidden lg:flex shrink-0 border-l border-slate-100 bg-white flex-col min-h-0 overflow-hidden shadow-[-4px_0_24px_rgba(0,0,0,0.02)] w-[380px] xl:w-[420px] animate-slide-in-right"
         >
-          {selected ? (
-            <div className="flex-1 min-h-0 flex flex-col animate-slide-in-right">
-              <ChatPanel lead={selected} onClose={() => setSelected(null)} />
-            </div>
-          ) : (
-            <div className="flex-1 min-h-0 flex flex-col items-center justify-center px-8 text-center">
-              <div className="rounded-full bg-slate-100 p-5 mb-4">
-                <MessageSquare className="h-10 w-10 text-slate-400" strokeWidth={1.5} />
-              </div>
-              <p className="text-sm font-semibold text-slate-700 mb-1">Nenhum atendimento aberto</p>
-              <p className="text-xs text-slate-500 leading-relaxed max-w-[240px]">
-                Selecione um cliente no funil ou na lista para começar o atendimento.
-              </p>
-            </div>
-          )}
+          <div className="flex-1 min-h-0 flex flex-col">
+            <ChatPanel lead={selected} onClose={() => setSelected(null)} />
+          </div>
         </aside>
       )}
 
