@@ -35,10 +35,13 @@ export function ChatPanel({
 
   const firstName = lead.name.split(" ")[0];
 
-  const applyDominantScript = () => {
-    setMessage(
-      `Perfeito ${firstName}, esse é justamente o gargalo que mais trava as óticas hoje, podemos agendar uma reunião onde vamos mostrar como funciona nosso Método Ótica Dominante e fazer uma análise da sua ótica?`
-    );
+  const applyScript = (scriptType: "agendar" | "receita" | "resgate") => {
+    const scripts = {
+      agendar: `Olá ${firstName}! Tudo bem? Vi que você tem interesse em cuidar da sua visão. Temos alguns horários disponíveis para o exame de vista esta semana. Qual o melhor período para você: manhã ou tarde?`,
+      receita: `Oi ${firstName}! Para eu conseguir te passar o orçamento certinho e te indicar a melhor tecnologia de lentes para o seu grau, você consegue me mandar uma foto nítida da sua receita oftalmológica?`,
+      resgate: `Olá ${firstName}! Estou passando para avisar que consegui uma condição especial com o nosso gerente para aquela armação que você gostou. Conseguimos fechar o seu óculos novo hoje?`,
+    };
+    setMessage(scripts[scriptType]);
     setScriptsOpen(false);
   };
 
@@ -128,20 +131,42 @@ export function ChatPanel({
               <Zap className="h-4 w-4 text-muted-foreground" />
             </Button>
           </PopoverTrigger>
-          <PopoverContent side="top" align="start" className="w-64 p-1">
+          <PopoverContent side="top" align="start" className="w-72 p-2">
             <div className="px-2 py-1.5 text-[11px] font-medium text-muted-foreground uppercase tracking-wide">
-              Scripts Rápidos
+              Respostas Rápidas
             </div>
-            <button
-              type="button"
-              onClick={applyDominantScript}
-              className="w-full text-left rounded-md px-2 py-2 text-sm hover:bg-accent hover:text-accent-foreground transition-colors"
-            >
-              <div className="font-medium">Abordagem Dominante</div>
-              <div className="text-[11px] text-muted-foreground line-clamp-2 mt-0.5">
-                Convite para reunião do Método Ótica Dominante.
-              </div>
-            </button>
+            <div className="space-y-1">
+              <button
+                type="button"
+                onClick={() => applyScript("agendar")}
+                className="w-full text-left rounded-md px-2 py-2 text-sm hover:bg-accent hover:text-accent-foreground transition-colors"
+              >
+                <div className="font-medium">Agendar Exame</div>
+                <div className="text-[11px] text-muted-foreground line-clamp-2 mt-0.5">
+                  Oferecer horários para exame de vista esta semana.
+                </div>
+              </button>
+              <button
+                type="button"
+                onClick={() => applyScript("receita")}
+                className="w-full text-left rounded-md px-2 py-2 text-sm hover:bg-accent hover:text-accent-foreground transition-colors"
+              >
+                <div className="font-medium">Pedir Receita</div>
+                <div className="text-[11px] text-muted-foreground line-clamp-2 mt-0.5">
+                  Solicitar foto da receita para orçamento preciso.
+                </div>
+              </button>
+              <button
+                type="button"
+                onClick={() => applyScript("resgate")}
+                className="w-full text-left rounded-md px-2 py-2 text-sm hover:bg-accent hover:text-accent-foreground transition-colors"
+              >
+                <div className="font-medium">Resgate de Orçamento</div>
+                <div className="text-[11px] text-muted-foreground line-clamp-2 mt-0.5">
+                  Repescagem com condição especial do gerente.
+                </div>
+              </button>
+            </div>
           </PopoverContent>
         </Popover>
         <Input
