@@ -30,6 +30,18 @@ export function ChatPanel({
   onClose?: () => void;
 }) {
   const { updateStatus } = useLeads();
+  const [message, setMessage] = useState("");
+  const [scriptsOpen, setScriptsOpen] = useState(false);
+
+  const firstName = lead.name.split(" ")[0];
+
+  const applyDominantScript = () => {
+    setMessage(
+      `Perfeito ${firstName}, esse é justamente o gargalo que mais trava as óticas hoje, podemos agendar uma reunião onde vamos mostrar como funciona nosso Método Ótica Dominante e fazer uma análise da sua ótica?`
+    );
+    setScriptsOpen(false);
+  };
+
   const messages = [
     { from: "lead", text: "Olá, gostaria de agendar um exame de vista.", time: "10:30" },
     { from: "us", text: `Olá ${lead.name.split(" ")[0]}! Claro, temos horários disponíveis amanhã. 😊`, time: "10:32" },
