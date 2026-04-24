@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { Lead, LEAD_STATUSES, LeadStatus } from "@/lib/supabase";
 import { useLeads } from "@/hooks/useLeads";
 import { Button } from "@/components/ui/button";
@@ -5,7 +6,8 @@ import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { ArrowLeft, Paperclip, Send, Smile, X } from "lucide-react";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { ArrowLeft, Paperclip, Send, Smile, X, Zap } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 function initials(name: string) {
@@ -28,6 +30,18 @@ export function ChatPanel({
   onClose?: () => void;
 }) {
   const { updateStatus } = useLeads();
+  const [message, setMessage] = useState("");
+  const [scriptsOpen, setScriptsOpen] = useState(false);
+
+  const firstName = lead.name.split(" ")[0];
+
+  const applyDominantScript = () => {
+    setMessage(
+      `Perfeito ${firstName}, esse é justamente o gargalo que mais trava as óticas hoje, podemos agendar uma reunião onde vamos mostrar como funciona nosso Método Ótica Dominante e fazer uma análise da sua ótica?`
+    );
+    setScriptsOpen(false);
+  };
+
   const messages = [
     { from: "lead", text: "Olá, gostaria de agendar um exame de vista.", time: "10:30" },
     { from: "us", text: `Olá ${lead.name.split(" ")[0]}! Claro, temos horários disponíveis amanhã. 😊`, time: "10:32" },
@@ -102,7 +116,40 @@ export function ChatPanel({
         <Button variant="ghost" size="icon" type="button" className="h-8 w-8">
           <Paperclip className="h-4 w-4 text-muted-foreground" />
         </Button>
-        <Input placeholder="Digite sua mensagem..." className="flex-1 bg-muted/50 border-0 h-9" />
+        <Popover open={scriptsOpen} onOpenChange={setScriptsOpen}>
+          <PopoverTrigger asChild>
+            <Button
+              variant="ghost"
+              size="icon"
+              type="button"
+              className="h-8 w-8"
+              aria-label="Scripts rápidos"
+            >
+              <Zap className="h-4 w-4 text-muted-foreground" />
+            </Button>
+          </PopoverTrigger>
+          <PopoverContent side="top" align="start" className="w-64 p-1">
+            <div className="px-2 py-1.5 text-[11px] font-medium text-muted-foreground uppercase tracking-wide">
+              Scripts Rápidos
+            </div>
+            <button
+              type="button"
+              onClick={applyDominantScript}
+              className="w-full text-left rounded-md px-2 py-2 text-sm hover:bg-accent hover:text-accent-foreground transition-colors"
+            >
+              <div className="font-medium">Abordagem Dominante</div>
+              <div className="text-[11px] text-muted-foreground line-clamp-2 mt-0.5">
+                Convite para reunião do Método Ótica Dominante.
+              </div>
+            </button>
+          </PopoverContent>
+        </Popover>
+        <Input
+          value={message}
+          onChange={(e) => setMessage(e.target.value)}
+          placeholder="Digite sua mensagem..."
+          className="flex-1 bg-muted/50 border-0 h-9"
+        />
         <Button size="icon" className="h-9 w-9 bg-green-600 hover:bg-green-700 text-white">
           <Send className="h-4 w-4" />
         </Button>
