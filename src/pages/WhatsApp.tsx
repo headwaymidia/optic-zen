@@ -61,14 +61,30 @@ export default function WhatsAppPage() {
       >
         <div className="p-4 border-b space-y-3">
           <h1 className="text-lg font-semibold">Atendimentos</h1>
-          <div className="relative">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-            <Input
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              placeholder="Buscar contato..."
-              className="pl-9 bg-muted/50 border-0"
-            />
+          <div className="flex items-center gap-2">
+            <div className="relative flex-1">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+              <Input
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                placeholder="Buscar contato..."
+                className="pl-9 bg-muted/50 border-0"
+              />
+            </div>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button
+                  variant="outline"
+                  size="icon"
+                  onClick={() => { setNewChatSearch(""); setNewChatOpen(true); }}
+                  aria-label="Nova Conversa"
+                  className="shrink-0"
+                >
+                  <MessageSquarePlus className="h-4 w-4" />
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent>Nova Conversa</TooltipContent>
+            </Tooltip>
           </div>
         </div>
 
