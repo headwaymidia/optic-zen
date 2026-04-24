@@ -26,10 +26,8 @@ export default function AppLayout() {
                   </p>
                 </div>
               </div>
-              <Button variant="ghost" size="sm" onClick={signOut} className="text-slate-500 hover:text-slate-800">
-                <LogOut className="h-4 w-4 mr-2" />
-                Sair
-              </Button>
+              <div />
+
             </header>
             <main className="flex-1 overflow-auto">
               {!profile?.company_id ? (
