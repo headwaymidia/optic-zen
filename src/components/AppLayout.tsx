@@ -17,7 +17,7 @@ export default function AppLayout() {
   return (
     <LeadsProvider>
       <SidebarProvider>
-        <div className="min-h-screen flex w-full bg-slate-50">
+        <div className="min-h-screen flex w-full bg-slate-50 select-none pt-safe pb-safe pl-safe pr-safe">
           <AppSidebar />
           <div className="flex-1 flex flex-col min-w-0">
             <header className="h-14 flex items-center justify-between border-b border-slate-100 bg-white px-4 gap-3 shadow-[0_1px_3px_rgba(0,0,0,0.02)]">
