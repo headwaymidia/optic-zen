@@ -79,7 +79,7 @@ export function ChatPanel({
             <p className="text-[11px] text-muted-foreground truncate">{lead.phone ?? "—"}</p>
           </div>
           <Select value={lead.status} onValueChange={(v) => updateStatus(lead.id, v as LeadStatus)}>
-            <SelectTrigger className="h-8 w-[150px] text-xs shrink-0">
+            <SelectTrigger className="h-8 w-[110px] sm:w-[150px] text-xs shrink-0">
               <SelectValue />
             </SelectTrigger>
             <SelectContent>

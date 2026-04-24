@@ -17,10 +17,10 @@ export default function Funil() {
     <div className="h-full flex flex-col lg:flex-row min-h-0">
       {/* Centro: Kanban + summary */}
       <div className="flex-1 flex flex-col min-w-0 min-h-0">
-        <div className="p-4 sm:p-6 space-y-4 flex-1 flex flex-col min-h-0">
+        <div className="p-3 sm:p-6 space-y-3 sm:space-y-4 flex-1 flex flex-col min-h-0">
           <div>
-            <h1 className="text-2xl font-semibold tracking-tight">Funil de vendas</h1>
-            <p className="text-sm text-muted-foreground">
+            <h1 className="text-xl sm:text-2xl font-semibold tracking-tight">Funil de vendas</h1>
+            <p className="text-xs sm:text-sm text-muted-foreground">
               {isMobile ? "Toque em um card para conversar." : "Arraste para mover · Clique para conversar."}
             </p>
           </div>
