@@ -91,6 +91,7 @@ interface LeadCardProps {
 }
 
 function LeadCardContent({ lead, onEdit, dragging, selected }: LeadCardProps) {
+  const { updateLead } = useLeads();
   const cooling = isCooling(lead);
   return (
     <Card
@@ -119,6 +120,15 @@ function LeadCardContent({ lead, onEdit, dragging, selected }: LeadCardProps) {
                 title={`Origem: ${lead.lead_source}`}
               >
                 <span aria-hidden>{SOURCE_EMOJI[lead.lead_source as string] ?? "🔗"}</span>
+              </span>
+            )}
+            {lead.assigned_to && (
+              <span
+                className="inline-flex items-center gap-0.5 rounded-full bg-primary/10 text-primary text-[10px] font-medium px-1.5 py-0.5"
+                title={`Vendedora: ${lead.assigned_to}`}
+              >
+                <User className="h-2.5 w-2.5" />
+                {lead.assigned_to}
               </span>
             )}
           </div>
