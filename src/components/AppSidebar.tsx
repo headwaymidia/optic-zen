@@ -104,6 +104,7 @@ export function AppSidebar() {
           )}
         </div>
       </SidebarContent>
+      <NewLeadDialog open={newLeadOpen} onOpenChange={setNewLeadOpen} />
     </Sidebar>
   );
 }
