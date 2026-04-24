@@ -59,7 +59,7 @@ export function ChatPanel({
   ];
 
   return (
-    <div className="flex flex-col h-full bg-background min-w-0">
+    <div className="flex flex-col h-full bg-background min-w-0 animate-in slide-in-from-right fade-in duration-300 ease-out">
       <header className="border-b bg-card px-3 py-2 space-y-2">
         <div className="flex items-center gap-2">
           {onBack && (
