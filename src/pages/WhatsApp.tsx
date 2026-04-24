@@ -9,6 +9,27 @@ import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Badge } from "@/components/ui/badge";
+import { Tag } from "lucide-react";
+
+const INTEREST_TAG_STYLES: Record<string, string> = {
+  Exame: "bg-sky-100 text-sky-800 dark:bg-sky-900/40 dark:text-sky-200",
+  Multifocal: "bg-amber-100 text-amber-900 dark:bg-amber-900/40 dark:text-amber-100",
+  Solar: "bg-orange-100 text-orange-800 dark:bg-orange-900/40 dark:text-orange-200",
+  "Lentes de Contato": "bg-cyan-100 text-cyan-800 dark:bg-cyan-900/40 dark:text-cyan-200",
+  Armação: "bg-violet-100 text-violet-800 dark:bg-violet-900/40 dark:text-violet-200",
+  Infantil: "bg-pink-100 text-pink-800 dark:bg-pink-900/40 dark:text-pink-200",
+};
+
+const SOURCE_EMOJI: Record<string, string> = {
+  Instagram: "📸",
+  "Google Ads": "🔎",
+  WhatsApp: "💬",
+  Indicação: "🤝",
+  Facebook: "👍",
+  "Loja Física": "🏬",
+  Outro: "🔗",
+};
 
 const MOCK_PREVIEWS = [
   "Pode me passar o endereço?",
@@ -182,10 +203,39 @@ export default function WhatsAppPage() {
                     </AvatarFallback>
                   </Avatar>
                   <div className="flex-1 min-w-0">
-                    <p className="font-medium text-sm truncate">{lead.name}</p>
-                    <p className="text-xs text-muted-foreground truncate">
-                      {lead.phone ?? "Sem telefone"}
+                    <div className="flex items-center justify-between gap-2">
+                      <p className="font-medium text-sm truncate">{lead.name}</p>
+                      {lead.status && (
+                        <Badge
+                          variant="outline"
+                          className="shrink-0 text-[10px] font-normal text-muted-foreground border-muted px-1.5 py-0 rounded-full"
+                        >
+                          {lead.status}
+                        </Badge>
+                      )}
+                    </div>
+                    <p className="text-xs text-muted-foreground truncate flex items-center gap-1">
+                      {lead.lead_source && (
+                        <span aria-hidden title={`Origem: ${lead.lead_source}`}>
+                          {SOURCE_EMOJI[lead.lead_source as string] ?? "🔗"}
+                        </span>
+                      )}
+                      <span className="truncate">{lead.phone ?? "Sem telefone"}</span>
                     </p>
+                    {lead.interest_tag && (
+                      <div className="flex flex-wrap gap-1.5 mt-1">
+                        <span
+                          className={cn(
+                            "inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[10px] font-semibold tracking-wide",
+                            INTEREST_TAG_STYLES[lead.interest_tag as string] ??
+                              "bg-slate-100 text-slate-700"
+                          )}
+                        >
+                          <Tag className="h-2.5 w-2.5" />
+                          {lead.interest_tag}
+                        </span>
+                      </div>
+                    )}
                   </div>
                 </button>
               ))}
