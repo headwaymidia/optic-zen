@@ -9,7 +9,8 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { INTEREST_TAGS, LEAD_SOURCES, LEAD_STATUSES, Lead, LeadPriority, LeadStatus, SALESPEOPLE, supabase } from "@/lib/supabase";
 import { useAuth } from "@/hooks/useAuth";
 import { toast } from "@/hooks/use-toast";
-import { Copy, Sparkles } from "lucide-react";
+import { Copy, Sparkles, MapPin, IdCard, Cake, Eye } from "lucide-react";
+import { maskCPF } from "@/lib/masks";
 
 interface Props {
   open: boolean;
@@ -32,6 +33,10 @@ export function LeadDialog({ open, onOpenChange, lead, defaultStatus, onSaved }:
   const [leadSource, setLeadSource] = useState<string>("");
   const [interestTag, setInterestTag] = useState<string>("");
   const [assignedTo, setAssignedTo] = useState<string>("");
+  const [bairro, setBairro] = useState("");
+  const [cpf, setCpf] = useState("");
+  const [dataNascimento, setDataNascimento] = useState("");
+  const [dataUltimoExame, setDataUltimoExame] = useState("");
   const [saving, setSaving] = useState(false);
 
   useEffect(() => {
@@ -45,6 +50,10 @@ export function LeadDialog({ open, onOpenChange, lead, defaultStatus, onSaved }:
       setLeadSource((lead?.lead_source as string) ?? "");
       setInterestTag((lead?.interest_tag as string) ?? "");
       setAssignedTo(lead?.assigned_to ?? "");
+      setBairro((lead as any)?.bairro ?? "");
+      setCpf((lead as any)?.cpf ?? "");
+      setDataNascimento((lead as any)?.data_nascimento ?? "");
+      setDataUltimoExame((lead as any)?.data_ultimo_exame ?? "");
     }
   }, [open, lead, defaultStatus]);
 
@@ -69,6 +78,10 @@ export function LeadDialog({ open, onOpenChange, lead, defaultStatus, onSaved }:
       lead_source: leadSource || null,
       interest_tag: interestTag || null,
       assigned_to: assignedTo || null,
+      bairro: bairro.trim() || null,
+      cpf: cpf.trim() || null,
+      data_nascimento: dataNascimento || null,
+      data_ultimo_exame: dataUltimoExame || null,
       last_interaction: new Date().toISOString(),
     };
     const { error } = lead
