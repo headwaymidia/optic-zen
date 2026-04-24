@@ -1,13 +1,9 @@
 import { useMemo, useState } from "react";
-import { useNavigate } from "react-router-dom";
 import { useLeads } from "@/hooks/useLeads";
-import { Lead, LEAD_STATUSES, LeadStatus } from "@/lib/supabase";
 import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { ArrowLeft, Paperclip, Search, Send, Smile } from "lucide-react";
+import { ChatPanel } from "@/components/ChatPanel";
+import { Search } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 const MOCK_PREVIEWS = [
@@ -25,15 +21,8 @@ function initials(name: string) {
   return name.split(" ").map((p) => p[0]).slice(0, 2).join("").toUpperCase();
 }
 
-function priorityVariant(p: string | null) {
-  if (p === "Alta") return "destructive";
-  if (p === "Média") return "default";
-  return "secondary";
-}
-
 export default function WhatsAppPage() {
   const { leads, loading } = useLeads();
-  const navigate = useNavigate();
   const [search, setSearch] = useState("");
   const [selectedId, setSelectedId] = useState<string | null>(null);
 
@@ -46,7 +35,6 @@ export default function WhatsAppPage() {
 
   return (
     <div className="flex h-[calc(100vh-3.5rem)] w-full overflow-hidden bg-background">
-      {/* Lista de Contatos */}
       <aside
         className={cn(
           "w-full md:w-[30%] md:min-w-[280px] md:max-w-[400px] border-r flex flex-col bg-card",
@@ -108,107 +96,16 @@ export default function WhatsAppPage() {
         </div>
       </aside>
 
-      {/* Janela de Chat */}
-      <section
-        className={cn(
-          "flex-1 flex flex-col min-w-0",
-          !selected && "hidden md:flex"
-        )}
-      >
+      <section className={cn("flex-1 flex flex-col min-w-0", !selected && "hidden md:flex")}>
         {!selected ? (
           <div className="flex-1 flex items-center justify-center text-muted-foreground text-sm">
             Selecione um contato para iniciar a conversa
           </div>
         ) : (
-          <ChatWindow lead={selected} onBack={() => setSelectedId(null)} onViewFunnel={() => navigate("/funil")} />
+          <ChatPanel lead={selected} onBack={() => setSelectedId(null)} />
         )}
       </section>
     </div>
   );
 }
 
-function ChatWindow({ lead, onBack, onViewFunnel }: { lead: Lead; onBack: () => void; onViewFunnel: () => void }) {
-  const { updateStatus } = useLeads();
-  const messages = [
-    { from: "lead", text: `Olá, gostaria de agendar um exame de vista.`, time: "10:30" },
-    { from: "us", text: `Olá ${lead.name.split(" ")[0]}! Claro, temos horários disponíveis amanhã. 😊`, time: "10:32" },
-    { from: "lead", text: "Tem horário pela manhã?", time: "10:34" },
-    { from: "us", text: "Sim! Posso agendar às 9h ou 10h30. Qual prefere?", time: "10:35" },
-    { from: "lead", text: "10h30 está ótimo. Pode me passar o endereço?", time: "10:45" },
-  ];
-
-  return (
-    <>
-      <header className="min-h-16 border-b bg-card px-4 py-2 flex flex-wrap items-center gap-3">
-        <Button variant="ghost" size="icon" className="md:hidden" onClick={onBack}>
-          <ArrowLeft className="h-5 w-5" />
-        </Button>
-        <Avatar className="h-10 w-10">
-          <AvatarFallback className="bg-primary/10 text-primary text-sm font-medium">
-            {initials(lead.name)}
-          </AvatarFallback>
-        </Avatar>
-        <div className="flex-1 min-w-0">
-          <div className="flex items-center gap-2">
-            <p className="font-semibold truncate">{lead.name}</p>
-            {lead.priority && (
-              <Badge variant={priorityVariant(lead.priority) as any} className="text-[10px] h-5">
-                {lead.priority}
-              </Badge>
-            )}
-          </div>
-          <p className="text-xs text-muted-foreground truncate">{lead.phone ?? "—"}</p>
-        </div>
-        <div className="flex items-center gap-2">
-          <Select value={lead.status} onValueChange={(v) => updateStatus(lead.id, v as LeadStatus)}>
-            <SelectTrigger className="h-9 w-[180px] text-xs">
-              <SelectValue placeholder="Status no Funil" />
-            </SelectTrigger>
-            <SelectContent>
-              {LEAD_STATUSES.map((s) => (
-                <SelectItem key={s} value={s} className="text-xs">{s}</SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-          <Button variant="outline" size="sm" onClick={onViewFunnel}>
-            Ver no Funil
-          </Button>
-        </div>
-      </header>
-
-      <div className="flex-1 overflow-y-auto bg-muted/40 px-4 py-6 space-y-3">
-        {messages.map((m, i) => (
-          <div key={i} className={cn("flex", m.from === "us" ? "justify-end" : "justify-start")}>
-            <div
-              className={cn(
-                "max-w-[70%] rounded-2xl px-4 py-2 shadow-sm text-sm",
-                m.from === "us"
-                  ? "bg-green-100 text-foreground rounded-br-sm dark:bg-green-900/40"
-                  : "bg-card text-foreground rounded-bl-sm"
-              )}
-            >
-              <p className="whitespace-pre-wrap break-words">{m.text}</p>
-              <p className="text-[10px] text-muted-foreground mt-1 text-right">{m.time}</p>
-            </div>
-          </div>
-        ))}
-      </div>
-
-      <footer className="border-t bg-card p-3 flex items-center gap-2">
-        <Button variant="ghost" size="icon" type="button">
-          <Smile className="h-5 w-5 text-muted-foreground" />
-        </Button>
-        <Button variant="ghost" size="icon" type="button">
-          <Paperclip className="h-5 w-5 text-muted-foreground" />
-        </Button>
-        <Input
-          placeholder="Digite sua mensagem..."
-          className="flex-1 bg-muted/50 border-0"
-        />
-        <Button size="icon" className="bg-green-600 hover:bg-green-700 text-white">
-          <Send className="h-4 w-4" />
-        </Button>
-      </footer>
-    </>
-  );
-}
