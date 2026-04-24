@@ -1,10 +1,11 @@
 import { useState } from "react";
-import { LEAD_STATUSES, Lead, LeadStatus } from "@/lib/supabase";
+import { LEAD_STATUSES, Lead, LeadStatus, SALESPEOPLE } from "@/lib/supabase";
 import { useLeads } from "@/hooks/useLeads";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Plus, Phone, MessageCircle, Pencil, Flame, Tag } from "lucide-react";
+import { Plus, Phone, MessageCircle, Pencil, Flame, Tag, User } from "lucide-react";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { LeadDialog } from "./LeadDialog";
 import { cn } from "@/lib/utils";
 import {
