@@ -4,7 +4,7 @@ import { useLeads } from "@/hooks/useLeads";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Plus, Phone, MessageCircle, Pencil, Flame } from "lucide-react";
+import { Plus, Phone, MessageCircle, Pencil, Flame, Tag } from "lucide-react";
 import { LeadDialog } from "./LeadDialog";
 import { cn } from "@/lib/utils";
 import {
@@ -34,6 +34,26 @@ const PRIORITY_VARIANT: Record<string, "default" | "secondary" | "destructive" |
   Alta: "destructive",
   Média: "default",
   Baixa: "secondary",
+};
+
+// Tailwind classes per interest tag (uses light/dark friendly tones)
+const INTEREST_TAG_STYLES: Record<string, string> = {
+  Exame: "bg-sky-100 text-sky-800 dark:bg-sky-900/40 dark:text-sky-200",
+  Multifocal: "bg-amber-100 text-amber-900 dark:bg-amber-900/40 dark:text-amber-100",
+  Solar: "bg-orange-100 text-orange-800 dark:bg-orange-900/40 dark:text-orange-200",
+  "Lentes de Contato": "bg-cyan-100 text-cyan-800 dark:bg-cyan-900/40 dark:text-cyan-200",
+  Armação: "bg-violet-100 text-violet-800 dark:bg-violet-900/40 dark:text-violet-200",
+  Infantil: "bg-pink-100 text-pink-800 dark:bg-pink-900/40 dark:text-pink-200",
+};
+
+const SOURCE_EMOJI: Record<string, string> = {
+  Instagram: "📸",
+  "Google Ads": "🔎",
+  WhatsApp: "💬",
+  Indicação: "🤝",
+  Facebook: "👍",
+  "Loja Física": "🏬",
+  Outro: "🔗",
 };
 
 const COOLING_STATUSES: LeadStatus[] = ["Novo Lead", "Aguardando Resposta"];
@@ -83,14 +103,24 @@ function LeadCardContent({ lead, onEdit, dragging, selected }: LeadCardProps) {
       <div className="space-y-2">
         <div className="flex items-start justify-between gap-2">
           <p className="text-sm font-medium truncate flex-1">{lead.name}</p>
-          {lead.priority && (
-            <Badge
-              variant={PRIORITY_VARIANT[lead.priority] ?? "outline"}
-              className="shrink-0 text-[10px] px-1.5 py-0"
-            >
-              {lead.priority}
-            </Badge>
-          )}
+          <div className="flex items-center gap-1 shrink-0">
+            {lead.priority && (
+              <Badge
+                variant={PRIORITY_VARIANT[lead.priority] ?? "outline"}
+                className="text-[10px] px-1.5 py-0"
+              >
+                {lead.priority}
+              </Badge>
+            )}
+            {lead.lead_source && (
+              <span
+                className="inline-flex items-center gap-0.5 text-[10px] text-muted-foreground"
+                title={`Origem: ${lead.lead_source}`}
+              >
+                <span aria-hidden>{SOURCE_EMOJI[lead.lead_source as string] ?? "🔗"}</span>
+              </span>
+            )}
+          </div>
         </div>
         {lead.phone && (
           <p className="flex items-center gap-1 text-xs text-muted-foreground">
@@ -99,6 +129,18 @@ function LeadCardContent({ lead, onEdit, dragging, selected }: LeadCardProps) {
           </p>
         )}
         <div className="flex flex-wrap gap-1">
+          {lead.interest_tag && (
+            <span
+              className={cn(
+                "inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[10px] font-medium",
+                INTEREST_TAG_STYLES[lead.interest_tag as string] ??
+                  "bg-muted text-muted-foreground"
+              )}
+            >
+              <Tag className="h-2.5 w-2.5" />
+              {lead.interest_tag}
+            </span>
+          )}
           {cooling && (
             <Badge className="bg-red-500 hover:bg-red-500 text-white text-[10px] px-1.5 py-0 gap-1">
               <Flame className="h-3 w-3" />
