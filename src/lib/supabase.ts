@@ -50,6 +50,14 @@ export const INTEREST_TAGS = [
 ] as const;
 export type InterestTag = (typeof INTEREST_TAGS)[number];
 
+export const LAB_STATUSES = [
+  "Enviado ao Lab",
+  "Em Produção",
+  "Pronto para Retirada",
+  "Entregue",
+] as const;
+export type LabStatus = (typeof LAB_STATUSES)[number];
+
 export interface Prescription {
   esferico_od?: string | null;
   cilindrico_od?: string | null;
@@ -76,6 +84,8 @@ export interface Lead {
   interest_tag: InterestTag | string | null;
   prescription: Prescription | null;
   assigned_to: string | null;
+  delivery_prediction: string | null;
+  lab_status: LabStatus | string | null;
   created_at: string;
   updated_at: string;
 }
