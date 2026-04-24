@@ -7,7 +7,9 @@ import { Input } from "@/components/ui/input";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { ArrowLeft, Paperclip, Send, Smile, X, Zap } from "lucide-react";
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
+import { PrescriptionForm } from "@/components/PrescriptionForm";
+import { ArrowLeft, Paperclip, Send, Smile, X, Zap, Eye } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 function initials(name: string) {
@@ -129,6 +131,20 @@ export function ChatPanel({
           </Select>
         </div>
       </header>
+
+      <Accordion type="single" collapsible className="border-b bg-card/50">
+        <AccordionItem value="prescription" className="border-0">
+          <AccordionTrigger className="px-3 py-2 text-xs font-medium hover:no-underline hover:bg-muted/50">
+            <span className="flex items-center gap-2">
+              <Eye className="h-3.5 w-3.5 text-primary" />
+              Receita Oftalmológica (Prontuário)
+            </span>
+          </AccordionTrigger>
+          <AccordionContent className="px-3 pb-3 pt-0">
+            <PrescriptionForm lead={lead} />
+          </AccordionContent>
+        </AccordionItem>
+      </Accordion>
 
       <div className="flex-1 overflow-y-auto bg-muted/40 px-3 py-4 space-y-2">
         {messages.map((m, i) => (
