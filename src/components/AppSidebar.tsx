@@ -15,6 +15,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { NewLeadDialog } from "@/components/NewLeadDialog";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
+import { cn } from "@/lib/utils";
 
 const items = [
   { title: "Dashboard", url: "/", icon: LayoutDashboard },
