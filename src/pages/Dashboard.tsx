@@ -11,6 +11,17 @@ import { SalesRanking } from "@/components/SalesRanking";
 import { exportMonthlyReport } from "@/lib/exportReport";
 import { isWithinInterval, parseISO } from "date-fns";
 import { FileDown } from "lucide-react";
+import { PieChart, Pie, Cell, Tooltip as RTooltip, ResponsiveContainer } from "recharts";
+
+const STATUS_COLORS: Record<string, string> = {
+  "Novo Lead": "#3B82F6",
+  "Aguardando Resposta": "#F59E0B",
+  "Agendou Exame": "#8B5CF6",
+  "Não Compareceu": "#F97316",
+  "Compareceu e Comprou": "#10B981",
+  "Compareceu e Não Comprou": "#EF4444",
+  Repescagem: "#EC4899",
+};
 
 export default function Dashboard() {
   const { leads, loading } = useLeads();
@@ -65,23 +76,73 @@ export default function Dashboard() {
         <CardHeader>
           <CardTitle className="text-base">Distribuição por etapa</CardTitle>
         </CardHeader>
-        <CardContent className="space-y-3">
-          {LEAD_STATUSES.map((s) => {
-            const count = countByStatus(s);
-            const denom = total || 1;
-            const pct = (count / denom) * 100;
+        <CardContent>
+          {(() => {
+            const data = LEAD_STATUSES
+              .map((s) => ({ name: s, value: countByStatus(s), color: STATUS_COLORS[s] ?? "#94A3B8" }))
+              .filter((d) => d.value > 0);
+
+            if (loading) {
+              return <p className="text-sm text-muted-foreground py-8 text-center">Carregando...</p>;
+            }
+            if (data.length === 0) {
+              return <p className="text-sm text-muted-foreground py-8 text-center">Sem leads no período.</p>;
+            }
+
             return (
-              <div key={s} className="space-y-1">
-                <div className="flex items-center justify-between text-sm">
-                  <span className="font-medium">{s}</span>
-                  <span className="text-muted-foreground">{loading ? "—" : count}</span>
+              <div className="grid md:grid-cols-2 gap-6 items-center">
+                {/* Donut */}
+                <div className="relative h-[260px]">
+                  <ResponsiveContainer width="100%" height="100%">
+                    <PieChart>
+                      <RTooltip
+                        formatter={(v: number, n: string) => [`${v} leads`, n]}
+                        contentStyle={{ borderRadius: 8, border: "1px solid hsl(var(--border))", fontSize: 12 }}
+                      />
+                      <Pie
+                        data={data}
+                        dataKey="value"
+                        nameKey="name"
+                        cx="50%"
+                        cy="50%"
+                        innerRadius={70}
+                        outerRadius={90}
+                        paddingAngle={2}
+                        stroke="none"
+                      >
+                        {data.map((d) => (
+                          <Cell key={d.name} fill={d.color} />
+                        ))}
+                      </Pie>
+                    </PieChart>
+                  </ResponsiveContainer>
+                  <div className="absolute inset-0 flex items-center justify-center flex-col pointer-events-none">
+                    <span className="text-3xl font-bold text-slate-900">{total}</span>
+                    <span className="text-sm text-slate-500">Total</span>
+                  </div>
                 </div>
-                <div className="h-2 w-full rounded-full bg-muted overflow-hidden">
-                  <div className="h-full bg-primary transition-all" style={{ width: `${pct}%` }} />
-                </div>
+
+                {/* Legenda */}
+                <ul className="space-y-2">
+                  {data.map((d) => (
+                    <li
+                      key={d.name}
+                      className="flex justify-between items-center text-sm py-1.5 px-2 rounded-md hover:bg-slate-50 transition-colors"
+                    >
+                      <div className="flex items-center gap-2 min-w-0">
+                        <span
+                          className="w-3 h-3 rounded-full shrink-0"
+                          style={{ backgroundColor: d.color }}
+                        />
+                        <span className="truncate text-slate-700">{d.name}</span>
+                      </div>
+                      <span className="font-bold text-slate-900 tabular-nums">{d.value}</span>
+                    </li>
+                  ))}
+                </ul>
               </div>
             );
-          })}
+          })()}
         </CardContent>
       </Card>
     </div>
