@@ -17,19 +17,19 @@ export default function AppLayout() {
   return (
     <LeadsProvider>
       <SidebarProvider>
-        <div className="min-h-screen flex w-full bg-muted/30">
+        <div className="min-h-screen flex w-full bg-slate-50">
           <AppSidebar />
           <div className="flex-1 flex flex-col min-w-0">
-            <header className="h-14 flex items-center justify-between border-b bg-card px-4 gap-3">
+            <header className="h-14 flex items-center justify-between border-b border-slate-100 bg-white px-4 gap-3 shadow-[0_1px_3px_rgba(0,0,0,0.02)]">
               <div className="flex items-center gap-2 min-w-0">
-                <SidebarTrigger />
+                <SidebarTrigger className="hover:bg-slate-50" />
                 <div className="min-w-0">
-                  <p className="text-sm font-medium truncate">
+                  <p className="text-sm font-semibold text-slate-800 truncate">
                     {profile?.name || profile?.email || "Usuário"}
                   </p>
                 </div>
               </div>
-              <Button variant="ghost" size="sm" onClick={signOut}>
+              <Button variant="ghost" size="sm" onClick={signOut} className="text-slate-500 hover:text-slate-800">
                 <LogOut className="h-4 w-4 mr-2" />
                 Sair
               </Button>
