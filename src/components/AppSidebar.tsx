@@ -1,5 +1,6 @@
+import { useState } from "react";
 import { NavLink, useLocation } from "react-router-dom";
-import { LayoutDashboard, KanbanSquare, Users, Eye, MessageCircle, ListChecks } from "lucide-react";
+import { LayoutDashboard, KanbanSquare, Users, Eye, MessageCircle, ListChecks, Plus } from "lucide-react";
 import {
   Sidebar,
   SidebarContent,
@@ -11,6 +12,10 @@ import {
   SidebarMenuItem,
   useSidebar,
 } from "@/components/ui/sidebar";
+import { Button } from "@/components/ui/button";
+import { NewLeadDialog } from "@/components/NewLeadDialog";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
+import { cn } from "@/lib/utils";
 
 const items = [
   { title: "Dashboard", url: "/", icon: LayoutDashboard },
@@ -24,6 +29,7 @@ export function AppSidebar() {
   const { state } = useSidebar();
   const collapsed = state === "collapsed";
   const location = useLocation();
+  const [newLeadOpen, setNewLeadOpen] = useState(false);
 
   return (
     <Sidebar collapsible="icon" className="border-r border-slate-100 bg-white">
@@ -39,6 +45,34 @@ export function AppSidebar() {
             </div>
           )}
         </div>
+
+        {/* Global +Novo Lead CTA */}
+        <div className={cn("px-3 pt-3", collapsed && "px-2")}>
+          {collapsed ? (
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button
+                  size="icon"
+                  onClick={() => setNewLeadOpen(true)}
+                  className="h-10 w-10 rounded-xl bg-primary hover:bg-primary/90 text-primary-foreground shadow-sm"
+                  aria-label="Novo Lead"
+                >
+                  <Plus className="h-4 w-4" />
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent side="right">Novo Lead</TooltipContent>
+            </Tooltip>
+          ) : (
+            <Button
+              onClick={() => setNewLeadOpen(true)}
+              className="w-full h-10 rounded-xl bg-primary hover:bg-primary/90 text-primary-foreground font-semibold gap-2 shadow-sm"
+            >
+              <Plus className="h-4 w-4" />
+              Novo Lead
+            </Button>
+          )}
+        </div>
+
         <SidebarGroup className="px-2 py-3">
           <SidebarGroupLabel className="text-[11px] font-bold uppercase tracking-wider text-slate-400 px-2 mb-1">Menu</SidebarGroupLabel>
           <SidebarGroupContent>
@@ -70,6 +104,7 @@ export function AppSidebar() {
           )}
         </div>
       </SidebarContent>
+      <NewLeadDialog open={newLeadOpen} onOpenChange={setNewLeadOpen} />
     </Sidebar>
   );
 }

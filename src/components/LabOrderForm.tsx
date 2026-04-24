@@ -6,6 +6,7 @@ import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { MessageCircle, CalendarClock } from "lucide-react";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 
 export function LabOrderForm({
   lead,
@@ -79,16 +80,20 @@ export function LabOrderForm({
               </SelectContent>
             </Select>
             {status === "Pronto para Retirada" && (
-              <Button
-                type="button"
-                size="icon"
-                onClick={handleReadyMessage}
-                className="h-9 w-9 shrink-0 bg-emerald-500 hover:bg-emerald-600 text-white"
-                aria-label="Avisar cliente via WhatsApp"
-                title="Preencher mensagem de retirada"
-              >
-                <MessageCircle className="h-4 w-4" />
-              </Button>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button
+                    type="button"
+                    size="icon"
+                    onClick={handleReadyMessage}
+                    className="h-9 w-9 shrink-0 bg-emerald-500 hover:bg-emerald-600 text-white"
+                    aria-label="Avisar que ficou pronto"
+                  >
+                    <MessageCircle className="h-4 w-4" />
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent side="top">Avisar que ficou pronto</TooltipContent>
+              </Tooltip>
             )}
           </div>
         </div>

@@ -7,6 +7,7 @@ import { Lead } from "@/lib/supabase";
 import { Sheet, SheetContent } from "@/components/ui/sheet";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { cn } from "@/lib/utils";
+import { MessageSquare } from "lucide-react";
 
 export default function Funil() {
   const { leads, loading } = useLeads();
@@ -39,13 +40,23 @@ export default function Funil() {
         <aside
           className={cn(
             "hidden lg:flex shrink-0 border-l border-slate-100 bg-white flex-col min-h-0 overflow-hidden transition-[width] duration-300 ease-in-out shadow-[-4px_0_24px_rgba(0,0,0,0.02)]",
-            selected ? "w-[380px] xl:w-[420px]" : "w-0 border-l-0"
+            selected ? "w-[380px] xl:w-[420px]" : "w-[320px] xl:w-[360px]"
           )}
           aria-hidden={!selected}
         >
-          {selected && (
+          {selected ? (
             <div className="flex-1 min-h-0 flex flex-col animate-slide-in-right">
               <ChatPanel lead={selected} onClose={() => setSelected(null)} />
+            </div>
+          ) : (
+            <div className="flex-1 min-h-0 flex flex-col items-center justify-center px-8 text-center">
+              <div className="rounded-full bg-slate-100 p-5 mb-4">
+                <MessageSquare className="h-10 w-10 text-slate-400" strokeWidth={1.5} />
+              </div>
+              <p className="text-sm font-semibold text-slate-700 mb-1">Nenhum atendimento aberto</p>
+              <p className="text-xs text-slate-500 leading-relaxed max-w-[240px]">
+                Selecione um cliente no funil ou na lista para começar o atendimento.
+              </p>
             </div>
           )}
         </aside>

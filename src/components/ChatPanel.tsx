@@ -11,6 +11,7 @@ import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/
 import { PrescriptionForm } from "@/components/PrescriptionForm";
 import { LabOrderForm } from "@/components/LabOrderForm";
 import { ArrowLeft, Paperclip, Send, Smile, X, Zap, Eye, CalendarClock } from "lucide-react";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { cn } from "@/lib/utils";
 
 function initials(name: string) {
@@ -201,17 +202,22 @@ export function ChatPanel({
           <Paperclip className="h-4 w-4 text-muted-foreground" />
         </Button>
         <Popover open={scriptsOpen} onOpenChange={setScriptsOpen}>
-          <PopoverTrigger asChild>
-            <Button
-              variant="ghost"
-              size="icon"
-              type="button"
-              className="h-8 w-8"
-              aria-label="Scripts rápidos"
-            >
-              <Zap className="h-4 w-4 text-muted-foreground" />
-            </Button>
-          </PopoverTrigger>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <PopoverTrigger asChild>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  type="button"
+                  className="h-8 w-8"
+                  aria-label="Respostas Rápidas"
+                >
+                  <Zap className="h-4 w-4 text-muted-foreground" />
+                </Button>
+              </PopoverTrigger>
+            </TooltipTrigger>
+            <TooltipContent side="top">Respostas Rápidas</TooltipContent>
+          </Tooltip>
           <PopoverContent side="top" align="start" className="w-72 p-2">
             <div className="px-2 py-1.5 text-[11px] font-medium text-muted-foreground uppercase tracking-wide">
               Respostas Rápidas
