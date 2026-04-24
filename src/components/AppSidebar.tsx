@@ -1,5 +1,5 @@
 import { NavLink, useLocation } from "react-router-dom";
-import { LayoutDashboard, KanbanSquare, Users, Settings, Eye } from "lucide-react";
+import { LayoutDashboard, KanbanSquare, Users, Settings, Eye, MessageCircle } from "lucide-react";
 import {
   Sidebar,
   SidebarContent,
@@ -14,6 +14,7 @@ import {
 
 const items = [
   { title: "Dashboard", url: "/", icon: LayoutDashboard },
+  { title: "WhatsApp", url: "/whatsapp", icon: MessageCircle },
   { title: "Funil de vendas", url: "/funil", icon: KanbanSquare },
   { title: "Contatos", url: "/contatos", icon: Users },
   { title: "Configurações", url: "/configuracoes", icon: Settings },
