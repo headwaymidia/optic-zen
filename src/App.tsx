@@ -10,6 +10,7 @@ import Funil from "./pages/Funil";
 import WhatsAppPage from "./pages/WhatsApp";
 import Contatos from "./pages/Contatos";
 import Configuracoes from "./pages/Configuracoes";
+import Tarefas from "./pages/Tarefas";
 import AuthPage from "./pages/Auth.tsx";
 import NotFound from "./pages/NotFound.tsx";
 
@@ -28,6 +29,7 @@ const App = () => (
               <Route path="/" element={<Dashboard />} />
               <Route path="/whatsapp" element={<WhatsAppPage />} />
               <Route path="/funil" element={<Funil />} />
+              <Route path="/tarefas" element={<Tarefas />} />
               <Route path="/contatos" element={<Contatos />} />
               <Route path="/configuracoes" element={<Configuracoes />} />
             </Route>
