@@ -86,6 +86,10 @@ export interface Lead {
   assigned_to: string | null;
   delivery_prediction: string | null;
   lab_status: LabStatus | string | null;
+  bairro: string | null;
+  cpf: string | null;
+  data_nascimento: string | null;
+  data_ultimo_exame: string | null;
   created_at: string;
   updated_at: string;
 }

@@ -7,6 +7,8 @@ import { supabase } from "@/lib/supabase";
 import { useAuth } from "@/hooks/useAuth";
 import { useLeads } from "@/hooks/useLeads";
 import { toast } from "@/hooks/use-toast";
+import { maskCPF } from "@/lib/masks";
+import { MapPin, IdCard, Cake, Eye } from "lucide-react";
 
 export function NewLeadDialog({
   open,
@@ -19,11 +21,19 @@ export function NewLeadDialog({
   const { refetch } = useLeads();
   const [name, setName] = useState("");
   const [phone, setPhone] = useState("");
+  const [bairro, setBairro] = useState("");
+  const [cpf, setCpf] = useState("");
+  const [dataNascimento, setDataNascimento] = useState("");
+  const [dataUltimoExame, setDataUltimoExame] = useState("");
   const [saving, setSaving] = useState(false);
 
   const reset = () => {
     setName("");
     setPhone("");
+    setBairro("");
+    setCpf("");
+    setDataNascimento("");
+    setDataUltimoExame("");
   };
 
   const handleSave = async () => {
@@ -40,6 +50,10 @@ export function NewLeadDialog({
       company_id: profile.company_id,
       name: name.trim(),
       phone: phone.trim() || null,
+      bairro: bairro.trim() || null,
+      cpf: cpf.trim() || null,
+      data_nascimento: dataNascimento || null,
+      data_ultimo_exame: dataUltimoExame || null,
       status: "Novo Lead",
     });
     setSaving(false);
@@ -61,35 +75,95 @@ export function NewLeadDialog({
         onOpenChange(o);
       }}
     >
-      <DialogContent className="sm:max-w-md">
+      <DialogContent className="sm:max-w-lg max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>Novo Lead</DialogTitle>
           <DialogDescription>
             Cadastre rapidamente. O lead entrará na coluna "Novo Lead".
           </DialogDescription>
         </DialogHeader>
-        <div className="space-y-3 py-2">
-          <div className="space-y-1.5">
-            <Label htmlFor="new-lead-name" className="text-xs">Nome *</Label>
-            <Input
-              id="new-lead-name"
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              placeholder="Ex: Maria Silva"
-              autoFocus
-            />
+
+        <div className="space-y-4 py-2">
+          {/* Contato */}
+          <div className="space-y-3">
+            <div className="space-y-1.5">
+              <Label htmlFor="new-lead-name" className="text-xs">Nome *</Label>
+              <Input
+                id="new-lead-name"
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                placeholder="Ex: Maria Silva"
+                autoFocus
+              />
+            </div>
+            <div className="space-y-1.5">
+              <Label htmlFor="new-lead-phone" className="text-xs">Telefone</Label>
+              <Input
+                id="new-lead-phone"
+                value={phone}
+                onChange={(e) => setPhone(e.target.value)}
+                placeholder="(11) 91234-5678"
+                type="tel"
+              />
+            </div>
           </div>
-          <div className="space-y-1.5">
-            <Label htmlFor="new-lead-phone" className="text-xs">Telefone</Label>
-            <Input
-              id="new-lead-phone"
-              value={phone}
-              onChange={(e) => setPhone(e.target.value)}
-              placeholder="(11) 91234-5678"
-              type="tel"
-            />
+
+          {/* Dados complementares */}
+          <div className="pt-2 border-t">
+            <p className="text-[11px] uppercase tracking-wide text-muted-foreground mb-3 font-medium">
+              Dados complementares
+            </p>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <div className="space-y-1.5">
+                <Label htmlFor="new-lead-bairro" className="text-xs flex items-center gap-1.5">
+                  <MapPin className="h-3 w-3 text-muted-foreground" /> Bairro
+                </Label>
+                <Input
+                  id="new-lead-bairro"
+                  value={bairro}
+                  onChange={(e) => setBairro(e.target.value)}
+                  placeholder="Ex: Centro"
+                />
+              </div>
+              <div className="space-y-1.5">
+                <Label htmlFor="new-lead-cpf" className="text-xs flex items-center gap-1.5">
+                  <IdCard className="h-3 w-3 text-muted-foreground" /> CPF
+                </Label>
+                <Input
+                  id="new-lead-cpf"
+                  value={cpf}
+                  onChange={(e) => setCpf(maskCPF(e.target.value))}
+                  placeholder="000.000.000-00"
+                  inputMode="numeric"
+                  maxLength={14}
+                />
+              </div>
+              <div className="space-y-1.5">
+                <Label htmlFor="new-lead-nasc" className="text-xs flex items-center gap-1.5">
+                  <Cake className="h-3 w-3 text-muted-foreground" /> Data de nascimento
+                </Label>
+                <Input
+                  id="new-lead-nasc"
+                  type="date"
+                  value={dataNascimento}
+                  onChange={(e) => setDataNascimento(e.target.value)}
+                />
+              </div>
+              <div className="space-y-1.5">
+                <Label htmlFor="new-lead-exame" className="text-xs flex items-center gap-1.5">
+                  <Eye className="h-3 w-3 text-muted-foreground" /> Último exame
+                </Label>
+                <Input
+                  id="new-lead-exame"
+                  type="date"
+                  value={dataUltimoExame}
+                  onChange={(e) => setDataUltimoExame(e.target.value)}
+                />
+              </div>
+            </div>
           </div>
         </div>
+
         <DialogFooter>
           <Button variant="outline" onClick={() => onOpenChange(false)} disabled={saving}>
             Cancelar
