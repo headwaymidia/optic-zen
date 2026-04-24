@@ -3,11 +3,8 @@ import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { AppSidebar } from "./AppSidebar";
 import { useAuth } from "@/hooks/useAuth";
 import { LeadsProvider } from "@/hooks/useLeads";
-import { Button } from "@/components/ui/button";
-import { LogOut } from "lucide-react";
-
 export default function AppLayout() {
-  const { session, profile, loading, signOut } = useAuth();
+  const { session, profile, loading } = useAuth();
 
   if (loading) {
     return <div className="flex min-h-screen items-center justify-center text-muted-foreground">Carregando...</div>;
