@@ -90,6 +90,7 @@ export interface Lead {
   cpf: string | null;
   data_nascimento: string | null;
   data_ultimo_exame: string | null;
+  follow_up_date: string | null;
   created_at: string;
   updated_at: string;
 }

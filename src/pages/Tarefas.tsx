@@ -1,76 +1,106 @@
 import { useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import { useLeads } from "@/hooks/useLeads";
-import { Lead, LeadStatus } from "@/lib/supabase";
+import { Lead } from "@/lib/supabase";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Flame, Clock, RefreshCcw, MessageCircle, User } from "lucide-react";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { toast } from "@/hooks/use-toast";
 import { cn } from "@/lib/utils";
 
-interface Block {
+// Helpers de data — comparações em UTC date string (YYYY-MM-DD)
+function todayISO(): string {
+  return new Date().toISOString().slice(0, 10);
+}
+function addDaysISO(days: number): string {
+  const d = new Date();
+  d.setDate(d.getDate() + days);
+  return d.toISOString().slice(0, 10);
+}
+function isSameOrBefore(dateStr: string | null, ref: string): boolean {
+  if (!dateStr) return false;
+  return dateStr.slice(0, 10) <= ref;
+}
+function hoursSince(iso: string | null): number {
+  if (!iso) return Infinity;
+  return (Date.now() - new Date(iso).getTime()) / (1000 * 60 * 60);
+}
+
+interface BlockDef {
   key: string;
   title: string;
   emoji: string;
-  icon: typeof Flame;
   description: string;
-  statuses: LeadStatus[];
   cardClass: string;
   badgeClass: string;
-  iconClass: string;
+  filter: (l: Lead, today: string) => boolean;
 }
 
-const BLOCKS: Block[] = [
+const BLOCKS: BlockDef[] = [
   {
     key: "quentes",
     title: "Quentes (Agendados)",
     emoji: "🔥",
-    icon: Flame,
-    description: "Leads que agendaram exame — confirme presença.",
-    statuses: ["Agendou Exame"],
+    description: "Exames agendados para hoje (ou em atraso). Confirme presença.",
     cardClass: "border-l-4 border-l-amber-500",
     badgeClass: "bg-amber-100 text-amber-900 dark:bg-amber-900/40 dark:text-amber-100",
-    iconClass: "text-amber-500",
+    filter: (l, today) =>
+      l.status === "Agendou Exame" && isSameOrBefore(l.follow_up_date, today),
   },
   {
     key: "atrasados",
     title: "Atrasados",
     emoji: "⏰",
-    icon: Clock,
-    description: "Leads sem retorno — risco de esfriar.",
-    statuses: ["Aguardando Resposta", "Novo Lead"],
+    description: "Sem retorno há mais de 24h e sem adiamento futuro.",
     cardClass: "border-l-4 border-l-red-500",
     badgeClass: "bg-red-100 text-red-900 dark:bg-red-900/40 dark:text-red-100",
-    iconClass: "text-red-500",
+    filter: (l, today) => {
+      if (l.status !== "Novo Lead" && l.status !== "Aguardando Resposta") return false;
+      const stale = hoursSince(l.updated_at || l.created_at) >= 24;
+      const notSnoozed = !l.follow_up_date || l.follow_up_date.slice(0, 10) <= today;
+      return stale && notSnoozed;
+    },
   },
   {
     key: "oportunidades",
     title: "Oportunidades",
     emoji: "🔄",
-    icon: RefreshCcw,
-    description: "Repescagem — reaqueça com condição especial.",
-    statuses: ["Repescagem"],
+    description: "Repescagem agendada para hoje.",
     cardClass: "border-l-4 border-l-indigo-500",
     badgeClass: "bg-indigo-100 text-indigo-900 dark:bg-indigo-900/40 dark:text-indigo-100",
-    iconClass: "text-indigo-500",
+    filter: (l, today) =>
+      l.status === "Repescagem" && (l.follow_up_date ?? "").slice(0, 10) === today,
   },
 ];
 
 export default function Tarefas() {
-  const { leads, loading } = useLeads();
+  const { leads, loading, updateLead } = useLeads();
   const navigate = useNavigate();
 
-  const grouped = useMemo(() => {
-    return BLOCKS.map((b) => ({
-      ...b,
-      items: leads.filter((l) => b.statuses.includes(l.status)),
-    }));
-  }, [leads]);
+  const today = todayISO();
+
+  const grouped = useMemo(
+    () => BLOCKS.map((b) => ({ ...b, items: leads.filter((l) => b.filter(l, today)) })),
+    [leads, today]
+  );
 
   const total = grouped.reduce((sum, g) => sum + g.items.length, 0);
 
   function handleAtender(lead: Lead) {
     navigate(`/whatsapp?leadId=${lead.id}`);
+  }
+
+  async function handleSnooze(lead: Lead, days: number, label: string) {
+    const newDate = addDaysISO(days);
+    await updateLead(lead.id, { follow_up_date: newDate });
+    toast({ title: "Adiado", description: `${lead.name} reaparece ${label}.` });
   }
 
   return (
@@ -104,7 +134,12 @@ export default function Tarefas() {
                 </p>
               ) : (
                 block.items.map((lead) => (
-                  <TaskRow key={lead.id} lead={lead} onAtender={handleAtender} />
+                  <TaskRow
+                    key={lead.id}
+                    lead={lead}
+                    onAtender={handleAtender}
+                    onSnooze={handleSnooze}
+                  />
                 ))
               )}
             </CardContent>
@@ -115,7 +150,15 @@ export default function Tarefas() {
   );
 }
 
-function TaskRow({ lead, onAtender }: { lead: Lead; onAtender: (l: Lead) => void }) {
+function TaskRow({
+  lead,
+  onAtender,
+  onSnooze,
+}: {
+  lead: Lead;
+  onAtender: (l: Lead) => void;
+  onSnooze: (l: Lead, days: number, label: string) => void;
+}) {
   return (
     <div className="flex items-center justify-between gap-2 rounded-md border bg-card p-2.5 hover:bg-muted/40 transition-colors">
       <div className="min-w-0 flex-1">
@@ -130,14 +173,37 @@ function TaskRow({ lead, onAtender }: { lead: Lead; onAtender: (l: Lead) => void
           )}
         </div>
       </div>
-      <Button
-        size="sm"
-        className="h-8 gap-1 bg-emerald-600 hover:bg-emerald-700 text-white shrink-0"
-        onClick={() => onAtender(lead)}
-      >
-        <MessageCircle className="h-3.5 w-3.5" />
-        Atender
-      </Button>
+      <div className="flex items-center gap-1 shrink-0">
+        <Button
+          size="sm"
+          className="h-8 gap-1 bg-emerald-600 hover:bg-emerald-700 text-white"
+          onClick={() => onAtender(lead)}
+        >
+          <MessageCircle className="h-3.5 w-3.5" />
+          Atender
+        </Button>
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button
+              size="sm"
+              variant="ghost"
+              className="h-8 gap-1 text-muted-foreground hover:text-foreground"
+              aria-label="Adiar"
+            >
+              <Clock className="h-3.5 w-3.5" />
+              Adiar
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end" className="w-44">
+            <DropdownMenuItem onClick={() => onSnooze(lead, 1, "amanhã")}>
+              Para amanhã
+            </DropdownMenuItem>
+            <DropdownMenuItem onClick={() => onSnooze(lead, 7, "na semana que vem")}>
+              Para semana que vem
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
+      </div>
     </div>
   );
 }
