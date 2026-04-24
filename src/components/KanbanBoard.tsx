@@ -64,17 +64,20 @@ function whatsappUrl(phone: string) {
 interface LeadCardProps {
   lead: Lead;
   onEdit: (l: Lead) => void;
+  onSelect?: (l: Lead) => void;
   dragging?: boolean;
+  selected?: boolean;
 }
 
-function LeadCardContent({ lead, onEdit, dragging }: LeadCardProps) {
+function LeadCardContent({ lead, onEdit, dragging, selected }: LeadCardProps) {
   const cooling = isCooling(lead);
   return (
     <Card
       className={cn(
         "p-3 select-none transition-shadow hover:shadow-md bg-card relative overflow-hidden",
         cooling && "border-l-4 border-l-red-500 animate-pulse-border",
-        dragging && "shadow-lg ring-2 ring-primary/40 rotate-1"
+        dragging && "shadow-lg ring-2 ring-primary/40 rotate-1",
+        selected && !dragging && "ring-2 ring-primary"
       )}
     >
       <div className="space-y-2">
@@ -152,16 +155,17 @@ function LeadCardContent({ lead, onEdit, dragging }: LeadCardProps) {
   );
 }
 
-function DraggableLeadCard({ lead, onEdit }: { lead: Lead; onEdit: (l: Lead) => void }) {
+function DraggableLeadCard({ lead, onEdit, onSelect, selected }: { lead: Lead; onEdit: (l: Lead) => void; onSelect?: (l: Lead) => void; selected?: boolean }) {
   const { attributes, listeners, setNodeRef, isDragging } = useDraggable({ id: lead.id });
   return (
     <div
       ref={setNodeRef}
       {...listeners}
       {...attributes}
-      className={cn("touch-none cursor-grab active:cursor-grabbing", isDragging && "opacity-40")}
+      onClick={() => onSelect?.(lead)}
+      className={cn("touch-none cursor-pointer active:cursor-grabbing", isDragging && "opacity-40")}
     >
-      <LeadCardContent lead={lead} onEdit={onEdit} />
+      <LeadCardContent lead={lead} onEdit={onEdit} selected={selected} />
     </div>
   );
 }
@@ -201,7 +205,7 @@ function DroppableColumn({
   );
 }
 
-export function KanbanBoard() {
+export function KanbanBoard({ onSelectLead, selectedLeadId }: { onSelectLead?: (l: Lead) => void; selectedLeadId?: string | null } = {}) {
   const { leads, loading, refetch, updateStatus } = useLeads();
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editingLead, setEditingLead] = useState<Lead | null>(null);
@@ -264,7 +268,13 @@ export function KanbanBoard() {
                 onAdd={() => openNew(status)}
               >
                 {colLeads.map((lead) => (
-                  <DraggableLeadCard key={lead.id} lead={lead} onEdit={openEdit} />
+                  <DraggableLeadCard
+                    key={lead.id}
+                    lead={lead}
+                    onEdit={openEdit}
+                    onSelect={onSelectLead}
+                    selected={selectedLeadId === lead.id}
+                  />
                 ))}
                 {colLeads.length === 0 && (
                   <p className="px-2 py-6 text-center text-xs text-muted-foreground">
