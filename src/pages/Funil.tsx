@@ -1,22 +1,38 @@
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { KanbanBoard } from "@/components/KanbanBoard";
-import { DashboardSummary } from "@/components/DashboardSummary";
 import { ChatPanel } from "@/components/ChatPanel";
 import { useLeads } from "@/hooks/useLeads";
-import { Lead } from "@/lib/supabase";
+import { Lead, LEAD_STATUSES, LeadStatus } from "@/lib/supabase";
 import { Sheet, SheetContent } from "@/components/ui/sheet";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { cn } from "@/lib/utils";
-import { MessageSquare } from "lucide-react";
+
+const STATUS_DOT_COLORS: Record<LeadStatus, string> = {
+  "Novo Lead": "bg-blue-500",
+  "Aguardando Resposta": "bg-amber-500",
+  "Agendou Exame": "bg-purple-500",
+  "Não Compareceu": "bg-orange-500",
+  "Compareceu e Comprou": "bg-emerald-500",
+  "Compareceu e Não Comprou": "bg-rose-500",
+  Repescagem: "bg-indigo-500",
+};
 
 export default function Funil() {
   const { leads, loading } = useLeads();
   const [selected, setSelected] = useState<Lead | null>(null);
   const isMobile = useIsMobile();
 
+  const counts = useMemo(() => {
+    const map = {} as Record<LeadStatus, number>;
+    LEAD_STATUSES.forEach((s) => {
+      map[s] = leads.filter((l) => l.status === s).length;
+    });
+    return map;
+  }, [leads]);
+
   return (
     <div className="h-full flex flex-col lg:flex-row min-h-0">
-      {/* Centro: Kanban + summary */}
+      {/* Centro: Kanban + pipeline overview */}
       <div className="flex-1 flex flex-col min-w-0 min-h-0">
         <div className="p-3 sm:p-6 space-y-3 sm:space-y-4 flex-1 flex flex-col min-h-0">
           <div>
@@ -25,7 +41,25 @@ export default function Funil() {
               {isMobile ? "Toque em um card para conversar." : "Arraste para mover · Clique para conversar."}
             </p>
           </div>
-          <DashboardSummary leads={leads} loading={loading} />
+
+          {/* Pipeline overview — micro-cards por etapa */}
+          <div className="flex gap-3 overflow-x-auto pb-2 -mx-1 px-1">
+            {LEAD_STATUSES.map((s) => (
+              <div
+                key={s}
+                className="shrink-0 min-w-[140px] flex-1 bg-white border border-slate-100 rounded-lg px-4 py-2 shadow-[0_1px_2px_rgba(0,0,0,0.02)] hover:shadow-sm transition-shadow"
+              >
+                <div className="flex items-center gap-1.5">
+                  <span className={cn("h-2 w-2 rounded-full shrink-0", STATUS_DOT_COLORS[s])} />
+                  <span className="text-xs text-slate-500 truncate">{s}</span>
+                </div>
+                <p className="text-lg font-bold text-slate-800 tabular-nums mt-0.5">
+                  {loading ? "—" : counts[s]}
+                </p>
+              </div>
+            ))}
+          </div>
+
           <div className="flex-1 min-h-0 -mx-4 sm:-mx-6">
             <KanbanBoard
               onSelectLead={setSelected}
