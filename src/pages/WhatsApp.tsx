@@ -30,6 +30,8 @@ export default function WhatsAppPage() {
   const [search, setSearch] = useState("");
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [searchParams, setSearchParams] = useSearchParams();
+  const [newChatOpen, setNewChatOpen] = useState(false);
+  const [newChatSearch, setNewChatSearch] = useState("");
 
   // Deep-link: open chat for leadId from query string (e.g. coming from Tarefas)
   useEffect(() => {
