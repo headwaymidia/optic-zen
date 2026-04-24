@@ -4,8 +4,11 @@ import { useLeads } from "@/hooks/useLeads";
 import { Input } from "@/components/ui/input";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { ChatPanel } from "@/components/ChatPanel";
-import { Search } from "lucide-react";
+import { Search, MessageSquarePlus } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { Button } from "@/components/ui/button";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 
 const MOCK_PREVIEWS = [
   "Pode me passar o endereço?",
