@@ -7,6 +7,7 @@ import { Badge } from "@/components/ui/badge";
 import { Plus, Phone, MessageCircle, Pencil, Flame, Tag, User, CalendarClock } from "lucide-react";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { LeadDialog } from "./LeadDialog";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { cn } from "@/lib/utils";
 import {
   DndContext,
@@ -219,20 +220,25 @@ function LeadCardContent({ lead, onEdit, dragging, selected }: LeadCardProps) {
           ) : (
             <span />
           )}
-          <Button
-            type="button"
-            size="icon"
-            variant="outline"
-            className="h-9 w-9 md:h-7 md:w-7 rounded-full"
-            onPointerDown={(e) => e.stopPropagation()}
-            onClick={(e) => {
-              e.stopPropagation();
-              onEdit(lead);
-            }}
-            aria-label="Editar lead"
-          >
-            <Pencil className="h-4 w-4 md:h-3.5 md:w-3.5" />
-          </Button>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button
+                type="button"
+                size="icon"
+                variant="outline"
+                className="h-9 w-9 md:h-7 md:w-7 rounded-full"
+                onPointerDown={(e) => e.stopPropagation()}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onEdit(lead);
+                }}
+                aria-label="Editar Lead"
+              >
+                <Pencil className="h-4 w-4 md:h-3.5 md:w-3.5" />
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent side="top">Editar Lead</TooltipContent>
+          </Tooltip>
         </div>
       </div>
     </Card>
@@ -270,8 +276,8 @@ function DroppableColumn({
     <div
       ref={setNodeRef}
       className={cn(
-        "flex w-72 shrink-0 snap-start flex-col rounded-2xl bg-slate-50/70 border border-slate-100 transition-colors",
-        isOver && "bg-slate-100 ring-2 ring-primary/20"
+        "flex w-72 shrink-0 snap-start flex-col rounded-2xl bg-slate-50/70 border border-slate-100 transition-all duration-200",
+        isOver && "bg-primary/5 border-primary/40 border-dashed ring-2 ring-primary/30 scale-[1.01]"
       )}
     >
       <div className="flex items-center justify-between gap-2 border-b border-slate-100/60 p-3">
