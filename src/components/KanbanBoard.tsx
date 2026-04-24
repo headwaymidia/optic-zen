@@ -4,7 +4,7 @@ import { useLeads } from "@/hooks/useLeads";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Plus, Phone, MessageCircle, Pencil, Flame } from "lucide-react";
+import { Plus, Phone, MessageCircle, Pencil, Flame, Tag } from "lucide-react";
 import { LeadDialog } from "./LeadDialog";
 import { cn } from "@/lib/utils";
 import {
@@ -34,6 +34,26 @@ const PRIORITY_VARIANT: Record<string, "default" | "secondary" | "destructive" |
   Alta: "destructive",
   Média: "default",
   Baixa: "secondary",
+};
+
+// Tailwind classes per interest tag (uses light/dark friendly tones)
+const INTEREST_TAG_STYLES: Record<string, string> = {
+  Exame: "bg-sky-100 text-sky-800 dark:bg-sky-900/40 dark:text-sky-200",
+  Multifocal: "bg-amber-100 text-amber-900 dark:bg-amber-900/40 dark:text-amber-100",
+  Solar: "bg-orange-100 text-orange-800 dark:bg-orange-900/40 dark:text-orange-200",
+  "Lentes de Contato": "bg-cyan-100 text-cyan-800 dark:bg-cyan-900/40 dark:text-cyan-200",
+  Armação: "bg-violet-100 text-violet-800 dark:bg-violet-900/40 dark:text-violet-200",
+  Infantil: "bg-pink-100 text-pink-800 dark:bg-pink-900/40 dark:text-pink-200",
+};
+
+const SOURCE_EMOJI: Record<string, string> = {
+  Instagram: "📸",
+  "Google Ads": "🔎",
+  WhatsApp: "💬",
+  Indicação: "🤝",
+  Facebook: "👍",
+  "Loja Física": "🏬",
+  Outro: "🔗",
 };
 
 const COOLING_STATUSES: LeadStatus[] = ["Novo Lead", "Aguardando Resposta"];
