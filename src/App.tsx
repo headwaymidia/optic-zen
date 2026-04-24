@@ -7,6 +7,7 @@ import { AuthProvider } from "@/hooks/useAuth";
 import AppLayout from "@/components/AppLayout";
 import Dashboard from "./pages/Dashboard";
 import Funil from "./pages/Funil";
+import WhatsAppPage from "./pages/WhatsApp";
 import Contatos from "./pages/Contatos";
 import Configuracoes from "./pages/Configuracoes";
 import AuthPage from "./pages/Auth.tsx";
@@ -25,6 +26,7 @@ const App = () => (
             <Route path="/auth" element={<AuthPage />} />
             <Route element={<AppLayout />}>
               <Route path="/" element={<Dashboard />} />
+              <Route path="/whatsapp" element={<WhatsAppPage />} />
               <Route path="/funil" element={<Funil />} />
               <Route path="/contatos" element={<Contatos />} />
               <Route path="/configuracoes" element={<Configuracoes />} />
