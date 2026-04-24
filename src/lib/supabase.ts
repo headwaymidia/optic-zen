@@ -37,6 +37,9 @@ export const LEAD_SOURCES = [
 ] as const;
 export type LeadSource = (typeof LEAD_SOURCES)[number];
 
+export const SALESPEOPLE = ["Maria", "Juliana", "Ana"] as const;
+export type Salesperson = (typeof SALESPEOPLE)[number];
+
 export const INTEREST_TAGS = [
   "Exame",
   "Multifocal",
@@ -72,6 +75,7 @@ export interface Lead {
   lead_source: LeadSource | string | null;
   interest_tag: InterestTag | string | null;
   prescription: Prescription | null;
+  assigned_to: string | null;
   created_at: string;
   updated_at: string;
 }

@@ -7,6 +7,7 @@ import { useLeads } from "@/hooks/useLeads";
 import { PeriodFilter, PeriodKey, getPeriodRange } from "@/components/PeriodFilter";
 import { LeadsVolumeChart } from "@/components/LeadsVolumeChart";
 import { TemporalCards } from "@/components/TemporalCards";
+import { SalesRanking } from "@/components/SalesRanking";
 import { exportMonthlyReport } from "@/lib/exportReport";
 import { isWithinInterval, parseISO } from "date-fns";
 import { FileDown } from "lucide-react";
@@ -57,6 +58,8 @@ export default function Dashboard() {
       <TemporalCards leads={leads} />
 
       <LeadsVolumeChart leads={filtered} from={range.from} to={range.to} />
+
+      <SalesRanking leads={filtered} />
 
       <Card>
         <CardHeader>

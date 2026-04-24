@@ -1,10 +1,11 @@
 import { useState } from "react";
-import { LEAD_STATUSES, Lead, LeadStatus } from "@/lib/supabase";
+import { LEAD_STATUSES, Lead, LeadStatus, SALESPEOPLE } from "@/lib/supabase";
 import { useLeads } from "@/hooks/useLeads";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Plus, Phone, MessageCircle, Pencil, Flame, Tag } from "lucide-react";
+import { Plus, Phone, MessageCircle, Pencil, Flame, Tag, User } from "lucide-react";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { LeadDialog } from "./LeadDialog";
 import { cn } from "@/lib/utils";
 import {
@@ -90,6 +91,7 @@ interface LeadCardProps {
 }
 
 function LeadCardContent({ lead, onEdit, dragging, selected }: LeadCardProps) {
+  const { updateLead } = useLeads();
   const cooling = isCooling(lead);
   return (
     <Card
@@ -118,6 +120,15 @@ function LeadCardContent({ lead, onEdit, dragging, selected }: LeadCardProps) {
                 title={`Origem: ${lead.lead_source}`}
               >
                 <span aria-hidden>{SOURCE_EMOJI[lead.lead_source as string] ?? "🔗"}</span>
+              </span>
+            )}
+            {lead.assigned_to && (
+              <span
+                className="inline-flex items-center gap-0.5 rounded-full bg-primary/10 text-primary text-[10px] font-medium px-1.5 py-0.5"
+                title={`Vendedora: ${lead.assigned_to}`}
+              >
+                <User className="h-2.5 w-2.5" />
+                {lead.assigned_to}
               </span>
             )}
           </div>
@@ -157,6 +168,28 @@ function LeadCardContent({ lead, onEdit, dragging, selected }: LeadCardProps) {
               {Number(lead.sale_value).toLocaleString("pt-BR", { style: "currency", currency: "BRL" })}
             </Badge>
           ) : null}
+        </div>
+        <div
+          className="pt-1"
+          onPointerDown={(e) => e.stopPropagation()}
+          onClick={(e) => e.stopPropagation()}
+        >
+          <Select
+            value={lead.assigned_to || "__none__"}
+            onValueChange={(v) =>
+              updateLead(lead.id, { assigned_to: v === "__none__" ? null : v })
+            }
+          >
+            <SelectTrigger className="h-7 w-full text-[11px]">
+              <SelectValue placeholder="Atribuir vendedora" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="__none__" className="text-xs">— Sem vendedora —</SelectItem>
+              {SALESPEOPLE.map((s) => (
+                <SelectItem key={s} value={s} className="text-xs">{s}</SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
         </div>
         <div className="flex items-center justify-between gap-1 pt-1">
           {lead.phone ? (

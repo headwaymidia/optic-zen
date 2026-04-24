@@ -6,7 +6,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { INTEREST_TAGS, LEAD_SOURCES, LEAD_STATUSES, Lead, LeadPriority, LeadStatus, supabase } from "@/lib/supabase";
+import { INTEREST_TAGS, LEAD_SOURCES, LEAD_STATUSES, Lead, LeadPriority, LeadStatus, SALESPEOPLE, supabase } from "@/lib/supabase";
 import { useAuth } from "@/hooks/useAuth";
 import { toast } from "@/hooks/use-toast";
 import { Copy, Sparkles } from "lucide-react";
@@ -31,6 +31,7 @@ export function LeadDialog({ open, onOpenChange, lead, defaultStatus, onSaved }:
   const [saleValue, setSaleValue] = useState<string>("");
   const [leadSource, setLeadSource] = useState<string>("");
   const [interestTag, setInterestTag] = useState<string>("");
+  const [assignedTo, setAssignedTo] = useState<string>("");
   const [saving, setSaving] = useState(false);
 
   useEffect(() => {
@@ -43,6 +44,7 @@ export function LeadDialog({ open, onOpenChange, lead, defaultStatus, onSaved }:
       setSaleValue(lead?.sale_value != null ? String(lead.sale_value) : "");
       setLeadSource((lead?.lead_source as string) ?? "");
       setInterestTag((lead?.interest_tag as string) ?? "");
+      setAssignedTo(lead?.assigned_to ?? "");
     }
   }, [open, lead, defaultStatus]);
 
@@ -66,6 +68,7 @@ export function LeadDialog({ open, onOpenChange, lead, defaultStatus, onSaved }:
       sale_value: showSaleValue && saleValue ? Number(saleValue) : null,
       lead_source: leadSource || null,
       interest_tag: interestTag || null,
+      assigned_to: assignedTo || null,
       last_interaction: new Date().toISOString(),
     };
     const { error } = lead
@@ -179,6 +182,19 @@ export function LeadDialog({ open, onOpenChange, lead, defaultStatus, onSaved }:
                     </SelectContent>
                   </Select>
                 </div>
+              </div>
+
+              <div className="space-y-2">
+                <Label>Vendedora Responsável</Label>
+                <Select value={assignedTo || "__none__"} onValueChange={(v) => setAssignedTo(v === "__none__" ? "" : v)}>
+                  <SelectTrigger><SelectValue placeholder="Selecione" /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="__none__">— Nenhuma —</SelectItem>
+                    {SALESPEOPLE.map((s) => (
+                      <SelectItem key={s} value={s}>{s}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
               </div>
 
               {showSaleValue && (

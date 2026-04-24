@@ -1,5 +1,5 @@
 import { NavLink, useLocation } from "react-router-dom";
-import { LayoutDashboard, KanbanSquare, Users, Eye, MessageCircle } from "lucide-react";
+import { LayoutDashboard, KanbanSquare, Users, Eye, MessageCircle, ListChecks } from "lucide-react";
 import {
   Sidebar,
   SidebarContent,
@@ -16,6 +16,7 @@ const items = [
   { title: "Dashboard", url: "/", icon: LayoutDashboard },
   { title: "Atendimentos", url: "/whatsapp", icon: MessageCircle },
   { title: "Funil de vendas", url: "/funil", icon: KanbanSquare },
+  { title: "Tarefas", url: "/tarefas", icon: ListChecks },
   { title: "Contatos", url: "/contatos", icon: Users },
 ];
 
