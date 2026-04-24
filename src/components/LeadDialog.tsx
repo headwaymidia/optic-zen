@@ -210,6 +210,60 @@ export function LeadDialog({ open, onOpenChange, lead, defaultStatus, onSaved }:
                 </Select>
               </div>
 
+              <div className="pt-2 border-t">
+                <p className="text-[11px] uppercase tracking-wide text-muted-foreground mb-3 font-medium">
+                  Dados complementares
+                </p>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <div className="space-y-1.5">
+                    <Label htmlFor="lead-bairro" className="text-xs flex items-center gap-1.5">
+                      <MapPin className="h-3 w-3 text-muted-foreground" /> Bairro
+                    </Label>
+                    <Input
+                      id="lead-bairro"
+                      value={bairro}
+                      onChange={(e) => setBairro(e.target.value)}
+                      placeholder="Ex: Centro"
+                    />
+                  </div>
+                  <div className="space-y-1.5">
+                    <Label htmlFor="lead-cpf" className="text-xs flex items-center gap-1.5">
+                      <IdCard className="h-3 w-3 text-muted-foreground" /> CPF
+                    </Label>
+                    <Input
+                      id="lead-cpf"
+                      value={cpf}
+                      onChange={(e) => setCpf(maskCPF(e.target.value))}
+                      placeholder="000.000.000-00"
+                      inputMode="numeric"
+                      maxLength={14}
+                    />
+                  </div>
+                  <div className="space-y-1.5">
+                    <Label htmlFor="lead-nasc" className="text-xs flex items-center gap-1.5">
+                      <Cake className="h-3 w-3 text-muted-foreground" /> Data de nascimento
+                    </Label>
+                    <Input
+                      id="lead-nasc"
+                      type="date"
+                      value={dataNascimento}
+                      onChange={(e) => setDataNascimento(e.target.value)}
+                    />
+                  </div>
+                  <div className="space-y-1.5">
+                    <Label htmlFor="lead-exame" className="text-xs flex items-center gap-1.5">
+                      <Eye className="h-3 w-3 text-muted-foreground" /> Último exame
+                    </Label>
+                    <Input
+                      id="lead-exame"
+                      type="date"
+                      value={dataUltimoExame}
+                      onChange={(e) => setDataUltimoExame(e.target.value)}
+                    />
+                  </div>
+                </div>
+              </div>
+
               {showSaleValue && (
                 <div className="space-y-2 rounded-md border border-emerald-500/30 bg-emerald-50/50 dark:bg-emerald-950/20 p-3">
                   <Label htmlFor="sale_value" className="text-emerald-700 dark:text-emerald-300 font-medium">
