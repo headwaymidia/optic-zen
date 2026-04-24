@@ -1,4 +1,5 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
+import { useSearchParams } from "react-router-dom";
 import { useLeads } from "@/hooks/useLeads";
 import { Input } from "@/components/ui/input";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
@@ -25,6 +26,18 @@ export default function WhatsAppPage() {
   const { leads, loading } = useLeads();
   const [search, setSearch] = useState("");
   const [selectedId, setSelectedId] = useState<string | null>(null);
+  const [searchParams, setSearchParams] = useSearchParams();
+
+  // Deep-link: open chat for leadId from query string (e.g. coming from Tarefas)
+  useEffect(() => {
+    const leadIdFromUrl = searchParams.get("leadId");
+    if (leadIdFromUrl && leads.some((l) => l.id === leadIdFromUrl)) {
+      setSelectedId(leadIdFromUrl);
+      // Clean the URL so refresh doesn't keep re-selecting
+      searchParams.delete("leadId");
+      setSearchParams(searchParams, { replace: true });
+    }
+  }, [leads, searchParams, setSearchParams]);
 
   const filtered = useMemo(
     () => leads.filter((l) => l.name.toLowerCase().includes(search.toLowerCase())),
