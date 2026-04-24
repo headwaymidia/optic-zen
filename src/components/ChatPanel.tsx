@@ -55,43 +55,79 @@ export function ChatPanel({
 
   return (
     <div className="flex flex-col h-full bg-background min-w-0">
-      <header className="border-b bg-card px-3 py-2 flex items-center gap-2">
-        {onBack && (
-          <Button variant="ghost" size="icon" className="md:hidden" onClick={onBack}>
-            <ArrowLeft className="h-5 w-5" />
-          </Button>
-        )}
-        <Avatar className="h-9 w-9 shrink-0">
-          <AvatarFallback className="bg-primary/10 text-primary text-xs font-medium">
-            {initials(lead.name)}
-          </AvatarFallback>
-        </Avatar>
-        <div className="flex-1 min-w-0">
-          <div className="flex items-center gap-2">
-            <p className="font-semibold text-sm truncate">{lead.name}</p>
-            {lead.priority && (
-              <Badge variant={priorityVariant(lead.priority) as any} className="text-[10px] h-4 px-1.5">
-                {lead.priority}
-              </Badge>
-            )}
+      <header className="border-b bg-card px-3 py-2 space-y-2">
+        <div className="flex items-center gap-2">
+          {onBack && (
+            <Button variant="ghost" size="icon" className="md:hidden" onClick={onBack}>
+              <ArrowLeft className="h-5 w-5" />
+            </Button>
+          )}
+          <Avatar className="h-9 w-9 shrink-0">
+            <AvatarFallback className="bg-primary/10 text-primary text-xs font-medium">
+              {initials(lead.name)}
+            </AvatarFallback>
+          </Avatar>
+          <div className="flex-1 min-w-0">
+            <div className="flex items-center gap-2">
+              <p className="font-semibold text-sm truncate">{lead.name}</p>
+              {lead.priority && (
+                <Badge variant={priorityVariant(lead.priority) as any} className="text-[10px] h-4 px-1.5">
+                  {lead.priority}
+                </Badge>
+              )}
+            </div>
+            <p className="text-[11px] text-muted-foreground truncate">{lead.phone ?? "—"}</p>
           </div>
-          <p className="text-[11px] text-muted-foreground truncate">{lead.phone ?? "—"}</p>
+          <Select value={lead.status} onValueChange={(v) => updateStatus(lead.id, v as LeadStatus)}>
+            <SelectTrigger className="h-8 w-[150px] text-xs shrink-0">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              {LEAD_STATUSES.map((s) => (
+                <SelectItem key={s} value={s} className="text-xs">{s}</SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+          {onClose && (
+            <Button variant="ghost" size="icon" className="h-8 w-8 shrink-0" onClick={onClose} aria-label="Fechar chat">
+              <X className="h-4 w-4" />
+            </Button>
+          )}
         </div>
-        <Select value={lead.status} onValueChange={(v) => updateStatus(lead.id, v as LeadStatus)}>
-          <SelectTrigger className="h-8 w-[150px] text-xs shrink-0">
-            <SelectValue />
-          </SelectTrigger>
-          <SelectContent>
-            {LEAD_STATUSES.map((s) => (
-              <SelectItem key={s} value={s} className="text-xs">{s}</SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-        {onClose && (
-          <Button variant="ghost" size="icon" className="h-8 w-8 shrink-0" onClick={onClose} aria-label="Fechar chat">
-            <X className="h-4 w-4" />
-          </Button>
-        )}
+        <div className="flex items-center gap-2">
+          <Select
+            value={(lead.lead_source as string) || "__none__"}
+            onValueChange={(v) =>
+              updateLead(lead.id, { lead_source: v === "__none__" ? null : v })
+            }
+          >
+            <SelectTrigger className="h-7 flex-1 text-[11px]">
+              <SelectValue placeholder="Origem do Lead" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="__none__" className="text-xs">— Sem origem —</SelectItem>
+              {LEAD_SOURCES.map((s) => (
+                <SelectItem key={s} value={s} className="text-xs">{s}</SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+          <Select
+            value={(lead.interest_tag as string) || "__none__"}
+            onValueChange={(v) =>
+              updateLead(lead.id, { interest_tag: v === "__none__" ? null : v })
+            }
+          >
+            <SelectTrigger className="h-7 flex-1 text-[11px]">
+              <SelectValue placeholder="Tag de Interesse" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="__none__" className="text-xs">— Sem tag —</SelectItem>
+              {INTEREST_TAGS.map((t) => (
+                <SelectItem key={t} value={t} className="text-xs">{t}</SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
       </header>
 
       <div className="flex-1 overflow-y-auto bg-muted/40 px-3 py-4 space-y-2">
