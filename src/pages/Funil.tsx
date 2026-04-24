@@ -54,7 +54,10 @@ export default function Funil() {
       {/* Mobile: drawer */}
       {isMobile && (
         <Sheet open={!!selected} onOpenChange={(o) => !o && setSelected(null)}>
-          <SheetContent side="right" className="p-0 w-full sm:max-w-md">
+          <SheetContent
+            side="right"
+            className="p-0 w-screen max-w-full sm:max-w-full border-0"
+          >
             {selected && <ChatPanel lead={selected} onBack={() => setSelected(null)} />}
           </SheetContent>
         </Sheet>
