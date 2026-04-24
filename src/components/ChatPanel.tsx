@@ -116,7 +116,40 @@ export function ChatPanel({
         <Button variant="ghost" size="icon" type="button" className="h-8 w-8">
           <Paperclip className="h-4 w-4 text-muted-foreground" />
         </Button>
-        <Input placeholder="Digite sua mensagem..." className="flex-1 bg-muted/50 border-0 h-9" />
+        <Popover open={scriptsOpen} onOpenChange={setScriptsOpen}>
+          <PopoverTrigger asChild>
+            <Button
+              variant="ghost"
+              size="icon"
+              type="button"
+              className="h-8 w-8"
+              aria-label="Scripts rápidos"
+            >
+              <Zap className="h-4 w-4 text-muted-foreground" />
+            </Button>
+          </PopoverTrigger>
+          <PopoverContent side="top" align="start" className="w-64 p-1">
+            <div className="px-2 py-1.5 text-[11px] font-medium text-muted-foreground uppercase tracking-wide">
+              Scripts Rápidos
+            </div>
+            <button
+              type="button"
+              onClick={applyDominantScript}
+              className="w-full text-left rounded-md px-2 py-2 text-sm hover:bg-accent hover:text-accent-foreground transition-colors"
+            >
+              <div className="font-medium">Abordagem Dominante</div>
+              <div className="text-[11px] text-muted-foreground line-clamp-2 mt-0.5">
+                Convite para reunião do Método Ótica Dominante.
+              </div>
+            </button>
+          </PopoverContent>
+        </Popover>
+        <Input
+          value={message}
+          onChange={(e) => setMessage(e.target.value)}
+          placeholder="Digite sua mensagem..."
+          className="flex-1 bg-muted/50 border-0 h-9"
+        />
         <Button size="icon" className="h-9 w-9 bg-green-600 hover:bg-green-700 text-white">
           <Send className="h-4 w-4" />
         </Button>
