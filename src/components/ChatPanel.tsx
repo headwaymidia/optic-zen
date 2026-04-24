@@ -44,6 +44,8 @@ export function ChatPanel({
     setMessage(scripts[scriptType]);
     setScriptsOpen(false);
   };
+
+  const messages = [
     { from: "lead", text: "Olá, gostaria de agendar um exame de vista.", time: "10:30" },
     { from: "us", text: `Olá ${lead.name.split(" ")[0]}! Claro, temos horários disponíveis amanhã. 😊`, time: "10:32" },
     { from: "lead", text: "Tem horário pela manhã?", time: "10:34" },
