@@ -6,6 +6,7 @@ import { useLeads } from "@/hooks/useLeads";
 import { Lead } from "@/lib/supabase";
 import { Sheet, SheetContent } from "@/components/ui/sheet";
 import { useIsMobile } from "@/hooks/use-mobile";
+import { cn } from "@/lib/utils";
 
 export default function Funil() {
   const { leads, loading } = useLeads();
