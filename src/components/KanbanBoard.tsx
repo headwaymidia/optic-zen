@@ -4,7 +4,7 @@ import { useLeads } from "@/hooks/useLeads";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Plus, Phone, MessageCircle, Pencil, Flame, Tag, User } from "lucide-react";
+import { Plus, Phone, MessageCircle, Pencil, Flame, Tag, User, CalendarClock } from "lucide-react";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { LeadDialog } from "./LeadDialog";
 import { cn } from "@/lib/utils";
@@ -168,6 +168,15 @@ function LeadCardContent({ lead, onEdit, dragging, selected }: LeadCardProps) {
               {Number(lead.sale_value).toLocaleString("pt-BR", { style: "currency", currency: "BRL" })}
             </Badge>
           ) : null}
+          {lead.delivery_prediction && (
+            <span
+              className="inline-flex items-center gap-1 rounded-full bg-amber-100 text-amber-900 dark:bg-amber-900/40 dark:text-amber-100 text-[10px] font-medium px-2 py-0.5"
+              title={`Previsão de entrega${lead.lab_status ? ` · ${lead.lab_status}` : ""}`}
+            >
+              <CalendarClock className="h-2.5 w-2.5" />
+              {new Date(lead.delivery_prediction + "T00:00:00").toLocaleDateString("pt-BR", { day: "2-digit", month: "2-digit" })}
+            </span>
+          )}
         </div>
         <div
           className="pt-1"
