@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Lead, LEAD_STATUSES, LeadStatus } from "@/lib/supabase";
+import { INTEREST_TAGS, LEAD_SOURCES, Lead, LEAD_STATUSES, LeadStatus } from "@/lib/supabase";
 import { useLeads } from "@/hooks/useLeads";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -29,7 +29,7 @@ export function ChatPanel({
   onBack?: () => void;
   onClose?: () => void;
 }) {
-  const { updateStatus } = useLeads();
+  const { updateStatus, updateLead } = useLeads();
   const [message, setMessage] = useState("");
   const [scriptsOpen, setScriptsOpen] = useState(false);
 
