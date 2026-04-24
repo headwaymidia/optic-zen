@@ -22,8 +22,6 @@ export default function Funil() {
   const [selected, setSelected] = useState<Lead | null>(null);
   const isMobile = useIsMobile();
 
-  return (
-    <div className="h-full flex flex-col lg:flex-row min-h-0">
   const counts = useMemo(() => {
     const map = {} as Record<LeadStatus, number>;
     LEAD_STATUSES.forEach((s) => {
