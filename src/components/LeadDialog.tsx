@@ -6,7 +6,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { LEAD_STATUSES, Lead, LeadPriority, LeadStatus, supabase } from "@/lib/supabase";
+import { INTEREST_TAGS, LEAD_SOURCES, LEAD_STATUSES, Lead, LeadPriority, LeadStatus, supabase } from "@/lib/supabase";
 import { useAuth } from "@/hooks/useAuth";
 import { toast } from "@/hooks/use-toast";
 import { Copy, Sparkles } from "lucide-react";
@@ -29,6 +29,8 @@ export function LeadDialog({ open, onOpenChange, lead, defaultStatus, onSaved }:
   const [priority, setPriority] = useState<LeadPriority>("Média");
   const [notes, setNotes] = useState("");
   const [saleValue, setSaleValue] = useState<string>("");
+  const [leadSource, setLeadSource] = useState<string>("");
+  const [interestTag, setInterestTag] = useState<string>("");
   const [saving, setSaving] = useState(false);
 
   useEffect(() => {
@@ -39,6 +41,8 @@ export function LeadDialog({ open, onOpenChange, lead, defaultStatus, onSaved }:
       setPriority((lead?.priority as LeadPriority) ?? "Média");
       setNotes(lead?.notes ?? "");
       setSaleValue(lead?.sale_value != null ? String(lead.sale_value) : "");
+      setLeadSource((lead?.lead_source as string) ?? "");
+      setInterestTag((lead?.interest_tag as string) ?? "");
     }
   }, [open, lead, defaultStatus]);
 
@@ -60,6 +64,8 @@ export function LeadDialog({ open, onOpenChange, lead, defaultStatus, onSaved }:
       company_id: profile.company_id,
       responsible_id: lead?.responsible_id ?? user.id,
       sale_value: showSaleValue && saleValue ? Number(saleValue) : null,
+      lead_source: leadSource || null,
+      interest_tag: interestTag || null,
       last_interaction: new Date().toISOString(),
     };
     const { error } = lead
@@ -142,6 +148,33 @@ export function LeadDialog({ open, onOpenChange, lead, defaultStatus, onSaved }:
                     <SelectContent>
                       {PRIORITIES.map((p) => (
                         <SelectItem key={p} value={p}>{p}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-3">
+                <div className="space-y-2">
+                  <Label>Origem do Lead</Label>
+                  <Select value={leadSource || "__none__"} onValueChange={(v) => setLeadSource(v === "__none__" ? "" : v)}>
+                    <SelectTrigger><SelectValue placeholder="Selecione" /></SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="__none__">— Nenhuma —</SelectItem>
+                      {LEAD_SOURCES.map((s) => (
+                        <SelectItem key={s} value={s}>{s}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="space-y-2">
+                  <Label>Tag de Interesse</Label>
+                  <Select value={interestTag || "__none__"} onValueChange={(v) => setInterestTag(v === "__none__" ? "" : v)}>
+                    <SelectTrigger><SelectValue placeholder="Selecione" /></SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="__none__">— Nenhuma —</SelectItem>
+                      {INTEREST_TAGS.map((t) => (
+                        <SelectItem key={t} value={t}>{t}</SelectItem>
                       ))}
                     </SelectContent>
                   </Select>
