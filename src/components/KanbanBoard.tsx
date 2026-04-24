@@ -103,14 +103,24 @@ function LeadCardContent({ lead, onEdit, dragging, selected }: LeadCardProps) {
       <div className="space-y-2">
         <div className="flex items-start justify-between gap-2">
           <p className="text-sm font-medium truncate flex-1">{lead.name}</p>
-          {lead.priority && (
-            <Badge
-              variant={PRIORITY_VARIANT[lead.priority] ?? "outline"}
-              className="shrink-0 text-[10px] px-1.5 py-0"
-            >
-              {lead.priority}
-            </Badge>
-          )}
+          <div className="flex items-center gap-1 shrink-0">
+            {lead.priority && (
+              <Badge
+                variant={PRIORITY_VARIANT[lead.priority] ?? "outline"}
+                className="text-[10px] px-1.5 py-0"
+              >
+                {lead.priority}
+              </Badge>
+            )}
+            {lead.lead_source && (
+              <span
+                className="inline-flex items-center gap-0.5 text-[10px] text-muted-foreground"
+                title={`Origem: ${lead.lead_source}`}
+              >
+                <span aria-hidden>{SOURCE_EMOJI[lead.lead_source as string] ?? "🔗"}</span>
+              </span>
+            )}
+          </div>
         </div>
         {lead.phone && (
           <p className="flex items-center gap-1 text-xs text-muted-foreground">
@@ -119,6 +129,18 @@ function LeadCardContent({ lead, onEdit, dragging, selected }: LeadCardProps) {
           </p>
         )}
         <div className="flex flex-wrap gap-1">
+          {lead.interest_tag && (
+            <span
+              className={cn(
+                "inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[10px] font-medium",
+                INTEREST_TAG_STYLES[lead.interest_tag as string] ??
+                  "bg-muted text-muted-foreground"
+              )}
+            >
+              <Tag className="h-2.5 w-2.5" />
+              {lead.interest_tag}
+            </span>
+          )}
           {cooling && (
             <Badge className="bg-red-500 hover:bg-red-500 text-white text-[10px] px-1.5 py-0 gap-1">
               <Flame className="h-3 w-3" />
