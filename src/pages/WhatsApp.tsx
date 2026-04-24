@@ -1,11 +1,12 @@
 import { useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useLeads } from "@/hooks/useLeads";
-import { Lead } from "@/lib/supabase";
+import { Lead, LEAD_STATUSES, LeadStatus } from "@/lib/supabase";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { ArrowLeft, Paperclip, Search, Send, Smile } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -127,6 +128,7 @@ export default function WhatsAppPage() {
 }
 
 function ChatWindow({ lead, onBack, onViewFunnel }: { lead: Lead; onBack: () => void; onViewFunnel: () => void }) {
+  const { updateStatus } = useLeads();
   const messages = [
     { from: "lead", text: `Olá, gostaria de agendar um exame de vista.`, time: "10:30" },
     { from: "us", text: `Olá ${lead.name.split(" ")[0]}! Claro, temos horários disponíveis amanhã. 😊`, time: "10:32" },
@@ -137,7 +139,7 @@ function ChatWindow({ lead, onBack, onViewFunnel }: { lead: Lead; onBack: () => 
 
   return (
     <>
-      <header className="h-16 border-b bg-card px-4 flex items-center gap-3">
+      <header className="min-h-16 border-b bg-card px-4 py-2 flex flex-wrap items-center gap-3">
         <Button variant="ghost" size="icon" className="md:hidden" onClick={onBack}>
           <ArrowLeft className="h-5 w-5" />
         </Button>
@@ -155,11 +157,23 @@ function ChatWindow({ lead, onBack, onViewFunnel }: { lead: Lead; onBack: () => 
               </Badge>
             )}
           </div>
-          <p className="text-xs text-muted-foreground truncate">{lead.phone ?? "—"} · {lead.status}</p>
+          <p className="text-xs text-muted-foreground truncate">{lead.phone ?? "—"}</p>
         </div>
-        <Button variant="outline" size="sm" onClick={onViewFunnel}>
-          Ver no Funil
-        </Button>
+        <div className="flex items-center gap-2">
+          <Select value={lead.status} onValueChange={(v) => updateStatus(lead.id, v as LeadStatus)}>
+            <SelectTrigger className="h-9 w-[180px] text-xs">
+              <SelectValue placeholder="Status no Funil" />
+            </SelectTrigger>
+            <SelectContent>
+              {LEAD_STATUSES.map((s) => (
+                <SelectItem key={s} value={s} className="text-xs">{s}</SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+          <Button variant="outline" size="sm" onClick={onViewFunnel}>
+            Ver no Funil
+          </Button>
+        </div>
       </header>
 
       <div className="flex-1 overflow-y-auto bg-muted/40 px-4 py-6 space-y-3">
