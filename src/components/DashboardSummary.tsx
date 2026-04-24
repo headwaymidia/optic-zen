@@ -1,6 +1,6 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Users, Calendar, ShoppingBag, UserX, RefreshCw, DollarSign } from "lucide-react";
-import { useLeads } from "@/hooks/useLeads";
+import { Lead } from "@/lib/supabase";
 
 const SUMMARY = [
   { key: "total", label: "Total de Leads", icon: Users, color: "text-primary" },
@@ -14,8 +14,9 @@ function formatBRL(value: number) {
   return value.toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
 }
 
-export function DashboardSummary() {
-  const { total, countByStatus, leads, loading } = useLeads();
+export function DashboardSummary({ leads, loading }: { leads: Lead[]; loading: boolean }) {
+  const total = leads.length;
+  const countByStatus = (s: string) => leads.filter((l) => l.status === s).length;
 
   const revenue = leads
     .filter((l) => l.status === "Compareceu e Comprou")
@@ -38,14 +39,14 @@ export function DashboardSummary() {
             {loading ? "—" : formatBRL(revenue)}
           </div>
           <p className="text-xs text-emerald-700/70 dark:text-emerald-300/70 mt-1">
-            Soma dos leads em "Compareceu e Comprou"
+            Soma dos leads em "Compareceu e Comprou" no período
           </p>
         </CardContent>
       </Card>
 
       <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5">
         {SUMMARY.map((s) => {
-          const value = s.key === "total" ? total : countByStatus(s.key as any);
+          const value = s.key === "total" ? total : countByStatus(s.key);
           return (
             <Card key={s.key}>
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
