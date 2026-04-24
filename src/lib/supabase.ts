@@ -47,6 +47,17 @@ export const INTEREST_TAGS = [
 ] as const;
 export type InterestTag = (typeof INTEREST_TAGS)[number];
 
+export interface Prescription {
+  esferico_od?: string | null;
+  cilindrico_od?: string | null;
+  eixo_od?: string | null;
+  esferico_oe?: string | null;
+  cilindrico_oe?: string | null;
+  eixo_oe?: string | null;
+  adicao?: string | null;
+  dnp?: string | null;
+}
+
 export interface Lead {
   id: string;
   company_id: string;
@@ -60,6 +71,7 @@ export interface Lead {
   last_interaction: string | null;
   lead_source: LeadSource | string | null;
   interest_tag: InterestTag | string | null;
+  prescription: Prescription | null;
   created_at: string;
   updated_at: string;
 }
