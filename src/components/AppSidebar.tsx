@@ -74,9 +74,9 @@ export function AppSidebar() {
   const initials = getInitials(profile?.name || displayEmail);
 
   return (
-    <Sidebar collapsible="icon" className="border-r border-slate-100 bg-white">
-      <SidebarContent className="flex flex-col h-full bg-white">
-        <div className="flex items-center gap-3 px-4 py-5 border-b border-slate-100">
+    <Sidebar collapsible="icon" className="border-r border-slate-100 bg-white transition-all duration-300 ease-in-out">
+      <SidebarContent className="flex flex-col h-full bg-white overflow-x-hidden">
+        <div className={cn("flex items-center gap-3 py-5 border-b border-slate-100", collapsed ? "px-2 justify-center" : "px-4")}>
           <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-primary to-primary/80 text-primary-foreground shadow-sm">
             <Eye className="h-5 w-5" />
           </div>
@@ -89,14 +89,14 @@ export function AppSidebar() {
         </div>
 
         {/* Global +Novo Lead CTA */}
-        <div className={cn("px-3 pt-3", collapsed && "px-2")}>
+        <div className={cn("pt-3", collapsed ? "px-2 flex justify-center" : "px-3")}>
           {collapsed ? (
             <Tooltip>
               <TooltipTrigger asChild>
                 <Button
                   size="icon"
                   onClick={() => setNewLeadOpen(true)}
-                  className="h-10 w-10 rounded-xl bg-primary hover:bg-primary/90 text-primary-foreground shadow-sm"
+                  className="h-10 w-10 p-0 justify-center rounded-xl bg-primary hover:bg-primary/90 text-primary-foreground shadow-sm"
                   aria-label="Novo Lead"
                 >
                   <Plus className="h-4 w-4" />
@@ -115,24 +115,42 @@ export function AppSidebar() {
           )}
         </div>
 
-        <SidebarGroup className="px-2 py-3 flex-1">
-          <SidebarGroupLabel className="text-[11px] font-bold uppercase tracking-wider text-slate-400 px-2 mb-1">Menu</SidebarGroupLabel>
+        <SidebarGroup className={cn("py-3 flex-1", collapsed ? "px-1" : "px-2")}>
+          {!collapsed && (
+            <SidebarGroupLabel className="text-[11px] font-bold uppercase tracking-wider text-slate-400 px-2 mb-1">Menu</SidebarGroupLabel>
+          )}
           <SidebarGroupContent>
             <SidebarMenu className="gap-1">
-              {items.map((item) => (
-                <SidebarMenuItem key={item.title}>
+              {items.map((item) => {
+                const isActive = location.pathname === item.url;
+                const button = (
                   <SidebarMenuButton
                     asChild
-                    isActive={location.pathname === item.url}
-                    className="h-10 px-3 rounded-xl text-slate-600 hover:text-slate-900 hover:bg-slate-50 data-[active=true]:bg-primary/10 data-[active=true]:text-primary data-[active=true]:font-semibold transition-all"
+                    isActive={isActive}
+                    className={cn(
+                      "h-10 rounded-xl text-slate-600 hover:text-slate-900 hover:bg-slate-50 data-[active=true]:bg-primary/10 data-[active=true]:text-primary data-[active=true]:font-semibold transition-all",
+                      collapsed ? "px-0 justify-center w-10 mx-auto" : "px-3"
+                    )}
                   >
-                    <NavLink to={item.url} end>
+                    <NavLink to={item.url} end className={cn(collapsed && "justify-center w-full")}>
                       <item.icon className="h-4.5 w-4.5" />
                       {!collapsed && <span className="text-sm font-medium">{item.title}</span>}
                     </NavLink>
                   </SidebarMenuButton>
-                </SidebarMenuItem>
-              ))}
+                );
+                return (
+                  <SidebarMenuItem key={item.title}>
+                    {collapsed ? (
+                      <Tooltip>
+                        <TooltipTrigger asChild>{button}</TooltipTrigger>
+                        <TooltipContent side="right">{item.title}</TooltipContent>
+                      </Tooltip>
+                    ) : (
+                      button
+                    )}
+                  </SidebarMenuItem>
+                );
+              })}
             </SidebarMenu>
           </SidebarGroupContent>
         </SidebarGroup>
@@ -189,24 +207,37 @@ export function AppSidebar() {
                 type="button"
                 className={cn(
                   "w-full flex items-center gap-3 rounded-lg p-2 hover:bg-slate-100 transition-colors cursor-pointer text-left",
-                  collapsed && "justify-center"
+                  collapsed && "justify-center px-0"
                 )}
                 aria-label="Menu do usuário"
               >
-                <Avatar className="h-8 w-8 shrink-0">
-                  <AvatarFallback className="bg-slate-900 text-white text-xs font-semibold">
-                    {initials}
-                  </AvatarFallback>
-                </Avatar>
-                {!collapsed && (
-                  <div className="min-w-0 flex-1">
-                    <p className="text-sm font-medium text-slate-900 truncate leading-tight">
-                      {displayName}
-                    </p>
-                    <p className="text-xs text-slate-500 truncate mt-0.5">
-                      {displayEmail}
-                    </p>
-                  </div>
+                {collapsed ? (
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <Avatar className="h-8 w-8 shrink-0">
+                        <AvatarFallback className="bg-slate-900 text-white text-xs font-semibold">
+                          {initials}
+                        </AvatarFallback>
+                      </Avatar>
+                    </TooltipTrigger>
+                    <TooltipContent side="right">{displayName}</TooltipContent>
+                  </Tooltip>
+                ) : (
+                  <>
+                    <Avatar className="h-8 w-8 shrink-0">
+                      <AvatarFallback className="bg-slate-900 text-white text-xs font-semibold">
+                        {initials}
+                      </AvatarFallback>
+                    </Avatar>
+                    <div className="min-w-0 flex-1">
+                      <p className="text-sm font-medium text-slate-900 truncate leading-tight">
+                        {displayName}
+                      </p>
+                      <p className="text-xs text-slate-500 truncate mt-0.5">
+                        {displayEmail}
+                      </p>
+                    </div>
+                  </>
                 )}
               </button>
             </DropdownMenuTrigger>
