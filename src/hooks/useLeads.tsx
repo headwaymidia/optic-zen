@@ -8,6 +8,7 @@ interface LeadsContextValue {
   loading: boolean;
   refetch: () => Promise<void>;
   updateStatus: (leadId: string, status: LeadStatus) => Promise<void>;
+  updateLead: (leadId: string, patch: Partial<Lead>) => Promise<void>;
   countByStatus: (status: LeadStatus) => number;
   total: number;
 }
@@ -66,13 +67,22 @@ export function LeadsProvider({ children }: { children: ReactNode }) {
     }
   }, [refetch]);
 
+  const updateLead = useCallback(async (leadId: string, patch: Partial<Lead>) => {
+    setLeads((prev) => prev.map((l) => (l.id === leadId ? { ...l, ...patch } : l)));
+    const { error } = await supabase.from("leads").update(patch).eq("id", leadId);
+    if (error) {
+      toast({ title: "Erro ao atualizar lead", description: error.message, variant: "destructive" });
+      refetch();
+    }
+  }, [refetch]);
+
   const countByStatus = useCallback(
     (status: LeadStatus) => leads.filter((l) => l.status === status).length,
     [leads]
   );
 
   return (
-    <LeadsContext.Provider value={{ leads, loading, refetch, updateStatus, countByStatus, total: leads.length }}>
+    <LeadsContext.Provider value={{ leads, loading, refetch, updateStatus, updateLead, countByStatus, total: leads.length }}>
       {children}
     </LeadsContext.Provider>
   );
