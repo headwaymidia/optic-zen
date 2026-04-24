@@ -169,6 +169,28 @@ function LeadCardContent({ lead, onEdit, dragging, selected }: LeadCardProps) {
             </Badge>
           ) : null}
         </div>
+        <div
+          className="pt-1"
+          onPointerDown={(e) => e.stopPropagation()}
+          onClick={(e) => e.stopPropagation()}
+        >
+          <Select
+            value={lead.assigned_to || "__none__"}
+            onValueChange={(v) =>
+              updateLead(lead.id, { assigned_to: v === "__none__" ? null : v })
+            }
+          >
+            <SelectTrigger className="h-7 w-full text-[11px]">
+              <SelectValue placeholder="Atribuir vendedora" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="__none__" className="text-xs">— Sem vendedora —</SelectItem>
+              {SALESPEOPLE.map((s) => (
+                <SelectItem key={s} value={s} className="text-xs">{s}</SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
         <div className="flex items-center justify-between gap-1 pt-1">
           {lead.phone ? (
             <Button
