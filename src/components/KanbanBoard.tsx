@@ -235,6 +235,12 @@ function LeadCardContent({ lead, onEdit, dragging, selected, cadenceHighlight }:
               Aguardando Follow-up
             </Badge>
           )}
+          {awaitingReply && !cadenceHighlight && (
+            <Badge className="bg-emerald-100 hover:bg-emerald-200 text-emerald-900 dark:bg-emerald-900/40 dark:text-emerald-100 text-[10px] px-2 py-0.5 gap-1 rounded-full border-0 font-semibold">
+              <MessageCircle className="h-3 w-3" />
+              Urgência de Atendimento
+            </Badge>
+          )}
           {lead.status === "Repescagem" && (
             <Badge className="bg-indigo-50 hover:bg-indigo-100 text-indigo-600 text-[10px] px-2 py-0.5 rounded-full border-0 font-semibold">
               Repescagem
