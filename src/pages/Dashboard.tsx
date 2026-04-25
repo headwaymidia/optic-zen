@@ -15,6 +15,7 @@ import { PieChart, Pie, Cell, Tooltip as RTooltip, ResponsiveContainer } from "r
 
 const STATUS_COLORS: Record<string, string> = {
   "Novo Lead": "#3B82F6",
+  "Em Atendimento": "#22D3EE",
   "Aguardando Resposta": "#F59E0B",
   "Agendou Exame": "#8B5CF6",
   "Não Compareceu": "#F97316",
