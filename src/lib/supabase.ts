@@ -93,6 +93,8 @@ export interface Lead {
   data_nascimento: string | null;
   data_ultimo_exame: string | null;
   follow_up_date: string | null;
+  follow_up_count: number;
+  last_follow_up_at: string | null;
   created_at: string;
   updated_at: string;
 }
