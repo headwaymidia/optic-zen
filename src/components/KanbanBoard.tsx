@@ -490,6 +490,7 @@ export function KanbanBoard({
                       onEdit={openEdit}
                       onSelect={onSelectLead}
                       selected={selectedLeadId === lead.id}
+                      cadenceHighlight={cadenceActive}
                     />
                   </div>
                 ))}
