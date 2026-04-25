@@ -334,7 +334,17 @@ function DroppableColumn({
   );
 }
 
-export function KanbanBoard({ onSelectLead, selectedLeadId }: { onSelectLead?: (l: Lead) => void; selectedLeadId?: string | null } = {}) {
+export function KanbanBoard({
+  onSelectLead,
+  selectedLeadId,
+  search = "",
+  salesFilter = null,
+}: {
+  onSelectLead?: (l: Lead) => void;
+  selectedLeadId?: string | null;
+  search?: string;
+  salesFilter?: string | null;
+} = {}) {
   const { leads, loading, refetch, updateStatus } = useLeads();
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editingLead, setEditingLead] = useState<Lead | null>(null);
@@ -375,6 +385,20 @@ export function KanbanBoard({ onSelectLead, selectedLeadId }: { onSelectLead?: (
 
   const activeLead = activeId ? leads.find((l) => l.id === activeId) : null;
 
+  const term = search.trim().toLowerCase();
+  const onlyDigits = term.replace(/\D/g, "");
+  const hasFilters = term.length > 0 || !!salesFilter;
+  const filteredLeads = leads.filter((l) => {
+    if (salesFilter && (l.assigned_to ?? "") !== salesFilter) return false;
+    if (term) {
+      const nameMatch = l.name?.toLowerCase().includes(term);
+      const phoneDigits = (l.phone ?? "").replace(/\D/g, "");
+      const phoneMatch = onlyDigits.length > 0 && phoneDigits.includes(onlyDigits);
+      if (!nameMatch && !phoneMatch) return false;
+    }
+    return true;
+  });
+
   return (
     <>
       <DndContext
@@ -388,7 +412,7 @@ export function KanbanBoard({ onSelectLead, selectedLeadId }: { onSelectLead?: (
           style={{ WebkitOverflowScrolling: "touch" }}
         >
           {LEAD_STATUSES.map((status) => {
-            const colLeads = leads
+            const colLeads = filteredLeads
               .filter((l) => l.status === status)
               .sort((a, b) => {
                 if (status === "Agendou Exame") {
@@ -408,17 +432,18 @@ export function KanbanBoard({ onSelectLead, selectedLeadId }: { onSelectLead?: (
                 onAdd={() => openNew(status)}
               >
                 {colLeads.map((lead) => (
-                  <DraggableLeadCard
-                    key={lead.id}
-                    lead={lead}
-                    onEdit={openEdit}
-                    onSelect={onSelectLead}
-                    selected={selectedLeadId === lead.id}
-                  />
+                  <div key={lead.id} className="animate-in fade-in duration-200">
+                    <DraggableLeadCard
+                      lead={lead}
+                      onEdit={openEdit}
+                      onSelect={onSelectLead}
+                      selected={selectedLeadId === lead.id}
+                    />
+                  </div>
                 ))}
                 {colLeads.length === 0 && (
-                  <p className="px-2 py-6 text-center text-xs text-muted-foreground">
-                    Nenhum lead
+                  <p className="px-2 py-6 text-center text-xs text-muted-foreground animate-in fade-in duration-200">
+                    {hasFilters ? "Nenhum lead encontrado com estes filtros." : "Nenhum lead"}
                   </p>
                 )}
               </DroppableColumn>

@@ -2,10 +2,14 @@ import { useMemo, useState } from "react";
 import { KanbanBoard } from "@/components/KanbanBoard";
 import { ChatPanel } from "@/components/ChatPanel";
 import { useLeads } from "@/hooks/useLeads";
-import { Lead, LEAD_STATUSES, LeadStatus } from "@/lib/supabase";
+import { Lead, LEAD_STATUSES, LeadStatus, SALESPEOPLE } from "@/lib/supabase";
 import { Sheet, SheetContent } from "@/components/ui/sheet";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { cn } from "@/lib/utils";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Search, X } from "lucide-react";
 
 const STATUS_DOT_COLORS: Record<LeadStatus, string> = {
   "Novo Lead": "bg-blue-500",
@@ -17,18 +21,43 @@ const STATUS_DOT_COLORS: Record<LeadStatus, string> = {
   Repescagem: "bg-indigo-500",
 };
 
+const ALL_SALES = "__all__";
+
 export default function Funil() {
   const { leads, loading } = useLeads();
   const [selected, setSelected] = useState<Lead | null>(null);
   const isMobile = useIsMobile();
 
+  const [search, setSearch] = useState("");
+  const [salesFilter, setSalesFilter] = useState<string>(ALL_SALES);
+
+  const hasFilters = search.trim().length > 0 || salesFilter !== ALL_SALES;
+
+  function clearFilters() {
+    setSearch("");
+    setSalesFilter(ALL_SALES);
+  }
+
+  // Conta totais filtrados (reflete o que o Kanban exibe)
   const counts = useMemo(() => {
+    const term = search.trim().toLowerCase();
+    const onlyDigits = term.replace(/\D/g, "");
+    const filtered = leads.filter((l) => {
+      if (salesFilter !== ALL_SALES && (l.assigned_to ?? "") !== salesFilter) return false;
+      if (term) {
+        const nameMatch = l.name?.toLowerCase().includes(term);
+        const phoneDigits = (l.phone ?? "").replace(/\D/g, "");
+        const phoneMatch = onlyDigits.length > 0 && phoneDigits.includes(onlyDigits);
+        if (!nameMatch && !phoneMatch) return false;
+      }
+      return true;
+    });
     const map = {} as Record<LeadStatus, number>;
     LEAD_STATUSES.forEach((s) => {
-      map[s] = leads.filter((l) => l.status === s).length;
+      map[s] = filtered.filter((l) => l.status === s).length;
     });
     return map;
-  }, [leads]);
+  }, [leads, search, salesFilter]);
 
   return (
     <div className="h-full flex flex-col lg:flex-row min-h-0">
@@ -60,10 +89,48 @@ export default function Funil() {
             ))}
           </div>
 
+          {/* Toolbar: busca + filtro de vendedora */}
+          <div className="flex flex-col sm:flex-row gap-2 sm:items-center">
+            <div className="relative flex-1 min-w-0">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400 pointer-events-none" />
+              <Input
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                placeholder="Pesquisar por nome ou telefone..."
+                className="pl-9 h-9 bg-white border-slate-200"
+              />
+            </div>
+            <Select value={salesFilter} onValueChange={setSalesFilter}>
+              <SelectTrigger className="h-9 w-full sm:w-56 bg-white border-slate-200">
+                <SelectValue placeholder="Vendedora" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value={ALL_SALES}>Todas as Vendedoras</SelectItem>
+                {SALESPEOPLE.map((s) => (
+                  <SelectItem key={s} value={s}>{s}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            {hasFilters && (
+              <Button
+                type="button"
+                variant="ghost"
+                size="sm"
+                onClick={clearFilters}
+                className="h-9 gap-1.5 text-slate-500 hover:text-slate-900 animate-in fade-in duration-200"
+              >
+                <X className="h-4 w-4" />
+                Limpar
+              </Button>
+            )}
+          </div>
+
           <div className="flex-1 min-h-0 -mx-4 sm:-mx-6">
             <KanbanBoard
               onSelectLead={setSelected}
               selectedLeadId={selected?.id ?? null}
+              search={search}
+              salesFilter={salesFilter === ALL_SALES ? null : salesFilter}
             />
           </div>
         </div>
