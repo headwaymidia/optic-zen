@@ -416,3 +416,20 @@ export function ChatPanel({
     </div>
   );
 }
+
+function ChecklistBadge({ ok }: { ok: boolean }) {
+  if (ok) {
+    return (
+      <span className="ml-auto inline-flex items-center gap-1 rounded-full bg-emerald-100 dark:bg-emerald-900/40 text-emerald-700 dark:text-emerald-200 px-2 py-0.5 text-[10px] font-semibold">
+        <CheckCircle2 className="h-3 w-3" />
+        Ok
+      </span>
+    );
+  }
+  return (
+    <span className="ml-auto inline-flex items-center gap-1 rounded-full bg-amber-100 dark:bg-amber-900/40 text-amber-800 dark:text-amber-100 px-2 py-0.5 text-[10px] font-semibold">
+      <AlertCircle className="h-3 w-3" />
+      Pendente
+    </span>
+  );
+}
