@@ -11,7 +11,7 @@ import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/
 import { PrescriptionForm } from "@/components/PrescriptionForm";
 import { LabOrderForm } from "@/components/LabOrderForm";
 import { StageGateDialog, isGatedStatus, type StageGate } from "@/components/StageGateDialog";
-import { ArrowLeft, Paperclip, Send, Smile, X, Zap, Eye, CalendarClock, Sparkles, CheckCircle2, AlertCircle, Check } from "lucide-react";
+import { ArrowLeft, Paperclip, Send, Smile, X, Zap, Eye, CalendarClock, Sparkles, CheckCircle2, AlertCircle } from "lucide-react";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { cn } from "@/lib/utils";
 import {
@@ -177,10 +177,7 @@ export function ChatPanel({
                 }
               >
                 <SelectTrigger className={cn(baseTrigger, sourceOk ? okTrigger : pendingTrigger)}>
-                  <span className="flex items-center gap-1 truncate">
-                    {sourceOk && <Check className="h-3 w-3 shrink-0" />}
-                    <SelectValue placeholder="Origem do Lead" />
-                  </span>
+                  <SelectValue placeholder="Origem do Lead" />
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="__none__" className="text-xs">— Sem origem —</SelectItem>
@@ -196,10 +193,7 @@ export function ChatPanel({
                 }
               >
                 <SelectTrigger className={cn(baseTrigger, interestOk ? okTrigger : pendingTrigger)}>
-                  <span className="flex items-center gap-1 truncate">
-                    {interestOk && <Check className="h-3 w-3 shrink-0" />}
-                    <SelectValue placeholder="Tipo de Atendimento" />
-                  </span>
+                  <SelectValue placeholder="Tipo de Atendimento" />
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="__none__" className="text-xs">— Sem tag —</SelectItem>
@@ -215,10 +209,7 @@ export function ChatPanel({
                 }
               >
                 <SelectTrigger className={cn(baseTrigger, assignedOk ? okTrigger : pendingTrigger)}>
-                  <span className="flex items-center gap-1 truncate">
-                    {assignedOk && <Check className="h-3 w-3 shrink-0" />}
-                    <SelectValue placeholder="Vendedora" />
-                  </span>
+                  <SelectValue placeholder="Vendedora" />
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="__none__" className="text-xs">— Sem vendedora —</SelectItem>
