@@ -73,17 +73,17 @@ export default function Funil() {
           </div>
 
           {/* Pipeline overview — micro-cards por etapa */}
-          <div className="flex gap-3 overflow-x-auto pb-2 -mx-1 px-1">
+          <div className="flex gap-3 overflow-x-auto pb-2 -mx-1 px-1 thin-scrollbar">
             {LEAD_STATUSES.map((s) => (
               <div
                 key={s}
-                className="shrink-0 min-w-[140px] flex-1 bg-white border border-slate-100 rounded-lg px-4 py-2 shadow-[0_1px_2px_rgba(0,0,0,0.02)] hover:shadow-sm transition-shadow"
+                className="shrink-0 min-w-[120px] w-[120px] bg-white border border-slate-100 rounded-lg px-3 py-2 shadow-[0_1px_2px_rgba(0,0,0,0.02)] hover:shadow-sm transition-shadow"
               >
                 <div className="flex items-center gap-1.5">
                   <span className={cn("h-2 w-2 rounded-full shrink-0", STATUS_DOT_COLORS[s])} />
-                  <span className="text-xs text-slate-500 truncate">{s}</span>
+                  <span className="text-[10px] text-slate-500 truncate">{s}</span>
                 </div>
-                <p className="text-lg font-bold text-slate-800 tabular-nums mt-0.5">
+                <p className="text-base font-bold text-slate-800 tabular-nums mt-0.5">
                   {loading ? "—" : counts[s]}
                 </p>
               </div>
