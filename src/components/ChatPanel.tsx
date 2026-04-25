@@ -10,9 +10,14 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { PrescriptionForm } from "@/components/PrescriptionForm";
 import { LabOrderForm } from "@/components/LabOrderForm";
-import { ArrowLeft, Paperclip, Send, Smile, X, Zap, Eye, CalendarClock } from "lucide-react";
+import { ArrowLeft, Paperclip, Send, Smile, X, Zap, Eye, CalendarClock, Sparkles } from "lucide-react";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { cn } from "@/lib/utils";
+import {
+  getFollowUpDef,
+  getPendingFollowUpLevel,
+  MAX_FOLLOW_UPS,
+} from "@/lib/followUpScripts";
 
 function initials(name: string) {
   return name.split(" ").map((p) => p[0]).slice(0, 2).join("").toUpperCase();
@@ -46,10 +51,40 @@ export function ChatPanel({
     }
   };
 
+  // Cadência de Vendas — detecta se há follow-up pendente
+  const isCadenceStatus =
+    lead.status === "Em Atendimento" || lead.status === "Aguardando Resposta";
+  const pendingLevel = isCadenceStatus
+    ? getPendingFollowUpLevel(
+        lead.follow_up_count ?? 0,
+        lead.last_follow_up_at ?? null,
+        lead.updated_at || lead.created_at
+      )
+    : null;
+  const pendingDef = pendingLevel ? getFollowUpDef(pendingLevel) : null;
+  const reachedMax = (lead.follow_up_count ?? 0) >= MAX_FOLLOW_UPS;
+
   const handleSend = () => {
     if (!message.trim()) return;
     promoteToInAttendance();
     // (envio real da mensagem ficaria aqui)
+    setMessage("");
+  };
+
+  // Pré-preenche o input com o script do FU pendente
+  const handleApplyFollowUpScript = () => {
+    if (!pendingDef) return;
+    setMessage(pendingDef.buildScript(firstName));
+  };
+
+  // Envia o follow-up: incrementa contador + marca timestamp
+  const handleSendFollowUp = async () => {
+    if (!message.trim() || !pendingDef) return;
+    promoteToInAttendance();
+    await updateLead(lead.id, {
+      follow_up_count: (lead.follow_up_count ?? 0) + 1,
+      last_follow_up_at: new Date().toISOString(),
+    });
     setMessage("");
   };
 
