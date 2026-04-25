@@ -10,6 +10,7 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { PrescriptionForm } from "@/components/PrescriptionForm";
 import { LabOrderForm } from "@/components/LabOrderForm";
+import { StageGateDialog, isGatedStatus, type StageGate } from "@/components/StageGateDialog";
 import { ArrowLeft, Paperclip, Send, Smile, X, Zap, Eye, CalendarClock, Sparkles } from "lucide-react";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { cn } from "@/lib/utils";
@@ -41,6 +42,16 @@ export function ChatPanel({
   const { updateStatus, updateLead } = useLeads();
   const [message, setMessage] = useState("");
   const [scriptsOpen, setScriptsOpen] = useState(false);
+  const [gateStatus, setGateStatus] = useState<StageGate | null>(null);
+
+  const handleStatusChange = (next: LeadStatus) => {
+    if (next === lead.status) return;
+    if (isGatedStatus(next)) {
+      setGateStatus(next);
+      return;
+    }
+    updateStatus(lead.id, next);
+  };
 
   const firstName = lead.name.split(" ")[0];
 
@@ -132,7 +143,7 @@ export function ChatPanel({
             </div>
             <p className="text-[11px] text-muted-foreground truncate">{lead.phone ?? "—"}</p>
           </div>
-          <Select value={lead.status} onValueChange={(v) => updateStatus(lead.id, v as LeadStatus)}>
+          <Select value={lead.status} onValueChange={(v) => handleStatusChange(v as LeadStatus)}>
             <SelectTrigger className="h-8 w-[110px] sm:w-[150px] text-xs shrink-0">
               <SelectValue />
             </SelectTrigger>
@@ -372,6 +383,16 @@ export function ChatPanel({
           {pendingDef && <span className="text-xs font-semibold">Enviar FU{pendingLevel}</span>}
         </Button>
       </footer>
+      <StageGateDialog
+        open={!!gateStatus}
+        lead={lead}
+        targetStatus={gateStatus}
+        onCancel={() => setGateStatus(null)}
+        onConfirm={async (patch) => {
+          await updateLead(lead.id, patch);
+          setGateStatus(null);
+        }}
+      />
     </div>
   );
 }

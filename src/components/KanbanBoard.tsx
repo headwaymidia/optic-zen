@@ -7,6 +7,7 @@ import { Badge } from "@/components/ui/badge";
 import { Plus, Phone, MessageCircle, Pencil, Flame, Tag, User, CalendarClock, Calendar, Clock, Info, AlarmClock } from "lucide-react";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { LeadDialog } from "./LeadDialog";
+import { StageGateDialog, isGatedStatus, type StageGate } from "./StageGateDialog";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { cn } from "@/lib/utils";
 import { FOLLOW_UP_INTERVAL_HOURS, MAX_FOLLOW_UPS } from "@/lib/followUpScripts";
@@ -422,11 +423,13 @@ export function KanbanBoard({
   salesFilter?: string | null;
   cadenceFilter?: CadenceFilter;
 } = {}) {
-  const { leads, loading, refetch, updateStatus } = useLeads();
+  const { leads, loading, refetch, updateStatus, updateLead } = useLeads();
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editingLead, setEditingLead] = useState<Lead | null>(null);
   const [defaultStatus, setDefaultStatus] = useState<LeadStatus>("Novo Lead");
   const [activeId, setActiveId] = useState<string | null>(null);
+  const [gateLead, setGateLead] = useState<Lead | null>(null);
+  const [gateStatus, setGateStatus] = useState<StageGate | null>(null);
 
   const sensors = useSensors(
     useSensor(MouseSensor, { activationConstraint: { distance: 6 } }),
@@ -453,7 +456,15 @@ export function KanbanBoard({
     const overId = e.over?.id;
     if (!overId || typeof overId !== "string" || !overId.startsWith("col-")) return;
     const newStatus = overId.slice(4) as LeadStatus;
-    await updateStatus(String(e.active.id), newStatus);
+    const leadId = String(e.active.id);
+    const lead = leads.find((l) => l.id === leadId) ?? null;
+    if (!lead || lead.status === newStatus) return;
+    if (isGatedStatus(newStatus)) {
+      setGateLead(lead);
+      setGateStatus(newStatus);
+      return;
+    }
+    await updateStatus(leadId, newStatus);
   }
 
   if (loading) {
@@ -543,6 +554,21 @@ export function KanbanBoard({
         lead={editingLead}
         defaultStatus={defaultStatus}
         onSaved={refetch}
+      />
+      <StageGateDialog
+        open={!!gateLead && !!gateStatus}
+        lead={gateLead}
+        targetStatus={gateStatus}
+        onCancel={() => {
+          setGateLead(null);
+          setGateStatus(null);
+        }}
+        onConfirm={async (patch) => {
+          if (!gateLead) return;
+          await updateLead(gateLead.id, patch);
+          setGateLead(null);
+          setGateStatus(null);
+        }}
       />
     </>
   );
