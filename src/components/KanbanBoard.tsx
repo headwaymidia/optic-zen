@@ -76,6 +76,36 @@ function isAging(lead: Lead): boolean {
   return Date.now() - created > AGING_THRESHOLD_MS;
 }
 
+// === Cadência de Follow-up ===
+// Aba "FU N" = leads com follow_up_count = N - 1 (0..4) e inatividade > 8h.
+// Status excluídos: já fora do funil de cadência ativa.
+const FU_EXCLUDED_STATUSES = new Set<LeadStatus>([
+  "Compareceu e Comprou",
+  "Compareceu e Não Comprou",
+]);
+
+export type CadenceFilter = "all" | 1 | 2 | 3 | 4 | 5;
+
+export function getPendingFu(lead: Lead): 1 | 2 | 3 | 4 | 5 | null {
+  if (FU_EXCLUDED_STATUSES.has(lead.status)) return null;
+  const count = lead.follow_up_count ?? 0;
+  if (count >= MAX_FOLLOW_UPS) return null;
+  const refIso = lead.last_follow_up_at ?? lead.updated_at ?? lead.created_at;
+  if (!refIso) return null;
+  const hours = (Date.now() - new Date(refIso).getTime()) / (1000 * 60 * 60);
+  if (hours < FOLLOW_UP_INTERVAL_HOURS) return null;
+  return (count + 1) as 1 | 2 | 3 | 4 | 5;
+}
+
+export function countLeadsByPendingFu(leads: Lead[]): Record<1 | 2 | 3 | 4 | 5, number> {
+  const c: Record<1 | 2 | 3 | 4 | 5, number> = { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0 };
+  leads.forEach((l) => {
+    const fu = getPendingFu(l);
+    if (fu) c[fu]++;
+  });
+  return c;
+}
+
 function formatDayMonth(iso: string): string {
   const d = new Date(iso.length <= 10 ? iso + "T00:00:00" : iso);
   return d.toLocaleDateString("pt-BR", { day: "2-digit", month: "2-digit" });
