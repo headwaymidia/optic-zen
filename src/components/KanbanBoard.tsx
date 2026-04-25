@@ -205,6 +205,12 @@ function LeadCardContent({ lead, onEdit, dragging, selected, cadenceHighlight }:
               ESFRIANDO
             </Badge>
           )}
+          {cadenceHighlight && (
+            <Badge className="bg-amber-100 hover:bg-amber-200 text-amber-900 dark:bg-amber-900/40 dark:text-amber-100 text-[10px] px-2 py-0.5 gap-1 rounded-full border-0 font-semibold">
+              <AlarmClock className="h-3 w-3" />
+              Aguardando Follow-up
+            </Badge>
+          )}
           {lead.status === "Repescagem" && (
             <Badge className="bg-indigo-50 hover:bg-indigo-100 text-indigo-600 text-[10px] px-2 py-0.5 rounded-full border-0 font-semibold">
               Repescagem
