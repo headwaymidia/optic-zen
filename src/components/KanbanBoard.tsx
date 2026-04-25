@@ -133,9 +133,10 @@ interface LeadCardProps {
   onSelect?: (l: Lead) => void;
   dragging?: boolean;
   selected?: boolean;
+  cadenceHighlight?: boolean;
 }
 
-function LeadCardContent({ lead, onEdit, dragging, selected }: LeadCardProps) {
+function LeadCardContent({ lead, onEdit, dragging, selected, cadenceHighlight }: LeadCardProps) {
   const { updateLead, updateStatus } = useLeads();
   const cooling = isCooling(lead);
   return (
@@ -143,6 +144,7 @@ function LeadCardContent({ lead, onEdit, dragging, selected }: LeadCardProps) {
       className={cn(
         "p-3 select-none bg-white rounded-xl shadow-[0_2px_10px_-3px_rgba(6,81,237,0.08)] transition-all duration-300 ease-out hover:-translate-y-1 hover:shadow-md relative overflow-hidden border-0",
         cooling && "ring-1 ring-red-500/50 animate-pulse-border",
+        cadenceHighlight && "ring-2 ring-amber-400 ring-offset-1",
         dragging && "shadow-xl ring-2 ring-primary/30 -rotate-1 scale-105",
         selected && !dragging && "ring-2 ring-primary shadow-[0_8px_24px_-6px_rgba(6,81,237,0.15)]"
       )}
