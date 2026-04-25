@@ -327,7 +327,7 @@ function LeadCardContent({ lead, onEdit, dragging, selected, cadenceHighlight }:
   );
 }
 
-function DraggableLeadCard({ lead, onEdit, onSelect, selected }: { lead: Lead; onEdit: (l: Lead) => void; onSelect?: (l: Lead) => void; selected?: boolean }) {
+function DraggableLeadCard({ lead, onEdit, onSelect, selected, cadenceHighlight }: { lead: Lead; onEdit: (l: Lead) => void; onSelect?: (l: Lead) => void; selected?: boolean; cadenceHighlight?: boolean }) {
   const { attributes, listeners, setNodeRef, isDragging } = useDraggable({ id: lead.id });
   return (
     <div
@@ -337,7 +337,7 @@ function DraggableLeadCard({ lead, onEdit, onSelect, selected }: { lead: Lead; o
       onClick={() => onSelect?.(lead)}
       className={cn("touch-none cursor-pointer active:cursor-grabbing", isDragging && "opacity-40")}
     >
-      <LeadCardContent lead={lead} onEdit={onEdit} selected={selected} />
+      <LeadCardContent lead={lead} onEdit={onEdit} selected={selected} cadenceHighlight={cadenceHighlight} />
     </div>
   );
 }
