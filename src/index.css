@@ -166,3 +166,19 @@ Plus Jakarta Sans is the primary font for a Premium Enterprise feel.
     animation: pulse-border-red 1.6s ease-in-out infinite;
   }
 }
+
+/* Custom thin scrollbar for Kanban and Pipeline Overview */
+.thin-scrollbar::-webkit-scrollbar {
+  height: 6px;
+  width: 6px;
+}
+.thin-scrollbar::-webkit-scrollbar-track {
+  background: transparent;
+}
+.thin-scrollbar::-webkit-scrollbar-thumb {
+  background-color: #cbd5e1;
+  border-radius: 10px;
+}
+.thin-scrollbar::-webkit-scrollbar-thumb:hover {
+  background-color: #94a3b8;
+}

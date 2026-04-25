@@ -110,7 +110,7 @@ function LeadCardContent({ lead, onEdit, dragging, selected }: LeadCardProps) {
   return (
     <Card
       className={cn(
-        "p-2.5 select-none bg-white rounded-xl shadow-[0_2px_10px_-3px_rgba(6,81,237,0.08)] transition-all duration-300 ease-out hover:-translate-y-1 hover:shadow-md relative overflow-hidden border-0",
+        "p-3 select-none bg-white rounded-xl shadow-[0_2px_10px_-3px_rgba(6,81,237,0.08)] transition-all duration-300 ease-out hover:-translate-y-1 hover:shadow-md relative overflow-hidden border-0",
         cooling && "ring-1 ring-red-500/50 animate-pulse-border",
         dragging && "shadow-xl ring-2 ring-primary/30 -rotate-1 scale-105",
         selected && !dragging && "ring-2 ring-primary shadow-[0_8px_24px_-6px_rgba(6,81,237,0.15)]"
@@ -118,7 +118,7 @@ function LeadCardContent({ lead, onEdit, dragging, selected }: LeadCardProps) {
     >
       <div className="space-y-1.5">
         <div className="flex items-start justify-between gap-2">
-          <p className="text-sm font-semibold text-slate-900 truncate flex-1 leading-tight">{lead.name}</p>
+          <p className="text-sm font-medium text-slate-900 truncate flex-1 leading-tight">{lead.name}</p>
           <div className="flex items-center gap-1 shrink-0">
             {lead.priority && (
               <Badge
@@ -148,7 +148,7 @@ function LeadCardContent({ lead, onEdit, dragging, selected }: LeadCardProps) {
           </div>
         </div>
         {lead.phone && (
-          <p className="flex items-center gap-1 text-xs text-muted-foreground">
+          <p className="flex items-center gap-1 text-[10px] text-muted-foreground">
             <Phone className="h-3 w-3" />
             {formatPhoneBR(lead.phone)}
           </p>
@@ -203,7 +203,7 @@ function LeadCardContent({ lead, onEdit, dragging, selected }: LeadCardProps) {
               updateLead(lead.id, { assigned_to: v === "__none__" ? null : v })
             }
           >
-            <SelectTrigger className="h-7 w-full text-[11px]">
+            <SelectTrigger className="h-7 w-full text-xs">
               <SelectValue placeholder="Atribuir vendedora" />
             </SelectTrigger>
             <SelectContent>
@@ -319,7 +319,7 @@ function DroppableColumn({
     <div
       ref={setNodeRef}
       className={cn(
-        "flex w-[280px] min-w-[280px] max-w-[280px] shrink-0 snap-start flex-col h-full rounded-2xl bg-slate-50/70 border border-slate-100 transition-all duration-200 overflow-hidden",
+        "flex w-[250px] min-w-[250px] max-w-[250px] shrink-0 snap-start flex-col h-full rounded-2xl bg-slate-50/70 border border-slate-100 transition-all duration-200 overflow-hidden",
         isOver && "bg-primary/5 border-primary/40 border-dashed ring-2 ring-primary/30 scale-[1.01]"
       )}
     >
@@ -333,7 +333,7 @@ function DroppableColumn({
           <Plus className="h-4 w-4 text-slate-500" />
         </Button>
       </div>
-      <div className="flex flex-col gap-1.5 p-2 flex-1 min-h-0 overflow-y-auto scrollbar-thin scrollbar-thumb-slate-300 hover:scrollbar-thumb-slate-400 scrollbar-track-transparent">
+      <div className="flex flex-col gap-1.5 p-2 flex-1 min-h-0 overflow-y-auto thin-scrollbar">
         {children}
       </div>
     </div>
@@ -414,7 +414,7 @@ export function KanbanBoard({
         onDragCancel={() => setActiveId(null)}
       >
         <div
-          className="flex h-full gap-3 overflow-x-auto overflow-y-hidden px-4 pb-4 snap-x snap-mandatory md:snap-none scroll-smooth scrollbar-thin scrollbar-thumb-slate-300 hover:scrollbar-thumb-slate-400 scrollbar-track-transparent"
+          className="flex h-full gap-3 overflow-x-auto overflow-y-hidden px-4 pb-4 snap-x snap-mandatory md:snap-none scroll-smooth thin-scrollbar"
           style={{ WebkitOverflowScrolling: "touch" }}
         >
           {LEAD_STATUSES.map((status) => {
