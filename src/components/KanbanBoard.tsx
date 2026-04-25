@@ -385,6 +385,20 @@ export function KanbanBoard({
 
   const activeLead = activeId ? leads.find((l) => l.id === activeId) : null;
 
+  const term = search.trim().toLowerCase();
+  const onlyDigits = term.replace(/\D/g, "");
+  const hasFilters = term.length > 0 || !!salesFilter;
+  const filteredLeads = leads.filter((l) => {
+    if (salesFilter && (l.assigned_to ?? "") !== salesFilter) return false;
+    if (term) {
+      const nameMatch = l.name?.toLowerCase().includes(term);
+      const phoneDigits = (l.phone ?? "").replace(/\D/g, "");
+      const phoneMatch = onlyDigits.length > 0 && phoneDigits.includes(onlyDigits);
+      if (!nameMatch && !phoneMatch) return false;
+    }
+    return true;
+  });
+
   return (
     <>
       <DndContext
