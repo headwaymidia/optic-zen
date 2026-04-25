@@ -160,8 +160,6 @@ export default function WhatsAppPage() {
           <ChatPanel lead={selected} onBack={() => setSelectedId(null)} />
         )}
       </section>
-        </div>
-      )}
 
       <Dialog open={newChatOpen} onOpenChange={setNewChatOpen}>
         <DialogContent className="max-w-md p-0 gap-0">
