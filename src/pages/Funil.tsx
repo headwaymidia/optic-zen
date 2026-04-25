@@ -32,13 +32,19 @@ export default function Funil() {
 
   const [search, setSearch] = useState("");
   const [salesFilter, setSalesFilter] = useState<string>(ALL_SALES);
+  const [cadence, setCadence] = useState<CadenceFilter>("all");
 
-  const hasFilters = search.trim().length > 0 || salesFilter !== ALL_SALES;
+  const hasFilters = search.trim().length > 0 || salesFilter !== ALL_SALES || cadence !== "all";
 
   function clearFilters() {
     setSearch("");
     setSalesFilter(ALL_SALES);
+    setCadence("all");
   }
+
+  // Contagem de pendentes por etapa de FU (independente de filtros — visão de gestão)
+  const fuCounts = useMemo(() => countLeadsByPendingFu(leads), [leads]);
+  const fuTotalPending = fuCounts[1] + fuCounts[2] + fuCounts[3] + fuCounts[4] + fuCounts[5];
 
   // Conta totais filtrados (reflete o que o Kanban exibe)
   const counts = useMemo(() => {
