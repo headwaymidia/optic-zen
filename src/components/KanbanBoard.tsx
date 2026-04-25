@@ -105,7 +105,7 @@ interface LeadCardProps {
 }
 
 function LeadCardContent({ lead, onEdit, dragging, selected }: LeadCardProps) {
-  const { updateLead } = useLeads();
+  const { updateLead, updateStatus } = useLeads();
   const cooling = isCooling(lead);
   return (
     <Card
@@ -223,6 +223,9 @@ function LeadCardContent({ lead, onEdit, dragging, selected }: LeadCardProps) {
               onPointerDown={(e) => e.stopPropagation()}
               onClick={(e) => {
                 e.stopPropagation();
+                if (lead.status === "Novo Lead") {
+                  updateStatus(lead.id, "Em Atendimento");
+                }
                 window.open(whatsappUrl(lead.phone!), "_blank");
               }}
               aria-label="Abrir WhatsApp"
