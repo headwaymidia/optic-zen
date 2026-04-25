@@ -4,13 +4,15 @@ import { useLeads } from "@/hooks/useLeads";
 import { Input } from "@/components/ui/input";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { ChatPanel } from "@/components/ChatPanel";
-import { Search, MessageSquarePlus } from "lucide-react";
+import { Search, MessageSquarePlus, MessagesSquare, ListChecks } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Badge } from "@/components/ui/badge";
 import { Tag } from "lucide-react";
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { CadenceCenter } from "@/components/CadenceCenter";
 
 const INTEREST_TAG_STYLES: Record<string, string> = {
   Exame: "bg-sky-100 text-sky-800 dark:bg-sky-900/40 dark:text-sky-200",
