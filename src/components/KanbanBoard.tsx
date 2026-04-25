@@ -432,17 +432,18 @@ export function KanbanBoard({
                 onAdd={() => openNew(status)}
               >
                 {colLeads.map((lead) => (
-                  <DraggableLeadCard
-                    key={lead.id}
-                    lead={lead}
-                    onEdit={openEdit}
-                    onSelect={onSelectLead}
-                    selected={selectedLeadId === lead.id}
-                  />
+                  <div key={lead.id} className="animate-in fade-in duration-200">
+                    <DraggableLeadCard
+                      lead={lead}
+                      onEdit={openEdit}
+                      onSelect={onSelectLead}
+                      selected={selectedLeadId === lead.id}
+                    />
+                  </div>
                 ))}
                 {colLeads.length === 0 && (
-                  <p className="px-2 py-6 text-center text-xs text-muted-foreground">
-                    Nenhum lead
+                  <p className="px-2 py-6 text-center text-xs text-muted-foreground animate-in fade-in duration-200">
+                    {hasFilters ? "Nenhum lead encontrado com estes filtros." : "Nenhum lead"}
                   </p>
                 )}
               </DroppableColumn>
