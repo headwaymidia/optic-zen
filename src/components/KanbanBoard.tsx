@@ -388,7 +388,18 @@ export function KanbanBoard({ onSelectLead, selectedLeadId }: { onSelectLead?: (
           style={{ WebkitOverflowScrolling: "touch" }}
         >
           {LEAD_STATUSES.map((status) => {
-            const colLeads = leads.filter((l) => l.status === status);
+            const colLeads = leads
+              .filter((l) => l.status === status)
+              .sort((a, b) => {
+                if (status === "Agendou Exame") {
+                  // Próximos/atrasados primeiro; sem data vai para o fim
+                  const av = a.follow_up_date ? new Date(a.follow_up_date).getTime() : Infinity;
+                  const bv = b.follow_up_date ? new Date(b.follow_up_date).getTime() : Infinity;
+                  return av - bv;
+                }
+                // DESC: mais novos no topo
+                return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
+              });
             return (
               <DroppableColumn
                 key={status}
