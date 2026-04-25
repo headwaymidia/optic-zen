@@ -167,7 +167,7 @@ Plus Jakarta Sans is the primary font for a Premium Enterprise feel.
   }
 }
 
-/* Custom thin scrollbar for Kanban and Pipeline Overview */
+/* Custom thin scrollbar for general use */
 .thin-scrollbar::-webkit-scrollbar {
   height: 6px;
   width: 6px;
@@ -180,5 +180,24 @@ Plus Jakarta Sans is the primary font for a Premium Enterprise feel.
   border-radius: 10px;
 }
 .thin-scrollbar::-webkit-scrollbar-thumb:hover {
+  background-color: #94a3b8;
+}
+
+/* Robust horizontal scrollbar specifically for Kanban */
+.kanban-scroll::-webkit-scrollbar {
+  height: 12px; /* Altura confortável para clicar na horizontal */
+  width: 6px;  /* Mantém a vertical fina */
+}
+.kanban-scroll::-webkit-scrollbar-track {
+  background: #f1f5f9; /* Fundo cinza bem claro para mostrar onde é a trilha */
+  border-radius: 8px;
+  margin: 0 10px; /* Dá um respiro nas pontas */
+}
+.kanban-scroll::-webkit-scrollbar-thumb {
+  background-color: #cbd5e1;
+  border-radius: 8px;
+  border: 2px solid #f1f5f9; /* Efeito de 'borda' para parecer flutuante */
+}
+.kanban-scroll::-webkit-scrollbar-thumb:hover {
   background-color: #94a3b8;
 }
