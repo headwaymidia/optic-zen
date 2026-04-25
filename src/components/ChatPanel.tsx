@@ -39,6 +39,20 @@ export function ChatPanel({
 
   const firstName = lead.name.split(" ")[0];
 
+  // Move automaticamente para "Em Atendimento" se ainda for "Novo Lead"
+  const promoteToInAttendance = () => {
+    if (lead.status === "Novo Lead") {
+      updateStatus(lead.id, "Em Atendimento");
+    }
+  };
+
+  const handleSend = () => {
+    if (!message.trim()) return;
+    promoteToInAttendance();
+    // (envio real da mensagem ficaria aqui)
+    setMessage("");
+  };
+
   const applyScript = (scriptType: "agendar" | "receita" | "resgate" | "confirmar") => {
     const scripts = {
       agendar: `Olá ${firstName}! Tudo bem? Vi que você tem interesse em cuidar da sua visão. Temos alguns horários disponíveis para o exame de vista esta semana. Qual o melhor período para você: manhã ou tarde?`,
