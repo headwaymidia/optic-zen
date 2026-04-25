@@ -10,9 +10,14 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { PrescriptionForm } from "@/components/PrescriptionForm";
 import { LabOrderForm } from "@/components/LabOrderForm";
-import { ArrowLeft, Paperclip, Send, Smile, X, Zap, Eye, CalendarClock } from "lucide-react";
+import { ArrowLeft, Paperclip, Send, Smile, X, Zap, Eye, CalendarClock, Sparkles } from "lucide-react";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { cn } from "@/lib/utils";
+import {
+  getFollowUpDef,
+  getPendingFollowUpLevel,
+  MAX_FOLLOW_UPS,
+} from "@/lib/followUpScripts";
 
 function initials(name: string) {
   return name.split(" ").map((p) => p[0]).slice(0, 2).join("").toUpperCase();
@@ -46,10 +51,40 @@ export function ChatPanel({
     }
   };
 
+  // Cadência de Vendas — detecta se há follow-up pendente
+  const isCadenceStatus =
+    lead.status === "Em Atendimento" || lead.status === "Aguardando Resposta";
+  const pendingLevel = isCadenceStatus
+    ? getPendingFollowUpLevel(
+        lead.follow_up_count ?? 0,
+        lead.last_follow_up_at ?? null,
+        lead.updated_at || lead.created_at
+      )
+    : null;
+  const pendingDef = pendingLevel ? getFollowUpDef(pendingLevel) : null;
+  const reachedMax = (lead.follow_up_count ?? 0) >= MAX_FOLLOW_UPS;
+
   const handleSend = () => {
     if (!message.trim()) return;
     promoteToInAttendance();
     // (envio real da mensagem ficaria aqui)
+    setMessage("");
+  };
+
+  // Pré-preenche o input com o script do FU pendente
+  const handleApplyFollowUpScript = () => {
+    if (!pendingDef) return;
+    setMessage(pendingDef.buildScript(firstName));
+  };
+
+  // Envia o follow-up: incrementa contador + marca timestamp
+  const handleSendFollowUp = async () => {
+    if (!message.trim() || !pendingDef) return;
+    promoteToInAttendance();
+    await updateLead(lead.id, {
+      follow_up_count: (lead.follow_up_count ?? 0) + 1,
+      last_follow_up_at: new Date().toISOString(),
+    });
     setMessage("");
   };
 
@@ -208,6 +243,37 @@ export function ChatPanel({
         ))}
       </div>
 
+      {/* Banner de Cadência — sugestão do próximo follow-up */}
+      {pendingDef && (
+        <div className="border-t bg-amber-50 dark:bg-amber-900/20 px-3 py-2 flex items-center gap-2">
+          <div className="shrink-0 h-7 w-7 rounded-full bg-amber-100 dark:bg-amber-900/40 flex items-center justify-center">
+            <Sparkles className="h-3.5 w-3.5 text-amber-700 dark:text-amber-200" />
+          </div>
+          <div className="flex-1 min-w-0">
+            <p className="text-[11px] font-semibold text-amber-900 dark:text-amber-100 leading-tight">
+              Ação sugerida: {pendingDef.label}
+            </p>
+            <p className="text-[10px] text-amber-800/80 dark:text-amber-200/70 truncate">
+              {pendingDef.hint} · sem retorno há 8h+
+            </p>
+          </div>
+          <Button
+            size="sm"
+            variant="outline"
+            type="button"
+            onClick={handleApplyFollowUpScript}
+            className="h-7 text-[11px] gap-1 bg-white hover:bg-amber-50 border-amber-300 text-amber-900 dark:bg-amber-950/40 dark:text-amber-100 dark:border-amber-700"
+          >
+            Usar script
+          </Button>
+        </div>
+      )}
+      {reachedMax && isCadenceStatus && (
+        <div className="border-t bg-red-50 dark:bg-red-900/20 px-3 py-2 text-[11px] text-red-800 dark:text-red-200">
+          🏁 Cadência completa ({MAX_FOLLOW_UPS} tentativas). Lead será movido para Repescagem em até 24h sem resposta.
+        </div>
+      )}
+
       <footer className="border-t bg-card p-2 flex items-center gap-1">
         <Button variant="ghost" size="icon" type="button" className="h-8 w-8">
           <Smile className="h-4 w-4 text-muted-foreground" />
@@ -293,12 +359,17 @@ export function ChatPanel({
           className="flex-1 bg-muted/50 border-0 h-9"
         />
         <Button
-          size="icon"
+          size={pendingDef ? "default" : "icon"}
           type="button"
-          onClick={handleSend}
-          className="h-9 w-9 bg-green-600 hover:bg-green-700 text-white"
+          onClick={pendingDef ? handleSendFollowUp : handleSend}
+          className={cn(
+            "h-9 text-white gap-1.5",
+            pendingDef ? "px-3" : "w-9",
+            pendingDef ? "bg-amber-600 hover:bg-amber-700" : "bg-green-600 hover:bg-green-700"
+          )}
         >
           <Send className="h-4 w-4" />
+          {pendingDef && <span className="text-xs font-semibold">Enviar FU{pendingLevel}</span>}
         </Button>
       </footer>
     </div>
