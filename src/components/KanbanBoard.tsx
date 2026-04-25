@@ -376,11 +376,13 @@ export function KanbanBoard({
   selectedLeadId,
   search = "",
   salesFilter = null,
+  cadenceFilter = "all",
 }: {
   onSelectLead?: (l: Lead) => void;
   selectedLeadId?: string | null;
   search?: string;
   salesFilter?: string | null;
+  cadenceFilter?: CadenceFilter;
 } = {}) {
   const { leads, loading, refetch, updateStatus } = useLeads();
   const [dialogOpen, setDialogOpen] = useState(false);
@@ -424,7 +426,8 @@ export function KanbanBoard({
 
   const term = search.trim().toLowerCase();
   const onlyDigits = term.replace(/\D/g, "");
-  const hasFilters = term.length > 0 || !!salesFilter;
+  const cadenceActive = cadenceFilter !== "all";
+  const hasFilters = term.length > 0 || !!salesFilter || cadenceActive;
   const filteredLeads = leads.filter((l) => {
     if (salesFilter && (l.assigned_to ?? "") !== salesFilter) return false;
     if (term) {
@@ -432,6 +435,10 @@ export function KanbanBoard({
       const phoneDigits = (l.phone ?? "").replace(/\D/g, "");
       const phoneMatch = onlyDigits.length > 0 && phoneDigits.includes(onlyDigits);
       if (!nameMatch && !phoneMatch) return false;
+    }
+    if (cadenceActive) {
+      const fu = getPendingFu(l);
+      if (fu !== cadenceFilter) return false;
     }
     return true;
   });
