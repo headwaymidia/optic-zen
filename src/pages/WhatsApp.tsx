@@ -62,6 +62,7 @@ export default function WhatsAppPage() {
     const leadIdFromUrl = searchParams.get("leadId");
     if (leadIdFromUrl && leads.some((l) => l.id === leadIdFromUrl)) {
       setSelectedId(leadIdFromUrl);
+      setView("conversas");
       // Clean the URL so refresh doesn't keep re-selecting
       searchParams.delete("leadId");
       setSearchParams(searchParams, { replace: true });
