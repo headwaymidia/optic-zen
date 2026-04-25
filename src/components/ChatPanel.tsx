@@ -11,7 +11,7 @@ import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/
 import { PrescriptionForm } from "@/components/PrescriptionForm";
 import { LabOrderForm } from "@/components/LabOrderForm";
 import { StageGateDialog, isGatedStatus, type StageGate } from "@/components/StageGateDialog";
-import { ArrowLeft, Paperclip, Send, Smile, X, Zap, Eye, CalendarClock, Sparkles } from "lucide-react";
+import { ArrowLeft, Paperclip, Send, Smile, X, Zap, Eye, CalendarClock, Sparkles, CheckCircle2, AlertCircle } from "lucide-react";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { cn } from "@/lib/utils";
 import {
@@ -211,31 +211,51 @@ export function ChatPanel({
         </div>
       </header>
 
-      <Accordion type="single" collapsible className="border-b bg-card/50">
-        <AccordionItem value="prescription" className="border-0 border-b">
-          <AccordionTrigger className="px-3 py-2 text-xs font-medium hover:no-underline hover:bg-muted/50">
-            <span className="flex items-center gap-2">
-              <Eye className="h-3.5 w-3.5 text-primary" />
-              Receita Oftalmológica (Prontuário)
-            </span>
-          </AccordionTrigger>
-          <AccordionContent className="px-3 pb-3 pt-0">
-            <PrescriptionForm lead={lead} />
-          </AccordionContent>
-        </AccordionItem>
-        <AccordionItem value="lab" className="border-0">
-          <AccordionTrigger className="px-3 py-2 text-xs font-medium hover:no-underline hover:bg-muted/50">
-            <span className="flex items-center gap-2">
-              <CalendarClock className="h-3.5 w-3.5 text-primary" />
-              Gestão de Pedido / Laboratório
-            </span>
-          </AccordionTrigger>
-          <AccordionContent className="px-3 pb-3 pt-0">
-            <LabOrderForm lead={lead} onApplyScript={(msg) => setMessage(msg)} />
-          </AccordionContent>
-        </AccordionItem>
-      </Accordion>
-
+      {(() => {
+        const p = lead.prescription ?? {};
+        const prescriptionOk = Boolean(
+          (p.esferico_od && p.esferico_od.toString().trim()) ||
+            (p.esferico_oe && p.esferico_oe.toString().trim()) ||
+            (p.cilindrico_od && p.cilindrico_od.toString().trim()) ||
+            (p.cilindrico_oe && p.cilindrico_oe.toString().trim()) ||
+            (p.adicao && p.adicao.toString().trim()) ||
+            (p.dnp && p.dnp.toString().trim())
+        );
+        const labOk = Boolean(lead.delivery_prediction || lead.lab_status);
+        return (
+          <Accordion
+            key={lead.id}
+            type="single"
+            collapsible
+            className="border-b bg-card/50"
+          >
+            <AccordionItem value="prescription" className="border-0 border-b">
+              <AccordionTrigger className="px-3 py-2 text-xs font-medium hover:no-underline hover:bg-muted/50">
+                <span className="flex items-center gap-2 flex-1 text-left">
+                  <Eye className="h-3.5 w-3.5 text-primary" />
+                  <span>Receita Oftalmológica</span>
+                  <ChecklistBadge ok={prescriptionOk} />
+                </span>
+              </AccordionTrigger>
+              <AccordionContent className="px-3 pb-3 pt-0">
+                <PrescriptionForm lead={lead} />
+              </AccordionContent>
+            </AccordionItem>
+            <AccordionItem value="lab" className="border-0">
+              <AccordionTrigger className="px-3 py-2 text-xs font-medium hover:no-underline hover:bg-muted/50">
+                <span className="flex items-center gap-2 flex-1 text-left">
+                  <CalendarClock className="h-3.5 w-3.5 text-primary" />
+                  <span>Gestão de Pedido / Laboratório</span>
+                  <ChecklistBadge ok={labOk} />
+                </span>
+              </AccordionTrigger>
+              <AccordionContent className="px-3 pb-3 pt-0">
+                <LabOrderForm lead={lead} onApplyScript={(msg) => setMessage(msg)} />
+              </AccordionContent>
+            </AccordionItem>
+          </Accordion>
+        );
+      })()}
       <div className="flex-1 overflow-y-auto bg-muted/40 px-3 py-4 space-y-2">
         {messages.map((m, i) => (
           <div key={i} className={cn("flex", m.from === "us" ? "justify-end" : "justify-start")}>
@@ -394,5 +414,22 @@ export function ChatPanel({
         }}
       />
     </div>
+  );
+}
+
+function ChecklistBadge({ ok }: { ok: boolean }) {
+  if (ok) {
+    return (
+      <span className="ml-auto inline-flex items-center gap-1 rounded-full bg-emerald-100 dark:bg-emerald-900/40 text-emerald-700 dark:text-emerald-200 px-2 py-0.5 text-[10px] font-semibold">
+        <CheckCircle2 className="h-3 w-3" />
+        Ok
+      </span>
+    );
+  }
+  return (
+    <span className="ml-auto inline-flex items-center gap-1 rounded-full bg-amber-100 dark:bg-amber-900/40 text-amber-800 dark:text-amber-100 px-2 py-0.5 text-[10px] font-semibold">
+      <AlertCircle className="h-3 w-3" />
+      Pendente
+    </span>
   );
 }
