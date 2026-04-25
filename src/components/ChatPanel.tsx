@@ -328,12 +328,17 @@ export function ChatPanel({
           className="flex-1 bg-muted/50 border-0 h-9"
         />
         <Button
-          size="icon"
+          size={pendingDef ? "default" : "icon"}
           type="button"
-          onClick={handleSend}
-          className="h-9 w-9 bg-green-600 hover:bg-green-700 text-white"
+          onClick={pendingDef ? handleSendFollowUp : handleSend}
+          className={cn(
+            "h-9 text-white gap-1.5",
+            pendingDef ? "px-3" : "w-9",
+            pendingDef ? "bg-amber-600 hover:bg-amber-700" : "bg-green-600 hover:bg-green-700"
+          )}
         >
           <Send className="h-4 w-4" />
+          {pendingDef && <span className="text-xs font-semibold">Enviar FU{pendingLevel}</span>}
         </Button>
       </footer>
     </div>
