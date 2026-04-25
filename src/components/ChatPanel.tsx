@@ -383,6 +383,16 @@ export function ChatPanel({
           {pendingDef && <span className="text-xs font-semibold">Enviar FU{pendingLevel}</span>}
         </Button>
       </footer>
+      <StageGateDialog
+        open={!!gateStatus}
+        lead={lead}
+        targetStatus={gateStatus}
+        onCancel={() => setGateStatus(null)}
+        onConfirm={async (patch) => {
+          await updateLead(lead.id, patch);
+          setGateStatus(null);
+        }}
+      />
     </div>
   );
 }
