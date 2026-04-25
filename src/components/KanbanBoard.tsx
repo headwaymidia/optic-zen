@@ -334,7 +334,17 @@ function DroppableColumn({
   );
 }
 
-export function KanbanBoard({ onSelectLead, selectedLeadId }: { onSelectLead?: (l: Lead) => void; selectedLeadId?: string | null } = {}) {
+export function KanbanBoard({
+  onSelectLead,
+  selectedLeadId,
+  search = "",
+  salesFilter = null,
+}: {
+  onSelectLead?: (l: Lead) => void;
+  selectedLeadId?: string | null;
+  search?: string;
+  salesFilter?: string | null;
+} = {}) {
   const { leads, loading, refetch, updateStatus } = useLeads();
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editingLead, setEditingLead] = useState<Lead | null>(null);
