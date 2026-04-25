@@ -39,6 +39,20 @@ export function ChatPanel({
 
   const firstName = lead.name.split(" ")[0];
 
+  // Move automaticamente para "Em Atendimento" se ainda for "Novo Lead"
+  const promoteToInAttendance = () => {
+    if (lead.status === "Novo Lead") {
+      updateStatus(lead.id, "Em Atendimento");
+    }
+  };
+
+  const handleSend = () => {
+    if (!message.trim()) return;
+    promoteToInAttendance();
+    // (envio real da mensagem ficaria aqui)
+    setMessage("");
+  };
+
   const applyScript = (scriptType: "agendar" | "receita" | "resgate" | "confirmar") => {
     const scripts = {
       agendar: `Olá ${firstName}! Tudo bem? Vi que você tem interesse em cuidar da sua visão. Temos alguns horários disponíveis para o exame de vista esta semana. Qual o melhor período para você: manhã ou tarde?`,
@@ -269,10 +283,21 @@ export function ChatPanel({
         <Input
           value={message}
           onChange={(e) => setMessage(e.target.value)}
+          onKeyDown={(e) => {
+            if (e.key === "Enter" && !e.shiftKey) {
+              e.preventDefault();
+              handleSend();
+            }
+          }}
           placeholder="Digite sua mensagem..."
           className="flex-1 bg-muted/50 border-0 h-9"
         />
-        <Button size="icon" className="h-9 w-9 bg-green-600 hover:bg-green-700 text-white">
+        <Button
+          size="icon"
+          type="button"
+          onClick={handleSend}
+          className="h-9 w-9 bg-green-600 hover:bg-green-700 text-white"
+        >
           <Send className="h-4 w-4" />
         </Button>
       </footer>

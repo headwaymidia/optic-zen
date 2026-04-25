@@ -23,6 +23,7 @@ interface Props {
 // Semantic colors per status (HSL strings so we can use them directly in Recharts)
 const STATUS_COLORS: Record<LeadStatus, string> = {
   "Novo Lead": "hsl(217 91% 60%)", // azul
+  "Em Atendimento": "hsl(190 90% 55%)", // ciano
   "Aguardando Resposta": "hsl(45 93% 55%)", // amarelo
   "Agendou Exame": "hsl(262 83% 62%)", // roxo
   "Não Compareceu": "hsl(0 75% 60%)", // vermelho

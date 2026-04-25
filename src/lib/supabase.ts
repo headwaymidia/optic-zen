@@ -7,6 +7,7 @@ export const supabase = createClient(
 
 export type LeadStatus =
   | "Novo Lead"
+  | "Em Atendimento"
   | "Aguardando Resposta"
   | "Agendou Exame"
   | "Não Compareceu"
@@ -18,6 +19,7 @@ export type LeadPriority = "Baixa" | "Média" | "Alta";
 
 export const LEAD_STATUSES: LeadStatus[] = [
   "Novo Lead",
+  "Em Atendimento",
   "Aguardando Resposta",
   "Agendou Exame",
   "Não Compareceu",

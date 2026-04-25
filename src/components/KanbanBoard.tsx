@@ -24,6 +24,7 @@ import {
 
 const STATUS_COLORS: Record<LeadStatus, string> = {
   "Novo Lead": "bg-blue-500",
+  "Em Atendimento": "bg-cyan-400",
   "Aguardando Resposta": "bg-amber-500",
   "Agendou Exame": "bg-purple-500",
   "Não Compareceu": "bg-orange-500",
@@ -104,7 +105,7 @@ interface LeadCardProps {
 }
 
 function LeadCardContent({ lead, onEdit, dragging, selected }: LeadCardProps) {
-  const { updateLead } = useLeads();
+  const { updateLead, updateStatus } = useLeads();
   const cooling = isCooling(lead);
   return (
     <Card
@@ -222,6 +223,9 @@ function LeadCardContent({ lead, onEdit, dragging, selected }: LeadCardProps) {
               onPointerDown={(e) => e.stopPropagation()}
               onClick={(e) => {
                 e.stopPropagation();
+                if (lead.status === "Novo Lead") {
+                  updateStatus(lead.id, "Em Atendimento");
+                }
                 window.open(whatsappUrl(lead.phone!), "_blank");
               }}
               aria-label="Abrir WhatsApp"
