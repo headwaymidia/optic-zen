@@ -243,6 +243,37 @@ export function ChatPanel({
         ))}
       </div>
 
+      {/* Banner de Cadência — sugestão do próximo follow-up */}
+      {pendingDef && (
+        <div className="border-t bg-amber-50 dark:bg-amber-900/20 px-3 py-2 flex items-center gap-2">
+          <div className="shrink-0 h-7 w-7 rounded-full bg-amber-100 dark:bg-amber-900/40 flex items-center justify-center">
+            <Sparkles className="h-3.5 w-3.5 text-amber-700 dark:text-amber-200" />
+          </div>
+          <div className="flex-1 min-w-0">
+            <p className="text-[11px] font-semibold text-amber-900 dark:text-amber-100 leading-tight">
+              Ação sugerida: {pendingDef.label}
+            </p>
+            <p className="text-[10px] text-amber-800/80 dark:text-amber-200/70 truncate">
+              {pendingDef.hint} · sem retorno há 8h+
+            </p>
+          </div>
+          <Button
+            size="sm"
+            variant="outline"
+            type="button"
+            onClick={handleApplyFollowUpScript}
+            className="h-7 text-[11px] gap-1 bg-white hover:bg-amber-50 border-amber-300 text-amber-900 dark:bg-amber-950/40 dark:text-amber-100 dark:border-amber-700"
+          >
+            Usar script
+          </Button>
+        </div>
+      )}
+      {reachedMax && isCadenceStatus && (
+        <div className="border-t bg-red-50 dark:bg-red-900/20 px-3 py-2 text-[11px] text-red-800 dark:text-red-200">
+          🏁 Cadência completa ({MAX_FOLLOW_UPS} tentativas). Lead será movido para Repescagem em até 24h sem resposta.
+        </div>
+      )}
+
       <footer className="border-t bg-card p-2 flex items-center gap-1">
         <Button variant="ghost" size="icon" type="button" className="h-8 w-8">
           <Smile className="h-4 w-4 text-muted-foreground" />
