@@ -213,12 +213,12 @@ function LeadCardContent({ lead, onEdit, dragging, selected }: LeadCardProps) {
             </SelectContent>
           </Select>
         </div>
-        <div className="flex items-center justify-between gap-1 pt-1">
+        <div className="flex items-center justify-between gap-2 pt-1">
           {lead.phone ? (
             <Button
               type="button"
               size="sm"
-              className="h-9 flex-1 rounded-full bg-emerald-500 hover:bg-emerald-600 text-white gap-1.5 md:flex-initial md:h-7 md:w-7 md:p-0"
+              className="h-9 rounded-full bg-emerald-500 hover:bg-emerald-600 text-white gap-1.5 md:h-7 md:w-7 md:p-0"
               onPointerDown={(e) => e.stopPropagation()}
               onClick={(e) => {
                 e.stopPropagation();
@@ -232,13 +232,40 @@ function LeadCardContent({ lead, onEdit, dragging, selected }: LeadCardProps) {
           ) : (
             <span />
           )}
+          {(() => {
+            const isExamColumn = lead.status === "Agendou Exame";
+            const examDate = isExamColumn ? lead.follow_up_date : null;
+            const showExam = isExamColumn && !!examDate;
+            const aging = isAging(lead);
+            return (
+              <span
+                className={cn(
+                  "flex items-center gap-1 text-[10px] font-medium tabular-nums truncate",
+                  aging ? "text-red-500" : "text-slate-400"
+                )}
+                title={showExam ? "Data do exame agendado" : "Data de entrada do lead"}
+              >
+                {showExam ? (
+                  <>
+                    <Calendar className="h-3 w-3" />
+                    Exame: {formatDayMonth(examDate!)}
+                  </>
+                ) : (
+                  <>
+                    <Clock className="h-3 w-3" />
+                    Entrou: {formatDayMonth(lead.created_at)}
+                  </>
+                )}
+              </span>
+            );
+          })()}
           <Tooltip>
             <TooltipTrigger asChild>
               <Button
                 type="button"
                 size="icon"
                 variant="outline"
-                className="h-9 w-9 md:h-7 md:w-7 rounded-full"
+                className="h-9 w-9 md:h-7 md:w-7 rounded-full shrink-0"
                 onPointerDown={(e) => e.stopPropagation()}
                 onClick={(e) => {
                   e.stopPropagation();
