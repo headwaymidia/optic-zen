@@ -4,7 +4,7 @@ import { useLeads } from "@/hooks/useLeads";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Plus, Phone, MessageCircle, Pencil, Flame, Tag, User, CalendarClock } from "lucide-react";
+import { Plus, Phone, MessageCircle, Pencil, Flame, Tag, User, CalendarClock, Calendar, Clock } from "lucide-react";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { LeadDialog } from "./LeadDialog";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
@@ -60,11 +60,23 @@ const SOURCE_EMOJI: Record<string, string> = {
 
 const COOLING_STATUSES: LeadStatus[] = ["Novo Lead", "Aguardando Resposta"];
 const COOLING_THRESHOLD_MS = 2 * 60 * 60 * 1000; // 2h
+const AGING_THRESHOLD_MS = 7 * 24 * 60 * 60 * 1000; // 7 dias
 
 function isCooling(lead: Lead): boolean {
   if (!COOLING_STATUSES.includes(lead.status)) return false;
   const created = new Date(lead.created_at).getTime();
   return Date.now() - created > COOLING_THRESHOLD_MS;
+}
+
+function isAging(lead: Lead): boolean {
+  if (!COOLING_STATUSES.includes(lead.status)) return false;
+  const created = new Date(lead.created_at).getTime();
+  return Date.now() - created > AGING_THRESHOLD_MS;
+}
+
+function formatDayMonth(iso: string): string {
+  const d = new Date(iso.length <= 10 ? iso + "T00:00:00" : iso);
+  return d.toLocaleDateString("pt-BR", { day: "2-digit", month: "2-digit" });
 }
 
 function formatPhoneBR(phone: string): string {
@@ -201,12 +213,12 @@ function LeadCardContent({ lead, onEdit, dragging, selected }: LeadCardProps) {
             </SelectContent>
           </Select>
         </div>
-        <div className="flex items-center justify-between gap-1 pt-1">
+        <div className="flex items-center justify-between gap-2 pt-1">
           {lead.phone ? (
             <Button
               type="button"
               size="sm"
-              className="h-9 flex-1 rounded-full bg-emerald-500 hover:bg-emerald-600 text-white gap-1.5 md:flex-initial md:h-7 md:w-7 md:p-0"
+              className="h-9 rounded-full bg-emerald-500 hover:bg-emerald-600 text-white gap-1.5 md:h-7 md:w-7 md:p-0"
               onPointerDown={(e) => e.stopPropagation()}
               onClick={(e) => {
                 e.stopPropagation();
@@ -220,13 +232,40 @@ function LeadCardContent({ lead, onEdit, dragging, selected }: LeadCardProps) {
           ) : (
             <span />
           )}
+          {(() => {
+            const isExamColumn = lead.status === "Agendou Exame";
+            const examDate = isExamColumn ? lead.follow_up_date : null;
+            const showExam = isExamColumn && !!examDate;
+            const aging = isAging(lead);
+            return (
+              <span
+                className={cn(
+                  "flex items-center gap-1 text-[10px] font-medium tabular-nums truncate",
+                  aging ? "text-red-500" : "text-slate-400"
+                )}
+                title={showExam ? "Data do exame agendado" : "Data de entrada do lead"}
+              >
+                {showExam ? (
+                  <>
+                    <Calendar className="h-3 w-3" />
+                    Exame: {formatDayMonth(examDate!)}
+                  </>
+                ) : (
+                  <>
+                    <Clock className="h-3 w-3" />
+                    Entrou: {formatDayMonth(lead.created_at)}
+                  </>
+                )}
+              </span>
+            );
+          })()}
           <Tooltip>
             <TooltipTrigger asChild>
               <Button
                 type="button"
                 size="icon"
                 variant="outline"
-                className="h-9 w-9 md:h-7 md:w-7 rounded-full"
+                className="h-9 w-9 md:h-7 md:w-7 rounded-full shrink-0"
                 onPointerDown={(e) => e.stopPropagation()}
                 onClick={(e) => {
                   e.stopPropagation();
@@ -349,7 +388,18 @@ export function KanbanBoard({ onSelectLead, selectedLeadId }: { onSelectLead?: (
           style={{ WebkitOverflowScrolling: "touch" }}
         >
           {LEAD_STATUSES.map((status) => {
-            const colLeads = leads.filter((l) => l.status === status);
+            const colLeads = leads
+              .filter((l) => l.status === status)
+              .sort((a, b) => {
+                if (status === "Agendou Exame") {
+                  // Próximos/atrasados primeiro; sem data vai para o fim
+                  const av = a.follow_up_date ? new Date(a.follow_up_date).getTime() : Infinity;
+                  const bv = b.follow_up_date ? new Date(b.follow_up_date).getTime() : Infinity;
+                  return av - bv;
+                }
+                // DESC: mais novos no topo
+                return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
+              });
             return (
               <DroppableColumn
                 key={status}
