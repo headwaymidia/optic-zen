@@ -1,4 +1,4 @@
-import { useMemo } from "react";
+import { Fragment, useMemo } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Lead } from "@/lib/supabase";
 import { cn } from "@/lib/utils";
@@ -162,9 +162,8 @@ export function SalesThermometer({ leads }: SalesThermometerProps) {
             const isBottleneckTarget = bottleneck?.stage.key === s.key;
 
             return (
-              <>
+              <Fragment key={s.key}>
                 <div
-                  key={s.key}
                   className={cn(
                     "sm:col-span-1 relative rounded-xl border p-3 transition-all",
                     s.bg,
@@ -203,7 +202,6 @@ export function SalesThermometer({ leads }: SalesThermometerProps) {
                 {/* Conector com taxa de conversão */}
                 {i < stages.length - 1 && (
                   <div
-                    key={`${s.key}-arrow`}
                     className="sm:col-span-1 flex sm:flex-col items-center justify-center gap-1 py-1 sm:py-0"
                   >
                     {(() => {
