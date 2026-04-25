@@ -1,5 +1,5 @@
 import { useMemo, useState } from "react";
-import { KanbanBoard } from "@/components/KanbanBoard";
+import { KanbanBoard, CadenceFilter, countLeadsByPendingFu } from "@/components/KanbanBoard";
 import { ChatPanel } from "@/components/ChatPanel";
 import { useLeads } from "@/hooks/useLeads";
 import { Lead, LEAD_STATUSES, LeadStatus, SALESPEOPLE } from "@/lib/supabase";
@@ -9,6 +9,7 @@ import { cn } from "@/lib/utils";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Search, X } from "lucide-react";
 
 const STATUS_DOT_COLORS: Record<LeadStatus, string> = {
@@ -31,13 +32,19 @@ export default function Funil() {
 
   const [search, setSearch] = useState("");
   const [salesFilter, setSalesFilter] = useState<string>(ALL_SALES);
+  const [cadence, setCadence] = useState<CadenceFilter>("all");
 
-  const hasFilters = search.trim().length > 0 || salesFilter !== ALL_SALES;
+  const hasFilters = search.trim().length > 0 || salesFilter !== ALL_SALES || cadence !== "all";
 
   function clearFilters() {
     setSearch("");
     setSalesFilter(ALL_SALES);
+    setCadence("all");
   }
+
+  // Contagem de pendentes por etapa de FU (independente de filtros — visão de gestão)
+  const fuCounts = useMemo(() => countLeadsByPendingFu(leads), [leads]);
+  const fuTotalPending = fuCounts[1] + fuCounts[2] + fuCounts[3] + fuCounts[4] + fuCounts[5];
 
   // Conta totais filtrados (reflete o que o Kanban exibe)
   const counts = useMemo(() => {
@@ -126,12 +133,30 @@ export default function Funil() {
             )}
           </div>
 
+          {/* Central de Cadência — filtros por etapa de Follow-up */}
+          <div className="rounded-xl border border-slate-100 bg-white px-3 py-2 shadow-[0_1px_2px_rgba(0,0,0,0.02)]">
+            <Tabs value={String(cadence)} onValueChange={(v) => setCadence(v === "all" ? "all" : (Number(v) as CadenceFilter))}>
+              <TabsList className="bg-slate-50 h-auto flex-wrap gap-1 p-1">
+                <FuTabTrigger value="all" label="Geral" count={fuTotalPending} isAll />
+                {([1, 2, 3, 4, 5] as const).map((n) => (
+                  <FuTabTrigger
+                    key={n}
+                    value={String(n)}
+                    label={`FU 0${n}`}
+                    count={fuCounts[n]}
+                  />
+                ))}
+              </TabsList>
+            </Tabs>
+          </div>
+
           <div className="flex-1 min-h-0 -mx-4 sm:-mx-6">
             <KanbanBoard
               onSelectLead={setSelected}
               selectedLeadId={selected?.id ?? null}
               search={search}
               salesFilter={salesFilter === ALL_SALES ? null : salesFilter}
+              cadenceFilter={cadence}
             />
           </div>
         </div>
@@ -160,5 +185,45 @@ export default function Funil() {
         </Sheet>
       )}
     </div>
+  );
+}
+
+function FuTabTrigger({
+  value,
+  label,
+  count,
+  isAll,
+}: {
+  value: string;
+  label: string;
+  count: number;
+  isAll?: boolean;
+}) {
+  const hasPending = !isAll && count > 0;
+  return (
+    <TabsTrigger
+      value={value}
+      className="relative gap-1.5 data-[state=active]:bg-white data-[state=active]:shadow-sm"
+    >
+      <span className="font-semibold">{label}</span>
+      <span
+        className={cn(
+          "inline-flex min-w-[1.25rem] items-center justify-center rounded-full px-1.5 py-0.5 text-[10px] font-bold tabular-nums",
+          hasPending
+            ? "bg-amber-100 text-amber-900"
+            : isAll && count > 0
+              ? "bg-primary/10 text-primary"
+              : "bg-slate-100 text-slate-500"
+        )}
+      >
+        {count}
+      </span>
+      {hasPending && (
+        <span
+          aria-hidden
+          className="absolute -top-1 -right-1 h-2.5 w-2.5 rounded-full bg-red-500 ring-2 ring-white animate-pulse"
+        />
+      )}
+    </TabsTrigger>
   );
 }

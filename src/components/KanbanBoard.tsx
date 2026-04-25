@@ -4,11 +4,12 @@ import { useLeads } from "@/hooks/useLeads";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Plus, Phone, MessageCircle, Pencil, Flame, Tag, User, CalendarClock, Calendar, Clock, Info } from "lucide-react";
+import { Plus, Phone, MessageCircle, Pencil, Flame, Tag, User, CalendarClock, Calendar, Clock, Info, AlarmClock } from "lucide-react";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { LeadDialog } from "./LeadDialog";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { cn } from "@/lib/utils";
+import { FOLLOW_UP_INTERVAL_HOURS, MAX_FOLLOW_UPS } from "@/lib/followUpScripts";
 import {
   DndContext,
   DragEndEvent,
@@ -75,6 +76,36 @@ function isAging(lead: Lead): boolean {
   return Date.now() - created > AGING_THRESHOLD_MS;
 }
 
+// === Cadência de Follow-up ===
+// Aba "FU N" = leads com follow_up_count = N - 1 (0..4) e inatividade > 8h.
+// Status excluídos: já fora do funil de cadência ativa.
+const FU_EXCLUDED_STATUSES = new Set<LeadStatus>([
+  "Compareceu e Comprou",
+  "Compareceu e Não Comprou",
+]);
+
+export type CadenceFilter = "all" | 1 | 2 | 3 | 4 | 5;
+
+export function getPendingFu(lead: Lead): 1 | 2 | 3 | 4 | 5 | null {
+  if (FU_EXCLUDED_STATUSES.has(lead.status)) return null;
+  const count = lead.follow_up_count ?? 0;
+  if (count >= MAX_FOLLOW_UPS) return null;
+  const refIso = lead.last_follow_up_at ?? lead.updated_at ?? lead.created_at;
+  if (!refIso) return null;
+  const hours = (Date.now() - new Date(refIso).getTime()) / (1000 * 60 * 60);
+  if (hours < FOLLOW_UP_INTERVAL_HOURS) return null;
+  return (count + 1) as 1 | 2 | 3 | 4 | 5;
+}
+
+export function countLeadsByPendingFu(leads: Lead[]): Record<1 | 2 | 3 | 4 | 5, number> {
+  const c: Record<1 | 2 | 3 | 4 | 5, number> = { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0 };
+  leads.forEach((l) => {
+    const fu = getPendingFu(l);
+    if (fu) c[fu]++;
+  });
+  return c;
+}
+
 function formatDayMonth(iso: string): string {
   const d = new Date(iso.length <= 10 ? iso + "T00:00:00" : iso);
   return d.toLocaleDateString("pt-BR", { day: "2-digit", month: "2-digit" });
@@ -102,9 +133,10 @@ interface LeadCardProps {
   onSelect?: (l: Lead) => void;
   dragging?: boolean;
   selected?: boolean;
+  cadenceHighlight?: boolean;
 }
 
-function LeadCardContent({ lead, onEdit, dragging, selected }: LeadCardProps) {
+function LeadCardContent({ lead, onEdit, dragging, selected, cadenceHighlight }: LeadCardProps) {
   const { updateLead, updateStatus } = useLeads();
   const cooling = isCooling(lead);
   return (
@@ -112,6 +144,7 @@ function LeadCardContent({ lead, onEdit, dragging, selected }: LeadCardProps) {
       className={cn(
         "p-3 select-none bg-white rounded-xl shadow-[0_2px_10px_-3px_rgba(6,81,237,0.08)] transition-all duration-300 ease-out hover:-translate-y-1 hover:shadow-md relative overflow-hidden border-0",
         cooling && "ring-1 ring-red-500/50 animate-pulse-border",
+        cadenceHighlight && "ring-2 ring-amber-400 ring-offset-1",
         dragging && "shadow-xl ring-2 ring-primary/30 -rotate-1 scale-105",
         selected && !dragging && "ring-2 ring-primary shadow-[0_8px_24px_-6px_rgba(6,81,237,0.15)]"
       )}
@@ -170,6 +203,12 @@ function LeadCardContent({ lead, onEdit, dragging, selected }: LeadCardProps) {
             <Badge className="bg-red-50 hover:bg-red-100 text-red-600 text-[10px] px-2 py-0.5 gap-1 rounded-full border-0 font-semibold">
               <Flame className="h-3 w-3" />
               ESFRIANDO
+            </Badge>
+          )}
+          {cadenceHighlight && (
+            <Badge className="bg-amber-100 hover:bg-amber-200 text-amber-900 dark:bg-amber-900/40 dark:text-amber-100 text-[10px] px-2 py-0.5 gap-1 rounded-full border-0 font-semibold">
+              <AlarmClock className="h-3 w-3" />
+              Aguardando Follow-up
             </Badge>
           )}
           {lead.status === "Repescagem" && (
@@ -288,7 +327,7 @@ function LeadCardContent({ lead, onEdit, dragging, selected }: LeadCardProps) {
   );
 }
 
-function DraggableLeadCard({ lead, onEdit, onSelect, selected }: { lead: Lead; onEdit: (l: Lead) => void; onSelect?: (l: Lead) => void; selected?: boolean }) {
+function DraggableLeadCard({ lead, onEdit, onSelect, selected, cadenceHighlight }: { lead: Lead; onEdit: (l: Lead) => void; onSelect?: (l: Lead) => void; selected?: boolean; cadenceHighlight?: boolean }) {
   const { attributes, listeners, setNodeRef, isDragging } = useDraggable({ id: lead.id });
   return (
     <div
@@ -298,7 +337,7 @@ function DraggableLeadCard({ lead, onEdit, onSelect, selected }: { lead: Lead; o
       onClick={() => onSelect?.(lead)}
       className={cn("touch-none cursor-pointer active:cursor-grabbing", isDragging && "opacity-40")}
     >
-      <LeadCardContent lead={lead} onEdit={onEdit} selected={selected} />
+      <LeadCardContent lead={lead} onEdit={onEdit} selected={selected} cadenceHighlight={cadenceHighlight} />
     </div>
   );
 }
@@ -345,11 +384,13 @@ export function KanbanBoard({
   selectedLeadId,
   search = "",
   salesFilter = null,
+  cadenceFilter = "all",
 }: {
   onSelectLead?: (l: Lead) => void;
   selectedLeadId?: string | null;
   search?: string;
   salesFilter?: string | null;
+  cadenceFilter?: CadenceFilter;
 } = {}) {
   const { leads, loading, refetch, updateStatus } = useLeads();
   const [dialogOpen, setDialogOpen] = useState(false);
@@ -393,7 +434,8 @@ export function KanbanBoard({
 
   const term = search.trim().toLowerCase();
   const onlyDigits = term.replace(/\D/g, "");
-  const hasFilters = term.length > 0 || !!salesFilter;
+  const cadenceActive = cadenceFilter !== "all";
+  const hasFilters = term.length > 0 || !!salesFilter || cadenceActive;
   const filteredLeads = leads.filter((l) => {
     if (salesFilter && (l.assigned_to ?? "") !== salesFilter) return false;
     if (term) {
@@ -401,6 +443,10 @@ export function KanbanBoard({
       const phoneDigits = (l.phone ?? "").replace(/\D/g, "");
       const phoneMatch = onlyDigits.length > 0 && phoneDigits.includes(onlyDigits);
       if (!nameMatch && !phoneMatch) return false;
+    }
+    if (cadenceActive) {
+      const fu = getPendingFu(l);
+      if (fu !== cadenceFilter) return false;
     }
     return true;
   });
@@ -444,6 +490,7 @@ export function KanbanBoard({
                       onEdit={openEdit}
                       onSelect={onSelectLead}
                       selected={selectedLeadId === lead.id}
+                      cadenceHighlight={cadenceActive}
                     />
                   </div>
                 ))}
