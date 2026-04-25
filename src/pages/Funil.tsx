@@ -187,3 +187,43 @@ export default function Funil() {
     </div>
   );
 }
+
+function FuTabTrigger({
+  value,
+  label,
+  count,
+  isAll,
+}: {
+  value: string;
+  label: string;
+  count: number;
+  isAll?: boolean;
+}) {
+  const hasPending = !isAll && count > 0;
+  return (
+    <TabsTrigger
+      value={value}
+      className="relative gap-1.5 data-[state=active]:bg-white data-[state=active]:shadow-sm"
+    >
+      <span className="font-semibold">{label}</span>
+      <span
+        className={cn(
+          "inline-flex min-w-[1.25rem] items-center justify-center rounded-full px-1.5 py-0.5 text-[10px] font-bold tabular-nums",
+          hasPending
+            ? "bg-amber-100 text-amber-900"
+            : isAll && count > 0
+              ? "bg-primary/10 text-primary"
+              : "bg-slate-100 text-slate-500"
+        )}
+      >
+        {count}
+      </span>
+      {hasPending && (
+        <span
+          aria-hidden
+          className="absolute -top-1 -right-1 h-2.5 w-2.5 rounded-full bg-red-500 ring-2 ring-white animate-pulse"
+        />
+      )}
+    </TabsTrigger>
+  );
+}
