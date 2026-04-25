@@ -11,7 +11,7 @@ import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/
 import { PrescriptionForm } from "@/components/PrescriptionForm";
 import { LabOrderForm } from "@/components/LabOrderForm";
 import { StageGateDialog, isGatedStatus, type StageGate } from "@/components/StageGateDialog";
-import { ArrowLeft, Paperclip, Send, Smile, X, Zap, Eye, CalendarClock, Sparkles, CheckCircle2, AlertCircle } from "lucide-react";
+import { ArrowLeft, Paperclip, Send, Smile, X, Zap, Eye, CalendarClock, Sparkles, CheckCircle2, AlertCircle, Check } from "lucide-react";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { cn } from "@/lib/utils";
 import {
@@ -159,56 +159,77 @@ export function ChatPanel({
             </Button>
           )}
         </div>
-        <div className="flex items-center gap-2">
-          <Select
-            value={(lead.lead_source as string) || "__none__"}
-            onValueChange={(v) =>
-              updateLead(lead.id, { lead_source: v === "__none__" ? null : v })
-            }
-          >
-            <SelectTrigger className="h-7 flex-1 text-[11px]">
-              <SelectValue placeholder="Origem do Lead" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="__none__" className="text-xs">— Sem origem —</SelectItem>
-              {LEAD_SOURCES.map((s) => (
-                <SelectItem key={s} value={s} className="text-xs">{s}</SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-          <Select
-            value={(lead.interest_tag as string) || "__none__"}
-            onValueChange={(v) =>
-              updateLead(lead.id, { interest_tag: v === "__none__" ? null : v })
-            }
-          >
-            <SelectTrigger className="h-7 flex-1 text-[11px]">
-              <SelectValue placeholder="Tag de Interesse" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="__none__" className="text-xs">— Sem tag —</SelectItem>
-              {INTEREST_TAGS.map((t) => (
-                <SelectItem key={t} value={t} className="text-xs">{t}</SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-          <Select
-            value={lead.assigned_to || "__none__"}
-            onValueChange={(v) =>
-              updateLead(lead.id, { assigned_to: v === "__none__" ? null : v })
-            }
-          >
-            <SelectTrigger className="h-7 flex-1 text-[11px]">
-              <SelectValue placeholder="Vendedora" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="__none__" className="text-xs">— Sem vendedora —</SelectItem>
-              {SALESPEOPLE.map((s) => (
-                <SelectItem key={s} value={s} className="text-xs">{s}</SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </div>
+        {(() => {
+          const baseTrigger = "h-7 flex-1 text-[11px] transition-colors duration-200";
+          const okTrigger =
+            "border-emerald-500 text-emerald-700 bg-emerald-50 hover:bg-emerald-50 focus:ring-emerald-500 dark:bg-emerald-950/30 dark:text-emerald-200";
+          const pendingTrigger =
+            "border-red-500 text-red-600 bg-red-50 hover:bg-red-50 focus:ring-red-500 dark:bg-red-950/30 dark:text-red-300";
+          const sourceOk = !!lead.lead_source;
+          const interestOk = !!lead.interest_tag;
+          const assignedOk = !!lead.assigned_to;
+          return (
+            <div className="flex items-center gap-2">
+              <Select
+                value={(lead.lead_source as string) || "__none__"}
+                onValueChange={(v) =>
+                  updateLead(lead.id, { lead_source: v === "__none__" ? null : v })
+                }
+              >
+                <SelectTrigger className={cn(baseTrigger, sourceOk ? okTrigger : pendingTrigger)}>
+                  <span className="flex items-center gap-1 truncate">
+                    {sourceOk && <Check className="h-3 w-3 shrink-0" />}
+                    <SelectValue placeholder="Origem do Lead" />
+                  </span>
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="__none__" className="text-xs">— Sem origem —</SelectItem>
+                  {LEAD_SOURCES.map((s) => (
+                    <SelectItem key={s} value={s} className="text-xs">{s}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              <Select
+                value={(lead.interest_tag as string) || "__none__"}
+                onValueChange={(v) =>
+                  updateLead(lead.id, { interest_tag: v === "__none__" ? null : v })
+                }
+              >
+                <SelectTrigger className={cn(baseTrigger, interestOk ? okTrigger : pendingTrigger)}>
+                  <span className="flex items-center gap-1 truncate">
+                    {interestOk && <Check className="h-3 w-3 shrink-0" />}
+                    <SelectValue placeholder="Tipo de Atendimento" />
+                  </span>
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="__none__" className="text-xs">— Sem tag —</SelectItem>
+                  {INTEREST_TAGS.map((t) => (
+                    <SelectItem key={t} value={t} className="text-xs">{t}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              <Select
+                value={lead.assigned_to || "__none__"}
+                onValueChange={(v) =>
+                  updateLead(lead.id, { assigned_to: v === "__none__" ? null : v })
+                }
+              >
+                <SelectTrigger className={cn(baseTrigger, assignedOk ? okTrigger : pendingTrigger)}>
+                  <span className="flex items-center gap-1 truncate">
+                    {assignedOk && <Check className="h-3 w-3 shrink-0" />}
+                    <SelectValue placeholder="Vendedora" />
+                  </span>
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="__none__" className="text-xs">— Sem vendedora —</SelectItem>
+                  {SALESPEOPLE.map((s) => (
+                    <SelectItem key={s} value={s} className="text-xs">{s}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+          );
+        })()}
       </header>
 
       {(() => {
