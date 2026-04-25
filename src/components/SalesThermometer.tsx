@@ -96,7 +96,7 @@ export function SalesThermometer({ leads }: SalesThermometerProps) {
   const bottleneck = useMemo(() => {
     const candidates = stages
       .map((s, i) => ({ stage: s, prev: stages[i - 1], idx: i }))
-      .filter((x) => x.conv !== undefined && x.stage.conv !== null && x.prev && x.prev.count > 0);
+      .filter((x) => x.stage.conv !== null && x.prev && x.prev.count > 0);
     if (candidates.length === 0) return null;
     let worst = candidates[0];
     for (const c of candidates) {

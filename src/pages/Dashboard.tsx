@@ -8,6 +8,7 @@ import { PeriodFilter, PeriodKey, getPeriodRange } from "@/components/PeriodFilt
 import { LeadsVolumeChart } from "@/components/LeadsVolumeChart";
 import { TemporalCards } from "@/components/TemporalCards";
 import { SalesRanking } from "@/components/SalesRanking";
+import { SalesThermometer } from "@/components/SalesThermometer";
 import { exportMonthlyReport } from "@/lib/exportReport";
 import { isWithinInterval, parseISO } from "date-fns";
 import { FileDown } from "lucide-react";
@@ -66,6 +67,8 @@ export default function Dashboard() {
       />
 
       <DashboardSummary leads={filtered} loading={loading} />
+
+      <SalesThermometer leads={filtered} />
 
       <TemporalCards leads={leads} />
 
