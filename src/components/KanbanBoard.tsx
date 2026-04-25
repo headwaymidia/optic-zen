@@ -412,7 +412,7 @@ export function KanbanBoard({
           style={{ WebkitOverflowScrolling: "touch" }}
         >
           {LEAD_STATUSES.map((status) => {
-            const colLeads = leads
+            const colLeads = filteredLeads
               .filter((l) => l.status === status)
               .sort((a, b) => {
                 if (status === "Agendou Exame") {
