@@ -283,10 +283,21 @@ export function ChatPanel({
         <Input
           value={message}
           onChange={(e) => setMessage(e.target.value)}
+          onKeyDown={(e) => {
+            if (e.key === "Enter" && !e.shiftKey) {
+              e.preventDefault();
+              handleSend();
+            }
+          }}
           placeholder="Digite sua mensagem..."
           className="flex-1 bg-muted/50 border-0 h-9"
         />
-        <Button size="icon" className="h-9 w-9 bg-green-600 hover:bg-green-700 text-white">
+        <Button
+          size="icon"
+          type="button"
+          onClick={handleSend}
+          className="h-9 w-9 bg-green-600 hover:bg-green-700 text-white"
+        >
           <Send className="h-4 w-4" />
         </Button>
       </footer>
