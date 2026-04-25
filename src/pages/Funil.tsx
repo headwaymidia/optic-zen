@@ -133,12 +133,30 @@ export default function Funil() {
             )}
           </div>
 
+          {/* Central de Cadência — filtros por etapa de Follow-up */}
+          <div className="rounded-xl border border-slate-100 bg-white px-3 py-2 shadow-[0_1px_2px_rgba(0,0,0,0.02)]">
+            <Tabs value={String(cadence)} onValueChange={(v) => setCadence(v === "all" ? "all" : (Number(v) as CadenceFilter))}>
+              <TabsList className="bg-slate-50 h-auto flex-wrap gap-1 p-1">
+                <FuTabTrigger value="all" label="Geral" count={fuTotalPending} isAll />
+                {([1, 2, 3, 4, 5] as const).map((n) => (
+                  <FuTabTrigger
+                    key={n}
+                    value={String(n)}
+                    label={`FU 0${n}`}
+                    count={fuCounts[n]}
+                  />
+                ))}
+              </TabsList>
+            </Tabs>
+          </div>
+
           <div className="flex-1 min-h-0 -mx-4 sm:-mx-6">
             <KanbanBoard
               onSelectLead={setSelected}
               selectedLeadId={selected?.id ?? null}
               search={search}
               salesFilter={salesFilter === ALL_SALES ? null : salesFilter}
+              cadenceFilter={cadence}
             />
           </div>
         </div>
