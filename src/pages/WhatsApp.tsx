@@ -77,13 +77,32 @@ export default function WhatsAppPage() {
   const selected = leads.find((l) => l.id === selectedId) ?? null;
 
   return (
-    <div className="flex h-[calc(100vh-3.5rem)] w-full overflow-hidden bg-background">
-      <aside
-        className={cn(
-          "w-full md:w-[30%] md:min-w-[280px] md:max-w-[400px] border-r flex flex-col bg-card",
-          selected && "hidden md:flex"
-        )}
-      >
+    <div className="flex flex-col h-[calc(100vh-3.5rem)] w-full overflow-hidden bg-background">
+      <div className="border-b bg-card px-4 pt-3">
+        <Tabs value={view} onValueChange={(v) => setView(v as "conversas" | "cadencia")}>
+          <TabsList>
+            <TabsTrigger value="conversas" className="gap-2">
+              <MessagesSquare className="h-4 w-4" />
+              Conversas
+            </TabsTrigger>
+            <TabsTrigger value="cadencia" className="gap-2">
+              <ListChecks className="h-4 w-4" />
+              Central de Cadência
+            </TabsTrigger>
+          </TabsList>
+        </Tabs>
+      </div>
+
+      {view === "cadencia" ? (
+        <CadenceCenter />
+      ) : (
+        <div className="flex flex-1 min-h-0 overflow-hidden">
+          <aside
+            className={cn(
+              "w-full md:w-[30%] md:min-w-[280px] md:max-w-[400px] border-r flex flex-col bg-card",
+              selected && "hidden md:flex"
+            )}
+          >
         <div className="p-4 border-b space-y-3">
           <h1 className="text-lg font-semibold">Atendimentos</h1>
           <div className="flex items-center gap-2">
