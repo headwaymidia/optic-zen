@@ -60,11 +60,23 @@ const SOURCE_EMOJI: Record<string, string> = {
 
 const COOLING_STATUSES: LeadStatus[] = ["Novo Lead", "Aguardando Resposta"];
 const COOLING_THRESHOLD_MS = 2 * 60 * 60 * 1000; // 2h
+const AGING_THRESHOLD_MS = 7 * 24 * 60 * 60 * 1000; // 7 dias
 
 function isCooling(lead: Lead): boolean {
   if (!COOLING_STATUSES.includes(lead.status)) return false;
   const created = new Date(lead.created_at).getTime();
   return Date.now() - created > COOLING_THRESHOLD_MS;
+}
+
+function isAging(lead: Lead): boolean {
+  if (!COOLING_STATUSES.includes(lead.status)) return false;
+  const created = new Date(lead.created_at).getTime();
+  return Date.now() - created > AGING_THRESHOLD_MS;
+}
+
+function formatDayMonth(iso: string): string {
+  const d = new Date(iso.length <= 10 ? iso + "T00:00:00" : iso);
+  return d.toLocaleDateString("pt-BR", { day: "2-digit", month: "2-digit" });
 }
 
 function formatPhoneBR(phone: string): string {
