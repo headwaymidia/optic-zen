@@ -238,7 +238,7 @@ export function SalesThermometer({ leads }: SalesThermometerProps) {
                     })()}
                   </div>
                 )}
-              </>
+              </Fragment>
             );
           })}
         </div>
