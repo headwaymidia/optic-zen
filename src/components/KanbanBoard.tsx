@@ -77,23 +77,55 @@ function isAging(lead: Lead): boolean {
 }
 
 // === Cadência de Follow-up ===
-// Aba "FU N" = leads com follow_up_count = N - 1 (0..4) e inatividade > 8h.
-// Status excluídos: já fora do funil de cadência ativa.
-const FU_EXCLUDED_STATUSES = new Set<LeadStatus>([
-  "Compareceu e Comprou",
-  "Compareceu e Não Comprou",
+// Regras:
+// 1. Lead só entra em FU se status for "Em Atendimento" ou "Aguardando Resposta".
+// 2. Vendedora precisa ter mandado a última mensagem (last_follow_up_at >= last_interaction).
+//    Se o cliente respondeu por último, é "Atendimento Pendente", não FU.
+// 3. Tempo desde a última mensagem da vendedora > 5h.
+// 4. Aba "FU N" = follow_up_count == N - 1.
+const FU_ALLOWED_STATUSES = new Set<LeadStatus>([
+  "Em Atendimento",
+  "Aguardando Resposta",
 ]);
+const FU_INACTIVITY_HOURS = 5;
 
 export type CadenceFilter = "all" | 1 | 2 | 3 | 4 | 5;
 
 export function getPendingFu(lead: Lead): 1 | 2 | 3 | 4 | 5 | null {
-  if (FU_EXCLUDED_STATUSES.has(lead.status)) return null;
+  if (!FU_ALLOWED_STATUSES.has(lead.status)) return null;
   const count = lead.follow_up_count ?? 0;
   if (count >= MAX_FOLLOW_UPS) return null;
-  const refIso = lead.last_follow_up_at ?? lead.updated_at ?? lead.created_at;
-  if (!refIso) return null;
-  const hours = (Date.now() - new Date(refIso).getTime()) / (1000 * 60 * 60);
-  if (hours < FOLLOW_UP_INTERVAL_HOURS) return null;
+
+  // Última mensagem enviada pela vendedora
+  const lastSellerIso = lead.last_follow_up_at;
+  // Última interação registrada (proxy de última mensagem do cliente quando > last_follow_up_at)
+  const lastInteractionIso = lead.last_interaction;
+
+  // Se o cliente respondeu por último (last_interaction > last_follow_up_at), não é FU.
+  if (lastSellerIso && lastInteractionIso) {
+    if (new Date(lastInteractionIso).getTime() > new Date(lastSellerIso).getTime()) {
+      return null;
+    }
+  }
+
+  // Para FU 01 (count = 0): se ainda não houve nenhum FU, exigimos que tenha
+  // havido alguma interação anterior da vendedora para "esfriar" — usamos
+  // updated_at do lead como proxy de última atividade da vendedora apenas
+  // quando NÃO houver resposta posterior do cliente.
+  const referenceIso = lastSellerIso ?? lead.updated_at;
+  if (!referenceIso) return null;
+
+  // Se há last_interaction posterior à referência da vendedora → cliente respondeu
+  if (
+    lastInteractionIso &&
+    new Date(lastInteractionIso).getTime() > new Date(referenceIso).getTime()
+  ) {
+    return null;
+  }
+
+  const hours = (Date.now() - new Date(referenceIso).getTime()) / (1000 * 60 * 60);
+  if (hours < FU_INACTIVITY_HOURS) return null;
+
   return (count + 1) as 1 | 2 | 3 | 4 | 5;
 }
 
@@ -490,7 +522,7 @@ export function KanbanBoard({
                       onEdit={openEdit}
                       onSelect={onSelectLead}
                       selected={selectedLeadId === lead.id}
-                      cadenceHighlight={cadenceActive}
+                      cadenceHighlight={cadenceActive && getPendingFu(lead) !== null}
                     />
                   </div>
                 ))}
