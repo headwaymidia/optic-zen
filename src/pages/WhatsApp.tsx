@@ -4,13 +4,15 @@ import { useLeads } from "@/hooks/useLeads";
 import { Input } from "@/components/ui/input";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { ChatPanel } from "@/components/ChatPanel";
-import { Search, MessageSquarePlus } from "lucide-react";
+import { Search, MessageSquarePlus, MessagesSquare, ListChecks } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Badge } from "@/components/ui/badge";
 import { Tag } from "lucide-react";
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { CadenceCenter } from "@/components/CadenceCenter";
 
 const INTEREST_TAG_STYLES: Record<string, string> = {
   Exame: "bg-sky-100 text-sky-800 dark:bg-sky-900/40 dark:text-sky-200",
@@ -53,12 +55,14 @@ export default function WhatsAppPage() {
   const [searchParams, setSearchParams] = useSearchParams();
   const [newChatOpen, setNewChatOpen] = useState(false);
   const [newChatSearch, setNewChatSearch] = useState("");
+  const [view, setView] = useState<"conversas" | "cadencia">("conversas");
 
   // Deep-link: open chat for leadId from query string (e.g. coming from Tarefas)
   useEffect(() => {
     const leadIdFromUrl = searchParams.get("leadId");
     if (leadIdFromUrl && leads.some((l) => l.id === leadIdFromUrl)) {
       setSelectedId(leadIdFromUrl);
+      setView("conversas");
       // Clean the URL so refresh doesn't keep re-selecting
       searchParams.delete("leadId");
       setSearchParams(searchParams, { replace: true });
@@ -73,13 +77,32 @@ export default function WhatsAppPage() {
   const selected = leads.find((l) => l.id === selectedId) ?? null;
 
   return (
-    <div className="flex h-[calc(100vh-3.5rem)] w-full overflow-hidden bg-background">
-      <aside
-        className={cn(
-          "w-full md:w-[30%] md:min-w-[280px] md:max-w-[400px] border-r flex flex-col bg-card",
-          selected && "hidden md:flex"
-        )}
-      >
+    <div className="flex flex-col h-[calc(100vh-3.5rem)] w-full overflow-hidden bg-background">
+      <div className="border-b bg-card px-4 pt-3">
+        <Tabs value={view} onValueChange={(v) => setView(v as "conversas" | "cadencia")}>
+          <TabsList>
+            <TabsTrigger value="conversas" className="gap-2">
+              <MessagesSquare className="h-4 w-4" />
+              Conversas
+            </TabsTrigger>
+            <TabsTrigger value="cadencia" className="gap-2">
+              <ListChecks className="h-4 w-4" />
+              Central de Cadência
+            </TabsTrigger>
+          </TabsList>
+        </Tabs>
+      </div>
+
+      {view === "cadencia" ? (
+        <CadenceCenter />
+      ) : (
+        <div className="flex flex-1 min-h-0 overflow-hidden">
+          <aside
+            className={cn(
+              "w-full md:w-[30%] md:min-w-[280px] md:max-w-[400px] border-r flex flex-col bg-card",
+              selected && "hidden md:flex"
+            )}
+          >
         <div className="p-4 border-b space-y-3">
           <h1 className="text-lg font-semibold">Atendimentos</h1>
           <div className="flex items-center gap-2">
@@ -160,6 +183,8 @@ export default function WhatsAppPage() {
           <ChatPanel lead={selected} onBack={() => setSelectedId(null)} />
         )}
       </section>
+        </div>
+      )}
 
       <Dialog open={newChatOpen} onOpenChange={setNewChatOpen}>
         <DialogContent className="max-w-md p-0 gap-0">
