@@ -24,6 +24,7 @@ import {
 
 const STATUS_COLORS: Record<LeadStatus, string> = {
   "Novo Lead": "bg-blue-500",
+  "Em Atendimento": "bg-cyan-400",
   "Aguardando Resposta": "bg-amber-500",
   "Agendou Exame": "bg-purple-500",
   "Não Compareceu": "bg-orange-500",
