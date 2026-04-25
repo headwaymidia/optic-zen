@@ -53,14 +53,12 @@ export default function WhatsAppPage() {
   const [searchParams, setSearchParams] = useSearchParams();
   const [newChatOpen, setNewChatOpen] = useState(false);
   const [newChatSearch, setNewChatSearch] = useState("");
-  const [view, setView] = useState<"conversas" | "cadencia">("conversas");
 
   // Deep-link: open chat for leadId from query string (e.g. coming from Tarefas)
   useEffect(() => {
     const leadIdFromUrl = searchParams.get("leadId");
     if (leadIdFromUrl && leads.some((l) => l.id === leadIdFromUrl)) {
       setSelectedId(leadIdFromUrl);
-      setView("conversas");
       // Clean the URL so refresh doesn't keep re-selecting
       searchParams.delete("leadId");
       setSearchParams(searchParams, { replace: true });
