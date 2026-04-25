@@ -1,5 +1,5 @@
 import { useMemo, useState } from "react";
-import { KanbanBoard } from "@/components/KanbanBoard";
+import { KanbanBoard, CadenceFilter, countLeadsByPendingFu } from "@/components/KanbanBoard";
 import { ChatPanel } from "@/components/ChatPanel";
 import { useLeads } from "@/hooks/useLeads";
 import { Lead, LEAD_STATUSES, LeadStatus, SALESPEOPLE } from "@/lib/supabase";
@@ -9,6 +9,7 @@ import { cn } from "@/lib/utils";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Search, X } from "lucide-react";
 
 const STATUS_DOT_COLORS: Record<LeadStatus, string> = {
