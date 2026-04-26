@@ -10,6 +10,7 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { PrescriptionForm } from "@/components/PrescriptionForm";
 import { LabOrderForm } from "@/components/LabOrderForm";
+import { ERPTransferCard } from "@/components/ERPTransferCard";
 import { StageGateDialog, isGatedStatus, type StageGate } from "@/components/StageGateDialog";
 import { ArrowLeft, Paperclip, Send, Smile, X, Zap, Eye, CalendarClock, Sparkles, CheckCircle2, AlertCircle } from "lucide-react";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
@@ -268,6 +269,7 @@ export function ChatPanel({
           </Accordion>
         );
       })()}
+      <ERPTransferCard lead={lead} />
       <div className="flex-1 overflow-y-auto bg-muted/40 px-3 py-4 space-y-2">
         {messages.map((m, i) => (
           <div key={i} className={cn("flex", m.from === "us" ? "justify-end" : "justify-start")}>
