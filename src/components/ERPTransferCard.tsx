@@ -1,4 +1,4 @@
-import { Lead, SALESPEOPLE } from "@/lib/supabase";
+import { Lead } from "@/lib/supabase";
 import { Button } from "@/components/ui/button";
 import { Copy } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
@@ -10,10 +10,7 @@ function formatCurrency(value: number | null) {
 
 function buildFicha(lead: Lead): string {
   const p = lead.prescription ?? {};
-  const vendedora =
-    SALESPEOPLE.find((s) => s.id === lead.assigned_to)?.name ??
-    lead.assigned_to ??
-    "—";
+  const vendedora = lead.assigned_to ?? "—";
 
   const lines: string[] = [];
   lines.push(`Nome: ${lead.name || "—"}`);
