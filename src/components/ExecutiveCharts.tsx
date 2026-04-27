@@ -22,8 +22,8 @@ import { ptBR } from "date-fns/locale";
 
 const BLUE = "#3B82F6";
 const EMERALD = "#10B981";
-const AMBER = "#F59E0B";
-const VIOLET = "#A78BFA";
+const AMBER = "#FBBF24";       // Dourado vibrante
+const VIOLET = "#8B5CF6";      // Violeta elétrico
 const ROSE = "#F43F5E";
 const SLATE = "#94A3B8";
 
