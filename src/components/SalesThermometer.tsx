@@ -2,6 +2,7 @@ import { useMemo } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Lead } from "@/lib/supabase";
 import { cn } from "@/lib/utils";
+import { Sparkles, CalendarCheck, UserCheck, Trophy } from "lucide-react";
 
 interface SalesThermometerProps {
   leads: Lead[];
