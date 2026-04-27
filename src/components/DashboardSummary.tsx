@@ -106,10 +106,10 @@ export function KPICards({ leads, loading }: { leads: Lead[]; loading: boolean }
         <Card key={s.key} className="glass-card rounded-lg border-0">
           <CardContent className="p-5">
             <div className="flex items-center justify-between mb-4">
-              <p className="text-[10px] font-light uppercase tracking-[0.3em] text-muted-foreground truncate">
+              <p className="text-[10px] font-medium uppercase tracking-[0.2em] text-zinc-500 truncate">
                 {s.label}
               </p>
-              <s.icon className="h-3.5 w-3.5 text-muted-foreground" strokeWidth={1.25} />
+              <s.icon className="h-3.5 w-3.5 text-zinc-500" strokeWidth={1.25} />
             </div>
             <div className="text-2xl font-medium tabular-nums text-foreground leading-none tracking-tight">
               {loading ? "—" : s.value}
