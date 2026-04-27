@@ -162,18 +162,18 @@ export function SalesThermometer({ leads }: SalesThermometerProps) {
               <Fragment key={s.key}>
                 <div
                   className={cn(
-                    "sm:col-span-1 relative rounded-lg border p-2.5 transition-all",
+                    "sm:col-span-1 relative rounded-lg border p-2.5 transition-all bg-gradient-to-br from-transparent",
                     s.bg,
-                    isBottleneckTarget ? "border-amber-300" : "border-border"
+                    isBottleneckTarget ? "border-amber-300 dark:border-amber-500/40" : "border-border dark:border-white/5"
                   )}
                 >
                   <div className="flex items-center gap-1.5">
                     <span className={cn("h-1.5 w-1.5 rounded-full", s.accent)} />
-                    <span className="text-[9px] uppercase tracking-wider text-muted-foreground font-semibold truncate">
+                    <span className="text-[9px] uppercase tracking-wider text-muted-foreground font-bold truncate">
                       {s.shortLabel}
                     </span>
                   </div>
-                  <p className={cn("text-xl font-semibold tabular-nums mt-0.5 tracking-tight", s.textAccent)}>
+                  <p className={cn("text-xl font-black tabular-nums mt-0.5 tracking-tight", s.textAccent)}>
                     {s.count}
                   </p>
                   <p className="text-[10px] text-muted-foreground truncate">{s.label}</p>
@@ -198,19 +198,21 @@ export function SalesThermometer({ leads }: SalesThermometerProps) {
                       const conv = next.conv;
                       const isBottleneck = bottleneck?.stage.key === next.key;
                       const pctNum = conv === null ? 0 : conv * 100;
+                      const isHot = pctNum >= 60 && !isBottleneck;
                       const tone =
                         conv === null
                           ? "text-muted-foreground bg-card border-border"
                           : isBottleneck
-                            ? "text-amber-700 bg-card border-amber-300"
-                            : pctNum >= 60
-                              ? "text-emerald-700 bg-card border-emerald-200"
-                              : "text-amber-700 bg-card border-amber-200";
+                            ? "text-amber-700 dark:text-amber-300 bg-card border-amber-300 dark:border-amber-500/40"
+                            : isHot
+                              ? "text-emerald-700 dark:text-emerald-300 bg-card border-emerald-300 dark:border-emerald-500/40"
+                              : "text-amber-700 dark:text-amber-300 bg-card border-amber-200 dark:border-amber-500/30";
                       return (
                         <span
                           className={cn(
-                            "relative z-10 inline-flex items-center gap-0.5 rounded-full border px-1.5 py-0.5 text-[10px] font-semibold tabular-nums",
-                            tone
+                            "relative z-10 inline-flex items-center gap-0.5 rounded-full border px-1.5 py-0.5 text-[10px] font-bold tabular-nums",
+                            tone,
+                            isHot && "shadow-[0_0_10px_-2px_hsl(160_84%_50%/0.7)] dark:shadow-[0_0_14px_-2px_hsl(160_84%_55%/0.85)]"
                           )}
                         >
                           {isBottleneck ? (
