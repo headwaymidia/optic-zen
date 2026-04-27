@@ -121,31 +121,7 @@ export function PeriodKPIRow({ leads, range, inline = false }: Props) {
       }}
     >
       {cards}
-            <p className="text-[10px] uppercase tracking-[0.22em] text-zinc-500 dark:text-zinc-500 font-medium mb-2">
-              {it.label}
-            </p>
-            <div className="flex items-baseline gap-2">
-              <span
-                className="text-[28px] font-bold tabular-nums tracking-tighter leading-none text-[#1D1D1F] dark:text-white"
-                style={{ fontFeatureSettings: "'tnum'" }}
-              >
-                {it.value}
-              </span>
-              <span
-                className={cn(
-                  "inline-flex items-center gap-0.5 text-[11px] font-medium tabular-nums",
-                  tone
-                )}
-              >
-                <Icon className="h-3 w-3" strokeWidth={2.5} />
-                {it.delta === null
-                  ? "—"
-                  : `${Math.abs(it.delta).toFixed(0)}%`}
-              </span>
-            </div>
-          </div>
-        );
-      })}
     </div>
   );
 }
+
