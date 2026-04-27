@@ -13,6 +13,7 @@ import {
 import { eachDayOfInterval, format, isSameDay, parseISO, subDays } from "date-fns";
 import { ptBR } from "date-fns/locale";
 
+const ADS_SOURCES = new Set(["Instagram", "Facebook", "Google Ads", "Meta Ads (Instagram/FB)"]);
 const NEON_GREEN = "#22C55E";
 const NEON_YELLOW = "#FACC15";
 
