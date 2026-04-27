@@ -9,10 +9,11 @@ Plus Jakarta Sans is the primary font for a Premium Enterprise feel.
 
 @layer base {
   :root {
-    --background: 210 40% 98%;
+    /* Luxury Light: F8F9FA + cards brancos puros */
+    --background: 210 14% 98%;         /* #F8F9FA */
     --foreground: 222.2 84% 4.9%;
 
-    --card: 0 0% 100%;
+    --card: 0 0% 100%;                 /* #FFFFFF — branco puro */
     --card-foreground: 222.2 84% 4.9%;
 
     --popover: 0 0% 100%;
@@ -33,27 +34,52 @@ Plus Jakarta Sans is the primary font for a Premium Enterprise feel.
     --destructive: 0 84.2% 60.2%;
     --destructive-foreground: 210 40% 98%;
 
-    --border: 214.3 31.8% 91.4%;
+    --border: 0 0% 0% / 0.05;          /* black/5 */
     --input: 214.3 31.8% 91.4%;
     --ring: 222.2 84% 4.9%;
 
     --radius: 0.75rem;
 
     --sidebar-background: 0 0% 100%;
-
     --sidebar-foreground: 240 5.3% 26.1%;
-
     --sidebar-primary: 240 5.9% 10%;
-
     --sidebar-primary-foreground: 0 0% 98%;
-
     --sidebar-accent: 240 4.8% 95.9%;
-
     --sidebar-accent-foreground: 240 5.9% 10%;
-
     --sidebar-border: 220 13% 91%;
-
     --sidebar-ring: 217.2 91.2% 59.8%;
+  }
+
+  .dark {
+    /* Luxury Dark Enterprise: #050505 base, cards #0C0C0E */
+    --background: 0 0% 2%;             /* #050505 */
+    --foreground: 0 0% 98%;
+    --card: 240 5% 5%;                 /* #0C0C0E */
+    --card-foreground: 0 0% 98%;
+    --popover: 240 5% 5%;
+    --popover-foreground: 0 0% 98%;
+    --primary: 0 0% 98%;
+    --primary-foreground: 0 0% 0%;
+    --secondary: 240 4% 12%;
+    --secondary-foreground: 0 0% 98%;
+    --muted: 240 4% 9%;
+    --muted-foreground: 240 5% 64.9%;
+    --accent: 240 4% 12%;
+    --accent-foreground: 0 0% 98%;
+    --destructive: 0 62.8% 50%;
+    --destructive-foreground: 0 0% 98%;
+    --border: 0 0% 100% / 0.10;        /* white/10 */
+    --input: 240 4% 12%;
+    --ring: 240 5% 64.9%;
+
+    --sidebar-background: 0 0% 2%;
+    --sidebar-foreground: 240 5% 84%;
+    --sidebar-primary: 0 0% 98%;
+    --sidebar-primary-foreground: 0 0% 0%;
+    --sidebar-accent: 240 4% 9%;
+    --sidebar-accent-foreground: 0 0% 98%;
+    --sidebar-border: 240 4% 11%;
+    --sidebar-ring: 240 5% 64.9%;
   }
 
   .dark {
@@ -200,22 +226,31 @@ Plus Jakarta Sans is the primary font for a Premium Enterprise feel.
     animation: pulse-border-red 1.6s ease-in-out infinite;
   }
 
-  /* Luxury glass card — zinc-900/40 + blur xl + borda white/5 + chanfro superior */
+  /* Luxury glass card — DARK: #0C0C0E translúcido + blur md + chanfro superior */
   .dark .glass-card {
-    background-color: rgba(24, 24, 27, 0.40);
-    backdrop-filter: blur(24px) saturate(140%);
-    -webkit-backdrop-filter: blur(24px) saturate(140%);
-    border: 1px solid rgba(255, 255, 255, 0.05);
+    background-color: rgba(12, 12, 14, 0.70);
+    backdrop-filter: blur(12px) saturate(140%);
+    -webkit-backdrop-filter: blur(12px) saturate(140%);
+    border: 1px solid rgba(255, 255, 255, 0.10);
     box-shadow: inset 0 1px 0 0 rgba(255, 255, 255, 0.05);
     transition: border-color 220ms ease, box-shadow 220ms ease;
   }
   .dark .glass-card:hover {
-    border-color: rgba(255, 255, 255, 0.10);
+    border-color: rgba(255, 255, 255, 0.16);
     box-shadow: inset 0 1px 0 0 rgba(255, 255, 255, 0.08);
   }
+
+  /* Luxury glass card — LIGHT: branco puro + borda black/5 + chanfro superior branco */
   .glass-card {
-    background-color: hsl(var(--card));
-    border: 1px solid hsl(var(--border));
+    background-color: #ffffff;
+    border: 1px solid rgba(0, 0, 0, 0.05);
+    box-shadow:
+      inset 0 1px 0 0 rgba(255, 255, 255, 0.80),
+      0 1px 2px 0 rgba(0, 0, 0, 0.03);
+    transition: border-color 220ms ease, box-shadow 220ms ease;
+  }
+  .glass-card:hover {
+    border-color: rgba(0, 0, 0, 0.08);
   }
 
   /* Sidebar translúcida com blur */
