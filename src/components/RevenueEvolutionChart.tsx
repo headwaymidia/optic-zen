@@ -297,7 +297,7 @@ export function RevenueEvolutionChart({ leads }: Props) {
       </div>
 
       {/* Chart */}
-      <div className="h-[320px] w-full -mx-2">
+      <div className="h-[240px] w-full -mx-2">
         <ResponsiveContainer width="100%" height="100%">
           <ComposedChart
             data={data}
