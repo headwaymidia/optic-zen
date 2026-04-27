@@ -51,10 +51,10 @@ Plus Jakarta Sans is the primary font for a Premium Enterprise feel.
   }
 
   .dark {
-    /* Command Center: preto absoluto + cards de vidro fumê */
-    --background: 0 0% 0%;             /* #000000 — preto absoluto */
+    /* BI Enterprise: #050505 + bordas zinc-800 */
+    --background: 0 0% 2%;             /* #050505 */
     --foreground: 0 0% 98%;
-    --card: 240 6% 10%;                /* fumê — usado só como fallback */
+    --card: 240 6% 6%;                 /* fallback */
     --card-foreground: 0 0% 98%;
     --popover: 240 5% 5%;
     --popover-foreground: 0 0% 98%;
