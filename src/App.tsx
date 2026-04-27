@@ -5,6 +5,7 @@ import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { AuthProvider } from "@/hooks/useAuth";
 import { ThemeProvider } from "@/hooks/useTheme";
+import { StoresProvider } from "@/hooks/useStores";
 import AppLayout from "@/components/AppLayout";
 import Dashboard from "./pages/Dashboard";
 import Funil from "./pages/Funil";
@@ -25,18 +26,20 @@ const App = () => (
         <Sonner />
         <BrowserRouter>
           <AuthProvider>
-            <Routes>
-              <Route path="/auth" element={<AuthPage />} />
-              <Route element={<AppLayout />}>
-                <Route path="/" element={<Dashboard />} />
-                <Route path="/whatsapp" element={<WhatsAppPage />} />
-                <Route path="/funil" element={<Funil />} />
-                <Route path="/tarefas" element={<Tarefas />} />
-                <Route path="/contatos" element={<Contatos />} />
-                <Route path="/configuracoes" element={<Configuracoes />} />
-              </Route>
-              <Route path="*" element={<NotFound />} />
-            </Routes>
+            <StoresProvider>
+              <Routes>
+                <Route path="/auth" element={<AuthPage />} />
+                <Route element={<AppLayout />}>
+                  <Route path="/" element={<Dashboard />} />
+                  <Route path="/whatsapp" element={<WhatsAppPage />} />
+                  <Route path="/funil" element={<Funil />} />
+                  <Route path="/tarefas" element={<Tarefas />} />
+                  <Route path="/contatos" element={<Contatos />} />
+                  <Route path="/configuracoes" element={<Configuracoes />} />
+                </Route>
+                <Route path="*" element={<NotFound />} />
+              </Routes>
+            </StoresProvider>
           </AuthProvider>
         </BrowserRouter>
       </TooltipProvider>

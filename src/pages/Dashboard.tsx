@@ -1,6 +1,7 @@
 import { useMemo, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { useLeads } from "@/hooks/useLeads";
+import { useStores } from "@/hooks/useStores";
 import { PeriodFilter, PeriodKey, getPeriodRange } from "@/components/PeriodFilter";
 import { SalesRanking } from "@/components/SalesRanking";
 import { PeriodKPIRow } from "@/components/PeriodKPIRow";
@@ -16,18 +17,25 @@ import { FileDown } from "lucide-react";
 
 export default function Dashboard() {
   const { leads, loading } = useLeads();
+  const { currentStore, filterByCurrentStore } = useStores();
   const [period, setPeriod] = useState<PeriodKey>("month");
   const [custom, setCustom] = useState<{ from?: Date; to?: Date }>();
   const range = useMemo(() => getPeriodRange(period, custom), [period, custom]);
 
+  // Isolamento por loja: cada filial vê apenas a fatia mockada de leads que lhe pertence.
+  const storeLeads = useMemo(
+    () => filterByCurrentStore(leads),
+    [leads, filterByCurrentStore]
+  );
+
   const filtered = useMemo(
     () =>
-      leads.filter(
+      storeLeads.filter(
         (l) =>
           l.created_at &&
           isWithinInterval(parseISO(l.created_at), { start: range.from, end: range.to })
       ),
-    [leads, range]
+    [storeLeads, range]
   );
 
   const total = filtered.length;
@@ -87,7 +95,7 @@ export default function Dashboard() {
             <div className="lg:col-span-2">
               <RoiMegaCard leads={filtered} />
             </div>
-            <PeriodKPIRow leads={leads} range={range} inline />
+            <PeriodKPIRow leads={storeLeads} range={range} inline />
           </div>
 
           {/* 4. Velocidade & Ranking — lado a lado 50/50 */}
@@ -100,7 +108,7 @@ export default function Dashboard() {
           <VerticalNeonFunnel leads={filtered} />
 
           {/* 6. Evolução (gráfico 3-em-1) */}
-          <RevenueEvolutionChart leads={leads} />
+          <RevenueEvolutionChart leads={storeLeads} />
         </>
       )}
     </div>

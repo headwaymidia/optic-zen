@@ -37,6 +37,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { useAuth } from "@/hooks/useAuth";
+import { WorkspaceSwitcher } from "@/components/WorkspaceSwitcher";
 import { cn } from "@/lib/utils";
 
 const items = [
@@ -88,8 +89,13 @@ export function AppSidebar() {
           )}
         </div>
 
+        {/* Workspace switcher (Multi-tenant) */}
+        <div className={cn("pt-3", collapsed ? "px-2" : "px-3")}>
+          <WorkspaceSwitcher collapsed={collapsed} />
+        </div>
+
         {/* Global +Novo Lead CTA */}
-        <div className={cn("pt-3", collapsed ? "px-2 flex justify-center" : "px-3")}>
+        <div className={cn("pt-2", collapsed ? "px-2 flex justify-center" : "px-3")}>
           {collapsed ? (
             <Tooltip>
               <TooltipTrigger asChild>
