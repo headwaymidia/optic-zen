@@ -6,6 +6,7 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { AuthProvider } from "@/hooks/useAuth";
 import AppLayout from "@/components/AppLayout";
 import Dashboard from "./pages/Dashboard";
+import DashboardExecutivo from "./pages/DashboardExecutivo";
 import Funil from "./pages/Funil";
 import WhatsAppPage from "./pages/WhatsApp";
 import Contatos from "./pages/Contatos";
@@ -27,6 +28,7 @@ const App = () => (
             <Route path="/auth" element={<AuthPage />} />
             <Route element={<AppLayout />}>
               <Route path="/" element={<Dashboard />} />
+              <Route path="/executivo" element={<DashboardExecutivo />} />
               <Route path="/whatsapp" element={<WhatsAppPage />} />
               <Route path="/funil" element={<Funil />} />
               <Route path="/tarefas" element={<Tarefas />} />

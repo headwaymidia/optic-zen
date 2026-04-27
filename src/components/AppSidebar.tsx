@@ -2,6 +2,7 @@ import { useState } from "react";
 import { NavLink, useLocation } from "react-router-dom";
 import {
   LayoutDashboard,
+  BarChart3,
   KanbanSquare,
   Users,
   Eye,
@@ -41,6 +42,7 @@ import { cn } from "@/lib/utils";
 
 const items = [
   { title: "Dashboard", url: "/", icon: LayoutDashboard },
+  { title: "Painel Executivo", url: "/executivo", icon: BarChart3 },
   { title: "Atendimentos", url: "/whatsapp", icon: MessageCircle },
   { title: "Funil de vendas", url: "/funil", icon: KanbanSquare },
   { title: "Tarefas", url: "/tarefas", icon: ListChecks },
