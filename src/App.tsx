@@ -12,6 +12,7 @@ import Funil from "./pages/Funil";
 import WhatsAppPage from "./pages/WhatsApp";
 import Contatos from "./pages/Contatos";
 import Configuracoes from "./pages/Configuracoes";
+import ConfiguracoesLoja from "./pages/ConfiguracoesLoja";
 import Tarefas from "./pages/Tarefas";
 import AuthPage from "./pages/Auth.tsx";
 import NotFound from "./pages/NotFound.tsx";
