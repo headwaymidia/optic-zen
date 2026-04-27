@@ -90,14 +90,9 @@ export default function Dashboard() {
           {/* 3. Linha de Métricas de Volume */}
           <PeriodKPIRow leads={leads} range={range} />
 
-          {/* 4. Velocidade & Follow-up (2/3) | Radar de Objeções (1/3) */}
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 pt-2 items-stretch">
-            <div className="lg:col-span-2">
-              <ResponseSpeedCard leads={filtered} />
-            </div>
-            <div className="lg:col-span-1">
-              <ObjectionRadar leads={filtered} />
-            </div>
+          {/* 4. Velocidade & Follow-up — largura total */}
+          <div className="pt-2">
+            <ResponseSpeedCard leads={filtered} />
           </div>
 
           {/* 5. Funil Vertical */}
