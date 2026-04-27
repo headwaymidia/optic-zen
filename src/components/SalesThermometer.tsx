@@ -73,10 +73,10 @@ export function SalesThermometer({ leads }: SalesThermometerProps) {
       </CardHeader>
 
       <CardContent className="px-6 pb-6 pt-2 space-y-6">
-        {/* Trilha ultra-fina (2px) com gradiente neon ciano → esmeralda */}
+        {/* Trilha ultra-fina (2px) com gradiente neon esmeralda → ciano */}
         <div className="relative h-[2px] w-full rounded-full bg-white/5 overflow-hidden">
           <div
-            className="absolute inset-y-0 left-0 rounded-full bg-gradient-to-r from-cyan-500 to-emerald-500 transition-all shadow-[0_0_10px_rgba(16,185,129,0.45)]"
+            className="absolute inset-y-0 left-0 rounded-full bg-gradient-to-r from-emerald-500 to-cyan-500 transition-all shadow-[0_0_10px_rgba(16,185,129,0.45)]"
             style={{ width: `${overallConv}%` }}
           />
         </div>
