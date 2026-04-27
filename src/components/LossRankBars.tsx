@@ -49,7 +49,7 @@ export function LossRankBars({ leads }: Props) {
   const total = items.reduce((s, d) => s + d.count, 0);
 
   return (
-    <Card className="rounded-3xl border border-border/70 bg-card/60 backdrop-blur-xl p-7">
+    <Card className="glass-card rounded-2xl p-7">
       <div className="flex items-start justify-between mb-6">
         <div>
           <p className="text-[10px] uppercase tracking-[0.3em] text-muted-foreground font-bold mb-1.5">
