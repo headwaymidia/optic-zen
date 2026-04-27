@@ -9,11 +9,14 @@ import {
   Settings,
   Users,
   Plug,
-  QrCode,
   Power,
   Copy,
   Check,
   ShieldCheck,
+  BadgeCheck,
+  Clock,
+  FileText,
+  Link2,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { toast } from "@/hooks/use-toast";
@@ -28,25 +31,42 @@ const TABS: { key: TabKey; label: string; icon: typeof Settings }[] = [
 
 /**
  * Mock de "store secrets" — futuramente virá da tabela `stores` no Supabase
- * com colunas: whatsapp_number, api_token, instance_id, status (online|offline).
- * Cada store tem credenciais isoladas.
+ * com colunas isoladas por filial:
+ *   whatsapp_number, phone_number_id, waba_id, access_token, status, business_name.
+ * Cada loja possui sua própria conta na Meta Cloud API.
  */
 function getMockStoreIntegration(storeId: string) {
-  // Hash simples para gerar números/IDs estáveis por loja
+  // Hash determinístico para gerar IDs estáveis por loja
   let h = 0;
   for (let i = 0; i < storeId.length; i++) h = (h * 31 + storeId.charCodeAt(i)) >>> 0;
-  const seed = h % 9000 + 1000;
-  const tail = String((h * 7) % 9000 + 1000);
-  // 1ª loja (storeId começa com store-centro) fica "online"; demais variam
-  const online = storeId === "store-centro" || (h % 3 !== 0);
+  const seed = (h % 9000) + 1000;
+  const tail = String(((h * 7) % 9000) + 1000);
+  const online = storeId === "store-centro" || h % 3 !== 0;
+  // IDs no padrão Meta Graph API: 15 a 16 dígitos
+  const phone_number_id = String(100000000000000n + BigInt(h % 999999999));
+  const waba_id = String(200000000000000n + BigInt((h * 11) % 999999999));
+  // Access token Meta começa com "EAAG..." (System User Token)
+  const access_token = `EAAG${(h * 17).toString(36)}${(h * 29).toString(36)}ZD`.padEnd(60, "x");
   return {
     whatsapp_number: `+55 11 9${seed}-${tail}`,
-    instance_id: `inst_${storeId.slice(-6)}_${(h % 999).toString(36)}`,
-    api_token: `wh_${storeId.slice(-4)}_${(h * 13).toString(36).slice(0, 18)}`,
+    business_name: storeId === "store-centro" ? "Ótica Dominante" : `Filial ${storeId.slice(-4).toUpperCase()}`,
+    phone_number_id,
+    waba_id,
+    access_token,
     status: online ? ("online" as const) : ("offline" as const),
     last_sync: online ? "Há 2 minutos" : "Há 3 dias",
   };
 }
+
+/** Templates aprovados na Meta para esta loja (mock). */
+const MOCK_TEMPLATES = [
+  { name: "alerta_agendamento", category: "UTILITY", status: "approved" as const },
+  { name: "recuperacao_orcamento", category: "MARKETING", status: "approved" as const },
+  { name: "confirmacao_exame", category: "UTILITY", status: "approved" as const },
+  { name: "boas_vindas_cliente", category: "MARKETING", status: "approved" as const },
+  { name: "promocao_lentes_premium", category: "MARKETING", status: "in_review" as const },
+];
+
 
 export default function ConfiguracoesLoja() {
   const { currentStore, stores } = useStores();
@@ -170,36 +190,42 @@ function IntegrationsPanel({ storeId, storeName }: { storeId: string; storeName:
     });
   }
 
-  function handleSync() {
+  function handleConnect() {
     toast({
-      title: "Gerando QR Code…",
-      description: `Conectando WhatsApp da filial "${storeName}".`,
+      title: "Redirecionando para o Meta Business…",
+      description: `Autorizando WhatsApp Cloud API para "${storeName}".`,
     });
     setTimeout(() => {
       setStatus("online");
-      toast({ title: "Aparelho sincronizado", description: integration.whatsapp_number });
+      toast({
+        title: "Conta Meta conectada",
+        description: `${integration.business_name} · ${integration.whatsapp_number}`,
+      });
     }, 1200);
   }
 
   function handleDisconnect() {
     setStatus("offline");
     toast({
-      title: "Aparelho desconectado",
-      description: `O WhatsApp de "${storeName}" foi desvinculado.`,
+      title: "Conta desconectada",
+      description: `O acesso à Meta Cloud API de "${storeName}" foi revogado.`,
       variant: "destructive",
     });
   }
 
   const isOnline = status === "online";
+  const approved = MOCK_TEMPLATES.filter((t) => t.status === "approved");
+  const inReview = MOCK_TEMPLATES.filter((t) => t.status === "in_review");
 
   return (
     <div className="space-y-4">
       <SectionCard
         title="Conexão de Atendimento"
-        description="Cada filial possui sua própria instância de WhatsApp Business API."
+        description="WhatsApp Business Platform · Cloud API oficial gerenciada pela Meta."
         icon={<WhatsAppGlyph className="h-5 w-5 text-[#25D366]" />}
+        rightSlot={<OfficialApiBadge />}
       >
-        {/* Header do card: status + número */}
+        {/* Header: business + número + status */}
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 pb-4 border-b border-border">
           <div className="flex items-center gap-3 min-w-0">
             <Avatar className="h-11 w-11 shrink-0">
@@ -208,8 +234,9 @@ function IntegrationsPanel({ storeId, storeName }: { storeId: string; storeName:
               </AvatarFallback>
             </Avatar>
             <div className="min-w-0">
-              <p className="text-[11px] font-medium uppercase tracking-wider text-muted-foreground">
-                Número conectado
+              <p className="text-[11px] font-medium uppercase tracking-wider text-muted-foreground flex items-center gap-1.5">
+                <BadgeCheck className="h-3 w-3 text-[#1FAE54]" />
+                {integration.business_name}
               </p>
               <p className="text-base font-semibold tabular-nums text-foreground truncate">
                 {integration.whatsapp_number}
@@ -219,53 +246,135 @@ function IntegrationsPanel({ storeId, storeName }: { storeId: string; storeName:
           <StatusBadge online={isOnline} />
         </div>
 
-        {/* Metadados */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-4">
+        {/* Credenciais Meta Cloud API */}
+        <div className="space-y-3 pt-4">
+          <div className="flex items-center gap-2">
+            <p className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
+              Credenciais da Cloud API
+            </p>
+            <span className="h-px flex-1 bg-border" />
+            <span className="text-[10px] text-muted-foreground font-mono">graph.facebook.com / v21.0</span>
+          </div>
+
           <SecretRow
-            label="Instance ID"
-            value={integration.instance_id}
-            onCopy={() => handleCopy(integration.instance_id, "Instance ID")}
+            label="Phone Number ID"
+            value={maskToken(integration.phone_number_id, 4, 4)}
+            onCopy={() => handleCopy(integration.phone_number_id, "Phone Number ID")}
             copied={copied}
           />
           <SecretRow
-            label="API Token"
-            value={maskToken(integration.api_token)}
-            onCopy={() => handleCopy(integration.api_token, "API Token")}
+            label="WABA ID (WhatsApp Business Account)"
+            value={maskToken(integration.waba_id, 4, 4)}
+            onCopy={() => handleCopy(integration.waba_id, "WABA ID")}
+            copied={copied}
+          />
+          <SecretRow
+            label="Access Token (System User)"
+            value={maskToken(integration.access_token, 6, 4)}
+            onCopy={() => handleCopy(integration.access_token, "Access Token")}
             copied={copied}
           />
         </div>
 
         <div className="flex items-center gap-2 pt-2 text-[11px] text-muted-foreground">
           <ShieldCheck className="h-3.5 w-3.5" />
-          <span>Credenciais isoladas para esta filial · Última sincronização: {integration.last_sync}</span>
+          <span>
+            Credenciais criptografadas e isoladas por filial · Última sincronização: {integration.last_sync}
+          </span>
         </div>
 
         {/* Ações */}
         <div className="flex flex-col sm:flex-row gap-2 pt-4 border-t border-border">
           {isOnline ? (
             <>
-              <Button variant="outline" onClick={handleSync} className="gap-2">
-                <QrCode className="h-4 w-4" />
-                Re-sincronizar QR Code
+              <Button variant="outline" onClick={handleConnect} className="gap-2">
+                <Link2 className="h-4 w-4" />
+                Reconectar Conta Meta
               </Button>
               <Button variant="destructive" onClick={handleDisconnect} className="gap-2">
                 <Power className="h-4 w-4" />
-                Desconectar Aparelho
+                Revogar Acesso
               </Button>
             </>
           ) : (
-            <Button onClick={handleSync} className="gap-2">
-              <QrCode className="h-4 w-4" />
-              Sincronizar QR Code
+            <Button onClick={handleConnect} className="gap-2 bg-[#1877F2] hover:bg-[#1877F2]/90 text-white">
+              <MetaGlyph className="h-4 w-4" />
+              Conectar Conta Meta Business
             </Button>
           )}
         </div>
       </SectionCard>
 
+      {/* Templates de Mensagem */}
+      <SectionCard
+        title="Templates de Mensagem"
+        description="Mensagens ativas exigem templates pré-aprovados pela Meta (HSM)."
+        icon={<FileText className="h-5 w-5 text-muted-foreground" />}
+      >
+        <div className="grid grid-cols-2 gap-3">
+          <TemplateStat
+            label="Aprovados"
+            value={approved.length}
+            tone="success"
+            hint="Prontos para uso"
+          />
+          <TemplateStat
+            label="Em análise"
+            value={inReview.length}
+            tone="warn"
+            hint="Aguardando Meta"
+          />
+        </div>
+
+        <ul className="divide-y divide-border rounded-lg border border-border overflow-hidden">
+          {MOCK_TEMPLATES.map((t) => (
+            <li
+              key={t.name}
+              className="flex items-center justify-between px-3 py-2.5 bg-card"
+            >
+              <div className="flex items-center gap-2.5 min-w-0">
+                <span
+                  className={cn(
+                    "flex h-6 w-6 items-center justify-center rounded-md shrink-0",
+                    t.status === "approved"
+                      ? "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400"
+                      : "bg-amber-500/10 text-amber-600 dark:text-amber-400"
+                  )}
+                >
+                  {t.status === "approved" ? (
+                    <Check className="h-3.5 w-3.5" />
+                  ) : (
+                    <Clock className="h-3.5 w-3.5" />
+                  )}
+                </span>
+                <div className="min-w-0">
+                  <p className="font-mono text-xs text-foreground truncate">{t.name}</p>
+                  <p className="text-[10px] uppercase tracking-wider text-muted-foreground">
+                    {t.category}
+                  </p>
+                </div>
+              </div>
+              <span
+                className={cn(
+                  "text-[10px] font-semibold uppercase tracking-wider",
+                  t.status === "approved"
+                    ? "text-emerald-600 dark:text-emerald-400"
+                    : "text-amber-600 dark:text-amber-400"
+                )}
+              >
+                {t.status === "approved" ? "Aprovado" : "Em análise"}
+              </span>
+            </li>
+          ))}
+        </ul>
+      </SectionCard>
+
       <p className="text-[11px] text-muted-foreground px-1">
-        Futuramente, estes dados serão persistidos em colunas isoladas
-        (<code className="font-mono">whatsapp_number</code>, <code className="font-mono">api_token</code>,{" "}
-        <code className="font-mono">instance_id</code>) na tabela <code className="font-mono">stores</code>.
+        Credenciais persistidas em colunas isoladas (
+        <code className="font-mono">phone_number_id</code>,{" "}
+        <code className="font-mono">waba_id</code>,{" "}
+        <code className="font-mono">access_token</code>) na tabela{" "}
+        <code className="font-mono">stores</code>.
       </p>
     </div>
   );
@@ -278,22 +387,25 @@ function SectionCard({
   description,
   children,
   icon,
+  rightSlot,
 }: {
   title: string;
   description?: string;
   children: React.ReactNode;
   icon?: React.ReactNode;
+  rightSlot?: React.ReactNode;
 }) {
   return (
     <section className="rounded-2xl border border-border bg-card p-5 sm:p-6 space-y-4 shadow-[0_1px_2px_rgba(0,0,0,0.02)]">
       <header className="flex items-start gap-3">
         {icon && <div className="mt-0.5">{icon}</div>}
-        <div className="min-w-0">
+        <div className="min-w-0 flex-1">
           <h2 className="text-base font-semibold tracking-tight text-foreground">{title}</h2>
           {description && (
             <p className="text-xs text-muted-foreground mt-0.5">{description}</p>
           )}
         </div>
+        {rightSlot && <div className="shrink-0">{rightSlot}</div>}
       </header>
       <div className="space-y-3">{children}</div>
     </section>
@@ -374,9 +486,63 @@ function SecretRow({
   );
 }
 
-function maskToken(token: string) {
-  if (token.length <= 10) return token;
-  return `${token.slice(0, 6)}••••••••${token.slice(-4)}`;
+function maskToken(token: string, prefix = 6, suffix = 4) {
+  if (token.length <= prefix + suffix + 2) return token;
+  return `${token.slice(0, prefix)}••••••••${token.slice(-suffix)}`;
+}
+
+/** Selo "Official API Integration" — passa confiança enterprise. */
+function OfficialApiBadge() {
+  return (
+    <span className="inline-flex items-center gap-1.5 rounded-full border border-[#1877F2]/30 bg-[#1877F2]/5 px-2.5 py-1 text-[10px] font-semibold uppercase tracking-wider text-[#1877F2] dark:text-[#4F8EF7]">
+      <MetaGlyph className="h-3 w-3" />
+      Official API Integration
+    </span>
+  );
+}
+
+/** Cartão de estatística para templates (aprovados / em análise). */
+function TemplateStat({
+  label,
+  value,
+  hint,
+  tone,
+}: {
+  label: string;
+  value: number;
+  hint: string;
+  tone: "success" | "warn";
+}) {
+  const styles =
+    tone === "success"
+      ? "border-emerald-200 bg-emerald-50/50 dark:border-emerald-500/20 dark:bg-emerald-500/5"
+      : "border-amber-200 bg-amber-50/50 dark:border-amber-500/20 dark:bg-amber-500/5";
+  const valueColor =
+    tone === "success"
+      ? "text-emerald-700 dark:text-emerald-400"
+      : "text-amber-700 dark:text-amber-400";
+  return (
+    <div className={cn("rounded-xl border p-3", styles)}>
+      <div className="flex items-baseline gap-2">
+        <span className={cn("text-2xl font-semibold tabular-nums tracking-tight", valueColor)}>
+          {value}
+        </span>
+        <span className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
+          {label}
+        </span>
+      </div>
+      <p className="text-[11px] text-muted-foreground mt-0.5">{hint}</p>
+    </div>
+  );
+}
+
+/** Glyph "Meta" — losango infinito simplificado. */
+function MetaGlyph({ className }: { className?: string }) {
+  return (
+    <svg viewBox="0 0 24 24" fill="currentColor" className={className} aria-hidden="true">
+      <path d="M12 4.5C8.4 4.5 6 7.5 6 11.2c0 2.6 1.2 4.6 3 4.6 1.5 0 2.5-1 4.2-3.8L14.6 10c.7-1.1 1.3-1.7 2-1.7 1.1 0 1.9 1 1.9 2.8 0 1.6-.6 2.7-1.4 2.7-.4 0-.7-.2-1-.7l-.7 1.6c.5.7 1.3 1.1 2.2 1.1 2.1 0 3.6-2.1 3.6-5 0-3.5-1.9-5.8-4.4-5.8-1.6 0-2.8.9-3.9 2.4l-.7 1c-1.5 2.2-2.1 2.9-2.7 2.9-.7 0-1.3-.7-1.3-2.4 0-2.2 1.1-4.2 3-4.2 1 0 1.7.4 2.4 1.1l1-1.5C14.6 5 13.4 4.5 12 4.5z" />
+    </svg>
+  );
 }
 
 /** Glyph oficial do WhatsApp (path simplificado) */
