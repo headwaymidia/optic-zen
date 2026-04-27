@@ -95,30 +95,25 @@ export function LeadsVolumeChart({ leads, from, to }: Props) {
   };
 
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle className="text-base">Volume de leads por dia</CardTitle>
+    <Card className="border border-slate-100 rounded-xl shadow-[0_1px_2px_rgba(15,23,42,0.04)] bg-card">
+      <CardHeader className="pb-2 pt-3 px-4">
+        <CardTitle className="text-sm font-semibold">Volume de leads por dia</CardTitle>
       </CardHeader>
-      <CardContent>
-        <div className="h-[320px] w-full">
+      <CardContent className="px-2 pb-3">
+        <div className="h-[220px] w-full">
           <ResponsiveContainer width="100%" height="100%">
-            <BarChart data={data} margin={{ top: 8, right: 12, left: -12, bottom: 0 }}>
+            <BarChart data={data} margin={{ top: 6, right: 8, left: -16, bottom: 0 }}>
               <CartesianGrid strokeDasharray="3 3" className="stroke-border" vertical={false} />
-              <XAxis dataKey="date" tick={{ fontSize: 11 }} className="fill-muted-foreground" />
-              <YAxis allowDecimals={false} tick={{ fontSize: 11 }} className="fill-muted-foreground" />
+              <XAxis dataKey="date" tick={{ fontSize: 10 }} className="fill-muted-foreground" axisLine={false} tickLine={false} />
+              <YAxis allowDecimals={false} tick={{ fontSize: 10 }} className="fill-muted-foreground" axisLine={false} tickLine={false} width={28} />
               <Tooltip content={renderTooltip} cursor={{ fill: "hsl(var(--muted) / 0.4)" }} />
-              <Legend
-                wrapperStyle={{ fontSize: 11, paddingTop: 8 }}
-                iconType="circle"
-                iconSize={8}
-              />
               {LEAD_STATUSES.map((s, idx) => (
                 <Bar
                   key={s}
                   dataKey={s}
                   stackId="a"
                   fill={STATUS_COLORS[s]}
-                  radius={idx === LEAD_STATUSES.length - 1 ? [4, 4, 0, 0] : [0, 0, 0, 0]}
+                  radius={idx === LEAD_STATUSES.length - 1 ? [3, 3, 0, 0] : [0, 0, 0, 0]}
                 />
               ))}
             </BarChart>

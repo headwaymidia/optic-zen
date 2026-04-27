@@ -29,11 +29,11 @@ export default function Dashboard() {
   const total = filtered.length;
 
   return (
-    <div className="p-3 sm:p-4 space-y-3 sm:space-y-4">
+    <div className="p-3 sm:p-4 space-y-3">
       <div className="flex flex-row items-start justify-between gap-3">
         <div className="min-w-0">
-          <h1 className="text-xl sm:text-2xl font-bold tracking-tight">Dashboard</h1>
-          <p className="text-xs sm:text-sm text-muted-foreground capitalize">
+          <h1 className="text-lg sm:text-xl font-semibold tracking-tight">Dashboard</h1>
+          <p className="text-[11px] sm:text-xs text-muted-foreground capitalize">
             {range.label} • {total} leads no período
           </p>
         </div>
@@ -41,11 +41,11 @@ export default function Dashboard() {
           onClick={() => exportMonthlyReport(leads)}
           variant="outline"
           size="icon"
-          className="h-9 w-9 shrink-0 border-slate-200 hover:bg-slate-50"
+          className="h-8 w-8 shrink-0 border-slate-200 hover:bg-slate-50"
           title="Exportar relatório mensal"
           aria-label="Exportar relatório mensal"
         >
-          <FileDown className="h-4 w-4" />
+          <FileDown className="h-3.5 w-3.5" />
         </Button>
       </div>
 
@@ -58,7 +58,7 @@ export default function Dashboard() {
         }}
       />
 
-      {/* Linha 1 — O Dinheiro */}
+      {/* Linha 1 — ROI compacto */}
       <RevenueHeroCard leads={filtered} loading={loading} />
 
       {/* Linha 2 — KPIs Rápidos */}
@@ -68,7 +68,7 @@ export default function Dashboard() {
       <SalesThermometer leads={filtered} />
 
       {/* Linha 4 — Inteligência (60/40) */}
-      <div className="grid grid-cols-1 lg:grid-cols-5 gap-4">
+      <div className="grid grid-cols-1 lg:grid-cols-5 gap-3">
         <div className="lg:col-span-3">
           <LeadsVsSalesTimeline leads={filtered} />
         </div>
@@ -77,12 +77,14 @@ export default function Dashboard() {
         </div>
       </div>
 
-      {/* Linha 5 — Equipe */}
-      <SalesRanking leads={filtered} />
+      {/* Linha 5 — Volume diário + Ranking lado a lado */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-3">
+        <LeadsVolumeChart leads={filtered} from={range.from} to={range.to} />
+        <SalesRanking leads={filtered} />
+      </div>
 
-      {/* Contexto adicional (mantido) */}
+      {/* Contexto adicional */}
       <TemporalCards leads={leads} />
-      <LeadsVolumeChart leads={filtered} from={range.from} to={range.to} />
     </div>
   );
 }
