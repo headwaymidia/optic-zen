@@ -52,27 +52,34 @@ export function PeriodKPIRow({ leads, range }: Props) {
   }, [leads, range]);
 
   return (
-    <div className="grid grid-cols-2 lg:grid-cols-4 divide-x divide-[#222222] rounded-2xl border border-[#222222] bg-[#111111] px-2">
+    <div className="grid grid-cols-2 lg:grid-cols-4 divide-x divide-border rounded-2xl border border-border bg-card px-2 shadow-sm dark:shadow-none">
       {items.map((it) => {
         const positive = it.delta !== null && it.delta >= 0;
         const flat = it.delta === null || it.delta === 0;
         const Icon = flat ? Minus : positive ? ArrowUp : ArrowDown;
         const tone = flat
-          ? "text-zinc-500"
+          ? "text-muted-foreground"
           : positive
-          ? "text-[#22C55E]"
-          : "text-rose-400";
-        const valueColor = it.accent === "green" ? "#22C55E" : "#FACC15";
+          ? "text-emerald-600 dark:text-[#22C55E]"
+          : "text-rose-500 dark:text-rose-400";
+        // Dark: amarelo/verde neon. Light: cores sólidas escuras p/ contraste.
+        const valueColorClass =
+          it.accent === "green"
+            ? "text-emerald-600 dark:text-[#22C55E]"
+            : "text-amber-600 dark:text-[#FACC15]";
         const glowClass = it.accent === "green" ? "neon-glow-green" : "neon-glow-yellow";
         return (
           <div key={it.label} className="px-5 py-4 flex flex-col gap-1.5">
-            <p className="text-[10px] uppercase tracking-[0.25em] text-zinc-500 font-semibold">
+            <p className="text-[10px] uppercase tracking-[0.25em] text-muted-foreground font-semibold">
               {it.label}
             </p>
             <div className="flex items-baseline gap-2.5">
               <span
-                className={cn("font-mono-luxe text-3xl font-bold tabular-nums tracking-tight", glowClass)}
-                style={{ color: valueColor }}
+                className={cn(
+                  "font-mono-luxe text-3xl font-bold tabular-nums tracking-tight",
+                  valueColorClass,
+                  glowClass
+                )}
               >
                 {it.value}
               </span>

@@ -39,6 +39,7 @@ function classifySource(src: string | null): "paid" | "organic" | "referral" | "
 
 const tooltipStyle = {
   backgroundColor: "hsl(var(--popover))",
+  color: "hsl(var(--popover-foreground))",
   border: "1px solid hsl(var(--border))",
   borderRadius: 8,
   fontSize: 11,
@@ -54,13 +55,13 @@ function DonutBlock({ title, subtitle, data }: DonutBlockProps) {
   const total = data.reduce((s, d) => s + d.value, 0);
 
   return (
-    <Card className="rounded-3xl border border-border/70 bg-card/60 backdrop-blur-xl p-7">
+    <Card className="glass-card rounded-2xl p-7">
       <div className="flex items-start justify-between mb-5">
         <div>
-          <p className="text-[10px] uppercase tracking-[0.3em] text-zinc-500 font-bold mb-1.5">
+          <p className="text-[10px] uppercase tracking-[0.3em] text-muted-foreground font-bold mb-1.5">
             {title}
           </p>
-          <p className="text-[10px] uppercase tracking-[0.2em] text-zinc-600 font-medium">
+          <p className="text-[10px] uppercase tracking-[0.2em] text-muted-foreground/70 font-medium">
             {subtitle}
           </p>
         </div>
@@ -100,7 +101,7 @@ function DonutBlock({ title, subtitle, data }: DonutBlockProps) {
               <span className="font-mono-luxe text-2xl font-bold tabular-nums text-foreground tracking-tighter leading-none">
                 {total}
               </span>
-              <span className="text-[9px] uppercase tracking-[0.3em] text-zinc-500 font-semibold mt-1">
+              <span className="text-[9px] uppercase tracking-[0.3em] text-muted-foreground font-semibold mt-1">
                 Total
               </span>
             </div>
@@ -114,7 +115,7 @@ function DonutBlock({ title, subtitle, data }: DonutBlockProps) {
                     className="h-2 w-2 rounded-full shrink-0"
                     style={{ backgroundColor: d.color }}
                   />
-                  <span className="text-[11px] text-zinc-300 font-medium truncate flex-1">
+                  <span className="text-[11px] text-foreground/80 font-medium truncate flex-1">
                     {d.name}
                   </span>
                   <span className="font-mono-luxe text-[11px] tabular-nums text-foreground font-semibold">

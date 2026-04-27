@@ -53,21 +53,18 @@ export function VerticalNeonFunnel({ leads }: Props) {
     <Card className="glass-card rounded-2xl p-7">
       <div className="flex items-start justify-between mb-7">
         <div>
-          <p className="text-[10px] uppercase tracking-[0.3em] text-zinc-500 font-bold mb-1.5">
+          <p className="text-[10px] uppercase tracking-[0.3em] text-muted-foreground font-bold mb-1.5">
             Funil de Conversão
           </p>
-          <p className="text-[10px] uppercase tracking-[0.2em] text-zinc-600 font-medium">
+          <p className="text-[10px] uppercase tracking-[0.2em] text-muted-foreground/70 font-medium">
             Pirâmide invertida · Leads → Vendas
           </p>
         </div>
         <div className="text-right">
-          <p
-            className="font-mono-luxe text-2xl font-bold tabular-nums tracking-tighter leading-none neon-glow-green"
-            style={{ color: "#22C55E" }}
-          >
+          <p className="font-mono-luxe text-2xl font-bold tabular-nums tracking-tighter leading-none neon-glow-green text-emerald-600 dark:text-[#22C55E]">
             {overall.toFixed(1)}%
           </p>
-          <p className="text-[9px] uppercase tracking-[0.25em] text-zinc-600 font-semibold mt-1.5">
+          <p className="text-[9px] uppercase tracking-[0.25em] text-muted-foreground font-semibold mt-1.5">
             Conversão Total
           </p>
         </div>
@@ -118,15 +115,15 @@ export function VerticalNeonFunnel({ leads }: Props) {
                       <span
                         className={`font-mono-luxe text-[13px] font-bold tabular-nums ${
                           isBottleneck
-                            ? "text-rose-400"
-                            : "text-[#FACC15] neon-glow-yellow"
+                            ? "text-rose-500 dark:text-rose-400"
+                            : "text-amber-600 dark:text-[#FACC15] neon-glow-yellow"
                         }`}
                       >
                         {t.conv.toFixed(0)}%
                       </span>
                       {isBottleneck && (
                         <AlertTriangle
-                          className="h-3 w-3 text-rose-400"
+                          className="h-3 w-3 text-rose-500 dark:text-rose-400"
                           strokeWidth={2.5}
                         />
                       )}
@@ -140,14 +137,14 @@ export function VerticalNeonFunnel({ leads }: Props) {
       )}
 
       {bottleneckIdx >= 0 && transitions[bottleneckIdx].loss >= 20 && (
-        <div className="mt-6 flex items-start gap-3 rounded-xl border border-rose-500/25 bg-rose-500/5 px-4 py-3">
+        <div className="mt-6 flex items-start gap-3 rounded-xl border border-rose-500/30 bg-rose-50 dark:border-rose-500/25 dark:bg-rose-500/5 px-4 py-3">
           <AlertTriangle
-            className="h-3.5 w-3.5 text-rose-400 shrink-0 mt-0.5"
+            className="h-3.5 w-3.5 text-rose-500 dark:text-rose-400 shrink-0 mt-0.5"
             strokeWidth={2}
           />
-          <p className="text-[12px] text-zinc-300 font-medium leading-snug">
+          <p className="text-[12px] text-slate-700 dark:text-zinc-300 font-medium leading-snug">
             Perda de{" "}
-            <span className="font-mono-luxe font-bold text-rose-400">
+            <span className="font-mono-luxe font-bold text-rose-600 dark:text-rose-400">
               {transitions[bottleneckIdx].loss.toFixed(0)}%
             </span>{" "}
             entre{" "}

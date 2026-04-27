@@ -95,7 +95,7 @@ export function LossRankBars({ leads }: Props) {
                     </span>
                   </div>
                 </div>
-                <div className="h-1.5 w-full rounded-full bg-[#1a1a1a] overflow-hidden">
+                <div className="h-1.5 w-full rounded-full bg-slate-200 dark:bg-[#1a1a1a] overflow-hidden">
                   <div
                     className="h-full rounded-full transition-all"
                     style={{
@@ -103,7 +103,7 @@ export function LossRankBars({ leads }: Props) {
                       background:
                         idx === 0
                           ? "linear-gradient(90deg, #FACC15 0%, #FDE047 100%)"
-                          : "linear-gradient(90deg, #52525b 0%, #71717a 100%)",
+                          : "linear-gradient(90deg, #d4d4d8 0%, #a1a1aa 100%)",
                       boxShadow:
                         idx === 0 ? "0 0 8px rgba(250,204,21,0.55)" : "none",
                     }}

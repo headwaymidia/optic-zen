@@ -59,10 +59,10 @@ export function RevenueEvolutionChart({ leads }: Props) {
     <Card className="glass-card rounded-xl border-0 p-7">
       <div className="flex items-start justify-between mb-6">
         <div>
-          <p className="text-[10px] uppercase tracking-[0.3em] text-zinc-500 font-bold mb-1.5">
+          <p className="text-[10px] uppercase tracking-[0.3em] text-muted-foreground font-bold mb-1.5">
             Evolução de Faturamento
           </p>
-          <p className="text-[10px] uppercase tracking-[0.2em] text-zinc-600 font-medium">
+          <p className="text-[10px] uppercase tracking-[0.2em] text-muted-foreground/70 font-medium">
             Últimos 30 dias · Receita vs Ads
           </p>
         </div>
@@ -71,18 +71,15 @@ export function RevenueEvolutionChart({ leads }: Props) {
             <p className="font-mono-luxe text-xl font-bold tabular-nums tracking-tighter text-foreground leading-none">
               {formatBRL(total)}
             </p>
-            <p className="text-[9px] uppercase tracking-[0.25em] text-zinc-600 font-semibold mt-1.5">
+            <p className="text-[9px] uppercase tracking-[0.25em] text-muted-foreground font-semibold mt-1.5">
               Receita 30d
             </p>
           </div>
           <div className="text-right">
-            <p
-              className="font-mono-luxe text-xl font-bold tabular-nums tracking-tighter leading-none neon-glow-yellow"
-              style={{ color: NEON_YELLOW }}
-            >
+            <p className="font-mono-luxe text-xl font-bold tabular-nums tracking-tighter leading-none neon-glow-yellow text-amber-600 dark:text-[#FACC15]">
               {roiRatio}x
             </p>
-            <p className="text-[9px] uppercase tracking-[0.25em] text-zinc-600 font-semibold mt-1.5">
+            <p className="text-[9px] uppercase tracking-[0.25em] text-muted-foreground font-semibold mt-1.5">
               ROAS
             </p>
           </div>
@@ -103,16 +100,16 @@ export function RevenueEvolutionChart({ leads }: Props) {
                 <stop offset="100%" stopColor={NEON_YELLOW} stopOpacity={0} />
               </linearGradient>
             </defs>
-            <CartesianGrid stroke="rgba(255,255,255,0.04)" vertical={false} />
+            <CartesianGrid stroke="hsl(var(--border))" strokeOpacity={0.5} vertical={false} />
             <XAxis
               dataKey="date"
-              tick={{ fontSize: 9, fill: "#52525b", fontWeight: 600 }}
+              tick={{ fontSize: 9, fill: "hsl(var(--muted-foreground))", fontWeight: 600 }}
               axisLine={false}
               tickLine={false}
               interval={4}
             />
             <YAxis
-              tick={{ fontSize: 9, fill: "#52525b", fontWeight: 600 }}
+              tick={{ fontSize: 9, fill: "hsl(var(--muted-foreground))", fontWeight: 600 }}
               axisLine={false}
               tickLine={false}
               tickFormatter={(v) => (v >= 1000 ? `${(v / 1000).toFixed(0)}k` : `${v}`)}
@@ -121,6 +118,7 @@ export function RevenueEvolutionChart({ leads }: Props) {
             <Tooltip
               contentStyle={{
                 backgroundColor: "hsl(var(--popover))",
+                color: "hsl(var(--popover-foreground))",
                 border: "1px solid hsl(var(--border))",
                 borderRadius: 8,
                 fontSize: 11,
