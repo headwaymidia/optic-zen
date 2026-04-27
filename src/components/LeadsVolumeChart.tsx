@@ -40,7 +40,7 @@ interface DayDatum {
   [status: string]: string | number;
 }
 
-export function LeadsVolumeChart({ leads, from, to }: Props) {
+export function LeadsVolumeChart({ leads, from, to, embedded = false }: Props) {
   const data = useMemo<DayDatum[]>(() => {
     const days = eachDayOfInterval({ start: from, end: to });
     return days.map((d) => {
