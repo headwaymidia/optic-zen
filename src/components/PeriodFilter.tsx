@@ -70,7 +70,7 @@ export function PeriodFilter({ value, customRange, onChange }: Props) {
   const [draft, setDraft] = useState<{ from?: Date; to?: Date }>(customRange ?? {});
 
   return (
-    <div className="flex flex-wrap items-center gap-1.5">
+    <div className="flex flex-wrap items-center gap-1">
       {OPTIONS.map((o) => (
         <Button
           key={o.key}
@@ -78,10 +78,10 @@ export function PeriodFilter({ value, customRange, onChange }: Props) {
           variant="ghost"
           onClick={() => onChange(o.key)}
           className={cn(
-            "h-7 px-3.5 text-[11px] font-medium rounded-full transition-colors",
+            "h-7 px-3 text-[11px] font-extralight uppercase tracking-[0.15em] rounded-md bg-transparent transition-colors",
             value === o.key
-              ? "bg-zinc-800 text-white hover:bg-zinc-800"
-              : "text-muted-foreground hover:bg-white/5 hover:text-foreground"
+              ? "border border-white/10 text-foreground hover:bg-transparent"
+              : "border border-transparent text-muted-foreground hover:text-foreground hover:bg-transparent"
           )}
         >
           {o.label}
@@ -93,13 +93,13 @@ export function PeriodFilter({ value, customRange, onChange }: Props) {
             size="sm"
             variant="ghost"
             className={cn(
-              "h-7 px-3.5 text-[11px] font-medium rounded-full gap-1.5 transition-colors",
+              "h-7 px-3 text-[11px] font-extralight uppercase tracking-[0.15em] rounded-md gap-1.5 bg-transparent transition-colors",
               value === "custom"
-                ? "bg-zinc-800 text-white hover:bg-zinc-800"
-                : "text-muted-foreground hover:bg-white/5 hover:text-foreground"
+                ? "border border-white/10 text-foreground hover:bg-transparent"
+                : "border border-transparent text-muted-foreground hover:text-foreground hover:bg-transparent"
             )}
           >
-            <CalendarIcon className="h-3 w-3" strokeWidth={1.5} />
+            <CalendarIcon className="h-3 w-3" strokeWidth={1.25} />
             {value === "custom" && customRange?.from && customRange?.to
               ? `${format(customRange.from, "dd/MM")} – ${format(customRange.to, "dd/MM")}`
               : "Personalizado"}
