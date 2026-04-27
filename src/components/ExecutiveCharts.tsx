@@ -20,26 +20,25 @@ import {
 import { eachDayOfInterval, format, isSameDay, parseISO, subDays } from "date-fns";
 import { ptBR } from "date-fns/locale";
 
-const BLUE = "#3B82F6";
+const WHITE = "#fafafa";
 const EMERALD = "#10B981";
-const AMBER = "#FBBF24";       // Dourado vibrante
-const VIOLET = "#8B5CF6";      // Violeta elétrico
-const CYAN = "#06B6D4";        // Ciano para perdas
-const ROSE = "#F43F5E";
-const SLATE = "#94A3B8";
+const ZINC_400 = "#a1a1aa";
+const ZINC_500 = "#71717a";
+const ZINC_600 = "#52525b";
+const ZINC_700 = "#3f3f46";
 
 const FUNNEL_STAGES = [
-  { key: "captacao", label: "Captação", color: BLUE },
-  { key: "agendamento", label: "Agendamento", color: VIOLET },
-  { key: "comparecimento", label: "Comparecimento", color: AMBER },
+  { key: "captacao", label: "Captação", color: WHITE },
+  { key: "agendamento", label: "Agendamento", color: ZINC_400 },
+  { key: "comparecimento", label: "Comparecimento", color: ZINC_500 },
   { key: "venda", label: "Venda", color: EMERALD },
 ];
 
 const LOSS_REASONS = [
-  { key: "preco", label: "Preço", color: BLUE, match: ["preç", "caro", "valor"] },
-  { key: "distancia", label: "Distância", color: "#64748B", match: ["dist", "long", "endere"] },
-  { key: "semresposta", label: "Sem Resposta", color: "#94A3B8", match: ["sem resp", "não resp", "nao resp", "silenc"] },
-  { key: "outros", label: "Outros", color: "#CBD5E1", match: [] },
+  { key: "preco", label: "Preço", color: WHITE, match: ["preç", "caro", "valor"] },
+  { key: "distancia", label: "Distância", color: ZINC_400, match: ["dist", "long", "endere"] },
+  { key: "semresposta", label: "Sem Resposta", color: ZINC_600, match: ["sem resp", "não resp", "nao resp", "silenc"] },
+  { key: "outros", label: "Outros", color: ZINC_700, match: [] },
 ];
 
 function pct(num: number, den: number) {
