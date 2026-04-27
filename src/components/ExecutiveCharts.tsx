@@ -205,6 +205,8 @@ export function LossReasonsDonut({ leads }: { leads: Lead[] }) {
   }, [leads]);
 
   const totalLost = data.reduce((s, d) => s + d.value, 0);
+  // Se só houver "Outros", aplicar gradiente cinza para não parecer um erro
+  const onlyOthers = data.length === 1 && data[0].name === "Outros";
 
   return (
     <Card className="glass-card rounded-lg h-full border-0">
@@ -220,10 +222,16 @@ export function LossReasonsDonut({ leads }: { leads: Lead[] }) {
           </div>
         ) : (
           <div className="flex items-center gap-6 h-[220px]">
-            {/* Donut visível: anel de 4px */}
+            {/* Donut ultra-fino: anel de 3px */}
             <div className="relative h-full w-[180px] shrink-0">
               <ResponsiveContainer width="100%" height="100%">
                 <PieChart>
+                  <defs>
+                    <linearGradient id="othersGrayGradient" x1="0" y1="0" x2="1" y2="1">
+                      <stop offset="0%" stopColor="#52525b" />
+                      <stop offset="100%" stopColor="#27272a" />
+                    </linearGradient>
+                  </defs>
                   <Tooltip contentStyle={tooltipStyle} formatter={(v: number, n: string) => [`${v} leads`, n]} />
                   <Pie
                     data={data}
@@ -231,13 +239,16 @@ export function LossReasonsDonut({ leads }: { leads: Lead[] }) {
                     nameKey="name"
                     cx="50%"
                     cy="50%"
-                    innerRadius={66}
+                    innerRadius={67}
                     outerRadius={70}
-                    paddingAngle={2}
+                    paddingAngle={onlyOthers ? 0 : 2}
                     stroke="none"
                   >
                     {data.map((d) => (
-                      <Cell key={d.name} fill={d.color} />
+                      <Cell
+                        key={d.name}
+                        fill={onlyOthers ? "url(#othersGrayGradient)" : d.color}
+                      />
                     ))}
                   </Pie>
                 </PieChart>
