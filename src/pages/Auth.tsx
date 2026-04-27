@@ -150,7 +150,7 @@ export default function AuthPage() {
                     <button
                       type="button"
                       onClick={() => setMode("RECOVERY")}
-                      className="text-xs font-medium text-primary hover:underline"
+                      className="text-xs font-medium text-zinc-500 hover:text-zinc-900 hover:underline transition-colors"
                     >
                       Esqueceu sua senha?
                     </button>
@@ -163,7 +163,7 @@ export default function AuthPage() {
                     required
                     autoComplete="current-password"
                     placeholder="••••••••"
-                    className="h-11 rounded-lg border-slate-200 focus-visible:ring-primary"
+                    className="h-11 rounded-lg border border-zinc-200 bg-white text-zinc-900 placeholder:text-zinc-400 focus-visible:ring-2 focus-visible:ring-zinc-800 focus-visible:ring-offset-0 focus-visible:border-zinc-300"
                   />
                 </div>
                 <SubmitButton submitting={submitting} label="Entrar na Plataforma" />
@@ -319,7 +319,7 @@ function FormField({
         required={required}
         autoComplete={autoComplete}
         placeholder={placeholder}
-        className="h-11 rounded-lg border-slate-200 focus-visible:ring-primary"
+        className="h-11 rounded-lg border border-zinc-200 bg-white text-zinc-900 placeholder:text-zinc-400 focus-visible:ring-2 focus-visible:ring-zinc-800 focus-visible:ring-offset-0 focus-visible:border-zinc-300"
       />
     </div>
   );
@@ -362,7 +362,7 @@ function FooterSwitch({
       <button
         type="button"
         onClick={onClick}
-        className="font-semibold text-primary hover:underline"
+        className="font-semibold text-zinc-500 hover:text-zinc-900 hover:underline transition-colors"
       >
         {cta}
       </button>
