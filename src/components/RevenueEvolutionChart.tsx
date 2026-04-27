@@ -101,8 +101,8 @@ interface Props {
 export function RevenueEvolutionChart({ leads }: Props) {
   const [active, setActive] = useState<Record<SeriesKey, boolean>>({
     vendas: true,
-    leads: false,
-    agendamentos: false,
+    leads: true,
+    agendamentos: true,
   });
 
   const toggle = (k: SeriesKey) =>
