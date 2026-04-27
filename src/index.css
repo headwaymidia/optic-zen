@@ -89,48 +89,30 @@ Plus Jakarta Sans is the primary font for a Premium Enterprise feel.
   }
   .animate-pulse-border { animation: pulse-border-red 1.6s ease-in-out infinite; }
 
-  /* Bento Box Glass — DARK: vidro fumê + esmeralda discreta no hover */
+  /* Dashpro Neon — card opaco preto absoluto, borda zinc fina */
+  .glass-card,
   .dark .glass-card {
-    background-color: rgba(12, 12, 14, 0.55);
-    backdrop-filter: blur(24px) saturate(150%);
-    -webkit-backdrop-filter: blur(24px) saturate(150%);
-    border: 1px solid rgba(255, 255, 255, 0.07);
+    background-color: #111111;
+    border: 1px solid #222222;
     box-shadow:
-      inset 0 1px 0 0 rgba(255, 255, 255, 0.04),
-      0 1px 0 0 rgba(0, 0, 0, 0.40),
-      0 8px 28px -16px rgba(0, 0, 0, 0.60);
+      inset 0 1px 0 0 rgba(255, 255, 255, 0.03),
+      0 1px 0 0 rgba(0, 0, 0, 0.50),
+      0 8px 24px -16px rgba(0, 0, 0, 0.80);
     transition: border-color 220ms ease, box-shadow 220ms ease;
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
   }
+  .glass-card:hover,
   .dark .glass-card:hover {
-    border-color: rgba(16, 185, 129, 0.20);
+    border-color: #2e2e2e;
     box-shadow:
-      inset 0 1px 0 0 rgba(255, 255, 255, 0.06),
-      0 12px 36px -16px rgba(0, 0, 0, 0.65);
+      inset 0 1px 0 0 rgba(255, 255, 255, 0.05),
+      0 12px 32px -16px rgba(0, 0, 0, 0.90);
   }
 
-  /* Bento Box Glass — LIGHT: neumorfismo suave + acentos ouro/marinho */
-  .glass-card {
-    background-color: rgba(255, 255, 255, 0.85);
-    backdrop-filter: blur(20px) saturate(140%);
-    -webkit-backdrop-filter: blur(20px) saturate(140%);
-    border: 1px solid rgba(15, 23, 42, 0.06);
-    box-shadow:
-      inset 0 1px 0 0 rgba(255, 255, 255, 0.95),
-      0 1px 2px 0 rgba(15, 23, 42, 0.04),
-      0 18px 40px -22px rgba(15, 23, 42, 0.10);
-    transition: border-color 220ms ease, box-shadow 220ms ease;
-  }
-  .glass-card:hover {
-    border-color: rgba(15, 23, 42, 0.10);
-    box-shadow:
-      inset 0 1px 0 0 rgba(255, 255, 255, 0.95),
-      0 24px 48px -22px rgba(15, 23, 42, 0.14);
-  }
-
-  .dark [data-sidebar="sidebar"] {
-    background-color: rgba(0, 0, 0, 0.55);
-    backdrop-filter: blur(14px) saturate(140%);
-    -webkit-backdrop-filter: blur(14px) saturate(140%);
+  .dark [data-sidebar="sidebar"],
+  [data-sidebar="sidebar"] {
+    background-color: #0A0A0A;
   }
 
   .text-luxury-gradient {
@@ -142,8 +124,30 @@ Plus Jakarta Sans is the primary font for a Premium Enterprise feel.
 
   .text-white-glow { filter: drop-shadow(0 0 15px rgba(255, 255, 255, 0.10)); }
 
-  .emerald-aura {
-    text-shadow: 0 0 24px rgba(16, 185, 129, 0.18), 0 0 48px rgba(16, 185, 129, 0.08);
+  /* Glow Neon — Verde (vendas/dinheiro) */
+  .neon-glow-green {
+    text-shadow:
+      0 0 8px rgba(34, 197, 94, 0.55),
+      0 0 24px rgba(34, 197, 94, 0.30);
+  }
+  /* Glow Neon — Amarelo (atenção/leads) */
+  .neon-glow-yellow {
+    text-shadow:
+      0 0 8px rgba(250, 204, 21, 0.55),
+      0 0 24px rgba(250, 204, 21, 0.30);
+  }
+  /* Drop-shadow neon p/ blocos */
+  .neon-shadow-yellow {
+    box-shadow:
+      0 0 0 1px rgba(250, 204, 21, 0.35),
+      0 0 24px -4px rgba(250, 204, 21, 0.45),
+      inset 0 1px 0 0 rgba(255, 255, 255, 0.20);
+  }
+  .neon-shadow-green {
+    box-shadow:
+      0 0 0 1px rgba(34, 197, 94, 0.35),
+      0 0 24px -4px rgba(34, 197, 94, 0.45),
+      inset 0 1px 0 0 rgba(255, 255, 255, 0.20);
   }
 
   .font-mono-luxe {
