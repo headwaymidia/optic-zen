@@ -217,12 +217,7 @@ function getInitials(name: string) {
 }
 
 function TeamPanel({ storesCount }: { storesCount: number }) {
-  function handleInvite() {
-    toast({
-      title: "Convidar usuário",
-      description: "Em breve: envio de convite por email com link mágico.",
-    });
-  }
+  const [inviteOpen, setInviteOpen] = useState(false);
 
   function handleAction(action: string, member: TeamMember) {
     toast({
@@ -245,13 +240,15 @@ function TeamPanel({ storesCount }: { storesCount: number }) {
           </p>
         </div>
         <Button
-          onClick={handleInvite}
+          onClick={() => setInviteOpen(true)}
           className="gap-2 bg-emerald-500 hover:bg-emerald-500/90 text-white shrink-0"
         >
           <UserPlus className="h-4 w-4" />
           Convidar Usuário
         </Button>
       </header>
+
+      <InviteMemberDialog open={inviteOpen} onOpenChange={setInviteOpen} />
 
       {/* Tabela minimalista */}
       <div className="border-t border-border">
