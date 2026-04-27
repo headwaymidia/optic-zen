@@ -372,7 +372,7 @@ export function RevenueEvolutionChart({ leads }: Props) {
               type="monotone"
               dataKey="atual"
               stroke={cfg.color}
-              strokeWidth={2}
+              strokeWidth={3}
               fill="url(#metricGradient)"
               dot={false}
               activeDot={{
