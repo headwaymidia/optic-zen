@@ -144,20 +144,6 @@ export function DistributionRow({ leads }: { leads: Lead[] }) {
     ].filter((d) => d.value > 0);
   }, [leads]);
 
-  const lossData = useMemo(() => {
-    const lost = leads.filter((l) => l.status === "Compareceu e Não Comprou");
-    const counts: Record<string, number> = {};
-    LOSS_REASONS.forEach((r) => (counts[r.key] = 0));
-    lost.forEach((l) => {
-      counts[classifyLoss(l.notes)] += 1;
-    });
-    return LOSS_REASONS.map((r) => ({
-      name: r.label,
-      value: counts[r.key],
-      color: r.color,
-    })).filter((d) => d.value > 0);
-  }, [leads]);
-
   return (
     <DonutBlock
       title="Origem dos Leads"
