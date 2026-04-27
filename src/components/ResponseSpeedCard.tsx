@@ -66,54 +66,56 @@ export function ResponseSpeedCard({ leads }: Props) {
       className="rounded-2xl p-7 bg-white dark:bg-[#111111] border border-slate-200 dark:border-[#222222] shadow-sm h-full flex flex-col"
       style={{ fontFamily: "'Inter','Geist Sans',sans-serif" }}
     >
-      <div className="flex items-center gap-2 mb-8">
+      <div className="flex items-center gap-2 mb-6">
         <Zap className="h-3.5 w-3.5 text-zinc-500" strokeWidth={2} />
         <p className="text-[10px] font-medium uppercase tracking-[0.28em] text-zinc-500">
           Velocidade de Atendimento
         </p>
       </div>
 
-      {/* Cronômetro central */}
-      <div className="flex-1 flex flex-col items-center justify-center text-center mb-8">
-        <p className="text-[10px] font-medium uppercase tracking-[0.22em] text-zinc-400 mb-3">
-          Tempo Médio de Resposta · 1º contato
-        </p>
-        <p className="text-6xl font-bold tracking-tighter tabular-nums text-[#1D1D1F] dark:text-white">
-          {fmtDuration(avg)}
-        </p>
-        <span
-          className={`mt-4 text-[10px] font-semibold uppercase tracking-[0.18em] px-3 py-1 rounded-full border ${badgeStyle}`}
-        >
-          {badge.label}
-        </span>
-      </div>
+      <div className="flex-1 grid grid-cols-1 sm:grid-cols-5 gap-8 items-center">
+        {/* Cronômetro — esquerda */}
+        <div className="sm:col-span-2 flex flex-col items-center sm:items-start text-center sm:text-left">
+          <p className="text-[10px] font-medium uppercase tracking-[0.22em] text-zinc-400 mb-3">
+            Tempo Médio · 1º contato
+          </p>
+          <p className="text-6xl font-bold tracking-tighter tabular-nums text-[#1D1D1F] dark:text-white leading-none">
+            {fmtDuration(avg)}
+          </p>
+          <span
+            className={`mt-4 text-[10px] font-semibold uppercase tracking-[0.18em] px-3 py-1 rounded-full border ${badgeStyle}`}
+          >
+            {badge.label}
+          </span>
+        </div>
 
-      {/* Distribuição */}
-      <div className="space-y-3 pt-5 border-t border-slate-200 dark:border-[#222222]">
-        {rows.map((r) => {
-          const pct = (r.value / totalDist) * 100;
-          return (
-            <div key={r.label}>
-              <div className="flex items-center justify-between mb-1.5">
-                <div className="flex items-center gap-2">
-                  <span className={`h-1.5 w-1.5 rounded-full ${r.color}`} />
-                  <span className="text-[12px] font-medium text-zinc-700 dark:text-zinc-300">
-                    {r.label}
+        {/* Distribuição — direita */}
+        <div className="sm:col-span-3 space-y-3 sm:border-l sm:border-slate-200 sm:dark:border-[#222222] sm:pl-8">
+          {rows.map((r) => {
+            const pct = (r.value / totalDist) * 100;
+            return (
+              <div key={r.label}>
+                <div className="flex items-center justify-between mb-1.5">
+                  <div className="flex items-center gap-2">
+                    <span className={`h-1.5 w-1.5 rounded-full ${r.color}`} />
+                    <span className="text-[12px] font-medium text-zinc-700 dark:text-zinc-300">
+                      {r.label}
+                    </span>
+                  </div>
+                  <span className="text-[12px] font-semibold tabular-nums text-[#1D1D1F] dark:text-white">
+                    {r.value}
                   </span>
                 </div>
-                <span className="text-[12px] font-semibold tabular-nums text-[#1D1D1F] dark:text-white">
-                  {r.value}
-                </span>
+                <div className="h-[3px] w-full rounded-full bg-slate-100 dark:bg-[#1c1c1c] overflow-hidden">
+                  <div
+                    className={`h-full rounded-full ${r.color}`}
+                    style={{ width: `${pct}%` }}
+                  />
+                </div>
               </div>
-              <div className="h-[3px] w-full rounded-full bg-slate-100 dark:bg-[#1c1c1c] overflow-hidden">
-                <div
-                  className={`h-full rounded-full ${r.color}`}
-                  style={{ width: `${pct}%` }}
-                />
-              </div>
-            </div>
-          );
-        })}
+            );
+          })}
+        </div>
       </div>
     </Card>
   );
