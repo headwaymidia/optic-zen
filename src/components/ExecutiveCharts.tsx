@@ -190,9 +190,9 @@ export function LossReasonsDonut({ leads }: { leads: Lead[] }) {
   }, [leads]);
 
   return (
-    <Card className="border border-border rounded-xl shadow-[0_1px_2px_rgba(15,23,42,0.04)] bg-card">
+    <Card className="border border-border dark:border-white/5 rounded-xl shadow-[0_1px_2px_rgba(15,23,42,0.04)] bg-card">
       <CardHeader className="pb-2 pt-3 px-4">
-        <CardTitle className="text-sm font-semibold">Motivos de Perda</CardTitle>
+        <CardTitle className="text-sm font-bold uppercase tracking-wider">Motivos de Perda</CardTitle>
         <p className="text-[11px] text-muted-foreground">Leads que não converteram</p>
       </CardHeader>
       <CardContent className="px-2 pb-3">
