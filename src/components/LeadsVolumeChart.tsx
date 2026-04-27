@@ -18,6 +18,7 @@ interface Props {
   leads: Lead[];
   from: Date;
   to: Date;
+  embedded?: boolean;
 }
 
 // Semantic colors per status (HSL strings so we can use them directly in Recharts)
