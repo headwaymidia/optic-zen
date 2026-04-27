@@ -1,7 +1,7 @@
 import { useMemo } from "react";
 import { Card } from "@/components/ui/card";
 import { Lead } from "@/lib/supabase";
-import { MessageCircle, AlertCircle } from "lucide-react";
+import { MessageCircle, AlertCircle, Sparkles } from "lucide-react";
 
 interface Props {
   leads: Lead[];
@@ -158,9 +158,9 @@ export function ImprovementInsightsCard({ leads }: Props) {
           </div>
         </div>
         <div className="inline-flex items-center gap-1.5 self-start px-2 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/20">
-          <MessageCircle className="h-3 w-3 text-emerald-600 dark:text-emerald-400" strokeWidth={2.2} />
+          <Sparkles className="h-3 w-3 text-emerald-600 dark:text-emerald-400" strokeWidth={2.2} />
           <span className="text-[10px] font-semibold text-emerald-700 dark:text-emerald-300">
-            IA · Scanner de Conversas
+            IA · Analisando Processos
           </span>
         </div>
       </div>
@@ -193,12 +193,26 @@ export function ImprovementInsightsCard({ leads }: Props) {
                 }`}
                 strokeWidth={2.2}
               />
-              <div className="min-w-0">
-                <p className="text-[11px] font-medium leading-snug text-[#1D1D1F] dark:text-white">
+              <div className="min-w-0 flex-1">
+                <div className="flex items-center gap-1.5 mb-1">
+                  <span
+                    className={`text-[8px] font-bold uppercase tracking-[0.15em] px-1.5 py-0.5 rounded ${
+                      i.source === "whatsapp"
+                        ? "bg-emerald-500/10 text-emerald-700 dark:text-emerald-400"
+                        : i.source === "pdv"
+                        ? "bg-rose-500/10 text-rose-700 dark:text-rose-400"
+                        : "bg-amber-500/10 text-amber-700 dark:text-amber-400"
+                    }`}
+                  >
+                    {i.source === "whatsapp" ? "WhatsApp" : i.source === "pdv" ? "PDV" : "Processo"}
+                  </span>
+                </div>
+                <p className="text-[11px] font-normal leading-snug text-zinc-600 dark:text-zinc-400">
                   {i.title}
                 </p>
-                <p className="text-[10px] leading-snug text-zinc-500 mt-1">
-                  → {i.improvement}
+                <p className="text-[11px] leading-snug text-[#1D1D1F] dark:text-white mt-1.5">
+                  <span className="font-semibold">Melhoria:</span>{" "}
+                  <span className="font-semibold">{i.improvement}</span>
                 </p>
               </div>
             </li>
