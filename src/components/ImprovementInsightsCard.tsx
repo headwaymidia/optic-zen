@@ -1,7 +1,7 @@
 import { useMemo } from "react";
 import { Card } from "@/components/ui/card";
 import { Lead } from "@/lib/supabase";
-import { Lightbulb } from "lucide-react";
+import { MessageCircle, AlertCircle } from "lucide-react";
 
 interface Props {
   leads: Lead[];
@@ -117,50 +117,67 @@ export function ImprovementInsightsCard({ leads }: Props) {
 
   return (
     <Card
-      className="rounded-2xl p-7 bg-white dark:bg-[#111111] border border-slate-200 dark:border-[#222222] shadow-sm h-full flex flex-col"
+      className="rounded-2xl p-5 bg-white dark:bg-[#111111] border border-slate-200 dark:border-[#222222] shadow-sm h-full flex flex-col"
       style={{ fontFamily: "'Inter','Geist Sans',sans-serif" }}
     >
-      <div className="flex items-center justify-between mb-6">
-        <div className="flex items-center gap-2">
-          <Lightbulb className="h-3.5 w-3.5 text-zinc-500" strokeWidth={2} />
+      {/* Header com selo "AI Analisando WhatsApp" */}
+      <div className="flex flex-col gap-3 mb-5">
+        <div className="flex items-center justify-between">
           <p className="text-[10px] font-medium uppercase tracking-[0.28em] text-zinc-500">
             Pontos de Melhoria
           </p>
+          <div className="flex items-center gap-1">
+            <span className="relative flex h-1.5 w-1.5">
+              <span className="absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75 animate-ping" />
+              <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-emerald-500" />
+            </span>
+            <span className="text-[9px] font-semibold uppercase tracking-[0.2em] text-emerald-600 dark:text-emerald-400">
+              live
+            </span>
+          </div>
         </div>
-        <p className="text-[10px] font-medium uppercase tracking-[0.22em] text-zinc-400">
-          Inteligência do CRM
-        </p>
+        <div className="inline-flex items-center gap-1.5 self-start px-2 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/20">
+          <MessageCircle className="h-3 w-3 text-emerald-600 dark:text-emerald-400" strokeWidth={2.2} />
+          <span className="text-[10px] font-semibold text-emerald-700 dark:text-emerald-300">
+            IA · Scanner de Conversas
+          </span>
+        </div>
       </div>
 
       {insights.length === 0 ? (
-        <div className="flex-1 flex items-center justify-center text-center">
+        <div className="flex-1 flex items-center justify-center text-center px-2">
           <div>
-            <p className="text-[13px] font-medium text-emerald-600 dark:text-emerald-400 mb-1">
-              Nenhum ponto crítico detectado.
+            <p className="text-[12px] font-medium text-emerald-600 dark:text-emerald-400 mb-1">
+              Tudo limpo.
             </p>
-            <p className="text-[11px] text-zinc-500">
-              A operação está saudável neste período.
+            <p className="text-[10px] text-zinc-500 leading-snug">
+              Nenhum gargalo detectado nas conversas.
             </p>
           </div>
         </div>
       ) : (
-        <ul className="space-y-5 flex-1">
+        <ul className="space-y-3 flex-1 overflow-hidden">
           {insights.map((i, idx) => (
-            <li key={idx} className="flex gap-3">
-              <span
-                className={`mt-1.5 h-2 w-2 rounded-full shrink-0 ${dotStyle(
-                  i.severity
-                )}`}
+            <li
+              key={idx}
+              className="flex gap-2.5 pb-3 border-b border-slate-100 dark:border-[#1a1a1a] last:border-0 last:pb-0"
+            >
+              <AlertCircle
+                className={`h-3.5 w-3.5 shrink-0 mt-0.5 ${
+                  i.severity === "high"
+                    ? "text-rose-500"
+                    : i.severity === "medium"
+                    ? "text-amber-500"
+                    : "text-emerald-500"
+                }`}
+                strokeWidth={2.2}
               />
               <div className="min-w-0">
-                <p className="text-[13px] font-medium leading-snug text-[#1D1D1F] dark:text-white">
+                <p className="text-[11px] font-medium leading-snug text-[#1D1D1F] dark:text-white">
                   {i.title}
                 </p>
-                <p className="text-[12px] leading-snug text-zinc-500 mt-1">
-                  <span className="font-semibold text-zinc-600 dark:text-zinc-400">
-                    Melhoria:
-                  </span>{" "}
-                  {i.improvement}
+                <p className="text-[10px] leading-snug text-zinc-500 mt-1">
+                  → {i.improvement}
                 </p>
               </div>
             </li>
