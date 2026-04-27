@@ -147,9 +147,9 @@ export function LeadsVsSalesTimeline({ leads }: { leads: Lead[] }) {
   }, [leads]);
 
   return (
-    <Card className="border border-border rounded-xl shadow-[0_1px_2px_rgba(15,23,42,0.04)] bg-card">
+    <Card className="border border-border dark:border-white/5 rounded-xl shadow-[0_1px_2px_rgba(15,23,42,0.04)] bg-card">
       <CardHeader className="pb-2 pt-3 px-4">
-        <CardTitle className="text-sm font-semibold">Leads vs Vendas</CardTitle>
+        <CardTitle className="text-sm font-bold uppercase tracking-wider">Leads vs Vendas</CardTitle>
         <p className="text-[11px] text-muted-foreground">Últimos 7 dias</p>
       </CardHeader>
       <CardContent className="px-2 pb-3">
@@ -158,11 +158,11 @@ export function LeadsVsSalesTimeline({ leads }: { leads: Lead[] }) {
             <AreaChart data={data} margin={{ top: 8, right: 12, left: -16, bottom: 0 }}>
               <defs>
                 <linearGradient id="gNovosLight" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="0%" stopColor={BLUE} stopOpacity={0.1} />
+                  <stop offset="0%" stopColor={BLUE} stopOpacity={0.35} />
                   <stop offset="100%" stopColor={BLUE} stopOpacity={0} />
                 </linearGradient>
                 <linearGradient id="gVendasLight" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="0%" stopColor={EMERALD} stopOpacity={0.1} />
+                  <stop offset="0%" stopColor={EMERALD} stopOpacity={0.3} />
                   <stop offset="100%" stopColor={EMERALD} stopOpacity={0} />
                 </linearGradient>
               </defs>
