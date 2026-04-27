@@ -2,7 +2,7 @@ import { useMemo, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
-import { RevenueHeroCard, KpiStack, KPICards } from "@/components/DashboardSummary";
+import { RevenueHeroCard, KPICards } from "@/components/DashboardSummary";
 import { useLeads } from "@/hooks/useLeads";
 import { PeriodFilter, PeriodKey, getPeriodRange } from "@/components/PeriodFilter";
 import { LeadsVolumeChart } from "@/components/LeadsVolumeChart";

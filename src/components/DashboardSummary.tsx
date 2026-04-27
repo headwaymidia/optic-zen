@@ -21,35 +21,32 @@ export function RevenueHeroCard({ leads, loading }: { leads: Lead[]; loading: bo
   const orgPct = 100 - adsPct;
 
   return (
-    <Card className="border border-slate-800 bg-slate-900 text-slate-100 rounded-xl shadow-[0_4px_20px_-8px_rgba(15,23,42,0.4)] overflow-hidden h-full">
-      <CardContent className="p-7 h-full flex flex-col items-center justify-center text-center gap-4">
+    <Card className="border border-slate-800 bg-slate-900 text-slate-100 rounded-lg overflow-hidden h-full">
+      <CardContent className="p-6 h-full flex flex-col items-center justify-center text-center gap-3">
         {/* Eyebrow */}
         <div className="flex items-center gap-2">
-          <div className="flex h-6 w-6 items-center justify-center rounded-md bg-emerald-500/15 ring-1 ring-emerald-500/30">
-            <TrendingUp className="h-3 w-3 text-emerald-400" />
-          </div>
-          <p className="text-[10px] uppercase tracking-[0.2em] text-slate-400 font-bold">
+          <TrendingUp className="h-3 w-3 text-emerald-400" />
+          <p className="text-[10px] uppercase tracking-[0.2em] text-slate-400 font-medium">
             Faturamento Gerado · ROI
           </p>
-          <span className="inline-flex h-1.5 w-1.5 rounded-full bg-emerald-400 shadow-[0_0_10px_hsl(160_84%_55%)]" />
         </div>
 
-        {/* Valor protagonista */}
+        {/* Valor protagonista — limpo, sem glow */}
         <p
           className="text-5xl sm:text-6xl font-bold tabular-nums tracking-tight leading-none text-emerald-400"
-          style={{ fontFamily: "Inter, ui-sans-serif, system-ui, sans-serif", textShadow: "0 0 28px hsl(160 84% 50% / 0.5)" }}
+          style={{ fontFamily: "Inter, ui-sans-serif, system-ui, sans-serif" }}
         >
           {loading ? "—" : formatBRL(totalFaturamento)}
         </p>
 
         {/* Breakdown discreto */}
-        <div className="w-full max-w-sm space-y-1.5 pt-1">
+        <div className="w-full max-w-xs space-y-1 pt-1">
           <div className="flex items-center justify-between gap-3 text-[10px]">
-            <span className="flex items-center gap-1 text-slate-400">
+            <span className="flex items-center gap-1 text-slate-500 font-normal">
               <Megaphone className="h-2.5 w-2.5" />
               Tráfego Pago
             </span>
-            <span className="tabular-nums text-emerald-400 font-semibold">
+            <span className="tabular-nums text-slate-300 font-medium">
               {loading ? "—" : formatBRL(faturamentoAds)}
               {!loading && totalFaturamento > 0 && (
                 <span className="ml-1 text-slate-500 font-normal">{adsPct.toFixed(0)}%</span>
@@ -57,23 +54,17 @@ export function RevenueHeroCard({ leads, loading }: { leads: Lead[]; loading: bo
             </span>
           </div>
           <div className="flex items-center justify-between gap-3 text-[10px]">
-            <span className="flex items-center gap-1 text-slate-400">
+            <span className="flex items-center gap-1 text-slate-500 font-normal">
               <Store className="h-2.5 w-2.5" />
               Orgânico
             </span>
-            <span className="tabular-nums text-slate-100 font-semibold">
+            <span className="tabular-nums text-slate-300 font-medium">
               {loading ? "—" : formatBRL(faturamentoOrganico)}
               {!loading && totalFaturamento > 0 && (
                 <span className="ml-1 text-slate-500 font-normal">{orgPct.toFixed(0)}%</span>
               )}
             </span>
           </div>
-          {!loading && totalFaturamento > 0 && (
-            <div className="h-0.5 w-full overflow-hidden rounded-full bg-slate-800 flex">
-              <div className="h-full bg-emerald-400 transition-all" style={{ width: `${adsPct}%` }} />
-              <div className="h-full bg-emerald-700 transition-all" style={{ width: `${orgPct}%` }} />
-            </div>
-          )}
         </div>
       </CardContent>
     </Card>
