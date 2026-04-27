@@ -2,7 +2,6 @@ import { useMemo } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Lead } from "@/lib/supabase";
 import { cn } from "@/lib/utils";
-import { AlertTriangle, Thermometer, CheckCircle2 } from "lucide-react";
 
 interface SalesThermometerProps {
   leads: Lead[];
@@ -11,16 +10,13 @@ interface SalesThermometerProps {
 type Stage = {
   key: string;
   label: string;
-  shortLabel: string;
   count: number;
-  conv: number | null; // taxa a partir da etapa anterior
-  dot: string;         // cor do círculo
-  text: string;        // cor do número
+  conv: number | null;
 };
 
 /**
- * Funil em formato de "Stepper Horizontal":
- * Captação ─68%→ Agendamento ─82%→ Comparecimento ─44%→ Venda
+ * Funil minimalista: barra de progresso horizontal + 4 indicadores de texto.
+ * Estilo Linear/Vercel — sem círculos, sem cores fortes.
  */
 export function SalesThermometer({ leads }: SalesThermometerProps) {
   const stages = useMemo<Stage[]>(() => {
@@ -34,14 +30,10 @@ export function SalesThermometer({ leads }: SalesThermometerProps) {
     const comprou = leads.filter((l) => l.status === "Compareceu e Comprou").length;
 
     return [
-      { key: "captacao",   label: "Leads captados",   shortLabel: "Captação",       count: total,      conv: null,
-        dot: "bg-blue-500",    text: "text-blue-600 dark:text-blue-300" },
-      { key: "agendou",    label: "Agendaram exame",  shortLabel: "Agendamento",    count: agendou,    conv: total > 0 ? agendou / total : null,
-        dot: "bg-violet-500",  text: "text-violet-600 dark:text-violet-300" },
-      { key: "compareceu", label: "Compareceram",     shortLabel: "Comparecimento", count: compareceu, conv: agendou > 0 ? compareceu / agendou : null,
-        dot: "bg-cyan-500",    text: "text-cyan-600 dark:text-cyan-300" },
-      { key: "comprou",    label: "Compraram",        shortLabel: "Venda",          count: comprou,    conv: compareceu > 0 ? comprou / compareceu : null,
-        dot: "bg-emerald-500", text: "text-emerald-600 dark:text-emerald-300" },
+      { key: "captacao",   label: "Captação",       count: total,      conv: null },
+      { key: "agendou",    label: "Agendamento",    count: agendou,    conv: total > 0 ? agendou / total : null },
+      { key: "compareceu", label: "Comparecimento", count: compareceu, conv: agendou > 0 ? compareceu / agendou : null },
+      { key: "comprou",    label: "Venda",          count: comprou,    conv: compareceu > 0 ? comprou / compareceu : null },
     ];
   }, [leads]);
 
@@ -49,126 +41,74 @@ export function SalesThermometer({ leads }: SalesThermometerProps) {
   const finalSales = stages[stages.length - 1].count;
   const overallConv = totalLeads > 0 ? (finalSales / totalLeads) * 100 : 0;
 
-  // Gargalo: menor conv > 0
-  const bottleneck = useMemo(() => {
-    const candidates = stages
-      .map((s, i) => ({ stage: s, prev: stages[i - 1], idx: i }))
-      .filter((x) => x.stage.conv !== null && x.prev && x.prev.count > 0);
-    if (!candidates.length) return null;
-    return candidates.reduce((w, c) => ((c.stage.conv ?? 1) < (w.stage.conv ?? 1) ? c : w), candidates[0]);
-  }, [stages]);
-
   const formatPct = (v: number | null) => (v === null ? "—" : `${(v * 100).toFixed(0)}%`);
 
   if (totalLeads === 0) {
     return (
-      <Card className="border border-border dark:border-white/5 rounded-xl shadow-[0_1px_2px_rgba(15,23,42,0.04)] bg-card">
-        <CardHeader className="pb-2 pt-3 px-4">
-          <div className="flex items-center gap-2">
-            <Thermometer className="h-3.5 w-3.5 text-rose-500" />
-            <CardTitle className="text-sm font-bold uppercase tracking-wider">Funil de Conversão</CardTitle>
-          </div>
+      <Card className="border border-border bg-card rounded-lg">
+        <CardHeader className="pb-2 pt-4 px-5">
+          <CardTitle className="text-[11px] font-medium uppercase tracking-[0.14em] text-muted-foreground">
+            Funil de Conversão
+          </CardTitle>
         </CardHeader>
-        <CardContent>
-          <p className="text-sm text-muted-foreground py-4 text-center">
-            Sem leads no período.
-          </p>
+        <CardContent className="px-5 pb-5">
+          <p className="text-xs text-muted-foreground py-2">Sem leads no período.</p>
         </CardContent>
       </Card>
     );
   }
 
   return (
-    <Card className="border border-border dark:border-white/5 rounded-lg shadow-[0_1px_2px_rgba(15,23,42,0.04)] bg-card">
-      <CardHeader className="pb-2 pt-3 px-4">
-        <div className="flex items-center justify-between gap-2">
-          <div className="flex items-center gap-2">
-            <Thermometer className="h-3.5 w-3.5 text-rose-500" />
-            <CardTitle className="text-sm font-bold uppercase tracking-wider">Funil de Conversão</CardTitle>
-          </div>
-          <span
-            className={cn(
-              "px-2 py-0.5 rounded-full font-bold tabular-nums text-white text-[11px]",
-              overallConv >= 10 ? "bg-emerald-500" : overallConv >= 5 ? "bg-amber-500" : "bg-rose-500"
-            )}
-          >
-            {overallConv.toFixed(1)}%
-          </span>
-        </div>
+    <Card className="border border-border bg-card rounded-lg">
+      <CardHeader className="pb-3 pt-4 px-5 flex-row items-center justify-between space-y-0">
+        <CardTitle className="text-[11px] font-medium uppercase tracking-[0.14em] text-muted-foreground">
+          Funil de Conversão
+        </CardTitle>
+        <span className="text-[11px] tabular-nums text-foreground font-medium">
+          {overallConv.toFixed(1)}% conversão total
+        </span>
       </CardHeader>
 
-      <CardContent className="px-4 pb-3 pt-1">
-        {/* Stepper horizontal */}
-        <div className="flex items-start justify-between gap-1 relative">
+      <CardContent className="px-5 pb-5 pt-1 space-y-3">
+        {/* Barra de progresso segmentada minimalista */}
+        <div className="flex items-center gap-1 h-1">
           {stages.map((s, i) => {
-            const next = stages[i + 1];
-            const showConn = i < stages.length - 1;
-            const isBottleneckTarget = bottleneck?.stage.key === next?.key;
-
+            const widthPct = totalLeads > 0 ? (s.count / totalLeads) * 100 : 0;
+            const isLast = i === stages.length - 1;
             return (
-              <div key={s.key} className="flex-1 flex items-start min-w-0">
-                {/* Step */}
-                <div className="flex flex-col items-center min-w-0 flex-shrink-0 w-16">
-                  <div
-                    className={cn(
-                      "h-5 w-5 rounded-full flex items-center justify-center text-white text-[9px] font-bold tabular-nums",
-                      s.dot
-                    )}
-                  >
-                    {i + 1}
-                  </div>
-                  <div className={cn("text-base font-bold tabular-nums tracking-tight mt-1.5 leading-none", s.text)}>
-                    {s.count}
-                  </div>
-                  <div className="text-[10px] uppercase tracking-wider text-muted-foreground font-semibold mt-1 text-center leading-tight">
-                    {s.shortLabel}
-                  </div>
-                </div>
-
-                {/* Connector com taxa de conversão */}
-                {showConn && (
-                  <div className="flex-1 flex flex-col items-center justify-start pt-1 min-w-0 px-1">
-                    <span
-                      className={cn(
-                        "text-[10px] font-bold tabular-nums leading-none",
-                        isBottleneckTarget ? "text-amber-600 dark:text-amber-400" : "text-muted-foreground"
-                      )}
-                    >
-                      {formatPct(next!.conv)}
-                    </span>
-                    <div
-                      className={cn(
-                        "mt-1.5 h-px w-full relative",
-                        isBottleneckTarget
-                          ? "bg-amber-300 dark:bg-amber-500/40"
-                          : "bg-border"
-                      )}
-                    >
-                      <span className="absolute -right-0.5 -top-1 text-muted-foreground text-[10px] leading-none">›</span>
-                    </div>
-                  </div>
+              <div
+                key={s.key}
+                className={cn(
+                  "h-full rounded-full transition-all",
+                  isLast ? "bg-emerald-500" : "bg-foreground"
                 )}
-              </div>
+                style={{ width: `${Math.max(widthPct, 4)}%`, opacity: 1 - i * 0.18 }}
+              />
             );
           })}
+          <div className="flex-1 h-full rounded-full bg-border" />
         </div>
 
-        {/* Diagnóstico discreto */}
-        {bottleneck ? (
-          <p className="text-[11px] text-muted-foreground pt-3 mt-3 border-t border-border flex items-start gap-1.5">
-            <AlertTriangle className="h-3 w-3 text-amber-500 shrink-0 mt-0.5" />
-            <span>
-              <span className="font-medium text-foreground">Ponto de atenção:</span>{" "}
-              {bottleneck.prev!.shortLabel} → {bottleneck.stage.shortLabel} converte apenas{" "}
-              <span className="font-bold tabular-nums">{formatPct(bottleneck.stage.conv)}</span>.
-            </span>
-          </p>
-        ) : (
-          <p className="text-[11px] text-muted-foreground pt-3 mt-3 border-t border-border flex items-center gap-1.5">
-            <CheckCircle2 className="h-3 w-3 text-emerald-500 shrink-0" />
-            Funil saudável: todas as etapas convertem bem.
-          </p>
-        )}
+        {/* Indicadores de texto — 4 colunas */}
+        <div className="grid grid-cols-4 gap-2 pt-1">
+          {stages.map((s, i) => (
+            <div key={s.key} className="flex flex-col gap-0.5 min-w-0">
+              <span className="text-[10px] uppercase tracking-wider text-muted-foreground truncate">
+                {s.label}
+              </span>
+              <div className="flex items-baseline gap-1.5">
+                <span className="text-base font-medium tabular-nums text-foreground leading-none">
+                  {s.count}
+                </span>
+                {i > 0 && (
+                  <span className="text-[10px] tabular-nums text-muted-foreground">
+                    {formatPct(s.conv)}
+                  </span>
+                )}
+              </div>
+            </div>
+          ))}
+        </div>
       </CardContent>
     </Card>
   );
