@@ -154,9 +154,9 @@ export function SalesThermometer({ leads }: SalesThermometerProps) {
         </p>
       </CardHeader>
 
-      <CardContent className="space-y-4">
-        {/* Funil visual */}
-        <div className="grid grid-cols-1 sm:grid-cols-7 gap-2 items-stretch">
+      <CardContent className="space-y-3">
+        {/* Funil visual compacto */}
+        <div className="grid grid-cols-1 sm:grid-cols-7 gap-1.5 items-stretch">
           {stages.map((s, i) => {
             const widthPct = totalLeads > 0 ? Math.max(15, (s.count / totalLeads) * 100) : 15;
             const isBottleneckTarget = bottleneck?.stage.key === s.key;
@@ -165,33 +165,23 @@ export function SalesThermometer({ leads }: SalesThermometerProps) {
               <Fragment key={s.key}>
                 <div
                   className={cn(
-                    "sm:col-span-1 relative rounded-xl border p-3 transition-all",
+                    "sm:col-span-1 relative rounded-lg border p-2.5 transition-all",
                     s.bg,
-                    isBottleneckTarget
-                      ? "border-amber-300 ring-2 ring-amber-200"
-                      : "border-slate-200"
+                    isBottleneckTarget ? "border-amber-300" : "border-slate-100"
                   )}
                 >
-                  {isBottleneckTarget && (
-                    <span
-                      className="absolute -top-2 -right-2 inline-flex items-center gap-1 rounded-full bg-amber-400 text-amber-950 text-[10px] font-bold px-2 py-0.5"
-                      title="Maior queda de conversão"
-                    >
-                      <AlertTriangle className="h-3 w-3" />
-                      Atenção
-                    </span>
-                  )}
                   <div className="flex items-center gap-1.5">
-                    <span className={cn("h-2 w-2 rounded-full", s.accent)} />
-                    <span className="text-[10px] uppercase tracking-wide text-slate-500 font-semibold truncate">
+                    <span className={cn("h-1.5 w-1.5 rounded-full", s.accent)} />
+                    <span className="text-[9px] uppercase tracking-wider text-slate-500 font-semibold truncate">
                       {s.shortLabel}
                     </span>
                   </div>
-                  <p className={cn("text-2xl font-bold tabular-nums mt-1", s.textAccent)}>{s.count}</p>
-                  <p className="text-[11px] text-slate-600 truncate">{s.label}</p>
+                  <p className={cn("text-xl font-semibold tabular-nums mt-0.5 tracking-tight", s.textAccent)}>
+                    {s.count}
+                  </p>
+                  <p className="text-[10px] text-slate-500 truncate">{s.label}</p>
 
-                  {/* Barra proporcional ao volume */}
-                  <div className="mt-2 h-1.5 w-full rounded-full bg-white/70 overflow-hidden">
+                  <div className="mt-1.5 h-1 w-full rounded-full bg-white/70 overflow-hidden">
                     <div
                       className={cn("h-full rounded-full transition-all", s.accent)}
                       style={{ width: `${widthPct}%` }}
@@ -199,13 +189,12 @@ export function SalesThermometer({ leads }: SalesThermometerProps) {
                   </div>
                 </div>
 
-                {/* Conector com taxa de conversão (fluxo fluido) */}
+                {/* Conector */}
                 {i < stages.length - 1 && (
                   <div className="sm:col-span-1 relative flex sm:flex-col items-center justify-center gap-1 py-1 sm:py-0">
-                    {/* Linha tracejada conectora (desktop) */}
                     <div
                       aria-hidden
-                      className="hidden sm:block absolute top-1/2 left-0 right-0 h-px border-t border-dashed border-slate-300 -z-0"
+                      className="hidden sm:block absolute top-1/2 left-0 right-0 h-px border-t border-dashed border-slate-200 -z-0"
                     />
                     {(() => {
                       const next = stages[i + 1];
@@ -214,23 +203,23 @@ export function SalesThermometer({ leads }: SalesThermometerProps) {
                       const pctNum = conv === null ? 0 : conv * 100;
                       const tone =
                         conv === null
-                          ? "text-slate-500 bg-white border-slate-200"
+                          ? "text-slate-500 bg-card border-slate-200"
                           : isBottleneck
-                            ? "text-amber-700 bg-white border-amber-300"
+                            ? "text-amber-700 bg-card border-amber-300"
                             : pctNum >= 60
-                              ? "text-emerald-700 bg-white border-emerald-200"
-                              : "text-amber-700 bg-white border-amber-200";
+                              ? "text-emerald-700 bg-card border-emerald-200"
+                              : "text-amber-700 bg-card border-amber-200";
                       return (
                         <span
                           className={cn(
-                            "relative z-10 inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-[11px] font-black tabular-nums shadow-sm",
+                            "relative z-10 inline-flex items-center gap-0.5 rounded-full border px-1.5 py-0.5 text-[10px] font-semibold tabular-nums",
                             tone
                           )}
                         >
                           {isBottleneck ? (
-                            <TrendingDown className="h-3 w-3" />
+                            <TrendingDown className="h-2.5 w-2.5" />
                           ) : (
-                            <ChevronRight className="h-3 w-3" />
+                            <ChevronRight className="h-2.5 w-2.5" />
                           )}
                           {formatPct(conv)}
                         </span>
@@ -243,40 +232,23 @@ export function SalesThermometer({ leads }: SalesThermometerProps) {
           })}
         </div>
 
-        {/* Diagnóstico do gargalo */}
-        <div
-          className={cn(
-            "rounded-xl border p-3 flex items-start gap-3",
-            bottleneck
-              ? "border-amber-200 bg-amber-50"
-              : "border-emerald-200 bg-emerald-50"
-          )}
-        >
-          {bottleneck ? (
-            <AlertTriangle className="h-5 w-5 text-amber-600 shrink-0 mt-0.5" />
-          ) : (
-            <CheckCircle2 className="h-5 w-5 text-emerald-600 shrink-0 mt-0.5" />
-          )}
-          <div className="text-xs sm:text-sm">
-            {bottleneck ? (
-              <>
-                <p className="font-semibold text-amber-900">
-                  Ponto de Atenção: {bottleneck.prev!.shortLabel} → {bottleneck.stage.shortLabel}
-                </p>
-                <p className="text-amber-800 mt-0.5">
-                  <strong>{formatPct(bottleneck.stage.conv)}</strong> dos leads que chegaram em{" "}
-                  <strong>{bottleneck.prev!.shortLabel}</strong> avançaram para{" "}
-                  <strong>{bottleneck.stage.shortLabel}</strong>. Vale revisar essa etapa junto com o time
-                  para entender o que pode ser ajustado.
-                </p>
-              </>
-            ) : (
-              <p className="font-semibold text-emerald-900">
-                Funil saudável: todas as etapas convertem bem. Continue assim!
-              </p>
-            )}
-          </div>
-        </div>
+        {/* Diagnóstico discreto no rodapé */}
+        {bottleneck ? (
+          <p className="text-[11px] text-muted-foreground pt-1 border-t border-slate-100 flex items-start gap-1.5">
+            <AlertTriangle className="h-3 w-3 text-amber-500 shrink-0 mt-0.5" />
+            <span>
+              <span className="font-medium text-foreground">Ponto de atenção:</span>{" "}
+              {bottleneck.prev!.shortLabel} → {bottleneck.stage.shortLabel} converte apenas{" "}
+              <span className="font-semibold tabular-nums">{formatPct(bottleneck.stage.conv)}</span>.
+              Vale revisar essa etapa com o time.
+            </span>
+          </p>
+        ) : (
+          <p className="text-[11px] text-muted-foreground pt-1 border-t border-slate-100 flex items-center gap-1.5">
+            <CheckCircle2 className="h-3 w-3 text-emerald-500 shrink-0" />
+            Funil saudável: todas as etapas convertem bem.
+          </p>
+        )}
       </CardContent>
     </Card>
   );

@@ -1,6 +1,7 @@
 import { Navigate, Outlet } from "react-router-dom";
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { AppSidebar } from "./AppSidebar";
+import { ThemeToggle } from "./ThemeToggle";
 import { useAuth } from "@/hooks/useAuth";
 import { LeadsProvider } from "@/hooks/useLeads";
 export default function AppLayout() {
@@ -33,8 +34,7 @@ export default function AppLayout() {
                   </p>
                 </div>
               </div>
-              <div />
-
+              <ThemeToggle />
             </header>
             <main className="flex-1 overflow-auto">
               {!profile?.company_id ? (
