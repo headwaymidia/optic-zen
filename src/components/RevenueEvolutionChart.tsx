@@ -21,7 +21,7 @@ import {
 import { ptBR } from "date-fns/locale";
 import { cn } from "@/lib/utils";
 
-type MetricKey = "faturamento" | "leads" | "agendamentos" | "vendas";
+type MetricKey = "vendas" | "leads" | "agendamentos";
 
 interface MetricConfig {
   key: MetricKey;
@@ -30,6 +30,7 @@ interface MetricConfig {
   colorLight: string;   // light-mode solid
   isCurrency: boolean;
   shortLabel: string;
+  titleSuffix: string;
 }
 
 const METRICS: Record<MetricKey, MetricConfig> = {
