@@ -21,16 +21,17 @@ import { eachDayOfInterval, format, isSameDay, parseISO, subDays } from "date-fn
 import { ptBR } from "date-fns/locale";
 
 const WHITE = "#fafafa";
-const EMERALD = "#10B981";
+const EMERALD = "#10B981";       /* Verde Esmeralda — Vendas */
+const ELECTRIC_BLUE = "#3B82F6"; /* Azul Elétrico — Leads */
 const ZINC_400 = "#a1a1aa";
 const ZINC_500 = "#71717a";
 const ZINC_600 = "#52525b";
 const ZINC_700 = "#3f3f46";
 
-// Paleta vibrante mas sóbria para Motivos de Perda — Esmeralda, Índigo, Âmbar, Grafite
-const EMERALD_VIVID = "#10B981";
+// Paleta Premium para Motivos de Perda — Índigo, Violeta, Ciano, Grafite
 const INDIGO = "#6366F1";
-const AMBER = "#F59E0B";
+const VIOLET = "#8B5CF6";
+const CYAN = "#06B6D4";
 const GRAPHITE = "#3F3F46";
 
 const FUNNEL_STAGES = [
@@ -41,9 +42,9 @@ const FUNNEL_STAGES = [
 ];
 
 const LOSS_REASONS = [
-  { key: "preco", label: "Preço", color: EMERALD_VIVID, match: ["preç", "caro", "valor"] },
-  { key: "distancia", label: "Distância", color: INDIGO, match: ["dist", "long", "endere"] },
-  { key: "semresposta", label: "Sem Resposta", color: AMBER, match: ["sem resp", "não resp", "nao resp", "silenc"] },
+  { key: "preco", label: "Preço", color: INDIGO, match: ["preç", "caro", "valor"] },
+  { key: "distancia", label: "Distância", color: VIOLET, match: ["dist", "long", "endere"] },
+  { key: "semresposta", label: "Sem Resposta", color: CYAN, match: ["sem resp", "não resp", "nao resp", "silenc"] },
   { key: "outros", label: "Outros", color: GRAPHITE, match: [] },
 ];
 
@@ -153,10 +154,18 @@ export function LeadsVsSalesTimeline({ leads, embedded = false }: { leads: Lead[
   }, [leads]);
 
   const chart = (
-    <div className="h-[180px] w-full">
+    <div className="h-[200px] w-full">
       <ResponsiveContainer width="100%" height="100%">
         <AreaChart data={data} margin={{ top: 12, right: 12, left: 12, bottom: 0 }}>
           <defs>
+            <linearGradient id="leadsAreaGradient" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stopColor={ELECTRIC_BLUE} stopOpacity={0.35} />
+              <stop offset="100%" stopColor={ELECTRIC_BLUE} stopOpacity={0} />
+            </linearGradient>
+            <linearGradient id="vendasAreaGradient" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stopColor={EMERALD} stopOpacity={0.35} />
+              <stop offset="100%" stopColor={EMERALD} stopOpacity={0} />
+            </linearGradient>
             <filter id="emeraldGlow" x="-20%" y="-50%" width="140%" height="200%">
               <feGaussianBlur stdDeviation="2.5" result="blur" />
               <feMerge>
@@ -164,8 +173,8 @@ export function LeadsVsSalesTimeline({ leads, embedded = false }: { leads: Lead[
                 <feMergeNode in="SourceGraphic" />
               </feMerge>
             </filter>
-            <filter id="whiteGlow" x="-20%" y="-50%" width="140%" height="200%">
-              <feGaussianBlur stdDeviation="2" result="blur" />
+            <filter id="blueGlow" x="-20%" y="-50%" width="140%" height="200%">
+              <feGaussianBlur stdDeviation="2.5" result="blur" />
               <feMerge>
                 <feMergeNode in="blur" />
                 <feMergeNode in="SourceGraphic" />
@@ -175,8 +184,8 @@ export function LeadsVsSalesTimeline({ leads, embedded = false }: { leads: Lead[
           <XAxis dataKey="date" hide />
           <YAxis hide />
           <Tooltip contentStyle={tooltipStyle} cursor={false} />
-          <Area type="monotone" dataKey="novos" name="Leads" stroke={WHITE} strokeWidth={1} fill="none" dot={false} activeDot={{ r: 2.5, fill: WHITE }} filter="url(#whiteGlow)" />
-          <Area type="monotone" dataKey="vendas" name="Vendas" stroke={EMERALD} strokeWidth={1.25} fill="none" dot={false} activeDot={{ r: 2.5, fill: EMERALD }} filter="url(#emeraldGlow)" />
+          <Area type="monotone" dataKey="novos" name="Leads" stroke={ELECTRIC_BLUE} strokeWidth={1.75} fill="url(#leadsAreaGradient)" dot={false} activeDot={{ r: 3, fill: ELECTRIC_BLUE }} filter="url(#blueGlow)" />
+          <Area type="monotone" dataKey="vendas" name="Vendas" stroke={EMERALD} strokeWidth={1.75} fill="url(#vendasAreaGradient)" dot={false} activeDot={{ r: 3, fill: EMERALD }} filter="url(#emeraldGlow)" />
         </AreaChart>
       </ResponsiveContainer>
     </div>
@@ -239,7 +248,7 @@ export function LossReasonsDonut({ leads }: { leads: Lead[] }) {
                     nameKey="name"
                     cx="50%"
                     cy="50%"
-                    innerRadius={67}
+                    innerRadius={66}
                     outerRadius={70}
                     paddingAngle={onlyOthers ? 0 : 2}
                     stroke="none"
