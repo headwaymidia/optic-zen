@@ -45,27 +45,30 @@ export function SalesThermometer({ leads }: SalesThermometerProps) {
 
   if (totalLeads === 0) {
     return (
-      <Card className="border border-white/10 bg-card rounded-lg">
+      <Card className="glass-card rounded-lg border-0">
         <CardHeader className="pb-2 pt-4 px-5">
-          <CardTitle className="text-[11px] font-medium uppercase tracking-[0.14em] text-muted-foreground">
+          <CardTitle className="text-[11px] font-extralight uppercase tracking-[0.2em] text-muted-foreground">
             Funil de Conversão
           </CardTitle>
         </CardHeader>
         <CardContent className="px-5 pb-5">
-          <p className="text-xs text-muted-foreground py-2">Sem leads no período.</p>
+          <p className="text-xs text-muted-foreground py-2 font-extralight">Sem leads no período.</p>
         </CardContent>
       </Card>
     );
   }
 
   return (
-    <Card className="border border-white/10 bg-card rounded-lg">
+    <Card className="glass-card rounded-lg border-0">
       <CardHeader className="pb-3 pt-4 px-5 flex-row items-center justify-between space-y-0">
-        <CardTitle className="text-[11px] font-medium uppercase tracking-[0.14em] text-muted-foreground">
+        <CardTitle className="text-[11px] font-extralight uppercase tracking-[0.2em] text-muted-foreground">
           Funil de Conversão
         </CardTitle>
         <span className="text-[11px] tabular-nums text-foreground font-medium">
-          {overallConv.toFixed(1)}% conversão total
+          {overallConv.toFixed(1)}%
+          <span className="ml-1.5 text-muted-foreground font-extralight uppercase tracking-wider text-[10px]">
+            conversão total
+          </span>
         </span>
       </CardHeader>
 
@@ -89,7 +92,7 @@ export function SalesThermometer({ leads }: SalesThermometerProps) {
               />
             );
           })}
-          <div className="flex-1 h-full rounded-full bg-white/10" />
+          <div className="flex-1 h-full rounded-full bg-white/5" />
         </div>
 
         {/* Indicadores de texto — 4 colunas */}
@@ -97,21 +100,21 @@ export function SalesThermometer({ leads }: SalesThermometerProps) {
           {stages.map((s, i) => {
             const isLast = i === stages.length - 1;
             return (
-              <div key={s.key} className="flex flex-col gap-0.5 min-w-0">
-                <span className="text-[10px] uppercase tracking-widest text-muted-foreground truncate">
+              <div key={s.key} className="flex flex-col gap-1 min-w-0">
+                <span className="text-[10px] uppercase tracking-[0.18em] text-muted-foreground font-extralight truncate">
                   {s.label}
                 </span>
                 <div className="flex items-baseline gap-1.5">
                   <span
                     className={cn(
-                      "text-base font-bold tabular-nums leading-none",
+                      "text-base font-medium tabular-nums leading-none",
                       isLast ? "text-emerald-400" : "text-foreground"
                     )}
                   >
                     {s.count}
                   </span>
                   {i > 0 && (
-                    <span className="text-[10px] tabular-nums text-muted-foreground">
+                    <span className="text-[10px] tabular-nums text-muted-foreground font-extralight">
                       {formatPct(s.conv)}
                     </span>
                   )}
