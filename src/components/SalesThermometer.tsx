@@ -126,12 +126,12 @@ export function SalesThermometer({ leads }: SalesThermometerProps) {
   }
 
   return (
-    <Card className="overflow-hidden border border-border rounded-xl shadow-[0_1px_2px_rgba(15,23,42,0.04)] bg-card">
+    <Card className="overflow-hidden border border-border dark:border-white/5 rounded-xl shadow-[0_1px_2px_rgba(15,23,42,0.04)] bg-card">
       <CardHeader className="pb-2 pt-3 px-4">
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
           <div className="flex items-center gap-2 min-w-0">
             <Thermometer className="h-3.5 w-3.5 text-rose-500" />
-            <CardTitle className="text-sm font-semibold">Termômetro de Vendas</CardTitle>
+            <CardTitle className="text-sm font-bold uppercase tracking-wider">Termômetro de Vendas</CardTitle>
           </div>
           <div className="flex items-center gap-1.5 text-[11px]">
             <span className="text-muted-foreground">Conversão geral</span>
