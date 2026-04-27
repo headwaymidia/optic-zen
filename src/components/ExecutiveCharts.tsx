@@ -158,11 +158,11 @@ export function LeadsVsSalesTimeline({ leads }: { leads: Lead[] }) {
             <AreaChart data={data} margin={{ top: 10, right: 12, left: -12, bottom: 0 }}>
               <defs>
                 <linearGradient id="gNovosLight" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="0%" stopColor={BLUE} stopOpacity={0.35} />
+                  <stop offset="0%" stopColor={BLUE} stopOpacity={0.08} />
                   <stop offset="100%" stopColor={BLUE} stopOpacity={0} />
                 </linearGradient>
                 <linearGradient id="gVendasLight" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="0%" stopColor={EMERALD} stopOpacity={0.35} />
+                  <stop offset="0%" stopColor={EMERALD} stopOpacity={0.08} />
                   <stop offset="100%" stopColor={EMERALD} stopOpacity={0} />
                 </linearGradient>
               </defs>
@@ -171,8 +171,8 @@ export function LeadsVsSalesTimeline({ leads }: { leads: Lead[] }) {
               <YAxis allowDecimals={false} tick={{ fontSize: 11 }} className="fill-muted-foreground" />
               <Tooltip contentStyle={tooltipStyle} cursor={{ stroke: BLUE, strokeOpacity: 0.3 }} />
               <Legend wrapperStyle={{ fontSize: 11, paddingTop: 8 }} iconType="circle" iconSize={8} />
-              <Area type="monotone" dataKey="novos" name="Novos Leads" stroke={BLUE} strokeWidth={2} fill="url(#gNovosLight)" />
-              <Area type="monotone" dataKey="vendas" name="Vendas" stroke={EMERALD} strokeWidth={2} fill="url(#gVendasLight)" />
+              <Area type="monotone" dataKey="novos" name="Novos Leads" stroke={BLUE} strokeWidth={2.5} fill="url(#gNovosLight)" dot={false} activeDot={{ r: 4 }} />
+              <Area type="monotone" dataKey="vendas" name="Vendas" stroke={EMERALD} strokeWidth={2.5} fill="url(#gVendasLight)" dot={false} activeDot={{ r: 4 }} />
             </AreaChart>
           </ResponsiveContainer>
         </div>

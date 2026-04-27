@@ -168,17 +168,17 @@ export function SalesThermometer({ leads }: SalesThermometerProps) {
                     "sm:col-span-1 relative rounded-xl border p-3 transition-all",
                     s.bg,
                     isBottleneckTarget
-                      ? "border-rose-400 ring-2 ring-rose-200 shadow-sm"
-                      : "border-slate-100"
+                      ? "border-amber-300 ring-2 ring-amber-200"
+                      : "border-slate-200"
                   )}
                 >
                   {isBottleneckTarget && (
                     <span
-                      className="absolute -top-2 -right-2 inline-flex items-center gap-1 rounded-full bg-rose-500 text-white text-[10px] font-bold px-2 py-0.5 shadow-sm"
+                      className="absolute -top-2 -right-2 inline-flex items-center gap-1 rounded-full bg-amber-400 text-amber-950 text-[10px] font-bold px-2 py-0.5"
                       title="Maior queda de conversão"
                     >
                       <AlertTriangle className="h-3 w-3" />
-                      Gargalo
+                      Atenção
                     </span>
                   )}
                   <div className="flex items-center gap-1.5">
@@ -213,12 +213,12 @@ export function SalesThermometer({ leads }: SalesThermometerProps) {
                         conv === null
                           ? "text-slate-400 bg-slate-100"
                           : isBottleneck
-                            ? "text-rose-700 bg-rose-100"
+                            ? "text-amber-700 bg-amber-100"
                             : pctNum >= 60
                               ? "text-emerald-700 bg-emerald-100"
                               : pctNum >= 30
                                 ? "text-amber-700 bg-amber-100"
-                                : "text-rose-700 bg-rose-100";
+                                : "text-amber-700 bg-amber-100";
                       return (
                         <>
                           <span
@@ -246,28 +246,28 @@ export function SalesThermometer({ leads }: SalesThermometerProps) {
         {/* Diagnóstico do gargalo */}
         <div
           className={cn(
-            "rounded-lg border p-3 flex items-start gap-3",
+            "rounded-xl border p-3 flex items-start gap-3",
             bottleneck
-              ? "border-rose-200 bg-rose-50"
+              ? "border-amber-200 bg-amber-50"
               : "border-emerald-200 bg-emerald-50"
           )}
         >
           {bottleneck ? (
-            <AlertTriangle className="h-5 w-5 text-rose-600 shrink-0 mt-0.5" />
+            <AlertTriangle className="h-5 w-5 text-amber-600 shrink-0 mt-0.5" />
           ) : (
             <CheckCircle2 className="h-5 w-5 text-emerald-600 shrink-0 mt-0.5" />
           )}
           <div className="text-xs sm:text-sm">
             {bottleneck ? (
               <>
-                <p className="font-semibold text-rose-900">
-                  Gargalo identificado: {bottleneck.prev!.shortLabel} → {bottleneck.stage.shortLabel}
+                <p className="font-semibold text-amber-900">
+                  Ponto de Atenção: {bottleneck.prev!.shortLabel} → {bottleneck.stage.shortLabel}
                 </p>
-                <p className="text-rose-800 mt-0.5">
-                  Apenas <strong>{formatPct(bottleneck.stage.conv)}</strong> dos leads que chegaram em{" "}
+                <p className="text-amber-800 mt-0.5">
+                  <strong>{formatPct(bottleneck.stage.conv)}</strong> dos leads que chegaram em{" "}
                   <strong>{bottleneck.prev!.shortLabel}</strong> avançaram para{" "}
-                  <strong>{bottleneck.stage.shortLabel}</strong>. Foque o time aqui — não é problema
-                  de captação.
+                  <strong>{bottleneck.stage.shortLabel}</strong>. Vale revisar essa etapa junto com o time
+                  para entender o que pode ser ajustado.
                 </p>
               </>
             ) : (
