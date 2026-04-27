@@ -30,10 +30,10 @@ export function SalesRanking({ leads }: { leads: Lead[] }) {
   const max = ranking[0]?.count ?? 1;
 
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle className="text-base flex items-center gap-2">
-          <Trophy className="h-4 w-4 text-amber-500" />
+    <Card className="border border-border dark:border-white/5 rounded-xl shadow-[0_1px_2px_rgba(15,23,42,0.04)] bg-card">
+      <CardHeader className="pb-2 pt-3 px-4">
+        <CardTitle className="text-sm font-bold uppercase tracking-wider flex items-center gap-2">
+          <Trophy className="h-3.5 w-3.5 text-amber-500" />
           Ranking de Vendas
         </CardTitle>
       </CardHeader>
