@@ -157,7 +157,7 @@ export function RevenueEvolutionChart({ leads }: Props) {
     active.vendas && active.leads && active.agendamentos;
 
   return (
-    <Card className="glass-card rounded-xl border border-border p-7">
+    <Card className="glass-card rounded-xl border border-border p-4 sm:p-5">
       {/* Header */}
       <div className="flex items-start justify-between mb-5 flex-wrap gap-4">
         <div>
