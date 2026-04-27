@@ -8,12 +8,6 @@ interface SalesThermometerProps {
   leads: Lead[];
 }
 
-type Stage = {
-  key: string;
-  label: string;
-  count: number;
-  conv: number | null;
-};
 
 /**
  * Funil minimalista: barra de progresso horizontal + 4 indicadores de texto.
