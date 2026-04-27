@@ -54,7 +54,7 @@ function DonutBlock({ title, subtitle, data }: DonutBlockProps) {
   const total = data.reduce((s, d) => s + d.value, 0);
 
   return (
-    <Card className="glass-card rounded-xl border-0 p-6">
+    <Card className="rounded-3xl border border-border/70 bg-card/60 backdrop-blur-xl p-7">
       <div className="flex items-start justify-between mb-5">
         <div>
           <p className="text-[10px] uppercase tracking-[0.3em] text-zinc-500 font-bold mb-1.5">
@@ -85,9 +85,9 @@ function DonutBlock({ title, subtitle, data }: DonutBlockProps) {
                   nameKey="name"
                   cx="50%"
                   cy="50%"
-                  innerRadius={62}
+                  innerRadius={76}
                   outerRadius={80}
-                  paddingAngle={2}
+                  paddingAngle={3}
                   stroke="none"
                 >
                   {data.map((d) => (
@@ -144,32 +144,13 @@ export function DistributionRow({ leads }: { leads: Lead[] }) {
     ].filter((d) => d.value > 0);
   }, [leads]);
 
-  const lossData = useMemo(() => {
-    const lost = leads.filter((l) => l.status === "Compareceu e Não Comprou");
-    const counts: Record<string, number> = {};
-    LOSS_REASONS.forEach((r) => (counts[r.key] = 0));
-    lost.forEach((l) => {
-      counts[classifyLoss(l.notes)] += 1;
-    });
-    return LOSS_REASONS.map((r) => ({
-      name: r.label,
-      value: counts[r.key],
-      color: r.color,
-    })).filter((d) => d.value > 0);
-  }, [leads]);
-
   return (
-    <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-      <DonutBlock
-        title="Origem dos Leads"
-        subtitle="Pago · Orgânico · Referencial"
-        data={sourceData}
-      />
-      <DonutBlock
-        title="Motivos de Perda"
-        subtitle="Distribuição de não-conversões"
-        data={lossData}
-      />
-    </div>
+    <DonutBlock
+      title="Origem dos Leads"
+      subtitle="Pago · Orgânico · Referencial"
+      data={sourceData}
+    />
   );
 }
+
+export { DonutBlock };
