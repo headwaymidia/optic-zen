@@ -216,8 +216,8 @@ export function LossReasonsDonut({ leads }: { leads: Lead[] }) {
                   nameKey="name"
                   cx="50%"
                   cy="45%"
-                  innerRadius={48}
-                  outerRadius={72}
+                  innerRadius={38}
+                  outerRadius={60}
                   paddingAngle={3}
                   stroke="none"
                 >
