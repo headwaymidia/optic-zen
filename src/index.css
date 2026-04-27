@@ -57,15 +57,15 @@ Plus Jakarta Sans is the primary font for a Premium Enterprise feel.
   }
 
   .dark {
-    /* Dark Premium: azul-marinho profundo, nunca preto puro */
-    --background: 222 47% 6%;        /* slate-950 vibe */
-    --foreground: 210 40% 96%;       /* slate-100 */
+    /* Ultra-Premium Dark: #0f172a (bg) → #1e293b (cards) com profundidade */
+    --background: 222 47% 11%;       /* #0f172a — slate-900 deep */
+    --foreground: 210 40% 98%;       /* slate-50 */
 
-    --card: 222 39% 11%;             /* slate-900 */
-    --card-foreground: 210 40% 96%;
+    --card: 217 33% 17%;             /* #1e293b — slate-800, mais claro que o bg */
+    --card-foreground: 210 40% 98%;
 
-    --popover: 222 39% 11%;
-    --popover-foreground: 210 40% 96%;
+    --popover: 217 33% 17%;
+    --popover-foreground: 210 40% 98%;
 
     --primary: 217 91% 60%;
     --primary-foreground: 210 40% 98%;
