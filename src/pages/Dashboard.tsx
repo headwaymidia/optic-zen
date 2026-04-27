@@ -6,7 +6,6 @@ import { SalesRanking } from "@/components/SalesRanking";
 import { PeriodKPIRow } from "@/components/PeriodKPIRow";
 import { RoiMegaCard } from "@/components/RoiMegaCard";
 import { ResponseSpeedCard } from "@/components/ResponseSpeedCard";
-import { ImprovementInsightsCard } from "@/components/ImprovementInsightsCard";
 import { ObjectionRadar } from "@/components/ObjectionRadar";
 import { VerticalNeonFunnel } from "@/components/VerticalNeonFunnel";
 import { RevenueEvolutionChart } from "@/components/RevenueEvolutionChart";
@@ -91,16 +90,15 @@ export default function Dashboard() {
           {/* 3. Linha de Métricas de Volume */}
           <PeriodKPIRow leads={leads} range={range} />
 
-          {/* 4. Velocidade (2/3) | Pontos de Melhoria – IA WhatsApp (1/3) */}
+          {/* 4. Velocidade & Follow-up (2/3) | Radar de Objeções (1/3) */}
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 pt-2 items-stretch">
             <div className="lg:col-span-2">
               <ResponseSpeedCard leads={filtered} />
             </div>
             <div className="lg:col-span-1">
-              <ImprovementInsightsCard leads={filtered} />
+              <ObjectionRadar leads={filtered} />
             </div>
           </div>
-          <ObjectionRadar leads={filtered} />
 
           {/* 5. Funil Vertical */}
           <VerticalNeonFunnel leads={filtered} />
