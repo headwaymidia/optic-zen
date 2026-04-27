@@ -29,17 +29,23 @@ export default function Dashboard() {
   const total = filtered.length;
 
   return (
-    <div className="p-4 sm:p-6 space-y-5 sm:space-y-6">
-      <div className="flex flex-col sm:flex-row sm:flex-wrap sm:items-start sm:justify-between gap-3">
+    <div className="p-3 sm:p-4 space-y-3 sm:space-y-4">
+      <div className="flex flex-row items-start justify-between gap-3">
         <div className="min-w-0">
-          <h1 className="text-xl sm:text-2xl font-semibold tracking-tight">Dashboard</h1>
+          <h1 className="text-xl sm:text-2xl font-bold tracking-tight">Dashboard</h1>
           <p className="text-xs sm:text-sm text-muted-foreground capitalize">
             {range.label} • {total} leads no período
           </p>
         </div>
-        <Button onClick={() => exportMonthlyReport(leads)} variant="outline" size="sm" className="w-full sm:w-auto">
-          <FileDown className="h-4 w-4 mr-2" />
-          <span className="truncate">Exportar Relatório Mensal</span>
+        <Button
+          onClick={() => exportMonthlyReport(leads)}
+          variant="outline"
+          size="icon"
+          className="h-9 w-9 shrink-0 border-slate-200 hover:bg-slate-50"
+          title="Exportar relatório mensal"
+          aria-label="Exportar relatório mensal"
+        >
+          <FileDown className="h-4 w-4" />
         </Button>
       </div>
 

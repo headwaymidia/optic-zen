@@ -147,7 +147,7 @@ export function LeadsVsSalesTimeline({ leads }: { leads: Lead[] }) {
   }, [leads]);
 
   return (
-    <Card>
+    <Card className="border-0 border-t-4 border-t-blue-500 rounded-2xl shadow-[0_4px_24px_-8px_rgba(15,23,42,0.08)] bg-white">
       <CardHeader>
         <CardTitle className="text-base">Leads vs Vendas</CardTitle>
         <p className="text-xs text-muted-foreground">Últimos 7 dias</p>
@@ -158,18 +158,17 @@ export function LeadsVsSalesTimeline({ leads }: { leads: Lead[] }) {
             <AreaChart data={data} margin={{ top: 10, right: 12, left: -12, bottom: 0 }}>
               <defs>
                 <linearGradient id="gNovosLight" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="0%" stopColor={BLUE} stopOpacity={0.08} />
+                  <stop offset="0%" stopColor={BLUE} stopOpacity={0.1} />
                   <stop offset="100%" stopColor={BLUE} stopOpacity={0} />
                 </linearGradient>
                 <linearGradient id="gVendasLight" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="0%" stopColor={EMERALD} stopOpacity={0.08} />
+                  <stop offset="0%" stopColor={EMERALD} stopOpacity={0.1} />
                   <stop offset="100%" stopColor={EMERALD} stopOpacity={0} />
                 </linearGradient>
               </defs>
-              <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" vertical={false} />
-              <XAxis dataKey="date" tick={{ fontSize: 11 }} className="fill-muted-foreground" />
-              <YAxis allowDecimals={false} tick={{ fontSize: 11 }} className="fill-muted-foreground" />
-              <Tooltip contentStyle={tooltipStyle} cursor={{ stroke: BLUE, strokeOpacity: 0.3 }} />
+              <XAxis dataKey="date" tick={{ fontSize: 11 }} className="fill-muted-foreground" axisLine={false} tickLine={false} />
+              <YAxis allowDecimals={false} tick={{ fontSize: 11 }} className="fill-muted-foreground" axisLine={false} tickLine={false} />
+              <Tooltip contentStyle={tooltipStyle} cursor={{ stroke: BLUE, strokeOpacity: 0.2, strokeWidth: 1 }} />
               <Legend wrapperStyle={{ fontSize: 11, paddingTop: 8 }} iconType="circle" iconSize={8} />
               <Area type="monotone" dataKey="novos" name="Novos Leads" stroke={BLUE} strokeWidth={2.5} fill="url(#gNovosLight)" dot={false} activeDot={{ r: 4 }} />
               <Area type="monotone" dataKey="vendas" name="Vendas" stroke={EMERALD} strokeWidth={2.5} fill="url(#gVendasLight)" dot={false} activeDot={{ r: 4 }} />
@@ -192,7 +191,7 @@ export function LossReasonsDonut({ leads }: { leads: Lead[] }) {
   }, [leads]);
 
   return (
-    <Card>
+    <Card className="border-0 border-t-4 border-t-rose-400 rounded-2xl shadow-[0_4px_24px_-8px_rgba(15,23,42,0.08)] bg-white">
       <CardHeader>
         <CardTitle className="text-base">Motivos de Perda</CardTitle>
         <p className="text-xs text-muted-foreground">Leads que não converteram</p>

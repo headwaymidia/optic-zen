@@ -2,7 +2,7 @@ import { Fragment, useMemo } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Lead } from "@/lib/supabase";
 import { cn } from "@/lib/utils";
-import { AlertTriangle, TrendingDown, Thermometer, CheckCircle2 } from "lucide-react";
+import { AlertTriangle, TrendingDown, Thermometer, CheckCircle2, ChevronRight } from "lucide-react";
 
 interface SalesThermometerProps {
   leads: Lead[];
@@ -199,11 +199,14 @@ export function SalesThermometer({ leads }: SalesThermometerProps) {
                   </div>
                 </div>
 
-                {/* Conector com taxa de conversão */}
+                {/* Conector com taxa de conversão (fluxo fluido) */}
                 {i < stages.length - 1 && (
-                  <div
-                    className="sm:col-span-1 flex sm:flex-col items-center justify-center gap-1 py-1 sm:py-0"
-                  >
+                  <div className="sm:col-span-1 relative flex sm:flex-col items-center justify-center gap-1 py-1 sm:py-0">
+                    {/* Linha tracejada conectora (desktop) */}
+                    <div
+                      aria-hidden
+                      className="hidden sm:block absolute top-1/2 left-0 right-0 h-px border-t border-dashed border-slate-300 -z-0"
+                    />
                     {(() => {
                       const next = stages[i + 1];
                       const conv = next.conv;
@@ -211,29 +214,26 @@ export function SalesThermometer({ leads }: SalesThermometerProps) {
                       const pctNum = conv === null ? 0 : conv * 100;
                       const tone =
                         conv === null
-                          ? "text-slate-400 bg-slate-100"
+                          ? "text-slate-500 bg-white border-slate-200"
                           : isBottleneck
-                            ? "text-amber-700 bg-amber-100"
+                            ? "text-amber-700 bg-white border-amber-300"
                             : pctNum >= 60
-                              ? "text-emerald-700 bg-emerald-100"
-                              : pctNum >= 30
-                                ? "text-amber-700 bg-amber-100"
-                                : "text-amber-700 bg-amber-100";
+                              ? "text-emerald-700 bg-white border-emerald-200"
+                              : "text-amber-700 bg-white border-amber-200";
                       return (
-                        <>
-                          <span
-                            className={cn(
-                              "inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[11px] font-bold tabular-nums",
-                              tone
-                            )}
-                          >
-                            {isBottleneck && <TrendingDown className="h-3 w-3" />}
-                            {formatPct(conv)}
-                          </span>
-                          <span className="hidden sm:block text-[9px] text-slate-400 uppercase tracking-wide">
-                            convertem
-                          </span>
-                        </>
+                        <span
+                          className={cn(
+                            "relative z-10 inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-[11px] font-black tabular-nums shadow-sm",
+                            tone
+                          )}
+                        >
+                          {isBottleneck ? (
+                            <TrendingDown className="h-3 w-3" />
+                          ) : (
+                            <ChevronRight className="h-3 w-3" />
+                          )}
+                          {formatPct(conv)}
+                        </span>
                       );
                     })()}
                   </div>
