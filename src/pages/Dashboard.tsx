@@ -1,14 +1,12 @@
 import { useMemo, useState } from "react";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
-import { RevenueHeroCard, KPICards } from "@/components/DashboardSummary";
+import { KPICards } from "@/components/DashboardSummary";
 import { useLeads } from "@/hooks/useLeads";
 import { PeriodFilter, PeriodKey, getPeriodRange } from "@/components/PeriodFilter";
-import { LeadsVolumeChart } from "@/components/LeadsVolumeChart";
 import { SalesRanking } from "@/components/SalesRanking";
-import { SalesThermometer } from "@/components/SalesThermometer";
-import { LeadsVsSalesTimeline, LossReasonsDonut } from "@/components/ExecutiveCharts";
+import { RevenueEnginePanel } from "@/components/RevenueEnginePanel";
+import { VerticalJourneyFunnel } from "@/components/VerticalJourneyFunnel";
+import { LossIntelligenceTags } from "@/components/LossIntelligenceTags";
 import { exportMonthlyReport } from "@/lib/exportReport";
 import { isWithinInterval, parseISO, format } from "date-fns";
 import { ptBR } from "date-fns/locale";
@@ -53,7 +51,7 @@ export default function Dashboard() {
         </Button>
       </div>
 
-      {/* Filtros de período + resumo inline */}
+      {/* Filtros + resumo */}
       <div className="flex flex-wrap items-center justify-between gap-3">
         <PeriodFilter
           value={period}
@@ -66,56 +64,19 @@ export default function Dashboard() {
         <p className="text-[11px] text-muted-foreground italic">{periodSummary}</p>
       </div>
 
-      {/* Linha única de 4 KPIs */}
+      {/* KPIs sutis (linha discreta) */}
       <KPICards leads={filtered} loading={loading} />
 
-      {/* Bloco Central: ROI (col-8, ~66%) + Motivos de Perda (col-4, ~33%) */}
-      <div className="grid grid-cols-12 gap-10 items-stretch">
-        <div className="col-span-12 lg:col-span-8">
-          <RevenueHeroCard leads={filtered} loading={loading} />
-        </div>
-        <div className="col-span-12 lg:col-span-4">
-          <LossReasonsDonut leads={filtered} />
-        </div>
+      {/* BENTO BOX ASSIMÉTRICO — 65% Motor de Faturamento | 35% Jornada Vertical */}
+      <div className="grid grid-cols-1 lg:grid-cols-[65fr_35fr] gap-8 items-stretch">
+        <RevenueEnginePanel leads={filtered} loading={loading} />
+        <VerticalJourneyFunnel leads={filtered} />
       </div>
 
-      {/* Funil 100% */}
-      <SalesThermometer leads={filtered} />
+      {/* Tags de Inteligência de Perda — substitui o donut */}
+      <LossIntelligenceTags leads={filtered} />
 
-      {/* Performance 100% */}
-      <Card className="glass-card rounded-lg border-0">
-        <Tabs defaultValue="timeline" className="w-full">
-          <CardHeader className="pb-2 pt-5 px-6 flex-row items-center justify-between gap-3 space-y-0">
-            <CardTitle className="text-[10px] font-light uppercase tracking-[0.3em] text-muted-foreground">
-              Performance
-            </CardTitle>
-            <TabsList className="h-7 bg-transparent gap-4 p-0">
-              <TabsTrigger
-                value="timeline"
-                className="relative text-[10px] font-light uppercase tracking-[0.3em] h-7 px-0 rounded-none bg-transparent text-muted-foreground transition-colors hover:text-foreground data-[state=active]:bg-transparent data-[state=active]:text-foreground data-[state=active]:after:content-[''] data-[state=active]:after:absolute data-[state=active]:after:left-0 data-[state=active]:after:right-0 data-[state=active]:after:-bottom-1 data-[state=active]:after:h-px data-[state=active]:after:bg-foreground"
-              >
-                Leads vs Vendas
-              </TabsTrigger>
-              <TabsTrigger
-                value="volume"
-                className="relative text-[10px] font-light uppercase tracking-[0.3em] h-7 px-0 rounded-none bg-transparent text-muted-foreground transition-colors hover:text-foreground data-[state=active]:bg-transparent data-[state=active]:text-foreground data-[state=active]:after:content-[''] data-[state=active]:after:absolute data-[state=active]:after:left-0 data-[state=active]:after:right-0 data-[state=active]:after:-bottom-1 data-[state=active]:after:h-px data-[state=active]:after:bg-foreground"
-              >
-                Volume diário
-              </TabsTrigger>
-            </TabsList>
-          </CardHeader>
-          <CardContent className="px-2 pb-3 pt-0">
-            <TabsContent value="timeline" className="mt-0">
-              <LeadsVsSalesTimeline leads={filtered} embedded />
-            </TabsContent>
-            <TabsContent value="volume" className="mt-0">
-              <LeadsVolumeChart leads={filtered} from={range.from} to={range.to} embedded />
-            </TabsContent>
-          </CardContent>
-        </Tabs>
-      </Card>
-
-      {/* Ranking 100% */}
+      {/* Ranking */}
       <SalesRanking leads={filtered} />
     </div>
   );
