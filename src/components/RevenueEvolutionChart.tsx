@@ -63,12 +63,12 @@ const METRICS: Record<MetricKey, MetricConfig> = {
   },
 };
 
+// Mantém alinhamento com PeriodKPIRow (status canônicos do funil)
 const SCHEDULED_STATUSES = new Set([
-  "Agendado",
-  "Confirmado",
-  "Compareceu",
+  "Agendou Exame",
   "Compareceu e Comprou",
   "Compareceu e Não Comprou",
+  "Não Compareceu",
 ]);
 
 function formatBRL(v: number) {
