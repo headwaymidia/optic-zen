@@ -37,9 +37,9 @@ const FUNNEL_STAGES = [
 
 const LOSS_REASONS = [
   { key: "preco", label: "Preço", color: BLUE, match: ["preç", "caro", "valor"] },
-  { key: "distancia", label: "Distância", color: VIOLET, match: ["dist", "long", "endere"] },
-  { key: "semresposta", label: "Sem Resposta", color: SLATE, match: ["sem resp", "não resp", "nao resp", "silenc"] },
-  { key: "outros", label: "Outros", color: "#64748B", match: [] },
+  { key: "distancia", label: "Distância", color: "#64748B", match: ["dist", "long", "endere"] },
+  { key: "semresposta", label: "Sem Resposta", color: "#94A3B8", match: ["sem resp", "não resp", "nao resp", "silenc"] },
+  { key: "outros", label: "Outros", color: "#CBD5E1", match: [] },
 ];
 
 function pct(num: number, den: number) {
@@ -195,7 +195,7 @@ export function LossReasonsDonut({ leads }: { leads: Lead[] }) {
   }, [leads]);
 
   return (
-    <Card className="border border-border dark:border-white/5 rounded-xl shadow-[0_1px_2px_rgba(15,23,42,0.04)] bg-card">
+    <Card className="border border-border dark:border-white/5 rounded-lg shadow-[0_1px_2px_rgba(15,23,42,0.04)] bg-card h-full">
       <CardHeader className="pb-2 pt-3 px-4">
         <CardTitle className="text-sm font-bold uppercase tracking-wider">Motivos de Perda</CardTitle>
         <p className="text-[11px] text-muted-foreground">Leads que não converteram</p>
