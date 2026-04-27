@@ -1,7 +1,7 @@
 import { useMemo } from "react";
 import { Card } from "@/components/ui/card";
 import { Lead } from "@/lib/supabase";
-import { MessageCircle, AlertCircle } from "lucide-react";
+import { MessageCircle, AlertCircle, Sparkles } from "lucide-react";
 
 interface Props {
   leads: Lead[];
@@ -11,6 +11,7 @@ type Severity = "high" | "medium" | "low";
 
 interface Insight {
   severity: Severity;
+  source: "whatsapp" | "processo" | "pdv";
   title: string;
   improvement: string;
 }
@@ -30,24 +31,54 @@ export function ImprovementInsightsCard({ leads }: Props) {
         "Compareceu e Não Comprou",
       ].includes(l.status)
     ).length;
+    const attended = leads.filter((l) =>
+      ["Compareceu e Comprou", "Compareceu e Não Comprou"].includes(l.status)
+    ).length;
     const sold = leads.filter((l) => l.status === "Compareceu e Comprou").length;
+    const noShow = leads.filter((l) => l.status === "Não Compareceu").length;
     const lost = leads.filter((l) => l.status === "Compareceu e Não Comprou");
 
-    // 1. Gargalo de Agendamento
+    // 1. 🟠/🔴 Gargalo de Agendamento (Lead → Agendamento < 50%)
     if (totalLeads >= 5) {
       const conv = (scheduled / totalLeads) * 100;
       if (conv < 50) {
         list.push({
           severity: conv < 30 ? "high" : "medium",
-          title: `Gargalo de Agendamento: conversão Lead → Agendamento em ${conv.toFixed(
-            0
-          )}%.`,
-          improvement: "Revisar script de abordagem no WhatsApp.",
+          source: "whatsapp",
+          title: `Taxa de Agendamento Baixa (${conv.toFixed(0)}%). Sua equipe não está convertendo o lead do WhatsApp em visita física.`,
+          improvement: "Treinar script de convite para exame.",
         });
       }
     }
 
-    // 2. Lentidão no retorno
+    // 2. 🔴 Fuga de Receita / Vazamento no PDV (Vendas / Comparecimentos < 70%)
+    if (attended >= 3) {
+      const closeRate = (sold / attended) * 100;
+      if (closeRate < 70) {
+        const leak = attended - sold;
+        list.push({
+          severity: closeRate < 50 ? "high" : "medium",
+          source: "pdv",
+          title: `Vazamento no PDV: ${leak} ${leak === 1 ? "cliente veio" : "clientes vieram"} à loja mas ${leak === 1 ? "saiu" : "saíram"} sem comprar.`,
+          improvement: "Verificar se a objeção é preço ou falta de estoque de armações.",
+        });
+      }
+    }
+
+    // 3. 🟡 Alerta de No-Show (Comparecimentos / Agendamentos < 60%)
+    if (scheduled >= 5) {
+      const showRate = (attended / scheduled) * 100;
+      if (showRate < 60) {
+        list.push({
+          severity: showRate < 40 ? "high" : "medium",
+          source: "processo",
+          title: `Alerta de Não-Comparecimento: ${noShow} agendados não compareceram (${(100 - showRate).toFixed(0)}% de no-show).`,
+          improvement: "Implementar confirmação de consulta 2h antes via WhatsApp.",
+        });
+      }
+    }
+
+    // 4. Lentidão no retorno (WhatsApp)
     const now = Date.now();
     const slow = leads.filter((l) => {
       if (l.status !== "Aguardando Resposta" && l.status !== "Novo Lead") return false;
@@ -57,14 +88,13 @@ export function ImprovementInsightsCard({ leads }: Props) {
     if (slow > 0) {
       list.push({
         severity: slow >= 5 ? "high" : "medium",
-        title: `Lentidão no Retorno: ${slow} ${
-          slow === 1 ? "lead aguardando" : "leads aguardando"
-        } há mais de 20 minutos.`,
+        source: "whatsapp",
+        title: `Lentidão no Retorno: ${slow} ${slow === 1 ? "lead aguardando" : "leads aguardando"} há mais de 20 minutos no WhatsApp.`,
         improvement: "Cobrar equipe de vendas imediatamente.",
       });
     }
 
-    // 3. Objeção de preço
+    // 5. Objeção de preço recorrente
     const priceLost = lost.filter((l) => {
       const n = (l.notes || "").toLowerCase();
       return PRICE_MATCH.some((m) => n.includes(m));
@@ -72,26 +102,13 @@ export function ImprovementInsightsCard({ leads }: Props) {
     if (priceLost >= 2) {
       list.push({
         severity: priceLost >= 4 ? "high" : "medium",
-        title: `Objeção de Preço: ${priceLost} perdas por valor alto.`,
-        improvement: "Reforçar condições de parcelamento no primeiro contato.",
+        source: "whatsapp",
+        title: `Objeção de Preço recorrente: ${priceLost} perdas por valor alto detectadas nas conversas.`,
+        improvement: "Reforçar parcelamento e garantia já no primeiro contato.",
       });
     }
 
-    // 4. Baixo fechamento
-    if (scheduled >= 5) {
-      const close = (sold / scheduled) * 100;
-      if (close < 30) {
-        list.push({
-          severity: close < 15 ? "high" : "medium",
-          title: `Dificuldade no Fechamento: ${close.toFixed(
-            0
-          )}% dos agendamentos viram venda.`,
-          improvement: "Treinar quebra de objeções e oferta de garantia.",
-        });
-      }
-    }
-
-    // 5. Sem follow-up
+    // 6. Falta de follow-up (WhatsApp)
     const noFu = leads.filter(
       (l) =>
         (Number(l.follow_up_count) || 0) === 0 &&
@@ -100,11 +117,15 @@ export function ImprovementInsightsCard({ leads }: Props) {
     if (noFu >= 3) {
       list.push({
         severity: "medium",
+        source: "whatsapp",
         title: `${noFu} leads ativos sem nenhum follow-up registrado.`,
         improvement: "Definir cadência mínima de 3 contatos por lead.",
       });
     }
 
+    // ordena por severidade
+    const order = { high: 0, medium: 1, low: 2 };
+    list.sort((a, b) => order[a.severity] - order[b.severity]);
     return list.slice(0, 5);
   }, [leads]);
 
@@ -137,9 +158,9 @@ export function ImprovementInsightsCard({ leads }: Props) {
           </div>
         </div>
         <div className="inline-flex items-center gap-1.5 self-start px-2 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/20">
-          <MessageCircle className="h-3 w-3 text-emerald-600 dark:text-emerald-400" strokeWidth={2.2} />
+          <Sparkles className="h-3 w-3 text-emerald-600 dark:text-emerald-400" strokeWidth={2.2} />
           <span className="text-[10px] font-semibold text-emerald-700 dark:text-emerald-300">
-            IA · Scanner de Conversas
+            IA · Analisando Processos
           </span>
         </div>
       </div>
@@ -172,12 +193,26 @@ export function ImprovementInsightsCard({ leads }: Props) {
                 }`}
                 strokeWidth={2.2}
               />
-              <div className="min-w-0">
-                <p className="text-[11px] font-medium leading-snug text-[#1D1D1F] dark:text-white">
+              <div className="min-w-0 flex-1">
+                <div className="flex items-center gap-1.5 mb-1">
+                  <span
+                    className={`text-[8px] font-bold uppercase tracking-[0.15em] px-1.5 py-0.5 rounded ${
+                      i.source === "whatsapp"
+                        ? "bg-emerald-500/10 text-emerald-700 dark:text-emerald-400"
+                        : i.source === "pdv"
+                        ? "bg-rose-500/10 text-rose-700 dark:text-rose-400"
+                        : "bg-amber-500/10 text-amber-700 dark:text-amber-400"
+                    }`}
+                  >
+                    {i.source === "whatsapp" ? "WhatsApp" : i.source === "pdv" ? "PDV" : "Processo"}
+                  </span>
+                </div>
+                <p className="text-[11px] font-normal leading-snug text-zinc-600 dark:text-zinc-400">
                   {i.title}
                 </p>
-                <p className="text-[10px] leading-snug text-zinc-500 mt-1">
-                  → {i.improvement}
+                <p className="text-[11px] leading-snug text-[#1D1D1F] dark:text-white mt-1.5">
+                  <span className="font-semibold">Melhoria:</span>{" "}
+                  <span className="font-semibold">{i.improvement}</span>
                 </p>
               </div>
             </li>
