@@ -1,17 +1,36 @@
 import { useMemo } from "react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card } from "@/components/ui/card";
 import { Lead } from "@/lib/supabase";
-import { Trophy, Medal } from "lucide-react";
-import { cn } from "@/lib/utils";
+import { Trophy } from "lucide-react";
 
-const RANK_STYLES = [
-  "bg-amber-100 text-amber-900 dark:bg-amber-900/40 dark:text-amber-100", // 1st
-  "bg-slate-100 text-slate-800 dark:bg-slate-800/60 dark:text-slate-100", // 2nd
-  "bg-orange-100 text-orange-900 dark:bg-orange-900/40 dark:text-orange-100", // 3rd
+interface RankItem {
+  name: string;
+  revenue: number;
+  count: number;
+}
+
+const MOCK_RANKING: RankItem[] = [
+  { name: "João Silva", revenue: 4500, count: 7 },
+  { name: "Maria Souza", revenue: 3040, count: 5 },
+  { name: "Carla Mendes", revenue: 2120, count: 4 },
+];
+
+const POSITION_LABEL = ["1º", "2º", "3º"];
+
+const POSITION_STYLE = [
+  "bg-amber-400/15 text-amber-600 dark:text-amber-300 border-amber-400/30",
+  "bg-zinc-300/20 text-zinc-600 dark:text-zinc-300 border-zinc-400/30",
+  "bg-orange-500/10 text-orange-600 dark:text-orange-300 border-orange-500/25",
+];
+
+const BAR_STYLE = [
+  "bg-gradient-to-r from-amber-400 to-amber-500",
+  "bg-gradient-to-r from-zinc-400 to-zinc-500",
+  "bg-gradient-to-r from-orange-400 to-orange-500",
 ];
 
 export function SalesRanking({ leads }: { leads: Lead[] }) {
-  const ranking = useMemo(() => {
+  const ranking = useMemo<RankItem[]>(() => {
     const counts = new Map<string, { count: number; revenue: number }>();
     leads
       .filter((l) => l.status === "Compareceu e Comprou" && l.assigned_to)
@@ -22,70 +41,70 @@ export function SalesRanking({ leads }: { leads: Lead[] }) {
         cur.revenue += Number(l.sale_value ?? 0);
         counts.set(key, cur);
       });
-    return Array.from(counts.entries())
+    const real = Array.from(counts.entries())
       .map(([name, v]) => ({ name, ...v }))
-      .sort((a, b) => b.count - a.count || b.revenue - a.revenue);
+      .sort((a, b) => b.revenue - a.revenue || b.count - a.count)
+      .slice(0, 3);
+
+    return real.length > 0 ? real : MOCK_RANKING;
   }, [leads]);
 
-  const max = ranking[0]?.count ?? 1;
+  const max = ranking[0]?.revenue || 1;
 
   return (
-    <Card className="border border-border dark:border-white/5 rounded-xl shadow-[0_1px_2px_rgba(15,23,42,0.04)] bg-card">
-      <CardHeader className="pb-2 pt-3 px-4">
-        <CardTitle className="text-sm font-bold uppercase tracking-wider flex items-center gap-2">
-          <Trophy className="h-3.5 w-3.5 text-amber-500" />
-          Ranking de Vendas
-        </CardTitle>
-      </CardHeader>
-      <CardContent>
-        {ranking.length === 0 ? (
-          <p className="text-sm text-muted-foreground">
-            Nenhuma venda atribuída a vendedoras ainda.
-          </p>
-        ) : (
-          <ol className="space-y-3">
-            {ranking.map((r, i) => {
-              const pct = (r.count / max) * 100;
-              return (
-                <li key={r.name} className="space-y-1">
-                  <div className="flex items-center justify-between gap-2 text-sm">
-                    <span className="flex items-center gap-2 min-w-0">
-                      <span
-                        className={cn(
-                          "inline-flex h-6 w-6 shrink-0 items-center justify-center rounded-full text-xs font-bold",
-                          RANK_STYLES[i] ?? "bg-muted text-muted-foreground"
-                        )}
-                      >
-                        {i < 3 ? <Medal className="h-3.5 w-3.5" /> : i + 1}
-                      </span>
-                      <span className="font-medium truncate">{r.name}</span>
-                    </span>
-                    <span className="text-muted-foreground text-xs shrink-0">
-                      {r.count} venda{r.count > 1 ? "s" : ""}
-                      {r.revenue > 0 && (
-                        <>
-                          {" · "}
-                          {r.revenue.toLocaleString("pt-BR", {
-                            style: "currency",
-                            currency: "BRL",
-                            maximumFractionDigits: 0,
-                          })}
-                        </>
-                      )}
-                    </span>
-                  </div>
-                  <div className="h-2 w-full rounded-full bg-muted overflow-hidden">
-                    <div
-                      className="h-full bg-primary transition-all"
-                      style={{ width: `${pct}%` }}
-                    />
-                  </div>
-                </li>
-              );
-            })}
-          </ol>
-        )}
-      </CardContent>
+    <Card
+      className="rounded-2xl p-7 bg-white dark:bg-[#111111] border border-slate-200 dark:border-[#222222] shadow-sm h-full flex flex-col"
+      style={{ fontFamily: "'Inter','Geist Sans',sans-serif" }}
+    >
+      <div className="flex items-center gap-2 mb-6">
+        <Trophy className="h-3.5 w-3.5 text-amber-500" strokeWidth={2} />
+        <p className="text-[10px] font-medium uppercase tracking-[0.28em] text-zinc-500">
+          Ranking de Vendas · Top 3
+        </p>
+      </div>
+
+      <ol className="flex-1 flex flex-col justify-center space-y-7">
+        {ranking.map((r, i) => {
+          const pct = Math.max(8, (r.revenue / max) * 100);
+          return (
+            <li key={r.name} className="space-y-2">
+              <div className="flex items-center justify-between gap-3">
+                <div className="flex items-center gap-3 min-w-0">
+                  <span
+                    className={`inline-flex h-7 w-7 shrink-0 items-center justify-center rounded-full text-[11px] font-semibold border ${POSITION_STYLE[i]}`}
+                  >
+                    {i === 0 ? (
+                      <Trophy className="h-3.5 w-3.5" strokeWidth={2.2} />
+                    ) : (
+                      POSITION_LABEL[i]
+                    )}
+                  </span>
+                  <span className="text-[14px] font-medium text-[#1D1D1F] dark:text-white truncate">
+                    {r.name}
+                  </span>
+                </div>
+                <span className="text-[15px] font-semibold tabular-nums tracking-tight text-[#1D1D1F] dark:text-white shrink-0">
+                  {r.revenue.toLocaleString("pt-BR", {
+                    style: "currency",
+                    currency: "BRL",
+                    maximumFractionDigits: 0,
+                  })}
+                </span>
+              </div>
+              <div className="h-[3px] w-full rounded-full bg-slate-100 dark:bg-[#1c1c1c] overflow-hidden">
+                <div
+                  className={`h-full rounded-full ${BAR_STYLE[i]} transition-all`}
+                  style={{ width: `${pct}%` }}
+                />
+              </div>
+              <p className="text-[10px] font-medium uppercase tracking-[0.18em] text-zinc-400">
+                {r.count} venda{r.count > 1 ? "s" : ""} concluída
+                {r.count > 1 ? "s" : ""}
+              </p>
+            </li>
+          );
+        })}
+      </ol>
     </Card>
   );
 }
