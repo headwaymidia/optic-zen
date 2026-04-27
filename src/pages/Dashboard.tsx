@@ -83,17 +83,17 @@ export default function Dashboard() {
       <SalesThermometer leads={filtered} />
 
       {/* Performance 100% */}
-      <Card className="border border-white/10 bg-card rounded-lg">
+      <Card className="glass-card rounded-lg border-0">
         <Tabs defaultValue="timeline" className="w-full">
           <CardHeader className="pb-2 pt-4 px-5 flex-row items-center justify-between gap-3 space-y-0">
-            <CardTitle className="text-[11px] font-medium uppercase tracking-[0.14em] text-muted-foreground">
+            <CardTitle className="text-[11px] font-extralight uppercase tracking-[0.2em] text-muted-foreground">
               Performance
             </CardTitle>
-            <TabsList className="h-7 bg-muted/50 rounded-full p-0.5">
-              <TabsTrigger value="timeline" className="text-[11px] h-6 px-3 rounded-full data-[state=active]:bg-zinc-800 data-[state=active]:text-white">
+            <TabsList className="h-7 bg-transparent gap-1 p-0">
+              <TabsTrigger value="timeline" className="text-[11px] font-extralight uppercase tracking-[0.15em] h-7 px-3 rounded-md border border-transparent data-[state=active]:border-white/10 data-[state=active]:bg-transparent data-[state=active]:text-foreground text-muted-foreground">
                 Leads vs Vendas
               </TabsTrigger>
-              <TabsTrigger value="volume" className="text-[11px] h-6 px-3 rounded-full data-[state=active]:bg-zinc-800 data-[state=active]:text-white">
+              <TabsTrigger value="volume" className="text-[11px] font-extralight uppercase tracking-[0.15em] h-7 px-3 rounded-md border border-transparent data-[state=active]:border-white/10 data-[state=active]:bg-transparent data-[state=active]:text-foreground text-muted-foreground">
                 Volume diário
               </TabsTrigger>
             </TabsList>
