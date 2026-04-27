@@ -21,6 +21,8 @@ interface Props {
 export function WorkspaceSwitcher({ collapsed = false }: Props) {
   const { stores, currentStore, setCurrentStoreId } = useStores();
   const [createOpen, setCreateOpen] = useState(false);
+  const navigate = useNavigate();
+  const goToSettings = () => navigate("/configuracoes-loja?tab=integracoes");
 
   if (!currentStore) return null;
 
