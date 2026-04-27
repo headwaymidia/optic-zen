@@ -5,7 +5,7 @@ import { PeriodFilter, PeriodKey, getPeriodRange } from "@/components/PeriodFilt
 import { SalesRanking } from "@/components/SalesRanking";
 import { PeriodKPIRow } from "@/components/PeriodKPIRow";
 import { RoiMegaCard } from "@/components/RoiMegaCard";
-import { DistributionRow } from "@/components/DistributionRow";
+import { TeamPerformancePanel } from "@/components/TeamPerformancePanel";
 import { LossRankBars } from "@/components/LossRankBars";
 import { VerticalNeonFunnel } from "@/components/VerticalNeonFunnel";
 import { RevenueEvolutionChart } from "@/components/RevenueEvolutionChart";
@@ -80,9 +80,9 @@ export default function Dashboard() {
           {/* 2. Mega-Card central — Performance Total (BI) */}
           <RoiMegaCard leads={filtered} />
 
-          {/* 3. Distribuição — Origem (donut 2px) | Motivos de Perda (rank bars) */}
+          {/* 3. Tração & Equipe (meta + eficiência) | Motivos de Perda */}
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            <DistributionRow leads={filtered} />
+            <TeamPerformancePanel leads={filtered} />
             <LossRankBars leads={filtered} />
           </div>
 
