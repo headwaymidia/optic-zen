@@ -387,22 +387,25 @@ function SectionCard({
   description,
   children,
   icon,
+  rightSlot,
 }: {
   title: string;
   description?: string;
   children: React.ReactNode;
   icon?: React.ReactNode;
+  rightSlot?: React.ReactNode;
 }) {
   return (
     <section className="rounded-2xl border border-border bg-card p-5 sm:p-6 space-y-4 shadow-[0_1px_2px_rgba(0,0,0,0.02)]">
       <header className="flex items-start gap-3">
         {icon && <div className="mt-0.5">{icon}</div>}
-        <div className="min-w-0">
+        <div className="min-w-0 flex-1">
           <h2 className="text-base font-semibold tracking-tight text-foreground">{title}</h2>
           {description && (
             <p className="text-xs text-muted-foreground mt-0.5">{description}</p>
           )}
         </div>
+        {rightSlot && <div className="shrink-0">{rightSlot}</div>}
       </header>
       <div className="space-y-3">{children}</div>
     </section>
@@ -483,9 +486,63 @@ function SecretRow({
   );
 }
 
-function maskToken(token: string) {
-  if (token.length <= 10) return token;
-  return `${token.slice(0, 6)}••••••••${token.slice(-4)}`;
+function maskToken(token: string, prefix = 6, suffix = 4) {
+  if (token.length <= prefix + suffix + 2) return token;
+  return `${token.slice(0, prefix)}••••••••${token.slice(-suffix)}`;
+}
+
+/** Selo "Official API Integration" — passa confiança enterprise. */
+function OfficialApiBadge() {
+  return (
+    <span className="inline-flex items-center gap-1.5 rounded-full border border-[#1877F2]/30 bg-[#1877F2]/5 px-2.5 py-1 text-[10px] font-semibold uppercase tracking-wider text-[#1877F2] dark:text-[#4F8EF7]">
+      <MetaGlyph className="h-3 w-3" />
+      Official API Integration
+    </span>
+  );
+}
+
+/** Cartão de estatística para templates (aprovados / em análise). */
+function TemplateStat({
+  label,
+  value,
+  hint,
+  tone,
+}: {
+  label: string;
+  value: number;
+  hint: string;
+  tone: "success" | "warn";
+}) {
+  const styles =
+    tone === "success"
+      ? "border-emerald-200 bg-emerald-50/50 dark:border-emerald-500/20 dark:bg-emerald-500/5"
+      : "border-amber-200 bg-amber-50/50 dark:border-amber-500/20 dark:bg-amber-500/5";
+  const valueColor =
+    tone === "success"
+      ? "text-emerald-700 dark:text-emerald-400"
+      : "text-amber-700 dark:text-amber-400";
+  return (
+    <div className={cn("rounded-xl border p-3", styles)}>
+      <div className="flex items-baseline gap-2">
+        <span className={cn("text-2xl font-semibold tabular-nums tracking-tight", valueColor)}>
+          {value}
+        </span>
+        <span className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
+          {label}
+        </span>
+      </div>
+      <p className="text-[11px] text-muted-foreground mt-0.5">{hint}</p>
+    </div>
+  );
+}
+
+/** Glyph "Meta" — losango infinito simplificado. */
+function MetaGlyph({ className }: { className?: string }) {
+  return (
+    <svg viewBox="0 0 24 24" fill="currentColor" className={className} aria-hidden="true">
+      <path d="M12 4.5C8.4 4.5 6 7.5 6 11.2c0 2.6 1.2 4.6 3 4.6 1.5 0 2.5-1 4.2-3.8L14.6 10c.7-1.1 1.3-1.7 2-1.7 1.1 0 1.9 1 1.9 2.8 0 1.6-.6 2.7-1.4 2.7-.4 0-.7-.2-1-.7l-.7 1.6c.5.7 1.3 1.1 2.2 1.1 2.1 0 3.6-2.1 3.6-5 0-3.5-1.9-5.8-4.4-5.8-1.6 0-2.8.9-3.9 2.4l-.7 1c-1.5 2.2-2.1 2.9-2.7 2.9-.7 0-1.3-.7-1.3-2.4 0-2.2 1.1-4.2 3-4.2 1 0 1.7.4 2.4 1.1l1-1.5C14.6 5 13.4 4.5 12 4.5z" />
+    </svg>
+  );
 }
 
 /** Glyph oficial do WhatsApp (path simplificado) */
