@@ -15,7 +15,7 @@ function fmtDuration(min: number) {
 }
 
 export function ResponseSpeedCard({ leads }: Props) {
-  const { avg, badge, under5, under15, awaiting } = useMemo(() => {
+  const { avg, badge, under5, under15, awaiting, avgFollowUps } = useMemo(() => {
     const responded = leads.filter((l) => l.last_follow_up_at && l.created_at);
     const diffs = responded
       .map(
@@ -43,7 +43,12 @@ export function ResponseSpeedCard({ leads }: Props) {
       (l) => l.status === "Aguardando Resposta" || l.status === "Novo Lead"
     ).length;
 
-    return { avg, badge, under5, under15, awaiting };
+    const fuCounts = leads.map((l) => Number(l.follow_up_count) || 0);
+    const avgFollowUps = fuCounts.length
+      ? fuCounts.reduce((s, v) => s + v, 0) / fuCounts.length
+      : 0;
+
+    return { avg, badge, under5, under15, awaiting, avgFollowUps };
   }, [leads]);
 
   const totalDist = under5 + under15 + awaiting || 1;
@@ -87,6 +92,18 @@ export function ResponseSpeedCard({ leads }: Props) {
           >
             {badge.label}
           </span>
+
+          <div className="mt-6 pt-5 border-t border-slate-200 dark:border-[#222222] w-full">
+            <p className="text-[10px] font-medium uppercase tracking-[0.22em] text-zinc-400 mb-2">
+              Média de Follow-ups · por lead
+            </p>
+            <p className="text-2xl font-bold tracking-tight tabular-nums text-[#1D1D1F] dark:text-white leading-none">
+              {avgFollowUps.toFixed(1)}{" "}
+              <span className="text-[11px] font-medium text-zinc-500 tracking-normal">
+                contatos
+              </span>
+            </p>
+          </div>
         </div>
 
         {/* Distribuição — direita */}
