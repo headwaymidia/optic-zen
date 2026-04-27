@@ -33,10 +33,11 @@ interface MetricConfig {
 }
 
 const METRICS: Record<MetricKey, MetricConfig> = {
-  faturamento: {
-    key: "faturamento",
-    label: "Faturamento",
-    shortLabel: "Receita",
+  vendas: {
+    key: "vendas",
+    label: "Vendas (Faturamento)",
+    shortLabel: "Vendas",
+    titleSuffix: "Vendas (Faturamento)",
     color: "#22C55E",
     colorLight: "#059669",
     isCurrency: true,
@@ -45,24 +46,18 @@ const METRICS: Record<MetricKey, MetricConfig> = {
     key: "leads",
     label: "Leads",
     shortLabel: "Leads",
-    color: "#3B82F6",
-    colorLight: "#1D4ED8",
+    titleSuffix: "Leads",
+    color: "#FACC15",
+    colorLight: "#CA8A04",
     isCurrency: false,
   },
   agendamentos: {
     key: "agendamentos",
     label: "Agendamentos",
     shortLabel: "Agendamentos",
-    color: "#A855F7",
-    colorLight: "#7E22CE",
-    isCurrency: false,
-  },
-  vendas: {
-    key: "vendas",
-    label: "Vendas",
-    shortLabel: "Vendas",
-    color: "#FACC15",
-    colorLight: "#CA8A04",
+    titleSuffix: "Agendamentos",
+    color: "#06B6D4",
+    colorLight: "#0E7490",
     isCurrency: false,
   },
 };
