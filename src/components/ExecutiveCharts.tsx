@@ -151,14 +151,6 @@ export function LeadsVsSalesTimeline({ leads, embedded = false }: { leads: Lead[
       <ResponsiveContainer width="100%" height="100%">
         <AreaChart data={data} margin={{ top: 12, right: 12, left: 12, bottom: 0 }}>
           <defs>
-            <linearGradient id="gVendasArea" x1="0" y1="0" x2="0" y2="1">
-              <stop offset="0%" stopColor={EMERALD} stopOpacity={0.08} />
-              <stop offset="100%" stopColor={EMERALD} stopOpacity={0} />
-            </linearGradient>
-            <linearGradient id="gLeadsArea" x1="0" y1="0" x2="0" y2="1">
-              <stop offset="0%" stopColor={WHITE} stopOpacity={0.04} />
-              <stop offset="100%" stopColor={WHITE} stopOpacity={0} />
-            </linearGradient>
             <filter id="emeraldGlow" x="-20%" y="-50%" width="140%" height="200%">
               <feGaussianBlur stdDeviation="2.5" result="blur" />
               <feMerge>
@@ -170,8 +162,8 @@ export function LeadsVsSalesTimeline({ leads, embedded = false }: { leads: Lead[
           <XAxis dataKey="date" hide />
           <YAxis hide />
           <Tooltip contentStyle={tooltipStyle} cursor={false} />
-          <Area type="monotone" dataKey="novos" name="Leads" stroke={WHITE} strokeWidth={1} fill="url(#gLeadsArea)" fillOpacity={1} dot={false} activeDot={{ r: 2.5, fill: WHITE }} />
-          <Area type="monotone" dataKey="vendas" name="Vendas" stroke={EMERALD} strokeWidth={1.25} fill="url(#gVendasArea)" fillOpacity={1} dot={false} activeDot={{ r: 2.5, fill: EMERALD }} filter="url(#emeraldGlow)" />
+          <Area type="monotone" dataKey="novos" name="Leads" stroke={WHITE} strokeWidth={1} fill="none" dot={false} activeDot={{ r: 2.5, fill: WHITE }} />
+          <Area type="monotone" dataKey="vendas" name="Vendas" stroke={EMERALD} strokeWidth={1} fill="none" dot={false} activeDot={{ r: 2.5, fill: EMERALD }} filter="url(#emeraldGlow)" />
         </AreaChart>
       </ResponsiveContainer>
     </div>
@@ -222,8 +214,8 @@ export function LossReasonsDonut({ leads }: { leads: Lead[] }) {
                   nameKey="name"
                   cx="50%"
                   cy="45%"
-                  innerRadius={56}
-                  outerRadius={60}
+                  innerRadius="85%"
+                  outerRadius="100%"
                   paddingAngle={2}
                   stroke="none"
                 >
