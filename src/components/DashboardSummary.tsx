@@ -37,12 +37,10 @@ export function RevenueHeroCard({ leads, loading }: { leads: Lead[]; loading: bo
                 <span className="inline-flex h-1.5 w-1.5 rounded-full bg-emerald-500 dark:shadow-[0_0_10px_hsl(160_84%_55%)]" />
               </div>
               <p
-                className="text-3xl sm:text-4xl font-black tabular-nums text-foreground tracking-tight leading-tight mt-0.5 dark:bg-gradient-to-br dark:from-emerald-300 dark:via-emerald-400 dark:to-emerald-500 dark:bg-clip-text dark:text-transparent"
-                style={{ textShadow: "var(--roi-glow, none)" }}
+                className="text-3xl sm:text-4xl font-bold tabular-nums tracking-tight leading-tight mt-0.5 text-emerald-600 dark:text-emerald-400"
+                style={{ fontFamily: "Inter, ui-sans-serif, system-ui, sans-serif" }}
               >
-                <span className="dark:[text-shadow:0_0_24px_hsl(160_84%_50%/0.5)]">
-                  {loading ? "—" : formatBRL(totalFaturamento)}
-                </span>
+                {loading ? "—" : formatBRL(totalFaturamento)}
               </p>
             </div>
           </div>
