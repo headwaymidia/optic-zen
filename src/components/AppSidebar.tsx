@@ -74,16 +74,16 @@ export function AppSidebar() {
   const initials = getInitials(profile?.name || displayEmail);
 
   return (
-    <Sidebar collapsible="icon" className="border-r border-slate-100 bg-white transition-all duration-300 ease-in-out">
-      <SidebarContent className="flex flex-col h-full bg-white overflow-x-hidden">
-        <div className={cn("flex items-center gap-3 py-5 border-b border-slate-100", collapsed ? "px-2 justify-center" : "px-4")}>
+    <Sidebar collapsible="icon" className="border-r border-sidebar-border bg-sidebar transition-all duration-300 ease-in-out">
+      <SidebarContent className="flex flex-col h-full bg-sidebar overflow-x-hidden">
+        <div className={cn("flex items-center gap-3 py-5 border-b border-sidebar-border", collapsed ? "px-2 justify-center" : "px-4")}>
           <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-primary to-primary/80 text-primary-foreground shadow-sm">
             <Eye className="h-5 w-5" />
           </div>
           {!collapsed && (
             <div className="min-w-0">
-              <p className="text-sm font-extrabold tracking-tight text-slate-900 leading-tight">Ótica Dominante</p>
-              <p className="text-[10px] font-medium uppercase tracking-wider text-slate-400 mt-0.5">Powered by Headway Mídia</p>
+              <p className="text-sm font-extrabold tracking-tight text-sidebar-foreground leading-tight">Ótica Dominante</p>
+              <p className="text-[10px] font-medium uppercase tracking-wider text-muted-foreground mt-0.5">Powered by Headway Mídia</p>
             </div>
           )}
         </div>
@@ -117,7 +117,7 @@ export function AppSidebar() {
 
         <SidebarGroup className={cn("py-3 flex-1", collapsed ? "px-1" : "px-2")}>
           {!collapsed && (
-            <SidebarGroupLabel className="text-[11px] font-bold uppercase tracking-wider text-slate-400 px-2 mb-1">Menu</SidebarGroupLabel>
+            <SidebarGroupLabel className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground px-2 mb-1">Menu</SidebarGroupLabel>
           )}
           <SidebarGroupContent>
             <SidebarMenu className="gap-1">
@@ -128,7 +128,7 @@ export function AppSidebar() {
                     asChild
                     isActive={isActive}
                     className={cn(
-                      "h-10 rounded-xl text-slate-600 hover:text-slate-900 hover:bg-slate-50 data-[active=true]:bg-primary/10 data-[active=true]:text-primary data-[active=true]:font-semibold transition-all",
+                      "h-10 rounded-xl text-sidebar-foreground/80 hover:text-sidebar-foreground hover:bg-sidebar-accent dark:hover:text-emerald-400 data-[active=true]:bg-primary/10 data-[active=true]:text-primary data-[active=true]:font-semibold transition-all",
                       collapsed ? "px-0 justify-center w-10 mx-auto" : "px-3"
                     )}
                   >
@@ -156,7 +156,7 @@ export function AppSidebar() {
         </SidebarGroup>
 
         {/* Footer: secondary nav + user profile */}
-        <div className="mt-auto border-t border-slate-100 px-2 pt-2 pb-2 space-y-1">
+        <div className="mt-auto border-t border-sidebar-border px-2 pt-2 pb-2 space-y-1">
           {/* Secondary links */}
           <nav className="flex flex-col gap-0.5">
             {secondaryItems.map((item) => {
@@ -168,7 +168,7 @@ export function AppSidebar() {
                 </>
               );
               const className = cn(
-                "flex items-center gap-3 h-9 px-3 rounded-lg text-slate-600 hover:text-slate-900 hover:bg-slate-50 transition-colors",
+                "flex items-center gap-3 h-9 px-3 rounded-lg text-sidebar-foreground/80 hover:text-sidebar-foreground hover:bg-sidebar-accent dark:hover:text-emerald-400 transition-colors",
                 isActive && "bg-primary/10 text-primary font-medium",
                 collapsed && "justify-center px-0"
               );
@@ -206,7 +206,7 @@ export function AppSidebar() {
               <button
                 type="button"
                 className={cn(
-                  "w-full flex items-center gap-3 rounded-lg p-2 hover:bg-slate-100 transition-colors cursor-pointer text-left",
+                  "w-full flex items-center gap-3 rounded-lg p-2 hover:bg-sidebar-accent transition-colors cursor-pointer text-left",
                   collapsed && "justify-center px-0"
                 )}
                 aria-label="Menu do usuário"
@@ -215,7 +215,7 @@ export function AppSidebar() {
                   <Tooltip>
                     <TooltipTrigger asChild>
                       <Avatar className="h-8 w-8 shrink-0">
-                        <AvatarFallback className="bg-slate-900 text-white text-xs font-semibold">
+                        <AvatarFallback className="bg-primary text-primary-foreground text-xs font-semibold">
                           {initials}
                         </AvatarFallback>
                       </Avatar>
@@ -225,15 +225,15 @@ export function AppSidebar() {
                 ) : (
                   <>
                     <Avatar className="h-8 w-8 shrink-0">
-                      <AvatarFallback className="bg-slate-900 text-white text-xs font-semibold">
+                      <AvatarFallback className="bg-primary text-primary-foreground text-xs font-semibold">
                         {initials}
                       </AvatarFallback>
                     </Avatar>
                     <div className="min-w-0 flex-1">
-                      <p className="text-sm font-medium text-slate-900 truncate leading-tight">
+                      <p className="text-sm font-medium text-sidebar-foreground truncate leading-tight">
                         {displayName}
                       </p>
-                      <p className="text-xs text-slate-500 truncate mt-0.5">
+                      <p className="text-xs text-muted-foreground truncate mt-0.5">
                         {displayEmail}
                       </p>
                     </div>
@@ -244,12 +244,12 @@ export function AppSidebar() {
             <DropdownMenuContent side="top" align="end" className="w-56">
               <DropdownMenuLabel className="font-normal">
                 <div className="flex flex-col">
-                  <span className="text-sm font-medium text-slate-900 truncate">{displayName}</span>
-                  <span className="text-xs text-slate-500 truncate">{displayEmail}</span>
+                  <span className="text-sm font-medium text-foreground truncate">{displayName}</span>
+                  <span className="text-xs text-muted-foreground truncate">{displayEmail}</span>
                 </div>
               </DropdownMenuLabel>
               <DropdownMenuSeparator />
-              <DropdownMenuItem onClick={signOut} className="text-slate-700 cursor-pointer">
+              <DropdownMenuItem onClick={signOut} className="cursor-pointer">
                 <LogOut className="h-4 w-4 mr-2" />
                 Sair
               </DropdownMenuItem>
