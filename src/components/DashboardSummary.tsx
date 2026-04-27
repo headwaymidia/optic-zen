@@ -21,75 +21,107 @@ export function RevenueHeroCard({ leads, loading }: { leads: Lead[]; loading: bo
   const orgPct = 100 - adsPct;
 
   return (
-    <Card className="border border-border dark:border-white/5 bg-card rounded-xl shadow-[0_1px_2px_rgba(15,23,42,0.04)]">
-      <CardContent className="p-4">
-        <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
-          {/* Bloco principal: valor */}
-          <div className="flex items-center gap-3 min-w-0">
-            <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-emerald-50 ring-1 ring-emerald-100 shrink-0 dark:bg-emerald-500/10 dark:ring-emerald-500/30">
-              <TrendingUp className="h-4 w-4 text-emerald-600 dark:text-emerald-400" />
+    <Card className="border border-slate-800 bg-slate-900 text-slate-100 rounded-xl shadow-[0_4px_20px_-8px_rgba(15,23,42,0.4)] overflow-hidden h-full">
+      <CardContent className="p-5 h-full flex flex-col justify-between gap-4">
+        {/* Top: label + valor */}
+        <div>
+          <div className="flex items-center gap-2">
+            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-emerald-500/15 ring-1 ring-emerald-500/30">
+              <TrendingUp className="h-4 w-4 text-emerald-400" />
             </div>
-            <div className="min-w-0">
-              <div className="flex items-center gap-2">
-                <p className="text-[11px] uppercase tracking-wider text-muted-foreground font-bold">
-                  Faturamento Gerado · ROI
-                </p>
-                <span className="inline-flex h-1.5 w-1.5 rounded-full bg-emerald-500 dark:shadow-[0_0_10px_hsl(160_84%_55%)]" />
-              </div>
-              <p
-                className="text-3xl sm:text-4xl font-bold tabular-nums tracking-tight leading-tight mt-0.5 text-emerald-600 dark:text-emerald-400"
-                style={{ fontFamily: "Inter, ui-sans-serif, system-ui, sans-serif" }}
-              >
-                {loading ? "—" : formatBRL(totalFaturamento)}
+            <p className="text-[11px] uppercase tracking-[0.15em] text-slate-400 font-bold">
+              Faturamento Gerado · ROI
+            </p>
+            <span className="ml-auto inline-flex h-1.5 w-1.5 rounded-full bg-emerald-400 shadow-[0_0_10px_hsl(160_84%_55%)]" />
+          </div>
+
+          <p
+            className="text-4xl sm:text-5xl font-bold tabular-nums tracking-tight leading-none mt-3 text-emerald-400"
+            style={{ fontFamily: "Inter, ui-sans-serif, system-ui, sans-serif", textShadow: "0 0 24px hsl(160 84% 50% / 0.45)" }}
+          >
+            {loading ? "—" : formatBRL(totalFaturamento)}
+          </p>
+        </div>
+
+        {/* Bottom: breakdown ads/orgânico */}
+        <div className="space-y-2">
+          <div className="grid grid-cols-2 gap-3">
+            <div>
+              <p className="flex items-center gap-1 text-[10px] uppercase tracking-wider text-slate-400 font-bold">
+                <Megaphone className="h-3 w-3" />
+                Tráfego Pago
+              </p>
+              <p className="text-sm font-bold text-emerald-400 mt-0.5 tabular-nums">
+                {loading ? "—" : formatBRL(faturamentoAds)}
+                {!loading && totalFaturamento > 0 && (
+                  <span className="ml-1 text-[10px] text-slate-500 font-normal">
+                    {adsPct.toFixed(0)}%
+                  </span>
+                )}
+              </p>
+            </div>
+            <div>
+              <p className="flex items-center gap-1 text-[10px] uppercase tracking-wider text-slate-400 font-bold">
+                <Store className="h-3 w-3" />
+                Orgânico
+              </p>
+              <p className="text-sm font-bold text-slate-100 mt-0.5 tabular-nums">
+                {loading ? "—" : formatBRL(faturamentoOrganico)}
+                {!loading && totalFaturamento > 0 && (
+                  <span className="ml-1 text-[10px] text-slate-500 font-normal">
+                    {orgPct.toFixed(0)}%
+                  </span>
+                )}
               </p>
             </div>
           </div>
-
-          {/* Divider vertical */}
-          <div className="hidden lg:block h-12 w-px bg-border" />
-
-          {/* Breakdown ads/orgânico */}
-          <div className="flex-1 lg:max-w-md space-y-2">
-            <div className="grid grid-cols-2 gap-3">
-              <div>
-                <p className="flex items-center gap-1 text-[10px] uppercase tracking-wider text-muted-foreground font-bold">
-                  <Megaphone className="h-3 w-3" />
-                  Tráfego Pago
-                </p>
-                <p className="text-sm font-bold text-emerald-600 dark:text-emerald-400 mt-0.5 tabular-nums">
-                  {loading ? "—" : formatBRL(faturamentoAds)}
-                  {!loading && totalFaturamento > 0 && (
-                    <span className="ml-1 text-[10px] text-muted-foreground font-normal">
-                      {adsPct.toFixed(0)}%
-                    </span>
-                  )}
-                </p>
-              </div>
-              <div>
-                <p className="flex items-center gap-1 text-[10px] uppercase tracking-wider text-muted-foreground font-bold">
-                  <Store className="h-3 w-3" />
-                  Orgânico
-                </p>
-                <p className="text-sm font-bold text-foreground mt-0.5 tabular-nums">
-                  {loading ? "—" : formatBRL(faturamentoOrganico)}
-                  {!loading && totalFaturamento > 0 && (
-                    <span className="ml-1 text-[10px] text-muted-foreground font-normal">
-                      {orgPct.toFixed(0)}%
-                    </span>
-                  )}
-                </p>
-              </div>
+          {!loading && totalFaturamento > 0 && (
+            <div className="h-1 w-full overflow-hidden rounded-full bg-slate-800 flex">
+              <div className="h-full bg-emerald-400 transition-all" style={{ width: `${adsPct}%` }} />
+              <div className="h-full bg-emerald-700 transition-all" style={{ width: `${orgPct}%` }} />
             </div>
-            {!loading && totalFaturamento > 0 && (
-              <div className="h-1 w-full overflow-hidden rounded-full bg-muted flex">
-                <div className="h-full bg-emerald-500 transition-all" style={{ width: `${adsPct}%` }} />
-                <div className="h-full bg-emerald-300 dark:bg-emerald-700 transition-all" style={{ width: `${orgPct}%` }} />
-              </div>
-            )}
-          </div>
+          )}
         </div>
       </CardContent>
     </Card>
+  );
+}
+
+/** KPI vertical empilhado: Vendas e Ticket Médio para combinar com o Hero ROI. */
+export function KpiStack({ leads, loading }: { leads: Lead[]; loading: boolean }) {
+  const buyers = leads.filter((l) => l.status === "Compareceu e Comprou");
+  const vendas = buyers.length;
+  const totalFat = buyers.reduce((s, l) => s + (Number(l.sale_value) || 0), 0);
+  const ticket = vendas > 0 ? totalFat / vendas : 0;
+
+  const items = [
+    { key: "vendas", label: "Vendas Concluídas", value: loading ? "—" : vendas, icon: ShoppingBag, color: "text-emerald-600 dark:text-emerald-400", bg: "bg-emerald-50 dark:bg-emerald-500/10" },
+    { key: "ticket", label: "Ticket Médio",       value: loading ? "—" : formatBRL(ticket), icon: DollarSign, color: "text-amber-600 dark:text-amber-400",  bg: "bg-amber-50 dark:bg-amber-500/10" },
+  ] as const;
+
+  return (
+    <div className="grid grid-rows-2 gap-3 h-full">
+      {items.map((s) => (
+        <Card
+          key={s.key}
+          className="border border-border dark:border-white/5 rounded-xl shadow-[0_1px_2px_rgba(15,23,42,0.04)] bg-card flex"
+        >
+          <CardContent className="p-4 flex flex-col justify-between w-full">
+            <div className="flex items-center justify-between">
+              <p className="text-[10px] font-bold uppercase tracking-[0.15em] text-muted-foreground truncate">
+                {s.label}
+              </p>
+              <div className={`flex h-7 w-7 items-center justify-center rounded-md ${s.bg}`}>
+                <s.icon className={`h-3.5 w-3.5 ${s.color}`} />
+              </div>
+            </div>
+            <div className="text-2xl sm:text-3xl font-bold tabular-nums text-foreground leading-none mt-2 tracking-tight">
+              {s.value}
+            </div>
+          </CardContent>
+        </Card>
+      ))}
+    </div>
   );
 }
 

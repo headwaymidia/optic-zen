@@ -36,10 +36,10 @@ const FUNNEL_STAGES = [
 ];
 
 const LOSS_REASONS = [
-  { key: "preco", label: "Preço", color: ROSE, match: ["preç", "caro", "valor"] },
+  { key: "preco", label: "Preço", color: BLUE, match: ["preç", "caro", "valor"] },
   { key: "distancia", label: "Distância", color: VIOLET, match: ["dist", "long", "endere"] },
   { key: "semresposta", label: "Sem Resposta", color: SLATE, match: ["sem resp", "não resp", "nao resp", "silenc"] },
-  { key: "outros", label: "Outros", color: CYAN, match: [] },
+  { key: "outros", label: "Outros", color: "#64748B", match: [] },
 ];
 
 function pct(num: number, den: number) {
@@ -216,8 +216,8 @@ export function LossReasonsDonut({ leads }: { leads: Lead[] }) {
                   nameKey="name"
                   cx="50%"
                   cy="45%"
-                  innerRadius={48}
-                  outerRadius={72}
+                  innerRadius={38}
+                  outerRadius={60}
                   paddingAngle={3}
                   stroke="none"
                 >

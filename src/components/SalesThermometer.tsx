@@ -2,7 +2,7 @@ import { useMemo } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Lead } from "@/lib/supabase";
 import { cn } from "@/lib/utils";
-import { AlertTriangle, TrendingDown, Thermometer, CheckCircle2 } from "lucide-react";
+import { AlertTriangle, Thermometer, CheckCircle2 } from "lucide-react";
 
 interface SalesThermometerProps {
   leads: Lead[];
@@ -13,21 +13,14 @@ type Stage = {
   label: string;
   shortLabel: string;
   count: number;
-  // Taxa de conversão a partir da etapa anterior (0..1) ou null para a primeira
-  conv: number | null;
-  // Cor de acento (em HSL via classes utilitárias)
-  accent: string;
-  textAccent: string;
-  bg: string;
-  ring: string;
+  conv: number | null; // taxa a partir da etapa anterior
+  dot: string;         // cor do círculo
+  text: string;        // cor do número
 };
 
 /**
- * Termômetro de Vendas
- * Funil: Captação → Agendou Exame → Compareceu → Comprou
- * - "Compareceu" = comparecidos no exame = "Compareceu e Comprou" + "Compareceu e Não Comprou"
- * - "Comprou" = "Compareceu e Comprou"
- * Detecta o gargalo (menor taxa de conversão entre etapas) e destaca visualmente.
+ * Funil em formato de "Stepper Horizontal":
+ * Captação ─68%→ Agendamento ─82%→ Comparecimento ─44%→ Venda
  */
 export function SalesThermometer({ leads }: SalesThermometerProps) {
   const stages = useMemo<Stage[]>(() => {
@@ -41,50 +34,14 @@ export function SalesThermometer({ leads }: SalesThermometerProps) {
     const comprou = leads.filter((l) => l.status === "Compareceu e Comprou").length;
 
     return [
-      {
-        key: "captacao",
-        label: "Leads Captados",
-        shortLabel: "Captação",
-        count: total,
-        conv: null,
-        accent: "bg-blue-500",
-        textAccent: "text-blue-600 dark:text-blue-300",
-        bg: "bg-blue-50 dark:bg-blue-500/10",
-        ring: "ring-blue-200",
-      },
-      {
-        key: "agendou",
-        label: "Agendaram Exame",
-        shortLabel: "Agendamento",
-        count: agendou,
-        conv: total > 0 ? agendou / total : null,
-        accent: "bg-purple-500",
-        textAccent: "text-purple-600 dark:text-purple-300",
-        bg: "bg-purple-50 dark:bg-purple-500/10",
-        ring: "ring-purple-200",
-      },
-      {
-        key: "compareceu",
-        label: "Compareceram",
-        shortLabel: "Comparecimento",
-        count: compareceu,
-        conv: agendou > 0 ? compareceu / agendou : null,
-        accent: "bg-cyan-500",
-        textAccent: "text-cyan-600 dark:text-cyan-300",
-        bg: "bg-cyan-50 dark:bg-cyan-500/10",
-        ring: "ring-cyan-200",
-      },
-      {
-        key: "comprou",
-        label: "Compraram",
-        shortLabel: "Venda",
-        count: comprou,
-        conv: compareceu > 0 ? comprou / compareceu : null,
-        accent: "bg-emerald-500",
-        textAccent: "text-emerald-600 dark:text-emerald-300",
-        bg: "bg-emerald-50 dark:bg-emerald-500/10",
-        ring: "ring-emerald-200",
-      },
+      { key: "captacao",   label: "Leads captados",   shortLabel: "Captação",       count: total,      conv: null,
+        dot: "bg-blue-500",    text: "text-blue-600 dark:text-blue-300" },
+      { key: "agendou",    label: "Agendaram exame",  shortLabel: "Agendamento",    count: agendou,    conv: total > 0 ? agendou / total : null,
+        dot: "bg-violet-500",  text: "text-violet-600 dark:text-violet-300" },
+      { key: "compareceu", label: "Compareceram",     shortLabel: "Comparecimento", count: compareceu, conv: agendou > 0 ? compareceu / agendou : null,
+        dot: "bg-cyan-500",    text: "text-cyan-600 dark:text-cyan-300" },
+      { key: "comprou",    label: "Compraram",        shortLabel: "Venda",          count: comprou,    conv: compareceu > 0 ? comprou / compareceu : null,
+        dot: "bg-emerald-500", text: "text-emerald-600 dark:text-emerald-300" },
     ];
   }, [leads]);
 
@@ -92,33 +49,29 @@ export function SalesThermometer({ leads }: SalesThermometerProps) {
   const finalSales = stages[stages.length - 1].count;
   const overallConv = totalLeads > 0 ? (finalSales / totalLeads) * 100 : 0;
 
-  // Identifica o gargalo: menor taxa de conversão entre etapas (ignora a primeira/null)
+  // Gargalo: menor conv > 0
   const bottleneck = useMemo(() => {
     const candidates = stages
       .map((s, i) => ({ stage: s, prev: stages[i - 1], idx: i }))
       .filter((x) => x.stage.conv !== null && x.prev && x.prev.count > 0);
-    if (candidates.length === 0) return null;
-    let worst = candidates[0];
-    for (const c of candidates) {
-      if ((c.stage.conv ?? 1) < (worst.stage.conv ?? 1)) worst = c;
-    }
-    return worst;
+    if (!candidates.length) return null;
+    return candidates.reduce((w, c) => ((c.stage.conv ?? 1) < (w.stage.conv ?? 1) ? c : w), candidates[0]);
   }, [stages]);
 
   const formatPct = (v: number | null) => (v === null ? "—" : `${(v * 100).toFixed(0)}%`);
 
   if (totalLeads === 0) {
     return (
-      <Card>
-        <CardHeader className="pb-3">
+      <Card className="border border-border dark:border-white/5 rounded-xl shadow-[0_1px_2px_rgba(15,23,42,0.04)] bg-card">
+        <CardHeader className="pb-2 pt-3 px-4">
           <div className="flex items-center gap-2">
-            <Thermometer className="h-4 w-4 text-rose-500" />
-            <CardTitle className="text-base">Termômetro de Vendas</CardTitle>
+            <Thermometer className="h-3.5 w-3.5 text-rose-500" />
+            <CardTitle className="text-sm font-bold uppercase tracking-wider">Funil de Conversão</CardTitle>
           </div>
         </CardHeader>
         <CardContent>
-          <p className="text-sm text-muted-foreground py-6 text-center">
-            Sem leads no período. Quando houver captação, o funil aparece aqui.
+          <p className="text-sm text-muted-foreground py-4 text-center">
+            Sem leads no período.
           </p>
         </CardContent>
       </Card>
@@ -126,100 +79,92 @@ export function SalesThermometer({ leads }: SalesThermometerProps) {
   }
 
   return (
-    <Card className="overflow-hidden border border-border dark:border-white/5 rounded-xl shadow-[0_1px_2px_rgba(15,23,42,0.04)] bg-card">
+    <Card className="border border-border dark:border-white/5 rounded-xl shadow-[0_1px_2px_rgba(15,23,42,0.04)] bg-card">
       <CardHeader className="pb-2 pt-3 px-4">
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
-          <div className="flex items-center gap-2 min-w-0">
+        <div className="flex items-center justify-between gap-2">
+          <div className="flex items-center gap-2">
             <Thermometer className="h-3.5 w-3.5 text-rose-500" />
-            <CardTitle className="text-sm font-bold uppercase tracking-wider">Termômetro de Vendas</CardTitle>
+            <CardTitle className="text-sm font-bold uppercase tracking-wider">Funil de Conversão</CardTitle>
           </div>
-          <div className="flex items-center gap-1.5 text-[11px]">
-            <span className="text-muted-foreground">Conversão geral</span>
-            <span
-              className={cn(
-                "px-2 py-0.5 rounded-full font-semibold tabular-nums text-white text-[11px]",
-                overallConv >= 10
-                  ? "bg-emerald-500"
-                  : overallConv >= 5
-                    ? "bg-amber-500"
-                    : "bg-rose-500"
-              )}
-            >
-              {overallConv.toFixed(1)}%
-            </span>
-          </div>
+          <span
+            className={cn(
+              "px-2 py-0.5 rounded-full font-bold tabular-nums text-white text-[11px]",
+              overallConv >= 10 ? "bg-emerald-500" : overallConv >= 5 ? "bg-amber-500" : "bg-rose-500"
+            )}
+          >
+            {overallConv.toFixed(1)}%
+          </span>
         </div>
       </CardHeader>
 
-      <CardContent className="space-y-2 px-4 pb-3">
-        {/* Funil em formato de progress bar segmentada */}
-        <div className="space-y-1.5">
+      <CardContent className="px-4 pb-3 pt-1">
+        {/* Stepper horizontal */}
+        <div className="flex items-start justify-between gap-1 relative">
           {stages.map((s, i) => {
-            const widthPct = totalLeads > 0 ? Math.max(4, (s.count / totalLeads) * 100) : 4;
-            const isBottleneckTarget = bottleneck?.stage.key === s.key;
-            const conv = s.conv;
-            const pctNum = conv === null ? 0 : conv * 100;
-            const isHot = pctNum >= 60 && !isBottleneckTarget;
+            const next = stages[i + 1];
+            const showConn = i < stages.length - 1;
+            const isBottleneckTarget = bottleneck?.stage.key === next?.key;
 
             return (
-              <div key={s.key} className="grid grid-cols-12 items-center gap-2">
-                {/* Label */}
-                <div className="col-span-3 sm:col-span-2 flex items-center gap-1.5 min-w-0">
-                  <span className={cn("h-1.5 w-1.5 rounded-full shrink-0", s.accent)} />
-                  <span className="text-[10px] uppercase tracking-wider text-muted-foreground font-bold truncate">
+              <div key={s.key} className="flex-1 flex items-start min-w-0">
+                {/* Step */}
+                <div className="flex flex-col items-center min-w-0 flex-shrink-0 w-16">
+                  <div
+                    className={cn(
+                      "h-7 w-7 rounded-full flex items-center justify-center text-white text-[11px] font-bold tabular-nums shadow-[0_1px_2px_rgba(15,23,42,0.15)]",
+                      s.dot
+                    )}
+                  >
+                    {i + 1}
+                  </div>
+                  <div className={cn("text-base font-bold tabular-nums tracking-tight mt-1.5 leading-none", s.text)}>
+                    {s.count}
+                  </div>
+                  <div className="text-[10px] uppercase tracking-wider text-muted-foreground font-semibold mt-1 text-center leading-tight">
                     {s.shortLabel}
-                  </span>
-                </div>
-
-                {/* Progress bar */}
-                <div className="col-span-6 sm:col-span-7">
-                  <div className="relative h-2 w-full rounded-full bg-muted/60 overflow-hidden">
-                    <div
-                      className={cn("h-full rounded-full transition-all", s.accent)}
-                      style={{ width: `${widthPct}%` }}
-                    />
                   </div>
                 </div>
 
-                {/* Contagem + conversão */}
-                <div className="col-span-3 sm:col-span-3 flex items-center justify-end gap-2">
-                  <span className={cn("text-sm font-black tabular-nums tracking-tight", s.textAccent)}>
-                    {s.count}
-                  </span>
-                  {conv !== null && (
+                {/* Connector com taxa de conversão */}
+                {showConn && (
+                  <div className="flex-1 flex flex-col items-center justify-start pt-1 min-w-0 px-1">
                     <span
                       className={cn(
-                        "inline-flex items-center justify-center min-w-[42px] rounded-full border px-1.5 py-0.5 text-[10px] font-bold tabular-nums",
-                        isBottleneckTarget
-                          ? "text-amber-700 dark:text-amber-300 bg-card border-amber-300 dark:border-amber-500/40"
-                          : isHot
-                            ? "text-emerald-700 dark:text-emerald-300 bg-card border-emerald-300 dark:border-emerald-500/40 shadow-[0_0_10px_-2px_hsl(160_84%_50%/0.7)] dark:shadow-[0_0_14px_-2px_hsl(160_84%_55%/0.85)]"
-                            : "text-muted-foreground bg-card border-border"
+                        "text-[10px] font-bold tabular-nums leading-none",
+                        isBottleneckTarget ? "text-amber-600 dark:text-amber-400" : "text-muted-foreground"
                       )}
                     >
-                      {isBottleneckTarget && <TrendingDown className="h-2.5 w-2.5 mr-0.5" />}
-                      {formatPct(conv)}
+                      {formatPct(next!.conv)}
                     </span>
-                  )}
-                </div>
+                    <div
+                      className={cn(
+                        "mt-1.5 h-px w-full relative",
+                        isBottleneckTarget
+                          ? "bg-amber-300 dark:bg-amber-500/40"
+                          : "bg-border"
+                      )}
+                    >
+                      <span className="absolute -right-0.5 -top-1 text-muted-foreground text-[10px] leading-none">›</span>
+                    </div>
+                  </div>
+                )}
               </div>
             );
           })}
         </div>
 
-        {/* Diagnóstico discreto no rodapé */}
+        {/* Diagnóstico discreto */}
         {bottleneck ? (
-          <p className="text-[11px] text-muted-foreground pt-1 border-t border-border flex items-start gap-1.5">
+          <p className="text-[11px] text-muted-foreground pt-3 mt-3 border-t border-border flex items-start gap-1.5">
             <AlertTriangle className="h-3 w-3 text-amber-500 shrink-0 mt-0.5" />
             <span>
               <span className="font-medium text-foreground">Ponto de atenção:</span>{" "}
               {bottleneck.prev!.shortLabel} → {bottleneck.stage.shortLabel} converte apenas{" "}
-              <span className="font-semibold tabular-nums">{formatPct(bottleneck.stage.conv)}</span>.
-              Vale revisar essa etapa com o time.
+              <span className="font-bold tabular-nums">{formatPct(bottleneck.stage.conv)}</span>.
             </span>
           </p>
         ) : (
-          <p className="text-[11px] text-muted-foreground pt-1 border-t border-border flex items-center gap-1.5">
+          <p className="text-[11px] text-muted-foreground pt-3 mt-3 border-t border-border flex items-center gap-1.5">
             <CheckCircle2 className="h-3 w-3 text-emerald-500 shrink-0" />
             Funil saudável: todas as etapas convertem bem.
           </p>
