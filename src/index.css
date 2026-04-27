@@ -226,18 +226,24 @@ Plus Jakarta Sans is the primary font for a Premium Enterprise feel.
     animation: pulse-border-red 1.6s ease-in-out infinite;
   }
 
-  /* Command Center glass — DARK: zinc-900/40 + blur xl + borda white/5 + chanfro topo */
+  /* BI Enterprise glass — DARK: vidro fumê + borda zinc-800 + sombra profunda + chanfro topo */
   .dark .glass-card {
-    background-color: rgba(24, 24, 27, 0.40);
-    backdrop-filter: blur(24px) saturate(140%);
-    -webkit-backdrop-filter: blur(24px) saturate(140%);
-    border: 1px solid rgba(255, 255, 255, 0.05);
-    box-shadow: inset 0 1px 0 0 rgba(255, 255, 255, 0.05);
+    background-color: rgba(20, 20, 23, 0.55);
+    backdrop-filter: blur(20px) saturate(140%);
+    -webkit-backdrop-filter: blur(20px) saturate(140%);
+    border: 1px solid #27272a; /* zinc-800 */
+    box-shadow:
+      inset 0 1px 0 0 rgba(255, 255, 255, 0.04),
+      0 1px 0 0 rgba(0, 0, 0, 0.30),
+      0 8px 24px -12px rgba(0, 0, 0, 0.50);
     transition: border-color 220ms ease, box-shadow 220ms ease;
   }
   .dark .glass-card:hover {
-    border-color: rgba(255, 255, 255, 0.10);
-    box-shadow: inset 0 1px 0 0 rgba(255, 255, 255, 0.08);
+    border-color: #3f3f46; /* zinc-700 */
+    box-shadow:
+      inset 0 1px 0 0 rgba(255, 255, 255, 0.06),
+      0 1px 0 0 rgba(0, 0, 0, 0.30),
+      0 12px 32px -12px rgba(0, 0, 0, 0.60);
   }
 
   /* Luxury glass card — LIGHT: branco puro + borda black/5 + chanfro superior branco */
