@@ -150,21 +150,25 @@ export function LeadsVsSalesTimeline({ leads, embedded = false }: { leads: Lead[
     <div className="h-[160px] w-full">
       <ResponsiveContainer width="100%" height="100%">
         <AreaChart data={data} margin={{ top: 8, right: 12, left: -16, bottom: 0 }}>
-          <defs>
-            <linearGradient id="gNovosLight" x1="0" y1="0" x2="0" y2="1">
-              <stop offset="0%" stopColor={BLUE} stopOpacity={0.35} />
-              <stop offset="100%" stopColor={BLUE} stopOpacity={0} />
-            </linearGradient>
-            <linearGradient id="gVendasLight" x1="0" y1="0" x2="0" y2="1">
-              <stop offset="0%" stopColor={EMERALD} stopOpacity={0.3} />
-              <stop offset="100%" stopColor={EMERALD} stopOpacity={0} />
-            </linearGradient>
-          </defs>
-          <XAxis dataKey="date" tick={{ fontSize: 10 }} className="fill-muted-foreground" axisLine={false} tickLine={false} />
-          <YAxis allowDecimals={false} tick={{ fontSize: 10 }} className="fill-muted-foreground" axisLine={false} tickLine={false} width={28} />
-          <Tooltip contentStyle={tooltipStyle} cursor={{ stroke: BLUE, strokeOpacity: 0.15, strokeWidth: 1 }} />
-          <Area type="monotone" dataKey="novos" name="Novos Leads" stroke={BLUE} strokeWidth={2} fill="url(#gNovosLight)" dot={false} activeDot={{ r: 3 }} />
-          <Area type="monotone" dataKey="vendas" name="Vendas" stroke={EMERALD} strokeWidth={2} fill="url(#gVendasLight)" dot={false} activeDot={{ r: 3 }} />
+          <XAxis
+            dataKey="date"
+            tick={{ fontSize: 10, fill: ZINC_500 }}
+            axisLine={false}
+            tickLine={false}
+          />
+          <YAxis
+            allowDecimals={false}
+            tick={{ fontSize: 10, fill: ZINC_500 }}
+            axisLine={false}
+            tickLine={false}
+            width={28}
+          />
+          <Tooltip
+            contentStyle={tooltipStyle}
+            cursor={{ stroke: ZINC_700, strokeOpacity: 0.4, strokeWidth: 1 }}
+          />
+          <Area type="monotone" dataKey="novos" name="Leads" stroke={WHITE} strokeWidth={1.25} fill="transparent" dot={false} activeDot={{ r: 3, fill: WHITE }} />
+          <Area type="monotone" dataKey="vendas" name="Vendas" stroke={EMERALD} strokeWidth={1.25} fill="transparent" dot={false} activeDot={{ r: 3, fill: EMERALD }} />
         </AreaChart>
       </ResponsiveContainer>
     </div>
@@ -173,10 +177,9 @@ export function LeadsVsSalesTimeline({ leads, embedded = false }: { leads: Lead[
   if (embedded) return chart;
 
   return (
-    <Card className="border border-border dark:border-white/5 rounded-xl shadow-[0_1px_2px_rgba(15,23,42,0.04)] bg-card">
-      <CardHeader className="pb-2 pt-3 px-4">
-        <CardTitle className="text-sm font-bold uppercase tracking-wider">Leads vs Vendas</CardTitle>
-        <p className="text-[11px] text-muted-foreground">Últimos 7 dias</p>
+    <Card className="border border-border bg-card rounded-lg">
+      <CardHeader className="pb-2 pt-4 px-5">
+        <CardTitle className="text-[11px] font-medium uppercase tracking-[0.14em] text-muted-foreground">Leads vs Vendas</CardTitle>
       </CardHeader>
       <CardContent className="px-2 pb-3">{chart}</CardContent>
     </Card>
