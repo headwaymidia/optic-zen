@@ -95,32 +95,35 @@ export function LeadsVolumeChart({ leads, from, to, embedded = false }: Props) {
     );
   };
 
+  const chart = (
+    <div className="h-[160px] w-full">
+      <ResponsiveContainer width="100%" height="100%">
+        <BarChart data={data} margin={{ top: 6, right: 8, left: -16, bottom: 0 }}>
+          <XAxis dataKey="date" tick={{ fontSize: 10 }} className="fill-muted-foreground" axisLine={false} tickLine={false} />
+          <YAxis allowDecimals={false} tick={{ fontSize: 10 }} className="fill-muted-foreground" axisLine={false} tickLine={false} width={28} />
+          <Tooltip content={renderTooltip} cursor={{ fill: "hsl(var(--muted) / 0.4)" }} />
+          {LEAD_STATUSES.map((s, idx) => (
+            <Bar
+              key={s}
+              dataKey={s}
+              stackId="a"
+              fill={STATUS_COLORS[s]}
+              radius={idx === LEAD_STATUSES.length - 1 ? [3, 3, 0, 0] : [0, 0, 0, 0]}
+            />
+          ))}
+        </BarChart>
+      </ResponsiveContainer>
+    </div>
+  );
+
+  if (embedded) return chart;
+
   return (
     <Card className="border border-border dark:border-white/5 rounded-xl shadow-[0_1px_2px_rgba(15,23,42,0.04)] bg-card">
       <CardHeader className="pb-2 pt-3 px-4">
         <CardTitle className="text-sm font-bold uppercase tracking-wider">Volume de leads por dia</CardTitle>
       </CardHeader>
-      <CardContent className="px-2 pb-3">
-        <div className="h-[160px] w-full">
-          <ResponsiveContainer width="100%" height="100%">
-            <BarChart data={data} margin={{ top: 6, right: 8, left: -16, bottom: 0 }}>
-              
-              <XAxis dataKey="date" tick={{ fontSize: 10 }} className="fill-muted-foreground" axisLine={false} tickLine={false} />
-              <YAxis allowDecimals={false} tick={{ fontSize: 10 }} className="fill-muted-foreground" axisLine={false} tickLine={false} width={28} />
-              <Tooltip content={renderTooltip} cursor={{ fill: "hsl(var(--muted) / 0.4)" }} />
-              {LEAD_STATUSES.map((s, idx) => (
-                <Bar
-                  key={s}
-                  dataKey={s}
-                  stackId="a"
-                  fill={STATUS_COLORS[s]}
-                  radius={idx === LEAD_STATUSES.length - 1 ? [3, 3, 0, 0] : [0, 0, 0, 0]}
-                />
-              ))}
-            </BarChart>
-          </ResponsiveContainer>
-        </div>
-      </CardContent>
+      <CardContent className="px-2 pb-3">{chart}</CardContent>
     </Card>
   );
 }
