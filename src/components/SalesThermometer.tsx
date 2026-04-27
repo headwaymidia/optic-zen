@@ -1,8 +1,8 @@
-import { Fragment, useMemo } from "react";
+import { useMemo } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Lead } from "@/lib/supabase";
 import { cn } from "@/lib/utils";
-import { AlertTriangle, TrendingDown, Thermometer, CheckCircle2, ChevronRight } from "lucide-react";
+import { AlertTriangle, TrendingDown, Thermometer, CheckCircle2 } from "lucide-react";
 
 interface SalesThermometerProps {
   leads: Lead[];
@@ -152,33 +152,28 @@ export function SalesThermometer({ leads }: SalesThermometerProps) {
       </CardHeader>
 
       <CardContent className="space-y-2 px-4 pb-3">
-        {/* Funil visual compacto */}
-        <div className="grid grid-cols-1 sm:grid-cols-7 gap-1.5 items-stretch">
+        {/* Funil em formato de progress bar segmentada */}
+        <div className="space-y-1.5">
           {stages.map((s, i) => {
-            const widthPct = totalLeads > 0 ? Math.max(15, (s.count / totalLeads) * 100) : 15;
+            const widthPct = totalLeads > 0 ? Math.max(4, (s.count / totalLeads) * 100) : 4;
             const isBottleneckTarget = bottleneck?.stage.key === s.key;
+            const conv = s.conv;
+            const pctNum = conv === null ? 0 : conv * 100;
+            const isHot = pctNum >= 60 && !isBottleneckTarget;
 
             return (
-              <Fragment key={s.key}>
-                <div
-                  className={cn(
-                    "sm:col-span-1 relative rounded-lg border p-2.5 transition-all bg-gradient-to-br from-transparent",
-                    s.bg,
-                    isBottleneckTarget ? "border-amber-300 dark:border-amber-500/40" : "border-border dark:border-white/5"
-                  )}
-                >
-                  <div className="flex items-center gap-1.5">
-                    <span className={cn("h-1.5 w-1.5 rounded-full", s.accent)} />
-                    <span className="text-[9px] uppercase tracking-wider text-muted-foreground font-bold truncate">
-                      {s.shortLabel}
-                    </span>
-                  </div>
-                  <p className={cn("text-xl font-black tabular-nums mt-0.5 tracking-tight", s.textAccent)}>
-                    {s.count}
-                  </p>
-                  <p className="text-[10px] text-muted-foreground truncate">{s.label}</p>
+              <div key={s.key} className="grid grid-cols-12 items-center gap-2">
+                {/* Label */}
+                <div className="col-span-3 sm:col-span-2 flex items-center gap-1.5 min-w-0">
+                  <span className={cn("h-1.5 w-1.5 rounded-full shrink-0", s.accent)} />
+                  <span className="text-[10px] uppercase tracking-wider text-muted-foreground font-bold truncate">
+                    {s.shortLabel}
+                  </span>
+                </div>
 
-                  <div className="mt-1.5 h-1 w-full rounded-full bg-background/40 overflow-hidden">
+                {/* Progress bar */}
+                <div className="col-span-6 sm:col-span-7">
+                  <div className="relative h-2 w-full rounded-full bg-muted/60 overflow-hidden">
                     <div
                       className={cn("h-full rounded-full transition-all", s.accent)}
                       style={{ width: `${widthPct}%` }}
@@ -186,47 +181,28 @@ export function SalesThermometer({ leads }: SalesThermometerProps) {
                   </div>
                 </div>
 
-                {/* Conector */}
-                {i < stages.length - 1 && (
-                  <div className="sm:col-span-1 relative flex sm:flex-col items-center justify-center gap-1 py-1 sm:py-0">
-                    <div
-                      aria-hidden
-                      className="hidden sm:block absolute top-1/2 left-0 right-0 h-px border-t border-dashed border-border -z-0"
-                    />
-                    {(() => {
-                      const next = stages[i + 1];
-                      const conv = next.conv;
-                      const isBottleneck = bottleneck?.stage.key === next.key;
-                      const pctNum = conv === null ? 0 : conv * 100;
-                      const isHot = pctNum >= 60 && !isBottleneck;
-                      const tone =
-                        conv === null
-                          ? "text-muted-foreground bg-card border-border"
-                          : isBottleneck
-                            ? "text-amber-700 dark:text-amber-300 bg-card border-amber-300 dark:border-amber-500/40"
-                            : isHot
-                              ? "text-emerald-700 dark:text-emerald-300 bg-card border-emerald-300 dark:border-emerald-500/40"
-                              : "text-amber-700 dark:text-amber-300 bg-card border-amber-200 dark:border-amber-500/30";
-                      return (
-                        <span
-                          className={cn(
-                            "relative z-10 inline-flex items-center gap-0.5 rounded-full border px-1.5 py-0.5 text-[10px] font-bold tabular-nums",
-                            tone,
-                            isHot && "shadow-[0_0_10px_-2px_hsl(160_84%_50%/0.7)] dark:shadow-[0_0_14px_-2px_hsl(160_84%_55%/0.85)]"
-                          )}
-                        >
-                          {isBottleneck ? (
-                            <TrendingDown className="h-2.5 w-2.5" />
-                          ) : (
-                            <ChevronRight className="h-2.5 w-2.5" />
-                          )}
-                          {formatPct(conv)}
-                        </span>
-                      );
-                    })()}
-                  </div>
-                )}
-              </Fragment>
+                {/* Contagem + conversão */}
+                <div className="col-span-3 sm:col-span-3 flex items-center justify-end gap-2">
+                  <span className={cn("text-sm font-black tabular-nums tracking-tight", s.textAccent)}>
+                    {s.count}
+                  </span>
+                  {conv !== null && (
+                    <span
+                      className={cn(
+                        "inline-flex items-center justify-center min-w-[42px] rounded-full border px-1.5 py-0.5 text-[10px] font-bold tabular-nums",
+                        isBottleneckTarget
+                          ? "text-amber-700 dark:text-amber-300 bg-card border-amber-300 dark:border-amber-500/40"
+                          : isHot
+                            ? "text-emerald-700 dark:text-emerald-300 bg-card border-emerald-300 dark:border-emerald-500/40 shadow-[0_0_10px_-2px_hsl(160_84%_50%/0.7)] dark:shadow-[0_0_14px_-2px_hsl(160_84%_55%/0.85)]"
+                            : "text-muted-foreground bg-card border-border"
+                      )}
+                    >
+                      {isBottleneckTarget && <TrendingDown className="h-2.5 w-2.5 mr-0.5" />}
+                      {formatPct(conv)}
+                    </span>
+                  )}
+                </div>
+              </div>
             );
           })}
         </div>

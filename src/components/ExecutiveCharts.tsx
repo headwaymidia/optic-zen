@@ -24,6 +24,7 @@ const BLUE = "#3B82F6";
 const EMERALD = "#10B981";
 const AMBER = "#FBBF24";       // Dourado vibrante
 const VIOLET = "#8B5CF6";      // Violeta elétrico
+const CYAN = "#06B6D4";        // Ciano para perdas
 const ROSE = "#F43F5E";
 const SLATE = "#94A3B8";
 
@@ -38,7 +39,7 @@ const LOSS_REASONS = [
   { key: "preco", label: "Preço", color: ROSE, match: ["preç", "caro", "valor"] },
   { key: "distancia", label: "Distância", color: VIOLET, match: ["dist", "long", "endere"] },
   { key: "semresposta", label: "Sem Resposta", color: SLATE, match: ["sem resp", "não resp", "nao resp", "silenc"] },
-  { key: "outros", label: "Outros", color: AMBER, match: [] },
+  { key: "outros", label: "Outros", color: CYAN, match: [] },
 ];
 
 function pct(num: number, den: number) {
@@ -131,7 +132,7 @@ export function ConversionFunnel({ leads }: { leads: Lead[] }) {
   );
 }
 
-export function LeadsVsSalesTimeline({ leads }: { leads: Lead[] }) {
+export function LeadsVsSalesTimeline({ leads, embedded = false }: { leads: Lead[]; embedded?: boolean }) {
   const data = useMemo(() => {
     const today = new Date();
     const days = eachDayOfInterval({ start: subDays(today, 6), end: today });
@@ -146,35 +147,39 @@ export function LeadsVsSalesTimeline({ leads }: { leads: Lead[] }) {
     });
   }, [leads]);
 
+  const chart = (
+    <div className="h-[160px] w-full">
+      <ResponsiveContainer width="100%" height="100%">
+        <AreaChart data={data} margin={{ top: 8, right: 12, left: -16, bottom: 0 }}>
+          <defs>
+            <linearGradient id="gNovosLight" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stopColor={BLUE} stopOpacity={0.35} />
+              <stop offset="100%" stopColor={BLUE} stopOpacity={0} />
+            </linearGradient>
+            <linearGradient id="gVendasLight" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stopColor={EMERALD} stopOpacity={0.3} />
+              <stop offset="100%" stopColor={EMERALD} stopOpacity={0} />
+            </linearGradient>
+          </defs>
+          <XAxis dataKey="date" tick={{ fontSize: 10 }} className="fill-muted-foreground" axisLine={false} tickLine={false} />
+          <YAxis allowDecimals={false} tick={{ fontSize: 10 }} className="fill-muted-foreground" axisLine={false} tickLine={false} width={28} />
+          <Tooltip contentStyle={tooltipStyle} cursor={{ stroke: BLUE, strokeOpacity: 0.15, strokeWidth: 1 }} />
+          <Area type="monotone" dataKey="novos" name="Novos Leads" stroke={BLUE} strokeWidth={2} fill="url(#gNovosLight)" dot={false} activeDot={{ r: 3 }} />
+          <Area type="monotone" dataKey="vendas" name="Vendas" stroke={EMERALD} strokeWidth={2} fill="url(#gVendasLight)" dot={false} activeDot={{ r: 3 }} />
+        </AreaChart>
+      </ResponsiveContainer>
+    </div>
+  );
+
+  if (embedded) return chart;
+
   return (
     <Card className="border border-border dark:border-white/5 rounded-xl shadow-[0_1px_2px_rgba(15,23,42,0.04)] bg-card">
       <CardHeader className="pb-2 pt-3 px-4">
         <CardTitle className="text-sm font-bold uppercase tracking-wider">Leads vs Vendas</CardTitle>
         <p className="text-[11px] text-muted-foreground">Últimos 7 dias</p>
       </CardHeader>
-      <CardContent className="px-2 pb-3">
-        <div className="h-[220px] w-full">
-          <ResponsiveContainer width="100%" height="100%">
-            <AreaChart data={data} margin={{ top: 8, right: 12, left: -16, bottom: 0 }}>
-              <defs>
-                <linearGradient id="gNovosLight" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="0%" stopColor={BLUE} stopOpacity={0.35} />
-                  <stop offset="100%" stopColor={BLUE} stopOpacity={0} />
-                </linearGradient>
-                <linearGradient id="gVendasLight" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="0%" stopColor={EMERALD} stopOpacity={0.3} />
-                  <stop offset="100%" stopColor={EMERALD} stopOpacity={0} />
-                </linearGradient>
-              </defs>
-              <XAxis dataKey="date" tick={{ fontSize: 10 }} className="fill-muted-foreground" axisLine={false} tickLine={false} />
-              <YAxis allowDecimals={false} tick={{ fontSize: 10 }} className="fill-muted-foreground" axisLine={false} tickLine={false} width={28} />
-              <Tooltip contentStyle={tooltipStyle} cursor={{ stroke: BLUE, strokeOpacity: 0.15, strokeWidth: 1 }} />
-              <Area type="monotone" dataKey="novos" name="Novos Leads" stroke={BLUE} strokeWidth={2} fill="url(#gNovosLight)" dot={false} activeDot={{ r: 3 }} />
-              <Area type="monotone" dataKey="vendas" name="Vendas" stroke={EMERALD} strokeWidth={2} fill="url(#gVendasLight)" dot={false} activeDot={{ r: 3 }} />
-            </AreaChart>
-          </ResponsiveContainer>
-        </div>
-      </CardContent>
+      <CardContent className="px-2 pb-3">{chart}</CardContent>
     </Card>
   );
 }
@@ -197,11 +202,11 @@ export function LossReasonsDonut({ leads }: { leads: Lead[] }) {
       </CardHeader>
       <CardContent className="px-2 pb-3">
         {data.length === 0 ? (
-          <div className="h-[220px] flex items-center justify-center text-xs text-muted-foreground">
+          <div className="h-[160px] flex items-center justify-center text-xs text-muted-foreground">
             Sem dados de perda no período.
           </div>
         ) : (
-          <div className="h-[220px] w-full">
+          <div className="h-[160px] w-full">
             <ResponsiveContainer width="100%" height="100%">
               <PieChart>
                 <Tooltip contentStyle={tooltipStyle} formatter={(v: number, n: string) => [`${v} leads`, n]} />
