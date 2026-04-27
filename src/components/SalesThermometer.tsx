@@ -57,7 +57,7 @@ export function SalesThermometer({ leads }: SalesThermometerProps) {
     <Card className="glass-card rounded-lg border-0">
       <CardHeader className="pb-3 pt-5 px-6 flex-row items-center justify-between space-y-0">
         <CardTitle className="text-[10px] font-light uppercase tracking-[0.3em] text-muted-foreground">
-          Funil de Conversão
+          Jornada de Conquistas
         </CardTitle>
         <span className="text-[11px] tabular-nums text-foreground font-medium">
           {overallConv.toFixed(1)}%
@@ -67,49 +67,79 @@ export function SalesThermometer({ leads }: SalesThermometerProps) {
         </span>
       </CardHeader>
 
-      <CardContent className="px-6 pb-6 pt-2 space-y-6">
-        {/* Trilha ultra-fina (2px) com gradiente neon esmeralda → ciano */}
-        <div className="relative h-[2px] w-full rounded-full bg-white/5 overflow-hidden">
-          <div
-            className="absolute inset-y-0 left-0 rounded-full bg-gradient-to-r from-emerald-500 to-cyan-500 transition-all shadow-[0_0_10px_rgba(16,185,129,0.45)]"
-            style={{ width: `${overallConv}%` }}
-          />
-        </div>
+      <CardContent className="px-6 pb-8 pt-4">
+        {/* Trilha de conquistas — 4 nós conectados por linha neon */}
+        <div className="relative">
+          {/* Linha base e linha neon de progresso (atrás dos cards) */}
+          <div className="absolute top-[34px] left-[12.5%] right-[12.5%] h-px pointer-events-none">
+            <div className="absolute inset-0 bg-white/5" />
+            <div
+              className="absolute inset-y-0 left-0 bg-gradient-to-r from-emerald-400 via-cyan-400 to-emerald-400 shadow-[0_0_12px_rgba(16,185,129,0.55)] transition-all"
+              style={{ width: `${overallConv}%` }}
+            />
+          </div>
 
-        {/* Indicadores — 4 colunas com gap maior */}
-        <div className="grid grid-cols-4 gap-6 pt-1">
-          {stages.map((s, i) => {
-            const isLast = i === stages.length - 1;
-            const Icon = s.Icon;
-            return (
-              <div key={s.key} className="flex flex-col gap-2.5 min-w-0">
-                <div className="flex items-center gap-2">
-                  <Icon
-                    className={cn("h-3.5 w-3.5 shrink-0", isLast ? "text-emerald-400" : "text-zinc-500")}
-                    strokeWidth={1.5}
-                  />
-                  <span className="text-[10px] uppercase tracking-[0.25em] text-zinc-500 font-semibold truncate">
-                    {s.label}
-                  </span>
-                </div>
-                <div className="flex items-baseline gap-2">
-                  <span
+          <div className="grid grid-cols-4 gap-6 relative">
+            {stages.map((s, i) => {
+              const isLast = i === stages.length - 1;
+              const Icon = s.Icon;
+              // "boa conversão" = >= 50% entre etapas (ou venda concluída)
+              const convPct = s.conv === null ? null : s.conv * 100;
+              const isHot = (convPct !== null && convPct >= 50) || (isLast && s.count > 0);
+              const reached = s.count > 0;
+
+              return (
+                <div key={s.key} className="flex flex-col items-center text-center min-w-0">
+                  {/* Nó/ícone — círculo glass com glow quando "hot" */}
+                  <div
                     className={cn(
-                      "font-mono-luxe text-xl font-bold tabular-nums tracking-tighter leading-none",
-                      isLast ? "text-emerald-400" : "text-foreground"
+                      "relative h-[68px] w-[68px] rounded-full flex items-center justify-center backdrop-blur-md border transition-all",
+                      reached
+                        ? "bg-zinc-900/70 border-white/10"
+                        : "bg-zinc-900/30 border-white/5",
+                      isHot &&
+                        "border-emerald-400/40 shadow-[0_0_24px_rgba(16,185,129,0.35),inset_0_0_16px_rgba(16,185,129,0.10)]"
                     )}
                   >
-                    {s.count}
+                    <Icon
+                      className={cn(
+                        "h-5 w-5 transition-colors",
+                        isHot ? "text-emerald-400" : reached ? "text-zinc-300" : "text-zinc-600"
+                      )}
+                      strokeWidth={1.5}
+                    />
+                  </div>
+
+                  {/* Label da etapa */}
+                  <span className="mt-4 text-[10px] uppercase tracking-[0.25em] text-zinc-500 font-semibold truncate w-full">
+                    {s.label}
                   </span>
-                  {i > 0 && (
-                    <span className="font-mono-luxe text-[11px] tabular-nums text-zinc-500 font-medium">
-                      {formatPct(s.conv)}
+
+                  {/* Contagem + taxa de conversão */}
+                  <div className="mt-2 flex items-baseline justify-center gap-2">
+                    <span
+                      className={cn(
+                        "font-mono-luxe text-2xl font-bold tabular-nums tracking-tighter leading-none",
+                        isHot ? "text-emerald-400" : "text-foreground"
+                      )}
+                    >
+                      {s.count}
                     </span>
-                  )}
+                    {i > 0 && (
+                      <span
+                        className={cn(
+                          "font-mono-luxe text-[11px] tabular-nums font-medium",
+                          isHot ? "text-emerald-400/80" : "text-zinc-500"
+                        )}
+                      >
+                        {formatPct(s.conv)}
+                      </span>
+                    )}
+                  </div>
                 </div>
-              </div>
-            );
-          })}
+              );
+            })}
+          </div>
         </div>
       </CardContent>
     </Card>
