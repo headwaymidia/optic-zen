@@ -86,13 +86,13 @@ Plus Jakarta Sans is the primary font for a Premium Enterprise feel.
     --input: 217 33% 18%;
     --ring: 217 91% 60%;
 
-    --sidebar-background: 222 39% 9%;
+    --sidebar-background: 222 47% 9%;   /* um pouco mais escuro que o bg */
     --sidebar-foreground: 210 40% 92%;
     --sidebar-primary: 217 91% 60%;
     --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 217 33% 15%;
-    --sidebar-accent-foreground: 210 40% 96%;
-    --sidebar-border: 217 33% 16%;
+    --sidebar-accent: 217 33% 20%;
+    --sidebar-accent-foreground: 210 40% 98%;
+    --sidebar-border: 217 33% 22%;
     --sidebar-ring: 217 91% 60%;
   }
 }
