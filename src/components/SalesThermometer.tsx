@@ -126,7 +126,7 @@ export function SalesThermometer({ leads }: SalesThermometerProps) {
   }
 
   return (
-    <Card className="overflow-hidden">
+    <Card className="overflow-hidden border-0 border-t-4 border-t-rose-400 rounded-2xl shadow-[0_4px_24px_-8px_rgba(15,23,42,0.08)] bg-white">
       <CardHeader className="pb-3">
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
           <div className="flex items-center gap-2">
@@ -134,15 +134,15 @@ export function SalesThermometer({ leads }: SalesThermometerProps) {
             <CardTitle className="text-base">Termômetro de Vendas</CardTitle>
           </div>
           <div className="flex items-center gap-2 text-xs">
-            <span className="text-slate-500">Conversão geral</span>
+            <span className="text-slate-500 font-medium">Conversão geral</span>
             <span
               className={cn(
-                "px-2 py-0.5 rounded-full font-bold tabular-nums",
+                "px-3 py-1 rounded-full font-black tabular-nums text-white text-xs shadow-sm",
                 overallConv >= 10
-                  ? "bg-emerald-100 text-emerald-700"
+                  ? "bg-gradient-to-r from-emerald-500 to-emerald-600"
                   : overallConv >= 5
-                    ? "bg-amber-100 text-amber-700"
-                    : "bg-rose-100 text-rose-700"
+                    ? "bg-gradient-to-r from-amber-500 to-amber-600"
+                    : "bg-gradient-to-r from-rose-500 to-rose-600"
               )}
             >
               {overallConv.toFixed(1)}%
