@@ -197,18 +197,19 @@ export function LossReasonsDonut({ leads }: { leads: Lead[] }) {
   }, [leads]);
 
   return (
-    <Card className="border border-border dark:border-white/5 rounded-lg shadow-[0_1px_2px_rgba(15,23,42,0.04)] bg-card h-full">
-      <CardHeader className="pb-2 pt-3 px-4">
-        <CardTitle className="text-sm font-bold uppercase tracking-wider">Motivos de Perda</CardTitle>
-        <p className="text-[11px] text-muted-foreground">Leads que não converteram</p>
+    <Card className="border border-border bg-card rounded-lg h-full">
+      <CardHeader className="pb-2 pt-4 px-5">
+        <CardTitle className="text-[11px] font-medium uppercase tracking-[0.14em] text-muted-foreground">
+          Motivos de Perda
+        </CardTitle>
       </CardHeader>
-      <CardContent className="px-2 pb-3">
+      <CardContent className="px-2 pb-4">
         {data.length === 0 ? (
-          <div className="h-[160px] flex items-center justify-center text-xs text-muted-foreground">
+          <div className="h-[180px] flex items-center justify-center text-xs text-muted-foreground">
             Sem dados de perda no período.
           </div>
         ) : (
-          <div className="h-[160px] w-full">
+          <div className="h-[180px] w-full">
             <ResponsiveContainer width="100%" height="100%">
               <PieChart>
                 <Tooltip contentStyle={tooltipStyle} formatter={(v: number, n: string) => [`${v} leads`, n]} />
@@ -218,9 +219,9 @@ export function LossReasonsDonut({ leads }: { leads: Lead[] }) {
                   nameKey="name"
                   cx="50%"
                   cy="45%"
-                  innerRadius={38}
-                  outerRadius={60}
-                  paddingAngle={3}
+                  innerRadius={50}
+                  outerRadius={58}
+                  paddingAngle={2}
                   stroke="none"
                 >
                   {data.map((d) => (
@@ -230,8 +231,8 @@ export function LossReasonsDonut({ leads }: { leads: Lead[] }) {
                 <Legend
                   verticalAlign="bottom"
                   iconType="circle"
-                  iconSize={7}
-                  wrapperStyle={{ fontSize: 10 }}
+                  iconSize={6}
+                  wrapperStyle={{ fontSize: 10, color: ZINC_400 }}
                 />
               </PieChart>
             </ResponsiveContainer>
