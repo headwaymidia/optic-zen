@@ -27,6 +27,12 @@ const ZINC_500 = "#71717a";
 const ZINC_600 = "#52525b";
 const ZINC_700 = "#3f3f46";
 
+// Paleta sóbria para Motivos de Perda — Cobalto, Esmeralda profundo, Ardósia, Grafite
+const COBALT = "#3B82F6";
+const EMERALD_DEEP = "#059669";
+const SLATE = "#64748B";
+const GRAPHITE = "#3F3F46";
+
 const FUNNEL_STAGES = [
   { key: "captacao", label: "Captação", color: WHITE },
   { key: "agendamento", label: "Agendamento", color: ZINC_400 },
@@ -35,10 +41,10 @@ const FUNNEL_STAGES = [
 ];
 
 const LOSS_REASONS = [
-  { key: "preco", label: "Preço", color: WHITE, match: ["preç", "caro", "valor"] },
-  { key: "distancia", label: "Distância", color: ZINC_400, match: ["dist", "long", "endere"] },
-  { key: "semresposta", label: "Sem Resposta", color: ZINC_600, match: ["sem resp", "não resp", "nao resp", "silenc"] },
-  { key: "outros", label: "Outros", color: ZINC_700, match: [] },
+  { key: "preco", label: "Preço", color: COBALT, match: ["preç", "caro", "valor"] },
+  { key: "distancia", label: "Distância", color: EMERALD_DEEP, match: ["dist", "long", "endere"] },
+  { key: "semresposta", label: "Sem Resposta", color: SLATE, match: ["sem resp", "não resp", "nao resp", "silenc"] },
+  { key: "outros", label: "Outros", color: GRAPHITE, match: [] },
 ];
 
 function pct(num: number, den: number) {
@@ -198,6 +204,8 @@ export function LossReasonsDonut({ leads }: { leads: Lead[] }) {
     return LOSS_REASONS.map((r) => ({ name: r.label, value: counts[r.key], color: r.color })).filter((d) => d.value > 0);
   }, [leads]);
 
+  const totalLost = data.reduce((s, d) => s + d.value, 0);
+
   return (
     <Card className="glass-card rounded-lg h-full border-0">
       <CardHeader className="pb-2 pt-5 px-6">
@@ -205,46 +213,64 @@ export function LossReasonsDonut({ leads }: { leads: Lead[] }) {
           Motivos de Perda
         </CardTitle>
       </CardHeader>
-      <CardContent className="px-2 pb-4">
+      <CardContent className="px-6 pb-6">
         {data.length === 0 ? (
-          <div className="h-[180px] flex items-center justify-center text-xs text-muted-foreground font-extralight">
+          <div className="h-[220px] flex items-center justify-center text-xs text-muted-foreground font-extralight">
             Sem dados de perda no período.
           </div>
         ) : (
-          <div className="relative h-[180px] w-full">
-            <ResponsiveContainer width="100%" height="100%">
-              <PieChart>
-                <Tooltip contentStyle={tooltipStyle} formatter={(v: number, n: string) => [`${v} leads`, n]} />
-                <Pie
-                  data={data}
-                  dataKey="value"
-                  nameKey="name"
-                  cx="50%"
-                  cy="45%"
-                  innerRadius={62}
-                  outerRadius={65}
-                  paddingAngle={2}
-                  stroke="none"
-                  strokeWidth={3}
-                >
-                  {data.map((d) => (
-                    <Cell key={d.name} fill={d.color} />
-                  ))}
-                </Pie>
-                <Legend
-                  verticalAlign="bottom"
-                  iconType="circle"
-                  iconSize={5}
-                  wrapperStyle={{ fontSize: 10, color: ZINC_400, fontWeight: 200, letterSpacing: "0.1em" }}
-                />
-              </PieChart>
-            </ResponsiveContainer>
-            {/* Ícone discreto centralizado no anel */}
-            <div className="pointer-events-none absolute inset-0 flex items-start justify-center" style={{ paddingTop: "calc(45% - 8px)" }}>
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#52525b" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
-                <circle cx="12" cy="12" r="10" />
-                <line x1="4.93" y1="4.93" x2="19.07" y2="19.07" />
-              </svg>
+          <div className="flex items-center gap-6 h-[220px]">
+            {/* Donut visível: anel de 4px */}
+            <div className="relative h-full w-[180px] shrink-0">
+              <ResponsiveContainer width="100%" height="100%">
+                <PieChart>
+                  <Tooltip contentStyle={tooltipStyle} formatter={(v: number, n: string) => [`${v} leads`, n]} />
+                  <Pie
+                    data={data}
+                    dataKey="value"
+                    nameKey="name"
+                    cx="50%"
+                    cy="50%"
+                    innerRadius={66}
+                    outerRadius={70}
+                    paddingAngle={2}
+                    stroke="none"
+                  >
+                    {data.map((d) => (
+                      <Cell key={d.name} fill={d.color} />
+                    ))}
+                  </Pie>
+                </PieChart>
+              </ResponsiveContainer>
+              {/* Total no centro do anel */}
+              <div className="pointer-events-none absolute inset-0 flex flex-col items-center justify-center">
+                <span className="text-[9px] uppercase tracking-[0.3em] text-zinc-500 font-medium">Total</span>
+                <span className="font-mono-luxe text-2xl font-semibold tabular-nums text-foreground leading-none mt-1">
+                  {totalLost}
+                </span>
+              </div>
+            </div>
+
+            {/* Legenda lateral com porcentagens */}
+            <div className="flex-1 flex flex-col justify-center gap-3 min-w-0">
+              {data.map((d) => {
+                const p = totalLost > 0 ? (d.value / totalLost) * 100 : 0;
+                return (
+                  <div key={d.name} className="flex items-center gap-3 min-w-0">
+                    <span
+                      className="h-2 w-2 rounded-full shrink-0"
+                      style={{ backgroundColor: d.color }}
+                      aria-hidden
+                    />
+                    <span className="text-[11px] text-zinc-400 font-medium tracking-wide truncate flex-1">
+                      {d.name}
+                    </span>
+                    <span className="font-mono-luxe text-[11px] tabular-nums text-foreground font-medium">
+                      {p.toFixed(0)}%
+                    </span>
+                  </div>
+                );
+              })}
             </div>
           </div>
         )}
