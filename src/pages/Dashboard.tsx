@@ -9,6 +9,7 @@ import { LeadsVolumeChart } from "@/components/LeadsVolumeChart";
 import { TemporalCards } from "@/components/TemporalCards";
 import { SalesRanking } from "@/components/SalesRanking";
 import { SalesThermometer } from "@/components/SalesThermometer";
+import { ConversionFunnel, LeadsVsSalesTimeline, LossReasonsDonut } from "@/components/ExecutiveCharts";
 import { exportMonthlyReport } from "@/lib/exportReport";
 import { isWithinInterval, parseISO } from "date-fns";
 import { FileDown } from "lucide-react";
@@ -67,6 +68,15 @@ export default function Dashboard() {
       />
 
       <DashboardSummary leads={filtered} loading={loading} />
+
+      <ConversionFunnel leads={filtered} />
+
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+        <div className="lg:col-span-2">
+          <LeadsVsSalesTimeline leads={filtered} />
+        </div>
+        <LossReasonsDonut leads={filtered} />
+      </div>
 
       <SalesThermometer leads={filtered} />
 
