@@ -82,13 +82,13 @@ export default function Dashboard() {
         <p className="text-xs text-zinc-500">Carregando…</p>
       ) : (
         <>
-          {/* 2. Bloco de Faturamento — coração do dashboard (com palco/respiro) */}
-          <div className="pt-4">
-            <RoiMegaCard leads={filtered} />
+          {/* 2. Linha de Topo — Faturamento + KPIs lado a lado */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3 pt-2 items-stretch">
+            <div className="lg:col-span-2">
+              <RoiMegaCard leads={filtered} />
+            </div>
+            <PeriodKPIRow leads={leads} range={range} inline />
           </div>
-
-          {/* 3. Linha de Métricas de Volume */}
-          <PeriodKPIRow leads={leads} range={range} />
 
           {/* 4. Velocidade & Follow-up — largura total */}
           <div className="pt-2">
