@@ -4,17 +4,14 @@ export type Theme = "light" | "dark";
 
 const STORAGE_KEY = "ui:theme";
 
-function applyTheme(theme: Theme) {
-  const root = document.documentElement;
-  if (theme === "dark") root.classList.add("dark");
-  else root.classList.remove("dark");
+function applyTheme(_theme: Theme) {
+  // Dashpro Neon — sistema é EXCLUSIVAMENTE dark mode.
+  document.documentElement.classList.add("dark");
 }
 
-/** Lê o tema salvo. Default é SEMPRE "light" se nada estiver salvo. */
+/** Sempre retorna "dark" — light mode foi descontinuado. */
 export function getInitialTheme(): Theme {
-  if (typeof window === "undefined") return "light";
-  const stored = localStorage.getItem(STORAGE_KEY);
-  return stored === "dark" ? "dark" : "light";
+  return "dark";
 }
 
 interface ThemeContextValue {
