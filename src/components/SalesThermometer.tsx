@@ -79,7 +79,7 @@ export function SalesThermometer({ leads }: SalesThermometerProps) {
   }
 
   return (
-    <Card className="border border-border dark:border-white/5 rounded-xl shadow-[0_1px_2px_rgba(15,23,42,0.04)] bg-card">
+    <Card className="border border-border dark:border-white/5 rounded-lg shadow-[0_1px_2px_rgba(15,23,42,0.04)] bg-card">
       <CardHeader className="pb-2 pt-3 px-4">
         <div className="flex items-center justify-between gap-2">
           <div className="flex items-center gap-2">
