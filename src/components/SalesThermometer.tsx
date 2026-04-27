@@ -72,7 +72,7 @@ export function SalesThermometer({ leads }: SalesThermometerProps) {
         </span>
       </CardHeader>
 
-      <CardContent className="px-5 pb-5 pt-1 space-y-4">
+      <CardContent className="px-6 pb-6 pt-2 space-y-6">
         {/* Trilha de vidro: cinza escuro + preenchimento gradiente esmeralda → ciano */}
         <div className="relative h-1.5 w-full rounded-full bg-zinc-900 overflow-hidden ring-1 ring-inset ring-white/5">
           <div
@@ -81,26 +81,26 @@ export function SalesThermometer({ leads }: SalesThermometerProps) {
           />
         </div>
 
-        {/* Indicadores de texto — 4 colunas, números em mono */}
-        <div className="grid grid-cols-4 gap-2 pt-1">
+        {/* Indicadores — 4 colunas com gap maior */}
+        <div className="grid grid-cols-4 gap-8 pt-1">
           {stages.map((s, i) => {
             const isLast = i === stages.length - 1;
             return (
-              <div key={s.key} className="flex flex-col gap-1 min-w-0">
-                <span className="text-[10px] uppercase tracking-[0.18em] text-muted-foreground font-extralight truncate">
+              <div key={s.key} className="flex flex-col gap-2 min-w-0">
+                <span className="text-[10px] uppercase tracking-[0.2em] text-zinc-500 font-medium truncate">
                   {s.label}
                 </span>
-                <div className="flex items-baseline gap-1.5">
+                <div className="flex items-baseline gap-2">
                   <span
                     className={cn(
-                      "font-mono-luxe text-base font-medium tabular-nums leading-none",
+                      "font-mono-luxe text-lg font-semibold tabular-nums leading-none",
                       isLast ? "text-emerald-400" : "text-foreground"
                     )}
                   >
                     {s.count}
                   </span>
                   {i > 0 && (
-                    <span className="font-mono-luxe text-[10px] tabular-nums text-muted-foreground font-light">
+                    <span className="font-mono-luxe text-[11px] tabular-nums text-zinc-500 font-light">
                       {formatPct(s.conv)}
                     </span>
                   )}

@@ -37,7 +37,7 @@ export function RevenueHeroCard({ leads, loading }: { leads: Lead[]; loading: bo
         <div className="flex flex-col items-center justify-center gap-3 py-2">
           <div className="flex items-center gap-3">
             <p
-              className="text-white text-white-glow text-6xl font-semibold tabular-nums tracking-tighter leading-none"
+              className="text-white text-white-glow text-6xl font-bold tabular-nums tracking-tighter leading-none"
               style={{ fontFamily: "Inter, ui-sans-serif, system-ui, sans-serif" }}
             >
               {loading ? "—" : formatBRL(totalFaturamento)}
