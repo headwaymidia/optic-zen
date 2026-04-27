@@ -73,15 +73,15 @@ export function SalesThermometer({ leads }: SalesThermometerProps) {
       </CardHeader>
 
       <CardContent className="px-5 pb-5 pt-1 space-y-4">
-        {/* Linha de progresso única — cinza escuro com preenchimento branco */}
-        <div className="relative h-1 w-full rounded-full bg-zinc-800 overflow-hidden">
+        {/* Barra de progresso com gradiente sutil zinc → emerald */}
+        <div className="relative h-1 w-full rounded-full bg-zinc-900 overflow-hidden">
           <div
-            className="absolute inset-y-0 left-0 bg-foreground transition-all"
+            className="absolute inset-y-0 left-0 rounded-full bg-gradient-to-r from-zinc-700 via-zinc-500 to-emerald-500 transition-all"
             style={{ width: `${overallConv}%` }}
           />
         </div>
 
-        {/* Indicadores de texto — 4 colunas */}
+        {/* Indicadores de texto — 4 colunas, números em mono */}
         <div className="grid grid-cols-4 gap-2 pt-1">
           {stages.map((s, i) => {
             const isLast = i === stages.length - 1;
@@ -93,14 +93,14 @@ export function SalesThermometer({ leads }: SalesThermometerProps) {
                 <div className="flex items-baseline gap-1.5">
                   <span
                     className={cn(
-                      "text-base font-medium tabular-nums leading-none",
+                      "font-mono-luxe text-base font-medium tabular-nums leading-none",
                       isLast ? "text-emerald-400" : "text-foreground"
                     )}
                   >
                     {s.count}
                   </span>
                   {i > 0 && (
-                    <span className="text-[10px] tabular-nums text-muted-foreground font-extralight">
+                    <span className="font-mono-luxe text-[10px] tabular-nums text-muted-foreground font-light">
                       {formatPct(s.conv)}
                     </span>
                   )}
