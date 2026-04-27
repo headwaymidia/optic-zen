@@ -70,7 +70,7 @@ export function PeriodFilter({ value, customRange, onChange }: Props) {
   const [draft, setDraft] = useState<{ from?: Date; to?: Date }>(customRange ?? {});
 
   return (
-    <div className="flex flex-wrap items-center gap-1">
+    <div className="flex flex-wrap items-center gap-1.5">
       {OPTIONS.map((o) => (
         <Button
           key={o.key}
@@ -78,10 +78,10 @@ export function PeriodFilter({ value, customRange, onChange }: Props) {
           variant="ghost"
           onClick={() => onChange(o.key)}
           className={cn(
-            "h-7 px-3 text-[11px] font-medium rounded-md transition-colors",
+            "h-7 px-3.5 text-[11px] font-medium rounded-full transition-colors",
             value === o.key
-              ? "bg-secondary text-foreground hover:bg-secondary"
-              : "text-muted-foreground hover:bg-secondary/50 hover:text-foreground"
+              ? "bg-zinc-800 text-white hover:bg-zinc-800"
+              : "text-muted-foreground hover:bg-white/5 hover:text-foreground"
           )}
         >
           {o.label}
@@ -93,10 +93,10 @@ export function PeriodFilter({ value, customRange, onChange }: Props) {
             size="sm"
             variant="ghost"
             className={cn(
-              "h-7 px-3 text-[11px] font-medium rounded-md gap-1.5 transition-colors",
+              "h-7 px-3.5 text-[11px] font-medium rounded-full gap-1.5 transition-colors",
               value === "custom"
-                ? "bg-secondary text-foreground hover:bg-secondary"
-                : "text-muted-foreground hover:bg-secondary/50 hover:text-foreground"
+                ? "bg-zinc-800 text-white hover:bg-zinc-800"
+                : "text-muted-foreground hover:bg-white/5 hover:text-foreground"
             )}
           >
             <CalendarIcon className="h-3 w-3" strokeWidth={1.5} />
