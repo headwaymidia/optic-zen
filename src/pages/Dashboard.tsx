@@ -32,7 +32,7 @@ export default function Dashboard() {
   const periodSummary = `Exibindo dados de ${format(range.from, "dd/MM", { locale: ptBR })} a ${format(range.to, "dd/MM", { locale: ptBR })}`;
 
   return (
-    <div className="p-3 sm:p-4 space-y-3">
+    <div className="p-4 sm:p-6 space-y-6">
       {/* Cabeçalho */}
       <div className="flex flex-row items-start justify-between gap-3">
         <div className="min-w-0">
