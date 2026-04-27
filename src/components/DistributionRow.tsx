@@ -7,9 +7,9 @@ const PAID_SOURCES = new Set(["Instagram", "Facebook", "Google Ads", "Meta Ads (
 const REFERRAL_SOURCES = new Set(["Indicação", "WhatsApp"]);
 
 const SOURCE_PALETTE = {
-  paid: "#10B981", // Esmeralda
-  organic: "#6366F1", // Índigo
-  referral: "#8B5CF6", // Violeta
+  paid: "#FACC15",     // Amarelo Neon
+  organic: "#22C55E",  // Verde Neon
+  referral: "#A855F7", // Roxo Neon
   other: "#3F3F46",
 };
 
