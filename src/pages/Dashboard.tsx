@@ -66,54 +66,48 @@ export default function Dashboard() {
         <p className="text-[11px] text-muted-foreground italic">{periodSummary}</p>
       </div>
 
-      {/* KPIs (resumo do filtrado) */}
+      {/* Linha única de 4 KPIs */}
       <KPICards leads={filtered} loading={loading} />
 
-      {/* Bloco Central de Performance: ROI (col-8) + Stack (col-4) */}
-      <div className="grid grid-cols-12 gap-3">
-        <div className="col-span-12 lg:col-span-8">
+      {/* Bloco Central: ROI (col-9, 75%) + Motivos de Perda (col-3, 25%) */}
+      <div className="grid grid-cols-12 gap-3 items-stretch">
+        <div className="col-span-12 lg:col-span-9">
           <RevenueHeroCard leads={filtered} loading={loading} />
         </div>
-        <div className="col-span-12 lg:col-span-4">
-          <KpiStack leads={filtered} loading={loading} />
-        </div>
-      </div>
-
-      {/* Funil Stepper Horizontal */}
-      <SalesThermometer leads={filtered} />
-
-      {/* Charts: Performance (Tabs) + Motivos de Perda */}
-      <div className="grid grid-cols-12 gap-3">
-        <Card className="col-span-12 lg:col-span-7 border border-border dark:border-white/5 rounded-xl shadow-[0_1px_2px_rgba(15,23,42,0.04)] bg-card">
-          <Tabs defaultValue="timeline" className="w-full">
-            <CardHeader className="pb-2 pt-3 px-4 flex-row items-center justify-between gap-3 space-y-0">
-              <CardTitle className="text-sm font-bold uppercase tracking-wider">
-                Performance
-              </CardTitle>
-              <TabsList className="h-7">
-                <TabsTrigger value="timeline" className="text-[11px] h-5 px-2">
-                  Leads vs Vendas
-                </TabsTrigger>
-                <TabsTrigger value="volume" className="text-[11px] h-5 px-2">
-                  Volume diário
-                </TabsTrigger>
-              </TabsList>
-            </CardHeader>
-            <CardContent className="px-2 pb-3 pt-0">
-              <TabsContent value="timeline" className="mt-0">
-                <LeadsVsSalesTimeline leads={filtered} embedded />
-              </TabsContent>
-              <TabsContent value="volume" className="mt-0">
-                <LeadsVolumeChart leads={filtered} from={range.from} to={range.to} embedded />
-              </TabsContent>
-            </CardContent>
-          </Tabs>
-        </Card>
-
-        <div className="col-span-12 lg:col-span-5">
+        <div className="col-span-12 lg:col-span-3">
           <LossReasonsDonut leads={filtered} />
         </div>
       </div>
+
+      {/* Funil 100% */}
+      <SalesThermometer leads={filtered} />
+
+      {/* Performance 100% */}
+      <Card className="border border-border dark:border-white/5 rounded-lg shadow-[0_1px_2px_rgba(15,23,42,0.04)] bg-card">
+        <Tabs defaultValue="timeline" className="w-full">
+          <CardHeader className="pb-2 pt-3 px-4 flex-row items-center justify-between gap-3 space-y-0">
+            <CardTitle className="text-sm font-bold uppercase tracking-wider">
+              Performance
+            </CardTitle>
+            <TabsList className="h-7">
+              <TabsTrigger value="timeline" className="text-[11px] h-5 px-2">
+                Leads vs Vendas
+              </TabsTrigger>
+              <TabsTrigger value="volume" className="text-[11px] h-5 px-2">
+                Volume diário
+              </TabsTrigger>
+            </TabsList>
+          </CardHeader>
+          <CardContent className="px-2 pb-3 pt-0">
+            <TabsContent value="timeline" className="mt-0">
+              <LeadsVsSalesTimeline leads={filtered} embedded />
+            </TabsContent>
+            <TabsContent value="volume" className="mt-0">
+              <LeadsVolumeChart leads={filtered} from={range.from} to={range.to} embedded />
+            </TabsContent>
+          </CardContent>
+        </Tabs>
+      </Card>
 
       {/* Ranking 100% */}
       <SalesRanking leads={filtered} />
