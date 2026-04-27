@@ -70,17 +70,17 @@ export function PeriodFilter({ value, customRange, onChange }: Props) {
   const [draft, setDraft] = useState<{ from?: Date; to?: Date }>(customRange ?? {});
 
   return (
-    <div className="flex flex-wrap items-center gap-5">
+    <div className="flex flex-wrap items-center gap-1.5">
       {OPTIONS.map((o) => (
         <button
           key={o.key}
           type="button"
           onClick={() => onChange(o.key)}
           className={cn(
-            "relative h-7 px-0 text-[10px] font-light uppercase tracking-[0.3em] bg-transparent transition-colors",
+            "h-7 px-3 rounded-full text-[11px] font-medium transition-colors",
             value === o.key
-              ? "text-foreground after:content-[''] after:absolute after:left-0 after:right-0 after:-bottom-1 after:h-px after:bg-foreground"
-              : "text-muted-foreground hover:text-foreground"
+              ? "bg-zinc-800 text-foreground"
+              : "bg-transparent text-zinc-500 hover:text-foreground"
           )}
         >
           {o.label}
@@ -91,13 +91,13 @@ export function PeriodFilter({ value, customRange, onChange }: Props) {
           <button
             type="button"
             className={cn(
-              "relative h-7 px-0 text-[10px] font-light uppercase tracking-[0.3em] gap-1.5 bg-transparent transition-colors inline-flex items-center",
+              "h-7 px-3 rounded-full text-[11px] font-medium gap-1.5 transition-colors inline-flex items-center",
               value === "custom"
-                ? "text-foreground after:content-[''] after:absolute after:left-0 after:right-0 after:-bottom-1 after:h-px after:bg-foreground"
-                : "text-muted-foreground hover:text-foreground"
+                ? "bg-zinc-800 text-foreground"
+                : "bg-transparent text-zinc-500 hover:text-foreground"
             )}
           >
-            <CalendarIcon className="h-3 w-3" strokeWidth={1.25} />
+            <CalendarIcon className="h-3 w-3" strokeWidth={1.5} />
             {value === "custom" && customRange?.from && customRange?.to
               ? `${format(customRange.from, "dd/MM")} – ${format(customRange.to, "dd/MM")}`
               : "Personalizado"}

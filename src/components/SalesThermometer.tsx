@@ -73,26 +73,12 @@ export function SalesThermometer({ leads }: SalesThermometerProps) {
       </CardHeader>
 
       <CardContent className="px-5 pb-5 pt-1 space-y-4">
-        {/* Barra de progresso segmentada — engrossada (h-1.5), verde no final */}
-        <div className="flex items-center gap-1 h-1.5">
-          {stages.map((s, i) => {
-            const widthPct = totalLeads > 0 ? (s.count / totalLeads) * 100 : 0;
-            const isLast = i === stages.length - 1;
-            return (
-              <div
-                key={s.key}
-                className={cn(
-                  "h-full rounded-full transition-all",
-                  isLast ? "bg-emerald-500" : "bg-foreground/85"
-                )}
-                style={{
-                  width: `${Math.max(widthPct, 4)}%`,
-                  opacity: isLast ? 1 : 1 - i * 0.18,
-                }}
-              />
-            );
-          })}
-          <div className="flex-1 h-full rounded-full bg-white/5" />
+        {/* Linha de progresso única — cinza escuro com preenchimento branco */}
+        <div className="relative h-1 w-full rounded-full bg-zinc-800 overflow-hidden">
+          <div
+            className="absolute inset-y-0 left-0 bg-foreground transition-all"
+            style={{ width: `${overallConv}%` }}
+          />
         </div>
 
         {/* Indicadores de texto — 4 colunas */}
