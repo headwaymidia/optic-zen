@@ -158,12 +158,20 @@ export function LeadsVsSalesTimeline({ leads, embedded = false }: { leads: Lead[
                 <feMergeNode in="SourceGraphic" />
               </feMerge>
             </filter>
+            <linearGradient id="leadsFill" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stopColor={WHITE} stopOpacity={0.10} />
+              <stop offset="100%" stopColor={WHITE} stopOpacity={0} />
+            </linearGradient>
+            <linearGradient id="vendasFill" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stopColor={EMERALD} stopOpacity={0.18} />
+              <stop offset="100%" stopColor={EMERALD} stopOpacity={0} />
+            </linearGradient>
           </defs>
           <XAxis dataKey="date" hide />
           <YAxis hide />
           <Tooltip contentStyle={tooltipStyle} cursor={false} />
-          <Area type="monotone" dataKey="novos" name="Leads" stroke={WHITE} strokeWidth={1} fill="none" dot={false} activeDot={{ r: 2.5, fill: WHITE }} />
-          <Area type="monotone" dataKey="vendas" name="Vendas" stroke={EMERALD} strokeWidth={1} fill="none" dot={false} activeDot={{ r: 2.5, fill: EMERALD }} filter="url(#emeraldGlow)" />
+          <Area type="monotone" dataKey="novos" name="Leads" stroke={WHITE} strokeWidth={1.25} fill="url(#leadsFill)" dot={false} activeDot={{ r: 2.5, fill: WHITE }} />
+          <Area type="monotone" dataKey="vendas" name="Vendas" stroke={EMERALD} strokeWidth={1.5} fill="url(#vendasFill)" dot={false} activeDot={{ r: 2.5, fill: EMERALD }} filter="url(#emeraldGlow)" />
         </AreaChart>
       </ResponsiveContainer>
     </div>

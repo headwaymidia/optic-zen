@@ -58,7 +58,7 @@ Plus Jakarta Sans is the primary font for a Premium Enterprise feel.
 
   .dark {
     /* Luxury Enterprise: chumbo neutro, glassmorphism, sem azuis */
-    --background: 240 7% 4%;           /* #0A0A0C — chumbo profundo */
+    --background: 0 0% 2%;             /* #050505 — quase preto absoluto */
     --foreground: 0 0% 98%;
     --card: 0 0% 0%;                   /* preto puro (usado com /60 + blur via .glass-card) */
     --card-foreground: 0 0% 98%;
@@ -200,11 +200,16 @@ Plus Jakarta Sans is the primary font for a Premium Enterprise feel.
     animation: pulse-border-red 1.6s ease-in-out infinite;
   }
 
-  /* Luxury SaaS card — preto profundo + borda hairline + top glow interno */
+  /* Luxury SaaS card — chumbo levemente mais claro que o fundo + borda + brilho de quina */
   .dark .glass-card {
-    background-color: #0A0A0B;
-    border: 1px solid #27272A;
-    box-shadow: inset 0 1px 0 0 rgba(255, 255, 255, 0.05);
+    background-color: #0C0C0E;
+    border: 1px solid #1F1F22;
+    box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.03);
+    transition: border-color 220ms ease, box-shadow 220ms ease;
+  }
+  .dark .glass-card:hover {
+    border-color: #3F3F46;
+    box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.05);
   }
   .glass-card {
     background-color: hsl(var(--card));
@@ -217,6 +222,19 @@ Plus Jakarta Sans is the primary font for a Premium Enterprise feel.
     -webkit-background-clip: text;
     background-clip: text;
     color: transparent;
+  }
+
+  /* Aura esmeralda sutil atrás do valor de ROI — não neon */
+  .emerald-aura {
+    text-shadow:
+      0 0 24px rgba(16, 185, 129, 0.18),
+      0 0 48px rgba(16, 185, 129, 0.08);
+  }
+
+  /* Mono font helper (system mono stack — sem dependência externa) */
+  .font-mono-luxe {
+    font-family: "JetBrains Mono", "SF Mono", ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+    font-feature-settings: "tnum", "ss01";
   }
 }
 
