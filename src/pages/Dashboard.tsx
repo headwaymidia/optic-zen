@@ -95,7 +95,7 @@ export default function Dashboard() {
             <div className="lg:col-span-2">
               <RoiMegaCard leads={filtered} />
             </div>
-            <PeriodKPIRow leads={leads} range={range} inline />
+            <PeriodKPIRow leads={storeLeads} range={range} inline />
           </div>
 
           {/* 4. Velocidade & Ranking — lado a lado 50/50 */}
@@ -108,7 +108,7 @@ export default function Dashboard() {
           <VerticalNeonFunnel leads={filtered} />
 
           {/* 6. Evolução (gráfico 3-em-1) */}
-          <RevenueEvolutionChart leads={leads} />
+          <RevenueEvolutionChart leads={storeLeads} />
         </>
       )}
     </div>
