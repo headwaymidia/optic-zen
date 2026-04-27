@@ -21,7 +21,7 @@ export function RevenueHeroCard({ leads, loading }: { leads: Lead[]; loading: bo
   const orgPct = 100 - adsPct;
 
   return (
-    <Card className="border border-border bg-card rounded-xl shadow-[0_1px_2px_rgba(15,23,42,0.04)] dark:bg-gradient-to-br dark:from-emerald-950/40 dark:via-card dark:to-card dark:border-emerald-900/40 dark:shadow-[0_0_30px_-10px_hsl(142_71%_45%/0.35)]">
+    <Card className="border border-border dark:border-white/5 bg-card rounded-xl shadow-[0_1px_2px_rgba(15,23,42,0.04)] dark:bg-gradient-to-br dark:from-emerald-950/30 dark:via-card dark:to-card dark:shadow-[0_0_40px_-12px_hsl(160_84%_45%/0.4)]">
       <CardContent className="p-4">
         <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
           {/* Bloco principal: valor */}
@@ -31,13 +31,18 @@ export function RevenueHeroCard({ leads, loading }: { leads: Lead[]; loading: bo
             </div>
             <div className="min-w-0">
               <div className="flex items-center gap-2">
-                <p className="text-[11px] uppercase tracking-wider text-muted-foreground font-medium">
+                <p className="text-[11px] uppercase tracking-wider text-muted-foreground font-bold">
                   Faturamento Gerado · ROI
                 </p>
-                <span className="inline-flex h-1.5 w-1.5 rounded-full bg-emerald-500 dark:shadow-[0_0_8px_hsl(142_71%_55%)]" />
+                <span className="inline-flex h-1.5 w-1.5 rounded-full bg-emerald-500 dark:shadow-[0_0_10px_hsl(160_84%_55%)]" />
               </div>
-              <p className="text-3xl sm:text-4xl font-semibold tabular-nums text-foreground tracking-tight leading-tight mt-0.5 dark:bg-gradient-to-br dark:from-emerald-300 dark:via-emerald-400 dark:to-emerald-500 dark:bg-clip-text dark:text-transparent dark:drop-shadow-[0_0_12px_hsl(142_71%_50%/0.45)]">
-                {loading ? "—" : formatBRL(totalFaturamento)}
+              <p
+                className="text-3xl sm:text-4xl font-black tabular-nums text-foreground tracking-tight leading-tight mt-0.5 dark:bg-gradient-to-br dark:from-emerald-300 dark:via-emerald-400 dark:to-emerald-500 dark:bg-clip-text dark:text-transparent"
+                style={{ textShadow: "var(--roi-glow, none)" }}
+              >
+                <span className="dark:[text-shadow:0_0_24px_hsl(160_84%_50%/0.5)]">
+                  {loading ? "—" : formatBRL(totalFaturamento)}
+                </span>
               </p>
             </div>
           </div>
@@ -49,11 +54,11 @@ export function RevenueHeroCard({ leads, loading }: { leads: Lead[]; loading: bo
           <div className="flex-1 lg:max-w-md space-y-2">
             <div className="grid grid-cols-2 gap-3">
               <div>
-                <p className="flex items-center gap-1 text-[10px] text-muted-foreground font-medium">
+                <p className="flex items-center gap-1 text-[10px] uppercase tracking-wider text-muted-foreground font-bold">
                   <Megaphone className="h-3 w-3" />
                   Tráfego Pago
                 </p>
-                <p className="text-sm font-semibold text-emerald-600 dark:text-emerald-400 mt-0.5 tabular-nums">
+                <p className="text-sm font-bold text-emerald-600 dark:text-emerald-400 mt-0.5 tabular-nums">
                   {loading ? "—" : formatBRL(faturamentoAds)}
                   {!loading && totalFaturamento > 0 && (
                     <span className="ml-1 text-[10px] text-muted-foreground font-normal">
@@ -63,11 +68,11 @@ export function RevenueHeroCard({ leads, loading }: { leads: Lead[]; loading: bo
                 </p>
               </div>
               <div>
-                <p className="flex items-center gap-1 text-[10px] text-muted-foreground font-medium">
+                <p className="flex items-center gap-1 text-[10px] uppercase tracking-wider text-muted-foreground font-bold">
                   <Store className="h-3 w-3" />
                   Orgânico
                 </p>
-                <p className="text-sm font-semibold text-foreground mt-0.5 tabular-nums">
+                <p className="text-sm font-bold text-foreground mt-0.5 tabular-nums">
                   {loading ? "—" : formatBRL(faturamentoOrganico)}
                   {!loading && totalFaturamento > 0 && (
                     <span className="ml-1 text-[10px] text-muted-foreground font-normal">
