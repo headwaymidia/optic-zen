@@ -78,10 +78,10 @@ export function ObjectionRadar({ leads }: Props) {
 
   return (
     <Card
-      className="rounded-2xl p-6 bg-white dark:bg-[#111111] border border-slate-200 dark:border-[#222222] shadow-sm flex flex-col"
+      className="rounded-2xl p-7 bg-white dark:bg-[#111111] border border-slate-200 dark:border-[#222222] shadow-sm h-full flex flex-col"
       style={{ fontFamily: "'Inter','Geist Sans',sans-serif" }}
     >
-      <div className="flex items-center justify-between mb-5">
+      <div className="flex items-center justify-between mb-6">
         <div className="flex items-center gap-2">
           <ShieldAlert className="h-3.5 w-3.5 text-zinc-500" strokeWidth={2} />
           <p className="text-[10px] font-medium uppercase tracking-[0.28em] text-zinc-500">
@@ -94,7 +94,7 @@ export function ObjectionRadar({ leads }: Props) {
       </div>
 
       {items.length === 0 ? (
-        <p className="text-xs text-zinc-500 py-10 text-center">
+        <p className="text-xs text-zinc-500 py-10 text-center flex-1 flex items-center justify-center">
           Nenhuma objeção mapeada ainda.
         </p>
       ) : (
