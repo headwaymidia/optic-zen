@@ -161,7 +161,7 @@ Plus Jakarta Sans is the primary font for a Premium Enterprise feel.
   }
 
   html {
-    font-family: "Inter", "Plus Jakarta Sans", system-ui, sans-serif;
+    font-family: "Inter", "Geist", "Plus Jakarta Sans", system-ui, sans-serif;
     -webkit-tap-highlight-color: transparent;
     -webkit-text-size-adjust: 100%;
   }
@@ -169,52 +169,28 @@ Plus Jakarta Sans is the primary font for a Premium Enterprise feel.
   body {
     @apply bg-background text-foreground antialiased;
     font-feature-settings: "cv02", "cv03", "cv04", "cv11";
-    /* Disable default text selection across UI; re-enable in chat bubbles */
     -webkit-user-select: none;
     user-select: none;
     overscroll-behavior-y: none;
   }
 
-  /* Allow text selection inside form inputs and chat bubbles */
-  input,
-  textarea,
-  [contenteditable="true"],
-  .selectable,
-  .chat-bubble {
+  input, textarea, [contenteditable="true"], .selectable, .chat-bubble {
     -webkit-user-select: text;
     user-select: text;
   }
 
-  /* Prevent iOS auto-zoom on input focus (font-size must be >= 16px) */
-  input,
-  textarea,
-  select {
+  input, textarea, select {
     font-size: 16px;
   }
 }
 
 @layer utilities {
-  /* iOS safe-area helpers */
-  .pt-safe {
-    padding-top: env(safe-area-inset-top);
-  }
-  .pb-safe {
-    padding-bottom: env(safe-area-inset-bottom);
-  }
-  .pl-safe {
-    padding-left: env(safe-area-inset-left);
-  }
-  .pr-safe {
-    padding-right: env(safe-area-inset-right);
-  }
-  .min-h-screen-safe {
-    min-height: calc(100vh - env(safe-area-inset-top) - env(safe-area-inset-bottom));
-  }
-  /* Apple HIG: 44px minimum tap target */
-  .tap-target {
-    min-height: 44px;
-    min-width: 44px;
-  }
+  .pt-safe { padding-top: env(safe-area-inset-top); }
+  .pb-safe { padding-bottom: env(safe-area-inset-bottom); }
+  .pl-safe { padding-left: env(safe-area-inset-left); }
+  .pr-safe { padding-right: env(safe-area-inset-right); }
+  .min-h-screen-safe { min-height: calc(100vh - env(safe-area-inset-top) - env(safe-area-inset-bottom)); }
+  .tap-target { min-height: 44px; min-width: 44px; }
 }
 
 @layer utilities {
@@ -222,51 +198,52 @@ Plus Jakarta Sans is the primary font for a Premium Enterprise feel.
     0%, 100% { border-left-color: hsl(0 84% 60%); box-shadow: -2px 0 8px -2px hsl(0 84% 60% / 0.4); }
     50% { border-left-color: hsl(0 84% 70%); box-shadow: -2px 0 12px 0 hsl(0 84% 60% / 0.7); }
   }
-  .animate-pulse-border {
-    animation: pulse-border-red 1.6s ease-in-out infinite;
-  }
+  .animate-pulse-border { animation: pulse-border-red 1.6s ease-in-out infinite; }
 
-  /* BI Enterprise glass — DARK: vidro fumê + borda zinc-800 + sombra profunda + chanfro topo */
+  /* Bento Box Glass — DARK: vidro fumê + esmeralda discreta no hover */
   .dark .glass-card {
-    background-color: rgba(20, 20, 23, 0.55);
-    backdrop-filter: blur(20px) saturate(140%);
-    -webkit-backdrop-filter: blur(20px) saturate(140%);
-    border: 1px solid #27272a; /* zinc-800 */
+    background-color: rgba(12, 12, 14, 0.55);
+    backdrop-filter: blur(24px) saturate(150%);
+    -webkit-backdrop-filter: blur(24px) saturate(150%);
+    border: 1px solid rgba(255, 255, 255, 0.07);
     box-shadow:
       inset 0 1px 0 0 rgba(255, 255, 255, 0.04),
-      0 1px 0 0 rgba(0, 0, 0, 0.30),
-      0 8px 24px -12px rgba(0, 0, 0, 0.50);
+      0 1px 0 0 rgba(0, 0, 0, 0.40),
+      0 8px 28px -16px rgba(0, 0, 0, 0.60);
     transition: border-color 220ms ease, box-shadow 220ms ease;
   }
   .dark .glass-card:hover {
-    border-color: #3f3f46; /* zinc-700 */
+    border-color: rgba(16, 185, 129, 0.20);
     box-shadow:
       inset 0 1px 0 0 rgba(255, 255, 255, 0.06),
-      0 1px 0 0 rgba(0, 0, 0, 0.30),
-      0 12px 32px -12px rgba(0, 0, 0, 0.60);
+      0 12px 36px -16px rgba(0, 0, 0, 0.65);
   }
 
-  /* Luxury glass card — LIGHT: branco puro + borda black/5 + chanfro superior branco */
+  /* Bento Box Glass — LIGHT: neumorfismo suave + acentos ouro/marinho */
   .glass-card {
-    background-color: #ffffff;
-    border: 1px solid rgba(0, 0, 0, 0.05);
+    background-color: rgba(255, 255, 255, 0.85);
+    backdrop-filter: blur(20px) saturate(140%);
+    -webkit-backdrop-filter: blur(20px) saturate(140%);
+    border: 1px solid rgba(15, 23, 42, 0.06);
     box-shadow:
-      inset 0 1px 0 0 rgba(255, 255, 255, 0.80),
-      0 1px 2px 0 rgba(0, 0, 0, 0.03);
+      inset 0 1px 0 0 rgba(255, 255, 255, 0.95),
+      0 1px 2px 0 rgba(15, 23, 42, 0.04),
+      0 18px 40px -22px rgba(15, 23, 42, 0.10);
     transition: border-color 220ms ease, box-shadow 220ms ease;
   }
   .glass-card:hover {
-    border-color: rgba(0, 0, 0, 0.08);
+    border-color: rgba(15, 23, 42, 0.10);
+    box-shadow:
+      inset 0 1px 0 0 rgba(255, 255, 255, 0.95),
+      0 24px 48px -22px rgba(15, 23, 42, 0.14);
   }
 
-  /* Sidebar translúcida com blur */
   .dark [data-sidebar="sidebar"] {
-    background-color: rgba(0, 0, 0, 0.4);
-    backdrop-filter: blur(12px) saturate(140%);
-    -webkit-backdrop-filter: blur(12px) saturate(140%);
+    background-color: rgba(0, 0, 0, 0.55);
+    backdrop-filter: blur(14px) saturate(140%);
+    -webkit-backdrop-filter: blur(14px) saturate(140%);
   }
 
-  /* Gradiente metalizado (#fff → #a1a1aa) */
   .text-luxury-gradient {
     background-image: linear-gradient(180deg, #ffffff 0%, #a1a1aa 100%);
     -webkit-background-clip: text;
@@ -274,19 +251,12 @@ Plus Jakarta Sans is the primary font for a Premium Enterprise feel.
     color: transparent;
   }
 
-  /* Halo branco discreto atrás do valor de ROI */
-  .text-white-glow {
-    filter: drop-shadow(0 0 15px rgba(255, 255, 255, 0.10));
-  }
+  .text-white-glow { filter: drop-shadow(0 0 15px rgba(255, 255, 255, 0.10)); }
 
-  /* Aura esmeralda sutil — opcional */
   .emerald-aura {
-    text-shadow:
-      0 0 24px rgba(16, 185, 129, 0.18),
-      0 0 48px rgba(16, 185, 129, 0.08);
+    text-shadow: 0 0 24px rgba(16, 185, 129, 0.18), 0 0 48px rgba(16, 185, 129, 0.08);
   }
 
-  /* Mono font helper */
   .font-mono-luxe {
     font-family: "JetBrains Mono", "SF Mono", ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
     font-feature-settings: "tnum", "ss01";
