@@ -44,15 +44,15 @@ export function PeriodKPIRow({ leads, range }: Props) {
     const vPrev = leads.filter((l) => l.status === "Compareceu e Comprou" && inPrev(l.updated_at ?? l.created_at)).length;
 
     return [
-      { label: "Total Leads", value: totalCur, delta: pctDelta(totalCur, totalPrev) },
-      { label: "Agendamentos", value: agCur, delta: pctDelta(agCur, agPrev) },
-      { label: "Comparecimentos", value: atCur, delta: pctDelta(atCur, atPrev) },
-      { label: "Vendas Concluídas", value: vCur, delta: pctDelta(vCur, vPrev) },
+      { label: "Total Leads", value: totalCur, delta: pctDelta(totalCur, totalPrev), accent: "yellow" as const },
+      { label: "Agendamentos", value: agCur, delta: pctDelta(agCur, agPrev), accent: "yellow" as const },
+      { label: "Comparecimentos", value: atCur, delta: pctDelta(atCur, atPrev), accent: "yellow" as const },
+      { label: "Vendas Concluídas", value: vCur, delta: pctDelta(vCur, vPrev), accent: "green" as const },
     ];
   }, [leads, range]);
 
   return (
-    <div className="grid grid-cols-2 lg:grid-cols-4 divide-x divide-border/60 rounded-3xl border border-border/60 bg-card/40 backdrop-blur-xl px-2">
+    <div className="grid grid-cols-2 lg:grid-cols-4 divide-x divide-[#222222] rounded-2xl border border-[#222222] bg-[#111111] px-2">
       {items.map((it) => {
         const positive = it.delta !== null && it.delta >= 0;
         const flat = it.delta === null || it.delta === 0;
@@ -60,15 +60,20 @@ export function PeriodKPIRow({ leads, range }: Props) {
         const tone = flat
           ? "text-zinc-500"
           : positive
-          ? "text-emerald-500 dark:text-emerald-400"
-          : "text-rose-500 dark:text-rose-400";
+          ? "text-[#22C55E]"
+          : "text-rose-400";
+        const valueColor = it.accent === "green" ? "#22C55E" : "#FACC15";
+        const glowClass = it.accent === "green" ? "neon-glow-green" : "neon-glow-yellow";
         return (
           <div key={it.label} className="px-5 py-4 flex flex-col gap-1.5">
-            <p className="text-[10px] uppercase tracking-[0.25em] text-muted-foreground font-semibold">
+            <p className="text-[10px] uppercase tracking-[0.25em] text-zinc-500 font-semibold">
               {it.label}
             </p>
             <div className="flex items-baseline gap-2.5">
-              <span className="text-2xl font-semibold tabular-nums tracking-tight text-foreground">
+              <span
+                className={cn("font-mono-luxe text-3xl font-bold tabular-nums tracking-tight", glowClass)}
+                style={{ color: valueColor }}
+              >
                 {it.value}
               </span>
               <span className={cn("inline-flex items-center gap-0.5 text-[11px] font-mono-luxe font-semibold tabular-nums", tone)}>
