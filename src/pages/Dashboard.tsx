@@ -3,9 +3,11 @@ import { Button } from "@/components/ui/button";
 import { useLeads } from "@/hooks/useLeads";
 import { PeriodFilter, PeriodKey, getPeriodRange } from "@/components/PeriodFilter";
 import { SalesRanking } from "@/components/SalesRanking";
-import { BIStatsRow } from "@/components/BIStatsRow";
+import { PeriodKPIRow } from "@/components/PeriodKPIRow";
+import { RoiMegaCard } from "@/components/RoiMegaCard";
 import { DistributionRow } from "@/components/DistributionRow";
-import { GlassConversionFlow } from "@/components/GlassConversionFlow";
+import { LossRankBars } from "@/components/LossRankBars";
+import { PointOfAttentionFunnel } from "@/components/PointOfAttentionFunnel";
 import { RevenueEvolutionChart } from "@/components/RevenueEvolutionChart";
 import { exportMonthlyReport } from "@/lib/exportReport";
 import { isWithinInterval, parseISO, format } from "date-fns";
@@ -21,13 +23,15 @@ export default function Dashboard() {
   const filtered = useMemo(
     () =>
       leads.filter(
-        (l) => l.created_at && isWithinInterval(parseISO(l.created_at), { start: range.from, end: range.to })
+        (l) =>
+          l.created_at &&
+          isWithinInterval(parseISO(l.created_at), { start: range.from, end: range.to })
       ),
     [leads, range]
   );
 
   const total = filtered.length;
-  const periodSummary = `Exibindo dados de ${format(range.from, "dd/MM", { locale: ptBR })} a ${format(range.to, "dd/MM", { locale: ptBR })}`;
+  const periodSummary = `${format(range.from, "dd/MM", { locale: ptBR })} → ${format(range.to, "dd/MM", { locale: ptBR })}`;
 
   return (
     <div className="p-6 sm:p-8 space-y-6">
@@ -36,14 +40,14 @@ export default function Dashboard() {
         <div className="min-w-0">
           <h1 className="text-lg sm:text-xl font-semibold tracking-tight">Dashboard</h1>
           <p className="text-[11px] sm:text-xs text-muted-foreground capitalize">
-            {range.label} • {total} leads no período
+            {range.label} · {total} leads no período
           </p>
         </div>
         <Button
           onClick={() => exportMonthlyReport(leads)}
           variant="outline"
           size="icon"
-          className="h-8 w-8 shrink-0 border-border hover:bg-muted"
+          className="h-8 w-8 shrink-0 rounded-full border-border hover:bg-muted"
           title="Exportar relatório mensal"
           aria-label="Exportar relatório mensal"
         >
@@ -51,7 +55,7 @@ export default function Dashboard() {
         </Button>
       </div>
 
-      {/* Filtros + resumo inline */}
+      {/* Filtros */}
       <div className="flex flex-wrap items-center justify-between gap-3">
         <PeriodFilter
           value={period}
@@ -61,23 +65,37 @@ export default function Dashboard() {
             if (c) setCustom(c);
           }}
         />
-        <p className="text-[11px] text-muted-foreground italic">{periodSummary}</p>
+        <p className="text-[11px] text-muted-foreground italic font-mono-luxe tabular-nums">
+          {periodSummary}
+        </p>
       </div>
 
-      {/* 1. ROW DE KPIs DE CRESCIMENTO — 4 cards com sparklines + delta vs mês anterior */}
-      <BIStatsRow leads={leads} loading={loading} />
+      {loading ? (
+        <p className="text-xs text-muted-foreground">Carregando…</p>
+      ) : (
+        <>
+          {/* 1. KPI Strip — minimalista, responde ao filtro */}
+          <PeriodKPIRow leads={leads} range={range} />
 
-      {/* 2. LINHA DE DISTRIBUIÇÃO — Origem dos Leads | Motivos de Perda */}
-      <DistributionRow leads={filtered} />
+          {/* 2. Mega-Card central — Performance Total (BI) */}
+          <RoiMegaCard leads={filtered} />
 
-      {/* 3. FUNIL DE CONVERSÃO — fluxo horizontal de estações de vidro */}
-      <GlassConversionFlow leads={filtered} />
+          {/* 3. Distribuição — Origem (donut 2px) | Motivos de Perda (rank bars) */}
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <DistributionRow leads={filtered} />
+            <LossRankBars leads={filtered} />
+          </div>
 
-      {/* 4. EVOLUÇÃO DE FATURAMENTO — linha branca + área esmeralda */}
-      <RevenueEvolutionChart leads={leads} />
+          {/* 4. Funil Point of Attention */}
+          <PointOfAttentionFunnel leads={filtered} />
 
-      {/* 5. RANKING */}
-      <SalesRanking leads={filtered} />
+          {/* 5. Evolução de Faturamento */}
+          <RevenueEvolutionChart leads={leads} />
+
+          {/* 6. Ranking de Vendedores */}
+          <SalesRanking leads={filtered} />
+        </>
+      )}
     </div>
   );
 }
