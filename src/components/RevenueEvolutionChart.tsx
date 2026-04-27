@@ -1,11 +1,11 @@
 import { useMemo, useState } from "react";
 import { Card } from "@/components/ui/card";
-import { Switch } from "@/components/ui/switch";
 import { Lead } from "@/lib/supabase";
 import {
   ResponsiveContainer,
-  AreaChart,
+  ComposedChart,
   Area,
+  Line,
   XAxis,
   YAxis,
   Tooltip,
@@ -20,50 +20,56 @@ import {
 } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { cn } from "@/lib/utils";
+import { Sparkles } from "lucide-react";
 
-type MetricKey = "vendas" | "leads" | "agendamentos";
+type SeriesKey = "vendas" | "leads" | "agendamentos";
 
-interface MetricConfig {
-  key: MetricKey;
+interface SeriesConfig {
+  key: SeriesKey;
   label: string;
-  color: string;        // dark-mode neon
-  colorLight: string;   // light-mode solid
+  short: string;
+  color: string;        // dark neon
+  colorLight: string;   // light solid
   isCurrency: boolean;
-  shortLabel: string;
-  titleSuffix: string;
+  yAxis: "left" | "right";
+  strokeWidth: number;
+  dashed?: boolean;
 }
 
-const METRICS: Record<MetricKey, MetricConfig> = {
+const SERIES: Record<SeriesKey, SeriesConfig> = {
   vendas: {
     key: "vendas",
     label: "Vendas (Faturamento)",
-    shortLabel: "Vendas",
-    titleSuffix: "Vendas (Faturamento)",
+    short: "Vendas",
     color: "#22C55E",
     colorLight: "#059669",
     isCurrency: true,
+    yAxis: "left",
+    strokeWidth: 3.25,
   },
   leads: {
     key: "leads",
     label: "Leads",
-    shortLabel: "Leads",
-    titleSuffix: "Leads",
+    short: "Leads",
     color: "#FACC15",
     colorLight: "#CA8A04",
     isCurrency: false,
+    yAxis: "right",
+    strokeWidth: 2,
   },
   agendamentos: {
     key: "agendamentos",
     label: "Agendamentos",
-    shortLabel: "Agendamentos",
-    titleSuffix: "Agendamentos",
+    short: "Agendamentos",
     color: "#06B6D4",
     colorLight: "#0E7490",
     isCurrency: false,
+    yAxis: "right",
+    strokeWidth: 2,
+    dashed: true,
   },
 };
 
-// Mantém alinhamento com PeriodKPIRow (status canônicos do funil)
 const SCHEDULED_STATUSES = new Set([
   "Agendou Exame",
   "Compareceu e Comprou",
@@ -89,193 +95,228 @@ interface Props {
 }
 
 /**
- * Evolução dinâmica — tabs por métrica + comparação com período anterior.
- * Funciona em Light & Dark com cores semânticas.
+ * Multi-eixo BI: Vendas (R$) + Leads + Agendamentos simultâneos.
+ * Legenda interativa com checkbox + botão "Ver Escala Total".
  */
 export function RevenueEvolutionChart({ leads }: Props) {
-  const [metric, setMetric] = useState<MetricKey>("vendas");
-  const [compare, setCompare] = useState(false);
+  const [active, setActive] = useState<Record<SeriesKey, boolean>>({
+    vendas: true,
+    leads: false,
+    agendamentos: false,
+  });
 
-  const cfg = METRICS[metric];
+  const toggle = (k: SeriesKey) =>
+    setActive((s) => ({ ...s, [k]: !s[k] }));
+  const showAll = () =>
+    setActive({ vendas: true, leads: true, agendamentos: true });
 
   const data = useMemo(() => {
     const today = new Date();
     const days = eachDayOfInterval({ start: subDays(today, 29), end: today });
-    const prevDays = eachDayOfInterval({
-      start: subDays(today, 59),
-      end: subDays(today, 30),
-    });
 
-    const compute = (day: Date): number => {
-      switch (metric) {
-        case "vendas":
-          // Vendas = Faturamento (valor financeiro consolidado)
-          return leads
-            .filter(
-              (l) =>
-                l.status === "Compareceu e Comprou" &&
-                isSameDay(parseISO(l.updated_at ?? l.created_at!), day)
-            )
-            .reduce((s, l) => s + (Number(l.sale_value) || 0), 0);
-        case "leads":
-          return leads.filter(
-            (l) => l.created_at && isSameDay(parseISO(l.created_at), day)
-          ).length;
-        case "agendamentos":
-          return leads.filter(
-            (l) =>
-              l.status &&
-              SCHEDULED_STATUSES.has(l.status) &&
-              isSameDay(parseISO(l.updated_at ?? l.created_at!), day)
-          ).length;
-      }
-    };
+    return days.map((d) => {
+      const vendas = leads
+        .filter(
+          (l) =>
+            l.status === "Compareceu e Comprou" &&
+            isSameDay(parseISO(l.updated_at ?? l.created_at!), d)
+        )
+        .reduce((s, l) => s + (Number(l.sale_value) || 0), 0);
 
-    return days.map((d, i) => {
-      const prev = prevDays[i];
+      const leadsCount = leads.filter(
+        (l) => l.created_at && isSameDay(parseISO(l.created_at), d)
+      ).length;
+
+      const agendamentos = leads.filter(
+        (l) =>
+          l.status &&
+          SCHEDULED_STATUSES.has(l.status) &&
+          isSameDay(parseISO(l.updated_at ?? l.created_at!), d)
+      ).length;
+
       return {
         date: format(d, "dd MMM", { locale: ptBR }),
         fullDate: format(d, "dd 'de' MMMM, yyyy", { locale: ptBR }),
-        atual: compute(d),
-        anterior: prev ? compute(prev) : 0,
+        vendas,
+        leads: leadsCount,
+        agendamentos,
       };
     });
-  }, [leads, metric]);
+  }, [leads]);
 
-  const total = data.reduce((s, d) => s + d.atual, 0);
-  const totalPrev = data.reduce((s, d) => s + d.anterior, 0);
-  const delta =
-    totalPrev > 0 ? ((total - totalPrev) / totalPrev) * 100 : total > 0 ? 100 : 0;
+  const totals = useMemo(
+    () => ({
+      vendas: data.reduce((s, d) => s + d.vendas, 0),
+      leads: data.reduce((s, d) => s + d.leads, 0),
+      agendamentos: data.reduce((s, d) => s + d.agendamentos, 0),
+    }),
+    [data]
+  );
+
+  const allActive =
+    active.vendas && active.leads && active.agendamentos;
 
   return (
     <Card className="glass-card rounded-xl border border-border p-7">
-      {/* Header com totais */}
+      {/* Header */}
       <div className="flex items-start justify-between mb-5 flex-wrap gap-4">
         <div>
           <p className="text-base sm:text-lg font-semibold tracking-tight text-foreground mb-1">
-            Evolução de {cfg.titleSuffix}
+            Escalabilidade — Leads × Agendamentos × Vendas
           </p>
           <p className="text-[10px] uppercase tracking-[0.2em] text-muted-foreground/70 font-medium">
-            Últimos 30 dias
+            Últimos 30 dias · Eixo duplo (R$ / unidades)
           </p>
         </div>
-        <div className="flex items-center gap-6">
-          <div className="text-right">
-            <p
-              className="font-mono-luxe text-2xl font-bold tabular-nums tracking-tighter leading-none"
-              style={{ color: cfg.colorLight }}
-            >
-              <span className="dark:hidden">
-                {formatValue(total, cfg.isCurrency)}
-              </span>
-              <span
-                className="hidden dark:inline"
-                style={{
-                  color: cfg.color,
-                  textShadow: `0 0 12px ${cfg.color}66`,
-                }}
-              >
-                {formatValue(total, cfg.isCurrency)}
-              </span>
-            </p>
-            <p className="text-[9px] uppercase tracking-[0.25em] text-muted-foreground font-semibold mt-1.5">
-              Total Período
-            </p>
-          </div>
-          {compare && (
-            <div className="text-right">
-              <p
-                className={cn(
-                  "font-mono-luxe text-2xl font-bold tabular-nums tracking-tighter leading-none",
-                  delta >= 0
-                    ? "text-emerald-600 dark:text-emerald-400"
-                    : "text-red-600 dark:text-red-400"
-                )}
-              >
-                {delta >= 0 ? "+" : ""}
-                {delta.toFixed(1)}%
-              </p>
-              <p className="text-[9px] uppercase tracking-[0.25em] text-muted-foreground font-semibold mt-1.5">
-                vs Anterior
-              </p>
-            </div>
-          )}
+
+        <div className="flex items-center gap-5">
+          {(Object.keys(SERIES) as SeriesKey[])
+            .filter((k) => active[k])
+            .map((k) => {
+              const s = SERIES[k];
+              return (
+                <div key={k} className="text-right">
+                  <p
+                    className="font-mono-luxe text-xl font-bold tabular-nums tracking-tighter leading-none"
+                    style={{ color: s.colorLight }}
+                  >
+                    <span className="dark:hidden">
+                      {formatValue(totals[k], s.isCurrency)}
+                    </span>
+                    <span
+                      className="hidden dark:inline"
+                      style={{
+                        color: s.color,
+                        textShadow: `0 0 12px ${s.color}66`,
+                      }}
+                    >
+                      {formatValue(totals[k], s.isCurrency)}
+                    </span>
+                  </p>
+                  <p className="text-[9px] uppercase tracking-[0.25em] text-muted-foreground font-semibold mt-1.5">
+                    {s.short}
+                  </p>
+                </div>
+              );
+            })}
         </div>
       </div>
 
-      {/* Tabs + Switch */}
+      {/* Legenda interativa (checkbox style) + Ver Escala Total */}
       <div className="flex items-center justify-between flex-wrap gap-3 mb-5">
         <div
-          className="inline-flex items-center gap-1 p-1 rounded-lg bg-muted/60 border border-border"
-          role="tablist"
+          className="inline-flex items-center gap-1.5 p-1 rounded-lg bg-muted/60 border border-border"
+          role="group"
+          aria-label="Séries do gráfico"
         >
-          {(Object.keys(METRICS) as MetricKey[]).map((k) => {
-            const m = METRICS[k];
-            const active = metric === k;
+          {(Object.keys(SERIES) as SeriesKey[]).map((k) => {
+            const s = SERIES[k];
+            const isOn = active[k];
             return (
               <button
                 key={k}
-                role="tab"
-                aria-selected={active}
-                onClick={() => setMetric(k)}
+                type="button"
+                role="checkbox"
+                aria-checked={isOn}
+                onClick={() => toggle(k)}
                 className={cn(
-                  "text-[11px] font-semibold px-3 py-1.5 rounded-md transition-all uppercase tracking-wider",
-                  active
-                    ? "bg-card shadow-sm text-foreground"
-                    : "text-muted-foreground hover:text-foreground"
+                  "group flex items-center gap-2 text-[11px] font-semibold px-2.5 py-1.5 rounded-md transition-all uppercase tracking-wider",
+                  isOn
+                    ? "bg-card text-foreground shadow-sm"
+                    : "text-muted-foreground/70 hover:text-foreground"
                 )}
                 style={
-                  active
+                  isOn
                     ? {
-                        boxShadow: `inset 0 0 0 1px ${m.color}40, 0 0 12px -4px ${m.color}80`,
+                        boxShadow: `inset 0 0 0 1px ${s.color}40, 0 0 12px -4px ${s.color}80`,
                       }
                     : undefined
                 }
               >
+                {/* checkbox visual */}
+                <span
+                  className={cn(
+                    "h-3.5 w-3.5 rounded border flex items-center justify-center transition-all",
+                    isOn ? "border-transparent" : "border-muted-foreground/40"
+                  )}
+                  style={
+                    isOn
+                      ? {
+                          backgroundColor: s.color,
+                          boxShadow: `0 0 8px ${s.color}80`,
+                        }
+                      : undefined
+                  }
+                >
+                  {isOn && (
+                    <svg
+                      viewBox="0 0 12 12"
+                      className="h-2.5 w-2.5 text-black"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="2.5"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    >
+                      <polyline points="2.5,6.5 5,9 9.5,3.5" />
+                    </svg>
+                  )}
+                </span>
                 <span className="flex items-center gap-1.5">
-                  <span
-                    className="h-1.5 w-1.5 rounded-full"
-                    style={{ backgroundColor: active ? m.color : "currentColor" }}
-                  />
-                  {m.label}
+                  {s.label}
+                  {s.dashed && (
+                    <span className="text-[8px] opacity-60 normal-case tracking-normal">
+                      (tracejada)
+                    </span>
+                  )}
                 </span>
               </button>
             );
           })}
         </div>
 
-        <label className="flex items-center gap-2.5 cursor-pointer select-none">
-          <Switch
-            checked={compare}
-            onCheckedChange={setCompare}
-            aria-label="Comparar com período anterior"
-          />
-          <span className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
-            Comparar c/ Período Anterior
-          </span>
-        </label>
+        <button
+          type="button"
+          onClick={showAll}
+          disabled={allActive}
+          className={cn(
+            "group flex items-center gap-1.5 text-[11px] font-bold uppercase tracking-wider px-3.5 py-2 rounded-md border transition-all",
+            allActive
+              ? "border-border text-muted-foreground/50 cursor-not-allowed"
+              : "border-emerald-500/40 text-emerald-700 dark:text-emerald-400 hover:bg-emerald-500/10 dark:hover:bg-emerald-500/15"
+          )}
+          style={
+            !allActive
+              ? { boxShadow: "0 0 16px -6px rgba(34,197,94,0.6)" }
+              : undefined
+          }
+        >
+          <Sparkles className="h-3.5 w-3.5" />
+          Ver Escala Total
+        </button>
       </div>
 
       {/* Chart */}
-      <div className="h-[280px] w-full -mx-2">
+      <div className="h-[320px] w-full -mx-2">
         <ResponsiveContainer width="100%" height="100%">
-          <AreaChart data={data} margin={{ top: 8, right: 12, left: 12, bottom: 0 }}>
+          <ComposedChart
+            data={data}
+            margin={{ top: 8, right: 16, left: 12, bottom: 0 }}
+          >
             <defs>
-              <linearGradient id="metricGradient" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="0%" stopColor={cfg.color} stopOpacity={0.22} />
-                <stop offset="100%" stopColor={cfg.color} stopOpacity={0} />
-              </linearGradient>
-              <linearGradient id="metricGradientPrev" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="0%" stopColor={cfg.color} stopOpacity={0.05} />
-                <stop offset="100%" stopColor={cfg.color} stopOpacity={0} />
+              <linearGradient id="vendasGradient" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0%" stopColor={SERIES.vendas.color} stopOpacity={0.28} />
+                <stop offset="100%" stopColor={SERIES.vendas.color} stopOpacity={0} />
               </linearGradient>
             </defs>
+
             <CartesianGrid
               stroke="hsl(var(--border))"
               strokeOpacity={0.4}
               strokeDasharray="3 3"
               vertical={false}
             />
+
             <XAxis
               dataKey="date"
               tick={{
@@ -287,106 +328,236 @@ export function RevenueEvolutionChart({ leads }: Props) {
               tickLine={false}
               interval={4}
             />
+
+            {/* Eixo Y esquerdo — R$ (Vendas) */}
             <YAxis
+              yAxisId="left"
+              orientation="left"
               tick={{
                 fontSize: 9,
-                fill: "hsl(var(--muted-foreground))",
-                fontWeight: 600,
+                fill: SERIES.vendas.colorLight,
+                fontWeight: 700,
               }}
               axisLine={false}
               tickLine={false}
               tickFormatter={(v) =>
-                cfg.isCurrency
-                  ? v >= 1000
-                    ? `${(v / 1000).toFixed(0)}k`
-                    : `${v}`
-                  : `${v}`
+                v >= 1000 ? `${(v / 1000).toFixed(0)}k` : `${v}`
               }
-              width={36}
+              width={42}
+              label={{
+                value: "R$",
+                position: "insideTopLeft",
+                fill: "hsl(var(--muted-foreground))",
+                fontSize: 9,
+                fontWeight: 700,
+                offset: -2,
+              }}
             />
+
+            {/* Eixo Y direito — Unidades (Leads / Agendamentos) */}
+            <YAxis
+              yAxisId="right"
+              orientation="right"
+              tick={{
+                fontSize: 9,
+                fill: "hsl(var(--muted-foreground))",
+                fontWeight: 700,
+              }}
+              axisLine={false}
+              tickLine={false}
+              width={32}
+              allowDecimals={false}
+              label={{
+                value: "UN",
+                position: "insideTopRight",
+                fill: "hsl(var(--muted-foreground))",
+                fontSize: 9,
+                fontWeight: 700,
+                offset: -2,
+              }}
+            />
+
             <Tooltip
               cursor={{
-                stroke: cfg.color,
-                strokeOpacity: 0.4,
+                stroke: "hsl(var(--foreground))",
+                strokeOpacity: 0.25,
                 strokeDasharray: "3 3",
               }}
-              content={({ active, payload }) => {
-                if (!active || !payload || !payload.length) return null;
+              content={({ active: act, payload }) => {
+                if (!act || !payload || !payload.length) return null;
                 const p = payload[0].payload as {
                   fullDate: string;
-                  atual: number;
-                  anterior: number;
+                  vendas: number;
+                  leads: number;
+                  agendamentos: number;
                 };
+
                 return (
-                  <div className="rounded-lg border border-border bg-popover/95 backdrop-blur-xl px-3.5 py-2.5 shadow-xl text-popover-foreground min-w-[180px]">
-                    <p className="text-[10px] uppercase tracking-[0.2em] text-muted-foreground font-semibold mb-2">
+                  <div className="rounded-lg border border-border bg-popover/95 backdrop-blur-xl px-3.5 py-3 shadow-2xl text-popover-foreground min-w-[240px]">
+                    <p className="text-[10px] uppercase tracking-[0.2em] text-muted-foreground font-semibold mb-2.5">
                       {p.fullDate}
                     </p>
-                    <div className="flex items-center justify-between gap-4">
-                      <span className="flex items-center gap-1.5 text-[11px] font-medium">
-                        <span
-                          className="h-2 w-2 rounded-full"
-                          style={{ backgroundColor: cfg.color }}
-                        />
-                        {cfg.shortLabel}
-                      </span>
-                      <span
-                        className="font-mono-luxe text-sm font-bold tabular-nums"
-                        style={{ color: cfg.color }}
-                      >
-                        {formatValue(p.atual, cfg.isCurrency)}
-                      </span>
+
+                    {/* Storyline: Leads → Agendamentos → Vendas */}
+                    <div className="space-y-1.5">
+                      <Row
+                        color={SERIES.leads.color}
+                        label="Leads gerados"
+                        value={p.leads.toLocaleString("pt-BR")}
+                        suffix="leads"
+                      />
+                      <Arrow />
+                      <Row
+                        color={SERIES.agendamentos.color}
+                        label="Agendamentos"
+                        value={p.agendamentos.toLocaleString("pt-BR")}
+                        suffix="ag."
+                        dashed
+                      />
+                      <Arrow />
+                      <Row
+                        color={SERIES.vendas.color}
+                        label="Vendas"
+                        value={formatBRL(p.vendas)}
+                        bold
+                      />
                     </div>
-                    {compare && (
-                      <div className="flex items-center justify-between gap-4 mt-1.5 pt-1.5 border-t border-border/60">
-                        <span className="flex items-center gap-1.5 text-[11px] text-muted-foreground">
-                          <span
-                            className="h-2 w-2 rounded-full opacity-50"
-                            style={{ backgroundColor: cfg.color }}
-                          />
-                          Anterior
-                        </span>
-                        <span className="font-mono-luxe text-sm font-semibold tabular-nums text-muted-foreground">
-                          {formatValue(p.anterior, cfg.isCurrency)}
-                        </span>
-                      </div>
-                    )}
                   </div>
                 );
               }}
             />
-            {compare && (
+
+            {/* VENDAS — área + linha grossa */}
+            {active.vendas && (
               <Area
+                yAxisId="left"
                 type="monotone"
-                dataKey="anterior"
-                stroke={cfg.color}
-                strokeOpacity={0.45}
-                strokeWidth={1.25}
-                strokeDasharray="4 4"
-                fill="url(#metricGradientPrev)"
+                dataKey="vendas"
+                stroke={SERIES.vendas.color}
+                strokeWidth={SERIES.vendas.strokeWidth}
+                fill="url(#vendasGradient)"
                 dot={false}
+                activeDot={{
+                  r: 5,
+                  fill: SERIES.vendas.color,
+                  stroke: "hsl(var(--background))",
+                  strokeWidth: 2,
+                }}
+                style={{
+                  filter: `drop-shadow(0 0 6px ${SERIES.vendas.color}80)`,
+                }}
                 isAnimationActive
               />
             )}
-            <Area
-              type="monotone"
-              dataKey="atual"
-              stroke={cfg.color}
-              strokeWidth={3}
-              fill="url(#metricGradient)"
-              dot={false}
-              activeDot={{
-                r: 4,
-                fill: cfg.color,
-                stroke: "hsl(var(--background))",
-                strokeWidth: 2,
-              }}
-              style={{ filter: `drop-shadow(0 0 6px ${cfg.color}80)` }}
-              isAnimationActive
-            />
-          </AreaChart>
+
+            {/* LEADS — linha sólida amarela */}
+            {active.leads && (
+              <Line
+                yAxisId="right"
+                type="monotone"
+                dataKey="leads"
+                stroke={SERIES.leads.color}
+                strokeWidth={SERIES.leads.strokeWidth}
+                dot={false}
+                activeDot={{
+                  r: 4,
+                  fill: SERIES.leads.color,
+                  stroke: "hsl(var(--background))",
+                  strokeWidth: 2,
+                }}
+                style={{
+                  filter: `drop-shadow(0 0 5px ${SERIES.leads.color}80)`,
+                }}
+                isAnimationActive
+              />
+            )}
+
+            {/* AGENDAMENTOS — linha tracejada ciano */}
+            {active.agendamentos && (
+              <Line
+                yAxisId="right"
+                type="monotone"
+                dataKey="agendamentos"
+                stroke={SERIES.agendamentos.color}
+                strokeWidth={SERIES.agendamentos.strokeWidth}
+                strokeDasharray="6 4"
+                dot={false}
+                activeDot={{
+                  r: 4,
+                  fill: SERIES.agendamentos.color,
+                  stroke: "hsl(var(--background))",
+                  strokeWidth: 2,
+                }}
+                style={{
+                  filter: `drop-shadow(0 0 5px ${SERIES.agendamentos.color}80)`,
+                }}
+                isAnimationActive
+              />
+            )}
+          </ComposedChart>
         </ResponsiveContainer>
       </div>
     </Card>
+  );
+}
+
+/* ---------- Tooltip subcomponents ---------- */
+
+function Row({
+  color,
+  label,
+  value,
+  suffix,
+  bold,
+  dashed,
+}: {
+  color: string;
+  label: string;
+  value: string;
+  suffix?: string;
+  bold?: boolean;
+  dashed?: boolean;
+}) {
+  return (
+    <div className="flex items-center justify-between gap-4">
+      <span className="flex items-center gap-2 text-[11px] font-medium text-foreground/80">
+        {dashed ? (
+          <span
+            className="h-0.5 w-3 rounded-full"
+            style={{
+              background: `repeating-linear-gradient(90deg, ${color} 0 3px, transparent 3px 6px)`,
+            }}
+          />
+        ) : (
+          <span
+            className="h-2 w-2 rounded-full"
+            style={{ backgroundColor: color, boxShadow: `0 0 6px ${color}` }}
+          />
+        )}
+        {label}
+      </span>
+      <span
+        className={cn(
+          "font-mono-luxe tabular-nums",
+          bold ? "text-sm font-bold" : "text-[12px] font-semibold"
+        )}
+        style={{ color }}
+      >
+        {value}
+        {suffix && (
+          <span className="ml-1 text-[9px] uppercase opacity-60">{suffix}</span>
+        )}
+      </span>
+    </div>
+  );
+}
+
+function Arrow() {
+  return (
+    <div className="flex justify-center">
+      <span className="text-muted-foreground/50 text-[10px] leading-none">
+        ↓
+      </span>
+    </div>
   );
 }
