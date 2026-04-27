@@ -41,7 +41,7 @@ export default function Dashboard() {
           onClick={() => exportMonthlyReport(leads)}
           variant="outline"
           size="icon"
-          className="h-8 w-8 shrink-0 border-slate-200 hover:bg-slate-50"
+          className="h-8 w-8 shrink-0 border-border hover:bg-muted"
           title="Exportar relatório mensal"
           aria-label="Exportar relatório mensal"
         >

@@ -95,7 +95,7 @@ export function LeadsVolumeChart({ leads, from, to }: Props) {
   };
 
   return (
-    <Card className="border border-slate-100 rounded-xl shadow-[0_1px_2px_rgba(15,23,42,0.04)] bg-card">
+    <Card className="border border-border rounded-xl shadow-[0_1px_2px_rgba(15,23,42,0.04)] bg-card">
       <CardHeader className="pb-2 pt-3 px-4">
         <CardTitle className="text-sm font-semibold">Volume de leads por dia</CardTitle>
       </CardHeader>

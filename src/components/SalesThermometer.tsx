@@ -48,8 +48,8 @@ export function SalesThermometer({ leads }: SalesThermometerProps) {
         count: total,
         conv: null,
         accent: "bg-blue-500",
-        textAccent: "text-blue-600",
-        bg: "bg-blue-50",
+        textAccent: "text-blue-600 dark:text-blue-300",
+        bg: "bg-blue-50 dark:bg-blue-500/10",
         ring: "ring-blue-200",
       },
       {
@@ -59,8 +59,8 @@ export function SalesThermometer({ leads }: SalesThermometerProps) {
         count: agendou,
         conv: total > 0 ? agendou / total : null,
         accent: "bg-purple-500",
-        textAccent: "text-purple-600",
-        bg: "bg-purple-50",
+        textAccent: "text-purple-600 dark:text-purple-300",
+        bg: "bg-purple-50 dark:bg-purple-500/10",
         ring: "ring-purple-200",
       },
       {
@@ -70,8 +70,8 @@ export function SalesThermometer({ leads }: SalesThermometerProps) {
         count: compareceu,
         conv: agendou > 0 ? compareceu / agendou : null,
         accent: "bg-cyan-500",
-        textAccent: "text-cyan-600",
-        bg: "bg-cyan-50",
+        textAccent: "text-cyan-600 dark:text-cyan-300",
+        bg: "bg-cyan-50 dark:bg-cyan-500/10",
         ring: "ring-cyan-200",
       },
       {
@@ -81,8 +81,8 @@ export function SalesThermometer({ leads }: SalesThermometerProps) {
         count: comprou,
         conv: compareceu > 0 ? comprou / compareceu : null,
         accent: "bg-emerald-500",
-        textAccent: "text-emerald-600",
-        bg: "bg-emerald-50",
+        textAccent: "text-emerald-600 dark:text-emerald-300",
+        bg: "bg-emerald-50 dark:bg-emerald-500/10",
         ring: "ring-emerald-200",
       },
     ];
@@ -126,7 +126,7 @@ export function SalesThermometer({ leads }: SalesThermometerProps) {
   }
 
   return (
-    <Card className="overflow-hidden border border-slate-100 rounded-xl shadow-[0_1px_2px_rgba(15,23,42,0.04)] bg-card">
+    <Card className="overflow-hidden border border-border rounded-xl shadow-[0_1px_2px_rgba(15,23,42,0.04)] bg-card">
       <CardHeader className="pb-2 pt-3 px-4">
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
           <div className="flex items-center gap-2 min-w-0">
@@ -164,21 +164,21 @@ export function SalesThermometer({ leads }: SalesThermometerProps) {
                   className={cn(
                     "sm:col-span-1 relative rounded-lg border p-2.5 transition-all",
                     s.bg,
-                    isBottleneckTarget ? "border-amber-300" : "border-slate-100"
+                    isBottleneckTarget ? "border-amber-300" : "border-border"
                   )}
                 >
                   <div className="flex items-center gap-1.5">
                     <span className={cn("h-1.5 w-1.5 rounded-full", s.accent)} />
-                    <span className="text-[9px] uppercase tracking-wider text-slate-500 font-semibold truncate">
+                    <span className="text-[9px] uppercase tracking-wider text-muted-foreground font-semibold truncate">
                       {s.shortLabel}
                     </span>
                   </div>
                   <p className={cn("text-xl font-semibold tabular-nums mt-0.5 tracking-tight", s.textAccent)}>
                     {s.count}
                   </p>
-                  <p className="text-[10px] text-slate-500 truncate">{s.label}</p>
+                  <p className="text-[10px] text-muted-foreground truncate">{s.label}</p>
 
-                  <div className="mt-1.5 h-1 w-full rounded-full bg-white/70 overflow-hidden">
+                  <div className="mt-1.5 h-1 w-full rounded-full bg-background/40 overflow-hidden">
                     <div
                       className={cn("h-full rounded-full transition-all", s.accent)}
                       style={{ width: `${widthPct}%` }}
@@ -191,7 +191,7 @@ export function SalesThermometer({ leads }: SalesThermometerProps) {
                   <div className="sm:col-span-1 relative flex sm:flex-col items-center justify-center gap-1 py-1 sm:py-0">
                     <div
                       aria-hidden
-                      className="hidden sm:block absolute top-1/2 left-0 right-0 h-px border-t border-dashed border-slate-200 -z-0"
+                      className="hidden sm:block absolute top-1/2 left-0 right-0 h-px border-t border-dashed border-border -z-0"
                     />
                     {(() => {
                       const next = stages[i + 1];
@@ -200,7 +200,7 @@ export function SalesThermometer({ leads }: SalesThermometerProps) {
                       const pctNum = conv === null ? 0 : conv * 100;
                       const tone =
                         conv === null
-                          ? "text-slate-500 bg-card border-slate-200"
+                          ? "text-muted-foreground bg-card border-border"
                           : isBottleneck
                             ? "text-amber-700 bg-card border-amber-300"
                             : pctNum >= 60
@@ -231,7 +231,7 @@ export function SalesThermometer({ leads }: SalesThermometerProps) {
 
         {/* Diagnóstico discreto no rodapé */}
         {bottleneck ? (
-          <p className="text-[11px] text-muted-foreground pt-1 border-t border-slate-100 flex items-start gap-1.5">
+          <p className="text-[11px] text-muted-foreground pt-1 border-t border-border flex items-start gap-1.5">
             <AlertTriangle className="h-3 w-3 text-amber-500 shrink-0 mt-0.5" />
             <span>
               <span className="font-medium text-foreground">Ponto de atenção:</span>{" "}
@@ -241,7 +241,7 @@ export function SalesThermometer({ leads }: SalesThermometerProps) {
             </span>
           </p>
         ) : (
-          <p className="text-[11px] text-muted-foreground pt-1 border-t border-slate-100 flex items-center gap-1.5">
+          <p className="text-[11px] text-muted-foreground pt-1 border-t border-border flex items-center gap-1.5">
             <CheckCircle2 className="h-3 w-3 text-emerald-500 shrink-0" />
             Funil saudável: todas as etapas convertem bem.
           </p>

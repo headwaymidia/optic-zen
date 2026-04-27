@@ -147,7 +147,7 @@ export function LeadsVsSalesTimeline({ leads }: { leads: Lead[] }) {
   }, [leads]);
 
   return (
-    <Card className="border border-slate-100 rounded-xl shadow-[0_1px_2px_rgba(15,23,42,0.04)] bg-card">
+    <Card className="border border-border rounded-xl shadow-[0_1px_2px_rgba(15,23,42,0.04)] bg-card">
       <CardHeader className="pb-2 pt-3 px-4">
         <CardTitle className="text-sm font-semibold">Leads vs Vendas</CardTitle>
         <p className="text-[11px] text-muted-foreground">Últimos 7 dias</p>
@@ -190,7 +190,7 @@ export function LossReasonsDonut({ leads }: { leads: Lead[] }) {
   }, [leads]);
 
   return (
-    <Card className="border border-slate-100 rounded-xl shadow-[0_1px_2px_rgba(15,23,42,0.04)] bg-card">
+    <Card className="border border-border rounded-xl shadow-[0_1px_2px_rgba(15,23,42,0.04)] bg-card">
       <CardHeader className="pb-2 pt-3 px-4">
         <CardTitle className="text-sm font-semibold">Motivos de Perda</CardTitle>
         <p className="text-[11px] text-muted-foreground">Leads que não converteram</p>

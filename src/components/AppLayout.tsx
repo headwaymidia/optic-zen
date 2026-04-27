@@ -22,14 +22,14 @@ export default function AppLayout() {
           } as React.CSSProperties
         }
       >
-        <div className="min-h-screen flex w-full bg-slate-50 select-none pt-safe pb-safe pl-safe pr-safe overflow-x-hidden">
+        <div className="min-h-screen flex w-full bg-background select-none pt-safe pb-safe pl-safe pr-safe overflow-x-hidden">
           <AppSidebar />
           <div className="flex-1 flex flex-col min-w-0 transition-all duration-300 ease-in-out">
-            <header className="h-14 flex items-center justify-between border-b border-slate-100 bg-white px-4 gap-3 shadow-[0_1px_3px_rgba(0,0,0,0.02)]">
+            <header className="h-14 flex items-center justify-between border-b border-border bg-card px-4 gap-3 shadow-[0_1px_3px_rgba(0,0,0,0.02)]">
               <div className="flex items-center gap-2 min-w-0">
-                <SidebarTrigger className="hover:bg-slate-50" />
+                <SidebarTrigger className="hover:bg-muted" />
                 <div className="min-w-0">
-                  <p className="text-sm font-semibold text-slate-800 truncate">
+                  <p className="text-sm font-semibold text-foreground truncate">
                     {profile?.name || profile?.email || "Usuário"}
                   </p>
                 </div>
