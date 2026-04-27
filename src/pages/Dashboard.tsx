@@ -2,7 +2,7 @@ import { useMemo, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
-import { RevenueHeroCard, KPICards } from "@/components/DashboardSummary";
+import { RevenueHeroCard, KpiStack } from "@/components/DashboardSummary";
 import { useLeads } from "@/hooks/useLeads";
 import { PeriodFilter, PeriodKey, getPeriodRange } from "@/components/PeriodFilter";
 import { LeadsVolumeChart } from "@/components/LeadsVolumeChart";
@@ -40,21 +40,19 @@ export default function Dashboard() {
             {range.label} • {total} leads no período
           </p>
         </div>
-        <div className="flex items-center gap-2">
-          <Button
-            onClick={() => exportMonthlyReport(leads)}
-            variant="outline"
-            size="icon"
-            className="h-8 w-8 shrink-0 border-border hover:bg-muted"
-            title="Exportar relatório mensal"
-            aria-label="Exportar relatório mensal"
-          >
-            <FileDown className="h-3.5 w-3.5" />
-          </Button>
-        </div>
+        <Button
+          onClick={() => exportMonthlyReport(leads)}
+          variant="outline"
+          size="icon"
+          className="h-8 w-8 shrink-0 border-border hover:bg-muted"
+          title="Exportar relatório mensal"
+          aria-label="Exportar relatório mensal"
+        >
+          <FileDown className="h-3.5 w-3.5" />
+        </Button>
       </div>
 
-      {/* Mini cards de tempo (Hoje / Semana / Mês) */}
+      {/* Linha 1: Resumo temporal compacto (Hoje / Semana / Mês) */}
       <TemporalCardsCompact leads={leads} />
 
       <PeriodFilter
@@ -66,18 +64,24 @@ export default function Dashboard() {
         }}
       />
 
-      {/* Linha 1 — ROI Protagonista */}
-      <RevenueHeroCard leads={filtered} loading={loading} />
+      {/* Linha 2: Bloco Central de Performance (12 cols) */}
+      <div className="grid grid-cols-12 gap-3">
+        {/* ROI Hero — Col 8 */}
+        <div className="col-span-12 lg:col-span-8">
+          <RevenueHeroCard leads={filtered} loading={loading} />
+        </div>
+        {/* KPI Stack — Col 4 (Vendas + Ticket empilhados) */}
+        <div className="col-span-12 lg:col-span-4">
+          <KpiStack leads={filtered} loading={loading} />
+        </div>
+      </div>
 
-      {/* Linha 2 — KPIs */}
-      <KPICards leads={filtered} loading={loading} />
-
-      {/* Linha 3 — Funil em progress bar */}
+      {/* Linha 3: Funil Stepper Horizontal */}
       <SalesThermometer leads={filtered} />
 
-      {/* Linha 4 — Charts unificados em Tabs (60%) + Motivos de Perda (40%) */}
-      <div className="grid grid-cols-1 lg:grid-cols-5 gap-3">
-        <Card className="lg:col-span-3 border border-border dark:border-white/5 rounded-xl shadow-[0_1px_2px_rgba(15,23,42,0.04)] bg-card">
+      {/* Linha 4: Charts em colunas (Performance 60% + Motivos de Perda 40%) */}
+      <div className="grid grid-cols-12 gap-3">
+        <Card className="col-span-12 lg:col-span-7 border border-border dark:border-white/5 rounded-xl shadow-[0_1px_2px_rgba(15,23,42,0.04)] bg-card">
           <Tabs defaultValue="timeline" className="w-full">
             <CardHeader className="pb-2 pt-3 px-4 flex-row items-center justify-between gap-3 space-y-0">
               <CardTitle className="text-sm font-bold uppercase tracking-wider">
@@ -103,12 +107,12 @@ export default function Dashboard() {
           </Tabs>
         </Card>
 
-        <div className="lg:col-span-2">
+        <div className="col-span-12 lg:col-span-5">
           <LossReasonsDonut leads={filtered} />
         </div>
       </div>
 
-      {/* Linha 5 — Ranking 100% */}
+      {/* Linha 5: Ranking 100% */}
       <SalesRanking leads={filtered} />
     </div>
   );
