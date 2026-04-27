@@ -6,7 +6,8 @@ import { SalesRanking } from "@/components/SalesRanking";
 import { PeriodKPIRow } from "@/components/PeriodKPIRow";
 import { RoiMegaCard } from "@/components/RoiMegaCard";
 import { TeamPerformancePanel } from "@/components/TeamPerformancePanel";
-import { LossRankBars } from "@/components/LossRankBars";
+import { ResponseSpeedPanel } from "@/components/ResponseSpeedPanel";
+import { ObjectionRadar } from "@/components/ObjectionRadar";
 import { VerticalNeonFunnel } from "@/components/VerticalNeonFunnel";
 import { RevenueEvolutionChart } from "@/components/RevenueEvolutionChart";
 import { exportMonthlyReport } from "@/lib/exportReport";
@@ -90,11 +91,12 @@ export default function Dashboard() {
           {/* 3. Linha de Métricas de Volume */}
           <PeriodKPIRow leads={leads} range={range} />
 
-          {/* 4. Tração & Equipe | Motivos de Perda */}
+          {/* 4. Tração & Equipe | Velocidade | Objeções */}
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 pt-2">
             <TeamPerformancePanel leads={filtered} />
-            <LossRankBars leads={filtered} />
+            <ResponseSpeedPanel leads={filtered} />
           </div>
+          <ObjectionRadar leads={filtered} />
 
           {/* 5. Funil Vertical */}
           <VerticalNeonFunnel leads={filtered} />
