@@ -147,15 +147,15 @@ export function LeadsVsSalesTimeline({ leads }: { leads: Lead[] }) {
   }, [leads]);
 
   return (
-    <Card className="border-0 border-t-4 border-t-blue-500 rounded-2xl shadow-[0_4px_24px_-8px_rgba(15,23,42,0.08)] bg-white">
-      <CardHeader>
-        <CardTitle className="text-base">Leads vs Vendas</CardTitle>
-        <p className="text-xs text-muted-foreground">Últimos 7 dias</p>
+    <Card className="border border-slate-100 rounded-xl shadow-[0_1px_2px_rgba(15,23,42,0.04)] bg-card">
+      <CardHeader className="pb-2 pt-3 px-4">
+        <CardTitle className="text-sm font-semibold">Leads vs Vendas</CardTitle>
+        <p className="text-[11px] text-muted-foreground">Últimos 7 dias</p>
       </CardHeader>
-      <CardContent>
-        <div className="h-[280px] w-full">
+      <CardContent className="px-2 pb-3">
+        <div className="h-[220px] w-full">
           <ResponsiveContainer width="100%" height="100%">
-            <AreaChart data={data} margin={{ top: 10, right: 12, left: -12, bottom: 0 }}>
+            <AreaChart data={data} margin={{ top: 8, right: 12, left: -16, bottom: 0 }}>
               <defs>
                 <linearGradient id="gNovosLight" x1="0" y1="0" x2="0" y2="1">
                   <stop offset="0%" stopColor={BLUE} stopOpacity={0.1} />
@@ -166,12 +166,11 @@ export function LeadsVsSalesTimeline({ leads }: { leads: Lead[] }) {
                   <stop offset="100%" stopColor={EMERALD} stopOpacity={0} />
                 </linearGradient>
               </defs>
-              <XAxis dataKey="date" tick={{ fontSize: 11 }} className="fill-muted-foreground" axisLine={false} tickLine={false} />
-              <YAxis allowDecimals={false} tick={{ fontSize: 11 }} className="fill-muted-foreground" axisLine={false} tickLine={false} />
-              <Tooltip contentStyle={tooltipStyle} cursor={{ stroke: BLUE, strokeOpacity: 0.2, strokeWidth: 1 }} />
-              <Legend wrapperStyle={{ fontSize: 11, paddingTop: 8 }} iconType="circle" iconSize={8} />
-              <Area type="monotone" dataKey="novos" name="Novos Leads" stroke={BLUE} strokeWidth={2.5} fill="url(#gNovosLight)" dot={false} activeDot={{ r: 4 }} />
-              <Area type="monotone" dataKey="vendas" name="Vendas" stroke={EMERALD} strokeWidth={2.5} fill="url(#gVendasLight)" dot={false} activeDot={{ r: 4 }} />
+              <XAxis dataKey="date" tick={{ fontSize: 10 }} className="fill-muted-foreground" axisLine={false} tickLine={false} />
+              <YAxis allowDecimals={false} tick={{ fontSize: 10 }} className="fill-muted-foreground" axisLine={false} tickLine={false} width={28} />
+              <Tooltip contentStyle={tooltipStyle} cursor={{ stroke: BLUE, strokeOpacity: 0.15, strokeWidth: 1 }} />
+              <Area type="monotone" dataKey="novos" name="Novos Leads" stroke={BLUE} strokeWidth={2} fill="url(#gNovosLight)" dot={false} activeDot={{ r: 3 }} />
+              <Area type="monotone" dataKey="vendas" name="Vendas" stroke={EMERALD} strokeWidth={2} fill="url(#gVendasLight)" dot={false} activeDot={{ r: 3 }} />
             </AreaChart>
           </ResponsiveContainer>
         </div>
@@ -191,18 +190,18 @@ export function LossReasonsDonut({ leads }: { leads: Lead[] }) {
   }, [leads]);
 
   return (
-    <Card className="border-0 border-t-4 border-t-rose-400 rounded-2xl shadow-[0_4px_24px_-8px_rgba(15,23,42,0.08)] bg-white">
-      <CardHeader>
-        <CardTitle className="text-base">Motivos de Perda</CardTitle>
-        <p className="text-xs text-muted-foreground">Leads que não converteram</p>
+    <Card className="border border-slate-100 rounded-xl shadow-[0_1px_2px_rgba(15,23,42,0.04)] bg-card">
+      <CardHeader className="pb-2 pt-3 px-4">
+        <CardTitle className="text-sm font-semibold">Motivos de Perda</CardTitle>
+        <p className="text-[11px] text-muted-foreground">Leads que não converteram</p>
       </CardHeader>
-      <CardContent>
+      <CardContent className="px-2 pb-3">
         {data.length === 0 ? (
-          <div className="h-[280px] flex items-center justify-center text-sm text-muted-foreground">
+          <div className="h-[220px] flex items-center justify-center text-xs text-muted-foreground">
             Sem dados de perda no período.
           </div>
         ) : (
-          <div className="h-[280px] w-full">
+          <div className="h-[220px] w-full">
             <ResponsiveContainer width="100%" height="100%">
               <PieChart>
                 <Tooltip contentStyle={tooltipStyle} formatter={(v: number, n: string) => [`${v} leads`, n]} />
@@ -212,8 +211,8 @@ export function LossReasonsDonut({ leads }: { leads: Lead[] }) {
                   nameKey="name"
                   cx="50%"
                   cy="45%"
-                  innerRadius={55}
-                  outerRadius={85}
+                  innerRadius={48}
+                  outerRadius={72}
                   paddingAngle={3}
                   stroke="none"
                 >
@@ -224,8 +223,8 @@ export function LossReasonsDonut({ leads }: { leads: Lead[] }) {
                 <Legend
                   verticalAlign="bottom"
                   iconType="circle"
-                  iconSize={8}
-                  wrapperStyle={{ fontSize: 11 }}
+                  iconSize={7}
+                  wrapperStyle={{ fontSize: 10 }}
                 />
               </PieChart>
             </ResponsiveContainer>

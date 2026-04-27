@@ -126,35 +126,32 @@ export function SalesThermometer({ leads }: SalesThermometerProps) {
   }
 
   return (
-    <Card className="overflow-hidden border-0 border-t-4 border-t-rose-400 rounded-2xl shadow-[0_4px_24px_-8px_rgba(15,23,42,0.08)] bg-white">
-      <CardHeader className="pb-3">
+    <Card className="overflow-hidden border border-slate-100 rounded-xl shadow-[0_1px_2px_rgba(15,23,42,0.04)] bg-card">
+      <CardHeader className="pb-2 pt-3 px-4">
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
-          <div className="flex items-center gap-2">
-            <Thermometer className="h-4 w-4 text-rose-500" />
-            <CardTitle className="text-base">Termômetro de Vendas</CardTitle>
+          <div className="flex items-center gap-2 min-w-0">
+            <Thermometer className="h-3.5 w-3.5 text-rose-500" />
+            <CardTitle className="text-sm font-semibold">Termômetro de Vendas</CardTitle>
           </div>
-          <div className="flex items-center gap-2 text-xs">
-            <span className="text-slate-500 font-medium">Conversão geral</span>
+          <div className="flex items-center gap-1.5 text-[11px]">
+            <span className="text-muted-foreground">Conversão geral</span>
             <span
               className={cn(
-                "px-3 py-1 rounded-full font-black tabular-nums text-white text-xs shadow-sm",
+                "px-2 py-0.5 rounded-full font-semibold tabular-nums text-white text-[11px]",
                 overallConv >= 10
-                  ? "bg-gradient-to-r from-emerald-500 to-emerald-600"
+                  ? "bg-emerald-500"
                   : overallConv >= 5
-                    ? "bg-gradient-to-r from-amber-500 to-amber-600"
-                    : "bg-gradient-to-r from-rose-500 to-rose-600"
+                    ? "bg-amber-500"
+                    : "bg-rose-500"
               )}
             >
               {overallConv.toFixed(1)}%
             </span>
           </div>
         </div>
-        <p className="text-xs text-slate-500 mt-1">
-          Onde o lead esfria? Veja o gargalo entre cada etapa do funil.
-        </p>
       </CardHeader>
 
-      <CardContent className="space-y-3">
+      <CardContent className="space-y-2 px-4 pb-3">
         {/* Funil visual compacto */}
         <div className="grid grid-cols-1 sm:grid-cols-7 gap-1.5 items-stretch">
           {stages.map((s, i) => {
