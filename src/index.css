@@ -51,107 +51,35 @@ Plus Jakarta Sans is the primary font for a Premium Enterprise feel.
   }
 
   .dark {
-    /* BI Enterprise: #050505 + bordas zinc-800 */
-    --background: 0 0% 2%;             /* #050505 */
+    /* Apple Business / Stripe Sigma — preto absoluto + grafite + esmeralda */
+    --background: 240 6% 1%;           /* #020203 — preto profundo */
     --foreground: 0 0% 98%;
-    --card: 240 6% 6%;                 /* fallback */
-    --card-foreground: 0 0% 98%;
-    --popover: 240 5% 5%;
-    --popover-foreground: 0 0% 98%;
-    --primary: 0 0% 98%;
-    --primary-foreground: 0 0% 0%;
-    --secondary: 240 4% 12%;
-    --secondary-foreground: 0 0% 98%;
-    --muted: 240 4% 9%;
-    --muted-foreground: 240 5% 64.9%;
-    --accent: 240 4% 12%;
-    --accent-foreground: 0 0% 98%;
-    --destructive: 0 62.8% 50%;
-    --destructive-foreground: 0 0% 98%;
-    --border: 0 0% 100% / 0.10;        /* white/10 */
-    --input: 240 4% 12%;
-    --ring: 240 5% 64.9%;
-
-    --sidebar-background: 0 0% 2%;
-    --sidebar-foreground: 240 5% 84%;
-    --sidebar-primary: 0 0% 98%;
-    --sidebar-primary-foreground: 0 0% 0%;
-    --sidebar-accent: 240 4% 9%;
-    --sidebar-accent-foreground: 0 0% 98%;
-    --sidebar-border: 240 4% 11%;
-    --sidebar-ring: 240 5% 64.9%;
-  }
-
-  .dark {
-    /* Luxury Enterprise: preto absoluto + camadas grafite */
-    --background: 0 0% 0%;             /* #000000 — preto absoluto */
-    --foreground: 0 0% 98%;
-    --card: 240 6% 5%;                 /* #09090b — grafite profundo */
+    --card: 240 6% 4%;                 /* #09090b — grafite */
     --card-foreground: 0 0% 98%;
     --popover: 240 6% 5%;
     --popover-foreground: 0 0% 98%;
-    --primary: 0 0% 98%;
+    --primary: 158 64% 52%;            /* esmeralda vibrante */
     --primary-foreground: 0 0% 0%;
     --secondary: 240 4% 12%;
     --secondary-foreground: 0 0% 98%;
     --muted: 240 4% 9%;
     --muted-foreground: 240 5% 64.9%;
-    --accent: 240 4% 12%;
-    --accent-foreground: 0 0% 98%;
+    --accent: 158 64% 52%;
+    --accent-foreground: 0 0% 0%;
     --destructive: 0 62.8% 50%;
     --destructive-foreground: 0 0% 98%;
-    --border: 0 0% 100% / 0.06;
+    --border: 0 0% 100% / 0.08;
     --input: 240 4% 12%;
-    --ring: 240 5% 64.9%;
+    --ring: 158 64% 52%;
 
-    --sidebar-background: 0 0% 0%;
+    --sidebar-background: 240 6% 1%;
     --sidebar-foreground: 240 5% 84%;
     --sidebar-primary: 0 0% 98%;
     --sidebar-primary-foreground: 0 0% 0%;
     --sidebar-accent: 240 4% 9%;
     --sidebar-accent-foreground: 0 0% 98%;
     --sidebar-border: 240 4% 11%;
-    --sidebar-ring: 240 5% 64.9%;
-  }
-
-  .__obsolete_dark {
-    /* High-End Minimalist (Linear/Vercel): zinc neutro, sem azul */
-    --background: 240 10% 3.9%;        /* #09090b — zinc-950 neutro */
-    --foreground: 0 0% 98%;            /* #fafafa */
-
-    --card: 0 0% 0%;                   /* #000000 — preto puro */
-    --card-foreground: 0 0% 98%;
-
-    --popover: 240 10% 3.9%;
-    --popover-foreground: 0 0% 98%;
-
-    --primary: 0 0% 98%;               /* branco puro como ação */
-    --primary-foreground: 240 10% 3.9%;
-
-    --secondary: 240 4% 16%;           /* #27272a — zinc-800 */
-    --secondary-foreground: 0 0% 98%;
-
-    --muted: 240 4% 10%;               /* zinc-900 */
-    --muted-foreground: 240 5% 64.9%;  /* #a1a1aa — zinc-400 */
-
-    --accent: 240 4% 16%;
-    --accent-foreground: 0 0% 98%;
-
-    --destructive: 0 62.8% 50%;
-    --destructive-foreground: 0 0% 98%;
-
-    --border: 240 4% 16%;              /* #27272a — zinc-800 */
-    --input: 240 4% 16%;
-    --ring: 240 5% 64.9%;
-
-    --sidebar-background: 240 10% 3.9%;
-    --sidebar-foreground: 240 5% 84%;
-    --sidebar-primary: 0 0% 98%;
-    --sidebar-primary-foreground: 240 10% 3.9%;
-    --sidebar-accent: 240 4% 10%;
-    --sidebar-accent-foreground: 0 0% 98%;
-    --sidebar-border: 240 4% 16%;
-    --sidebar-ring: 240 5% 64.9%;
+    --sidebar-ring: 158 64% 52%;
   }
 }
 
