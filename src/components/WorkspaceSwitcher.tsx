@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -8,7 +9,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
-import { Check, ChevronsUpDown, Plus, Store as StoreIcon } from "lucide-react";
+import { Check, ChevronsUpDown, Plus, Settings, Store as StoreIcon } from "lucide-react";
 import { useStores } from "@/hooks/useStores";
 import { CreateStoreDialog } from "@/components/CreateStoreDialog";
 import { cn } from "@/lib/utils";
