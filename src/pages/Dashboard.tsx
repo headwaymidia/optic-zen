@@ -2,16 +2,16 @@ import { useMemo, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
-import { RevenueHeroCard, KpiStack } from "@/components/DashboardSummary";
+import { RevenueHeroCard, KpiStack, KPICards } from "@/components/DashboardSummary";
 import { useLeads } from "@/hooks/useLeads";
 import { PeriodFilter, PeriodKey, getPeriodRange } from "@/components/PeriodFilter";
 import { LeadsVolumeChart } from "@/components/LeadsVolumeChart";
-import { TemporalCardsCompact } from "@/components/TemporalCards";
 import { SalesRanking } from "@/components/SalesRanking";
 import { SalesThermometer } from "@/components/SalesThermometer";
 import { LeadsVsSalesTimeline, LossReasonsDonut } from "@/components/ExecutiveCharts";
 import { exportMonthlyReport } from "@/lib/exportReport";
-import { isWithinInterval, parseISO } from "date-fns";
+import { isWithinInterval, parseISO, format } from "date-fns";
+import { ptBR } from "date-fns/locale";
 import { FileDown } from "lucide-react";
 
 export default function Dashboard() {
@@ -29,6 +29,7 @@ export default function Dashboard() {
   );
 
   const total = filtered.length;
+  const periodSummary = `Exibindo dados de ${format(range.from, "dd/MM", { locale: ptBR })} a ${format(range.to, "dd/MM", { locale: ptBR })}`;
 
   return (
     <div className="p-3 sm:p-4 space-y-3">
@@ -52,34 +53,36 @@ export default function Dashboard() {
         </Button>
       </div>
 
-      {/* Linha 1: Resumo temporal compacto (Hoje / Semana / Mês) */}
-      <TemporalCardsCompact leads={leads} />
+      {/* Filtros de período + resumo inline */}
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <PeriodFilter
+          value={period}
+          customRange={custom}
+          onChange={(k, c) => {
+            setPeriod(k);
+            if (c) setCustom(c);
+          }}
+        />
+        <p className="text-[11px] text-muted-foreground italic">{periodSummary}</p>
+      </div>
 
-      <PeriodFilter
-        value={period}
-        customRange={custom}
-        onChange={(k, c) => {
-          setPeriod(k);
-          if (c) setCustom(c);
-        }}
-      />
+      {/* KPIs (resumo do filtrado) */}
+      <KPICards leads={filtered} loading={loading} />
 
-      {/* Linha 2: Bloco Central de Performance (12 cols) */}
+      {/* Bloco Central de Performance: ROI (col-8) + Stack (col-4) */}
       <div className="grid grid-cols-12 gap-3">
-        {/* ROI Hero — Col 8 */}
         <div className="col-span-12 lg:col-span-8">
           <RevenueHeroCard leads={filtered} loading={loading} />
         </div>
-        {/* KPI Stack — Col 4 (Vendas + Ticket empilhados) */}
         <div className="col-span-12 lg:col-span-4">
           <KpiStack leads={filtered} loading={loading} />
         </div>
       </div>
 
-      {/* Linha 3: Funil Stepper Horizontal */}
+      {/* Funil Stepper Horizontal */}
       <SalesThermometer leads={filtered} />
 
-      {/* Linha 4: Charts em colunas (Performance 60% + Motivos de Perda 40%) */}
+      {/* Charts: Performance (Tabs) + Motivos de Perda */}
       <div className="grid grid-cols-12 gap-3">
         <Card className="col-span-12 lg:col-span-7 border border-border dark:border-white/5 rounded-xl shadow-[0_1px_2px_rgba(15,23,42,0.04)] bg-card">
           <Tabs defaultValue="timeline" className="w-full">
@@ -112,7 +115,7 @@ export default function Dashboard() {
         </div>
       </div>
 
-      {/* Linha 5: Ranking 100% */}
+      {/* Ranking 100% */}
       <SalesRanking leads={filtered} />
     </div>
   );
