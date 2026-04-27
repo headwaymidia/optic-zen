@@ -58,7 +58,7 @@ Plus Jakarta Sans is the primary font for a Premium Enterprise feel.
 
   .dark {
     /* Luxury Enterprise: preto absoluto + camadas grafite */
-    --background: 0 0% 0%;             /* #000000 — preto absoluto */
+    --background: 240 20% 1%;          /* #020203 — preto absoluto */
     --foreground: 0 0% 98%;
     --card: 240 6% 5%;                 /* #09090b — grafite profundo */
     --card-foreground: 0 0% 98%;
