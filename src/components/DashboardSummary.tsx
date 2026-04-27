@@ -25,10 +25,10 @@ export function RevenueHeroCard({ leads, loading }: { leads: Lead[]; loading: bo
       <CardContent className="p-10 h-full flex flex-col justify-between gap-10">
         {/* Eyebrow */}
         <div className="flex items-center justify-between">
-          <p className="text-[10px] uppercase tracking-[0.3em] text-muted-foreground font-light">
+          <p className="text-[10px] uppercase tracking-[0.2em] text-zinc-500 font-medium">
             Faturamento Gerado
           </p>
-          <span className="text-[10px] text-muted-foreground tabular-nums font-light tracking-[0.2em] uppercase">
+          <span className="text-[10px] text-zinc-500 tabular-nums font-medium tracking-[0.2em] uppercase">
             {buyers.length} {buyers.length === 1 ? "Venda" : "Vendas"}
           </span>
         </div>
@@ -37,7 +37,7 @@ export function RevenueHeroCard({ leads, loading }: { leads: Lead[]; loading: bo
         <div className="flex flex-col items-center justify-center gap-3 py-2">
           <div className="flex items-center gap-3">
             <p
-              className="text-luxury-gradient text-5xl sm:text-6xl font-medium tabular-nums tracking-tight leading-none"
+              className="text-luxury-gradient text-6xl font-medium tabular-nums tracking-tighter leading-none"
               style={{ fontFamily: "Inter, ui-sans-serif, system-ui, sans-serif" }}
             >
               {loading ? "—" : formatBRL(totalFaturamento)}
@@ -47,7 +47,7 @@ export function RevenueHeroCard({ leads, loading }: { leads: Lead[]; loading: bo
               <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500" />
             </span>
           </div>
-          <p className="text-[9px] uppercase tracking-[0.35em] text-muted-foreground/50 font-light">
+          <p className="text-[9px] uppercase tracking-[0.3em] text-zinc-600 font-medium">
             Tempo Real
           </p>
         </div>
@@ -55,27 +55,27 @@ export function RevenueHeroCard({ leads, loading }: { leads: Lead[]; loading: bo
         {/* Breakdown ultra-discreto */}
         <div className="space-y-2.5">
           <div className="flex items-center justify-between text-[11px]">
-            <span className="text-muted-foreground font-extralight tracking-wider uppercase">Tráfego Pago</span>
+            <span className="text-zinc-500 font-medium tracking-[0.15em] uppercase text-[10px]">Tráfego Pago</span>
             <span className="tabular-nums text-foreground font-medium">
               {loading ? "—" : formatBRL(faturamentoAds)}
               {!loading && totalFaturamento > 0 && (
-                <span className="ml-2 text-muted-foreground font-extralight">{adsPct.toFixed(0)}%</span>
+                <span className="ml-2 text-zinc-500 font-light">{adsPct.toFixed(0)}%</span>
               )}
             </span>
           </div>
           <div className="flex items-center justify-between text-[11px]">
-            <span className="text-muted-foreground font-extralight tracking-wider uppercase">Orgânico</span>
+            <span className="text-zinc-500 font-medium tracking-[0.15em] uppercase text-[10px]">Orgânico</span>
             <span className="tabular-nums text-foreground font-medium">
               {loading ? "—" : formatBRL(faturamentoOrganico)}
               {!loading && totalFaturamento > 0 && (
-                <span className="ml-2 text-muted-foreground font-extralight">{orgPct.toFixed(0)}%</span>
+                <span className="ml-2 text-zinc-500 font-light">{orgPct.toFixed(0)}%</span>
               )}
             </span>
           </div>
           {!loading && totalFaturamento > 0 && (
             <div className="h-px w-full overflow-hidden bg-white/5 flex">
               <div className="h-full bg-foreground/80 transition-all" style={{ width: `${adsPct}%` }} />
-              <div className="h-full bg-muted-foreground/30 transition-all" style={{ width: `${orgPct}%` }} />
+              <div className="h-full bg-zinc-700 transition-all" style={{ width: `${orgPct}%` }} />
             </div>
           )}
         </div>
