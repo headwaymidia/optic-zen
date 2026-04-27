@@ -207,15 +207,15 @@ export function LossReasonsDonut({ leads }: { leads: Lead[] }) {
   }, [leads]);
 
   return (
-    <Card className="border border-white/10 bg-card rounded-lg h-full">
+    <Card className="glass-card rounded-lg h-full border-0">
       <CardHeader className="pb-2 pt-4 px-5">
-        <CardTitle className="text-[11px] font-medium uppercase tracking-[0.14em] text-muted-foreground">
+        <CardTitle className="text-[11px] font-extralight uppercase tracking-[0.2em] text-muted-foreground">
           Motivos de Perda
         </CardTitle>
       </CardHeader>
       <CardContent className="px-2 pb-4">
         {data.length === 0 ? (
-          <div className="h-[180px] flex items-center justify-center text-xs text-muted-foreground">
+          <div className="h-[180px] flex items-center justify-center text-xs text-muted-foreground font-extralight">
             Sem dados de perda no período.
           </div>
         ) : (
@@ -229,8 +229,8 @@ export function LossReasonsDonut({ leads }: { leads: Lead[] }) {
                   nameKey="name"
                   cx="50%"
                   cy="45%"
-                  innerRadius={50}
-                  outerRadius={58}
+                  innerRadius={56}
+                  outerRadius={60}
                   paddingAngle={2}
                   stroke="none"
                 >
@@ -241,8 +241,8 @@ export function LossReasonsDonut({ leads }: { leads: Lead[] }) {
                 <Legend
                   verticalAlign="bottom"
                   iconType="circle"
-                  iconSize={6}
-                  wrapperStyle={{ fontSize: 10, color: ZINC_400 }}
+                  iconSize={5}
+                  wrapperStyle={{ fontSize: 10, color: ZINC_400, fontWeight: 200, letterSpacing: "0.1em" }}
                 />
               </PieChart>
             </ResponsiveContainer>
