@@ -35,8 +35,6 @@ import {
   ResponsiveDialogTitle,
 } from "@/components/ResponsiveDialog";
 import {
-} from "@/components/ui/dialog";
-import {
   Select,
   SelectContent,
   SelectItem,
@@ -378,81 +376,79 @@ function InviteMemberDialog({
   }
 
   return (
-    <Dialog
+    <ResponsiveDialog
       open={open}
       onOpenChange={(o) => {
         onOpenChange(o);
         if (!o) reset();
       }}
     >
-      <DialogContent className="sm:max-w-[460px] rounded-2xl">
-        <DialogHeader>
-          <DialogTitle className="text-lg font-semibold tracking-tight">
-            Convidar Novo Membro
-          </DialogTitle>
-          <DialogDescription className="text-sm text-muted-foreground">
-            Envie um convite para adicionar um novo colaborador a esta filial.
-          </DialogDescription>
-        </DialogHeader>
+      <ResponsiveDialogHeader>
+        <ResponsiveDialogTitle className="text-lg font-semibold tracking-tight">
+          Convidar Novo Membro
+        </ResponsiveDialogTitle>
+        <ResponsiveDialogDescription className="text-sm text-muted-foreground">
+          Envie um convite para adicionar um novo colaborador a esta filial.
+        </ResponsiveDialogDescription>
+      </ResponsiveDialogHeader>
 
-        <form onSubmit={handleSubmit} className="space-y-5 pt-2">
-          <div className="space-y-2">
-            <Label
-              htmlFor="invite-email"
-              className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground"
-            >
-              E-mail do colaborador
-            </Label>
-            <Input
-              id="invite-email"
-              type="email"
-              required
-              autoFocus
-              placeholder="exemplo@otica.com"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              className="h-10"
-            />
-          </div>
+      <form onSubmit={handleSubmit} className="space-y-5 pt-2">
+        <div className="space-y-2">
+          <Label
+            htmlFor="invite-email"
+            className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground"
+          >
+            E-mail do colaborador
+          </Label>
+          <Input
+            id="invite-email"
+            type="email"
+            required
+            autoFocus
+            placeholder="exemplo@otica.com"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            className="h-11"
+          />
+        </div>
 
-          <div className="space-y-2">
-            <Label className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
-              Cargo / Permissão
-            </Label>
-            <Select value={role} onValueChange={(v) => setRole(v as TeamRole)}>
-              <SelectTrigger className="h-10">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="Dono">Dono</SelectItem>
-                <SelectItem value="Administrador">Administrador</SelectItem>
-                <SelectItem value="Gerente">Gerente</SelectItem>
-                <SelectItem value="Vendedor">Vendedor</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
+        <div className="space-y-2">
+          <Label className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
+            Cargo / Permissão
+          </Label>
+          <Select value={role} onValueChange={(v) => setRole(v as TeamRole)}>
+            <SelectTrigger className="h-11">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="Dono">Dono</SelectItem>
+              <SelectItem value="Administrador">Administrador</SelectItem>
+              <SelectItem value="Gerente">Gerente</SelectItem>
+              <SelectItem value="Vendedor">Vendedor</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
 
-          <DialogFooter className="gap-2 sm:justify-between pt-2">
-            <Button
-              type="button"
-              variant="ghost"
-              onClick={() => onOpenChange(false)}
-              className="text-muted-foreground hover:text-foreground"
-            >
-              Cancelar
-            </Button>
-            <Button
-              type="submit"
-              disabled={submitting || !email.trim()}
-              className="gap-2 bg-emerald-500 hover:bg-emerald-500/90 text-white"
-            >
-              <UserPlus className="h-4 w-4" />
-              {submitting ? "Enviando…" : "Enviar Convite"}
-            </Button>
-          </DialogFooter>
-        </form>
-      </DialogContent>
-    </Dialog>
+        <ResponsiveDialogFooter className="sm:justify-between">
+          <Button
+            type="button"
+            variant="ghost"
+            onClick={() => onOpenChange(false)}
+            className="h-11 text-muted-foreground hover:text-foreground"
+          >
+            Cancelar
+          </Button>
+          <Button
+            type="submit"
+            disabled={submitting || !email.trim()}
+            className="h-11 gap-2 bg-emerald-500 hover:bg-emerald-500/90 text-white"
+          >
+            <UserPlus className="h-4 w-4" />
+            {submitting ? "Enviando…" : "Enviar Convite"}
+          </Button>
+        </ResponsiveDialogFooter>
+      </form>
+    </ResponsiveDialog>
   );
 }
 
