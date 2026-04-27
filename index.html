@@ -37,6 +37,15 @@
   </head>
 
   <body>
+    <!-- Aplica tema antes do React montar para evitar flash. Default: light. -->
+    <script>
+      (function () {
+        try {
+          var t = localStorage.getItem("ui:theme");
+          if (t === "dark") document.documentElement.classList.add("dark");
+        } catch (_) {}
+      })();
+    </script>
     <div id="root"></div>
     <script type="module" src="/src/main.tsx"></script>
   </body>
