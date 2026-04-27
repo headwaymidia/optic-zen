@@ -22,14 +22,14 @@ export function RevenueHeroCard({ leads, loading }: { leads: Lead[]; loading: bo
 
   return (
     <Card className="glass-card rounded-lg h-full border-0">
-      <CardContent className="p-8 h-full flex flex-col justify-between gap-8">
+      <CardContent className="p-10 h-full flex flex-col justify-between gap-10">
         {/* Eyebrow */}
         <div className="flex items-center justify-between">
-          <p className="text-[11px] uppercase tracking-[0.2em] text-muted-foreground font-extralight">
+          <p className="text-[10px] uppercase tracking-[0.3em] text-muted-foreground font-light">
             Faturamento Gerado
           </p>
-          <span className="text-[10px] text-muted-foreground tabular-nums font-extralight tracking-wider">
-            {buyers.length} {buyers.length === 1 ? "VENDA" : "VENDAS"}
+          <span className="text-[10px] text-muted-foreground tabular-nums font-light tracking-[0.2em] uppercase">
+            {buyers.length} {buyers.length === 1 ? "Venda" : "Vendas"}
           </span>
         </div>
 
@@ -47,7 +47,7 @@ export function RevenueHeroCard({ leads, loading }: { leads: Lead[]; loading: bo
               <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500" />
             </span>
           </div>
-          <p className="text-[10px] uppercase tracking-[0.25em] text-muted-foreground/60 font-extralight">
+          <p className="text-[9px] uppercase tracking-[0.35em] text-muted-foreground/50 font-light">
             Tempo Real
           </p>
         </div>
