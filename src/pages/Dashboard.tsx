@@ -70,7 +70,7 @@ export default function Dashboard() {
       <KPICards leads={filtered} loading={loading} />
 
       {/* Bloco Central: ROI (col-8, ~66%) + Motivos de Perda (col-4, ~33%) */}
-      <div className="grid grid-cols-12 gap-6 items-stretch">
+      <div className="grid grid-cols-12 gap-10 items-stretch">
         <div className="col-span-12 lg:col-span-8">
           <RevenueHeroCard leads={filtered} loading={loading} />
         </div>
