@@ -49,7 +49,7 @@ export function LossRankBars({ leads }: Props) {
   const total = items.reduce((s, d) => s + d.count, 0);
 
   return (
-    <Card className="rounded-3xl border border-border/70 bg-card/60 backdrop-blur-xl p-7">
+    <Card className="glass-card rounded-2xl p-7">
       <div className="flex items-start justify-between mb-6">
         <div>
           <p className="text-[10px] uppercase tracking-[0.3em] text-muted-foreground font-bold mb-1.5">
@@ -95,14 +95,18 @@ export function LossRankBars({ leads }: Props) {
                     </span>
                   </div>
                 </div>
-                <div className="h-1.5 w-full rounded-full bg-muted/50 overflow-hidden">
+                <div className="h-1.5 w-full rounded-full bg-[#1a1a1a] overflow-hidden">
                   <div
-                    className={
-                      idx === 0
-                        ? "h-full rounded-full bg-gradient-to-r from-rose-500 to-rose-400 transition-all"
-                        : "h-full rounded-full bg-gradient-to-r from-zinc-400 to-zinc-300 dark:from-zinc-500 dark:to-zinc-600 transition-all"
-                    }
-                    style={{ width: `${w}%` }}
+                    className="h-full rounded-full transition-all"
+                    style={{
+                      width: `${w}%`,
+                      background:
+                        idx === 0
+                          ? "linear-gradient(90deg, #FACC15 0%, #FDE047 100%)"
+                          : "linear-gradient(90deg, #52525b 0%, #71717a 100%)",
+                      boxShadow:
+                        idx === 0 ? "0 0 8px rgba(250,204,21,0.55)" : "none",
+                    }}
                   />
                 </div>
               </div>

@@ -7,7 +7,7 @@ import { PeriodKPIRow } from "@/components/PeriodKPIRow";
 import { RoiMegaCard } from "@/components/RoiMegaCard";
 import { DistributionRow } from "@/components/DistributionRow";
 import { LossRankBars } from "@/components/LossRankBars";
-import { PointOfAttentionFunnel } from "@/components/PointOfAttentionFunnel";
+import { VerticalNeonFunnel } from "@/components/VerticalNeonFunnel";
 import { RevenueEvolutionChart } from "@/components/RevenueEvolutionChart";
 import { exportMonthlyReport } from "@/lib/exportReport";
 import { isWithinInterval, parseISO, format } from "date-fns";
@@ -86,8 +86,8 @@ export default function Dashboard() {
             <LossRankBars leads={filtered} />
           </div>
 
-          {/* 4. Funil Point of Attention */}
-          <PointOfAttentionFunnel leads={filtered} />
+          {/* 4. Funil Vertical Neon — pirâmide invertida */}
+          <VerticalNeonFunnel leads={filtered} />
 
           {/* 5. Evolução de Faturamento */}
           <RevenueEvolutionChart leads={leads} />
