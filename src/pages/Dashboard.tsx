@@ -43,7 +43,7 @@ export default function Dashboard() {
 
   return (
     <div
-      className="p-6 sm:p-8 space-y-6"
+      className="p-4 sm:p-6 lg:p-8 space-y-4 sm:space-y-6"
       style={{
         fontFamily:
           "'Inter','Geist Sans',-apple-system,BlinkMacSystemFont,sans-serif",
@@ -90,16 +90,16 @@ export default function Dashboard() {
         <p className="text-xs text-zinc-500">Carregando…</p>
       ) : (
         <>
-          {/* 2. Linha de Topo — Faturamento + KPIs lado a lado */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3 pt-2 items-stretch">
+          {/* 2. Linha de Topo — mobile: Faturamento full-width + KPIs em 2 colunas */}
+          <div className="grid grid-cols-1 lg:grid-cols-5 gap-3 pt-2 items-stretch">
             <div className="lg:col-span-2">
               <RoiMegaCard leads={filtered} />
             </div>
             <PeriodKPIRow leads={storeLeads} range={range} inline />
           </div>
 
-          {/* 4. Velocidade & Ranking — lado a lado 50/50 */}
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 pt-2 items-stretch">
+          {/* 4. Velocidade & Ranking — mobile: empilha 100% / desktop: 50-50 */}
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6 pt-2 items-stretch">
             <ResponseSpeedCard leads={filtered} />
             <SalesRanking leads={filtered} />
           </div>
