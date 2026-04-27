@@ -201,8 +201,8 @@ export function LossReasonsDonut({ leads }: { leads: Lead[] }) {
 
   return (
     <Card className="glass-card rounded-lg h-full border-0">
-      <CardHeader className="pb-2 pt-4 px-5">
-        <CardTitle className="text-[11px] font-extralight uppercase tracking-[0.2em] text-muted-foreground">
+      <CardHeader className="pb-2 pt-5 px-6">
+        <CardTitle className="text-[10px] font-light uppercase tracking-[0.3em] text-muted-foreground">
           Motivos de Perda
         </CardTitle>
       </CardHeader>
