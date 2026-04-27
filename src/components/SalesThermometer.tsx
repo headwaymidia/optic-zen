@@ -25,10 +25,10 @@ export function SalesThermometer({ leads }: SalesThermometerProps) {
     const comprou = leads.filter((l) => l.status === "Compareceu e Comprou").length;
 
     return [
-      { key: "captacao",   label: "Captação",       count: total,      conv: null },
-      { key: "agendou",    label: "Agendamento",    count: agendou,    conv: total > 0 ? agendou / total : null },
-      { key: "compareceu", label: "Comparecimento", count: compareceu, conv: agendou > 0 ? compareceu / agendou : null },
-      { key: "comprou",    label: "Venda",          count: comprou,    conv: compareceu > 0 ? comprou / compareceu : null },
+      { key: "captacao",   label: "Captação",       count: total,      conv: null as number | null,                          Icon: Sparkles },
+      { key: "agendou",    label: "Agendamento",    count: agendou,    conv: total > 0 ? agendou / total : null,             Icon: CalendarCheck },
+      { key: "compareceu", label: "Comparecimento", count: compareceu, conv: agendou > 0 ? compareceu / agendou : null,      Icon: UserCheck },
+      { key: "comprou",    label: "Venda",          count: comprou,    conv: compareceu > 0 ? comprou / compareceu : null,   Icon: Trophy },
     ];
   }, [leads]);
 
