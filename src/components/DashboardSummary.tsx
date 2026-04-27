@@ -21,7 +21,7 @@ export function RevenueHeroCard({ leads, loading }: { leads: Lead[]; loading: bo
   const orgPct = 100 - adsPct;
 
   return (
-    <Card className="border border-border dark:border-white/5 bg-card rounded-xl shadow-[0_1px_2px_rgba(15,23,42,0.04)] dark:bg-gradient-to-br dark:from-emerald-950/30 dark:via-card dark:to-card dark:shadow-[0_0_40px_-12px_hsl(160_84%_45%/0.4)]">
+    <Card className="border border-border dark:border-white/5 bg-card rounded-xl shadow-[0_1px_2px_rgba(15,23,42,0.04)]">
       <CardContent className="p-4">
         <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
           {/* Bloco principal: valor */}
