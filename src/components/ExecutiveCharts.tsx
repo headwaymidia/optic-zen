@@ -24,6 +24,7 @@ const BLUE = "#3B82F6";
 const EMERALD = "#10B981";
 const AMBER = "#FBBF24";       // Dourado vibrante
 const VIOLET = "#8B5CF6";      // Violeta elétrico
+const CYAN = "#06B6D4";        // Ciano para perdas
 const ROSE = "#F43F5E";
 const SLATE = "#94A3B8";
 
@@ -38,7 +39,7 @@ const LOSS_REASONS = [
   { key: "preco", label: "Preço", color: ROSE, match: ["preç", "caro", "valor"] },
   { key: "distancia", label: "Distância", color: VIOLET, match: ["dist", "long", "endere"] },
   { key: "semresposta", label: "Sem Resposta", color: SLATE, match: ["sem resp", "não resp", "nao resp", "silenc"] },
-  { key: "outros", label: "Outros", color: AMBER, match: [] },
+  { key: "outros", label: "Outros", color: CYAN, match: [] },
 ];
 
 function pct(num: number, den: number) {
