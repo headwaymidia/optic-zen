@@ -152,8 +152,12 @@ export function LeadsVsSalesTimeline({ leads, embedded = false }: { leads: Lead[
         <AreaChart data={data} margin={{ top: 8, right: 12, left: -16, bottom: 0 }}>
           <defs>
             <linearGradient id="gVendasArea" x1="0" y1="0" x2="0" y2="1">
-              <stop offset="0%" stopColor={EMERALD} stopOpacity={0.12} />
+              <stop offset="0%" stopColor={EMERALD} stopOpacity={0.03} />
               <stop offset="100%" stopColor={EMERALD} stopOpacity={0} />
+            </linearGradient>
+            <linearGradient id="gLeadsArea" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stopColor={WHITE} stopOpacity={0.03} />
+              <stop offset="100%" stopColor={WHITE} stopOpacity={0} />
             </linearGradient>
           </defs>
           <XAxis
@@ -171,10 +175,10 @@ export function LeadsVsSalesTimeline({ leads, embedded = false }: { leads: Lead[
           />
           <Tooltip
             contentStyle={tooltipStyle}
-            cursor={{ stroke: ZINC_700, strokeOpacity: 0.4, strokeWidth: 1 }}
+            cursor={{ stroke: ZINC_700, strokeOpacity: 0.3, strokeWidth: 1 }}
           />
-          <Area type="monotone" dataKey="novos" name="Leads" stroke={WHITE} strokeWidth={1.25} fill="transparent" dot={false} activeDot={{ r: 3, fill: WHITE }} />
-          <Area type="monotone" dataKey="vendas" name="Vendas" stroke={EMERALD} strokeWidth={1.5} fill="url(#gVendasArea)" fillOpacity={1} dot={false} activeDot={{ r: 3, fill: EMERALD }} />
+          <Area type="monotone" dataKey="novos" name="Leads" stroke={WHITE} strokeWidth={1} fill="url(#gLeadsArea)" fillOpacity={1} dot={false} activeDot={{ r: 2.5, fill: WHITE }} />
+          <Area type="monotone" dataKey="vendas" name="Vendas" stroke={EMERALD} strokeWidth={1} fill="url(#gVendasArea)" fillOpacity={1} dot={false} activeDot={{ r: 2.5, fill: EMERALD }} />
         </AreaChart>
       </ResponsiveContainer>
     </div>
@@ -183,9 +187,9 @@ export function LeadsVsSalesTimeline({ leads, embedded = false }: { leads: Lead[
   if (embedded) return chart;
 
   return (
-    <Card className="border border-white/10 bg-card rounded-lg">
+    <Card className="glass-card rounded-lg border-0">
       <CardHeader className="pb-2 pt-4 px-5">
-        <CardTitle className="text-[11px] font-medium uppercase tracking-[0.14em] text-muted-foreground">Leads vs Vendas</CardTitle>
+        <CardTitle className="text-[11px] font-extralight uppercase tracking-[0.2em] text-muted-foreground">Leads vs Vendas</CardTitle>
       </CardHeader>
       <CardContent className="px-2 pb-3">{chart}</CardContent>
     </Card>
