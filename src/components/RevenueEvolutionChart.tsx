@@ -93,7 +93,7 @@ interface Props {
  * Funciona em Light & Dark com cores semânticas.
  */
 export function RevenueEvolutionChart({ leads }: Props) {
-  const [metric, setMetric] = useState<MetricKey>("faturamento");
+  const [metric, setMetric] = useState<MetricKey>("vendas");
   const [compare, setCompare] = useState(false);
 
   const cfg = METRICS[metric];
@@ -108,7 +108,8 @@ export function RevenueEvolutionChart({ leads }: Props) {
 
     const compute = (day: Date): number => {
       switch (metric) {
-        case "faturamento":
+        case "vendas":
+          // Vendas = Faturamento (valor financeiro consolidado)
           return leads
             .filter(
               (l) =>
@@ -125,12 +126,6 @@ export function RevenueEvolutionChart({ leads }: Props) {
             (l) =>
               l.status &&
               SCHEDULED_STATUSES.has(l.status) &&
-              isSameDay(parseISO(l.updated_at ?? l.created_at!), day)
-          ).length;
-        case "vendas":
-          return leads.filter(
-            (l) =>
-              l.status === "Compareceu e Comprou" &&
               isSameDay(parseISO(l.updated_at ?? l.created_at!), day)
           ).length;
       }
