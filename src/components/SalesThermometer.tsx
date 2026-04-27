@@ -73,10 +73,10 @@ export function SalesThermometer({ leads }: SalesThermometerProps) {
       </CardHeader>
 
       <CardContent className="px-5 pb-5 pt-1 space-y-4">
-        {/* Barra de progresso com gradiente sutil zinc → emerald */}
-        <div className="relative h-1 w-full rounded-full bg-zinc-900 overflow-hidden">
+        {/* Trilha de vidro: cinza escuro + preenchimento gradiente esmeralda → ciano */}
+        <div className="relative h-1.5 w-full rounded-full bg-zinc-900 overflow-hidden ring-1 ring-inset ring-white/5">
           <div
-            className="absolute inset-y-0 left-0 rounded-full bg-gradient-to-r from-zinc-700 via-zinc-500 to-emerald-500 transition-all"
+            className="absolute inset-y-0 left-0 rounded-full bg-gradient-to-r from-emerald-500 to-cyan-400 transition-all shadow-[0_0_12px_rgba(16,185,129,0.35)]"
             style={{ width: `${overallConv}%` }}
           />
         </div>

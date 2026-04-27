@@ -96,7 +96,7 @@ export function AppSidebar() {
                 <Button
                   size="icon"
                   onClick={() => setNewLeadOpen(true)}
-                  className="h-10 w-10 p-0 justify-center rounded-xl bg-primary hover:bg-primary/90 text-primary-foreground shadow-sm"
+                  className="h-10 w-10 p-0 justify-center rounded-xl bg-white text-black hover:bg-zinc-200 shadow-sm"
                   aria-label="Novo Lead"
                 >
                   <Plus className="h-4 w-4" />
@@ -107,7 +107,7 @@ export function AppSidebar() {
           ) : (
             <Button
               onClick={() => setNewLeadOpen(true)}
-              className="w-full h-10 rounded-xl bg-primary hover:bg-primary/90 text-primary-foreground font-semibold gap-2 shadow-sm"
+              className="w-full h-10 rounded-xl bg-white hover:bg-zinc-200 text-black font-semibold gap-2 shadow-sm"
             >
               <Plus className="h-4 w-4" />
               Novo Lead

@@ -25,19 +25,19 @@ export function RevenueHeroCard({ leads, loading }: { leads: Lead[]; loading: bo
       <CardContent className="p-10 h-full flex flex-col justify-between gap-10">
         {/* Eyebrow */}
         <div className="flex items-center justify-between">
-          <p className="text-[10px] uppercase tracking-[0.2em] text-zinc-500 font-medium">
+          <p className="text-[10px] uppercase tracking-[0.2em] text-zinc-500 font-bold">
             Faturamento Gerado
           </p>
-          <span className="text-[10px] text-zinc-500 tabular-nums font-medium tracking-[0.2em] uppercase">
+          <span className="text-[10px] text-zinc-500 tabular-nums font-bold tracking-[0.2em] uppercase">
             {buyers.length} {buyers.length === 1 ? "Venda" : "Vendas"}
           </span>
         </div>
 
-        {/* Valor centralizado + ping live */}
+        {/* Valor centralizado + halo branco + ping live */}
         <div className="flex flex-col items-center justify-center gap-3 py-2">
           <div className="flex items-center gap-3">
             <p
-              className="text-white emerald-aura text-6xl font-semibold tabular-nums tracking-tighter leading-none"
+              className="text-white text-white-glow text-6xl font-semibold tabular-nums tracking-tighter leading-none"
               style={{ fontFamily: "Inter, ui-sans-serif, system-ui, sans-serif" }}
             >
               {loading ? "—" : formatBRL(totalFaturamento)}
@@ -106,7 +106,7 @@ export function KPICards({ leads, loading }: { leads: Lead[]; loading: boolean }
         <Card key={s.key} className="glass-card rounded-lg border-0">
           <CardContent className="p-5">
             <div className="flex items-center justify-between mb-4">
-              <p className="text-[10px] font-medium uppercase tracking-[0.2em] text-zinc-500 truncate">
+              <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-zinc-500 truncate">
                 {s.label}
               </p>
               <s.icon className="h-3.5 w-3.5 text-zinc-500" strokeWidth={1.25} />
