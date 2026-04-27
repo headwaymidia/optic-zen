@@ -34,10 +34,10 @@ export function RevenueHeroCard({ leads, loading }: { leads: Lead[]; loading: bo
       <CardContent className="p-12 h-full flex flex-col justify-between gap-12 relative">
         {/* Eyebrow — assinatura discreta */}
         <div className="flex items-center justify-between">
-          <p className="text-[9px] uppercase tracking-[0.3em] text-zinc-500 font-medium">
+          <p className="text-[10px] uppercase tracking-[0.3em] text-zinc-500 font-bold">
             Faturamento Gerado
           </p>
-          <span className="text-[9px] text-zinc-500 tabular-nums font-medium tracking-[0.3em] uppercase">
+          <span className="text-[10px] text-zinc-500 tabular-nums font-bold tracking-[0.3em] uppercase">
             {buyers.length} {buyers.length === 1 ? "Venda" : "Vendas"}
           </span>
         </div>
@@ -46,7 +46,7 @@ export function RevenueHeroCard({ leads, loading }: { leads: Lead[]; loading: bo
         <div className="flex flex-col items-center justify-center gap-4 py-2">
           <div className="flex items-center gap-3">
             <p
-              className="text-7xl font-bold tabular-nums tracking-tighter leading-none bg-gradient-to-b from-white to-zinc-400 bg-clip-text text-transparent"
+              className="text-6xl font-semibold tabular-nums tracking-tighter leading-none text-white"
               style={{ fontFamily: "Inter, ui-sans-serif, system-ui, sans-serif" }}
             >
               {loading ? "—" : formatBRL(totalFaturamento)}
@@ -56,7 +56,7 @@ export function RevenueHeroCard({ leads, loading }: { leads: Lead[]; loading: bo
               <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500" />
             </span>
           </div>
-          <p className="text-[9px] uppercase tracking-[0.3em] text-zinc-500 font-medium">
+          <p className="text-[10px] uppercase tracking-[0.3em] text-zinc-500 font-bold">
             Tempo Real
           </p>
         </div>
@@ -115,7 +115,7 @@ export function KPICards({ leads, loading }: { leads: Lead[]; loading: boolean }
         <Card key={s.key} className="glass-card rounded-lg border-0">
           <CardContent className="p-5">
             <div className="flex items-center justify-between mb-5">
-              <p className="text-[9px] font-medium uppercase tracking-[0.3em] text-zinc-500 truncate">
+              <p className="text-[10px] font-bold uppercase tracking-[0.3em] text-zinc-500 truncate">
                 {s.label}
               </p>
               <s.icon className="h-3.5 w-3.5 text-zinc-600" strokeWidth={1.25} />

@@ -32,7 +32,7 @@ export default function Dashboard() {
   const periodSummary = `Exibindo dados de ${format(range.from, "dd/MM", { locale: ptBR })} a ${format(range.to, "dd/MM", { locale: ptBR })}`;
 
   return (
-    <div className="p-6 sm:p-10 space-y-10">
+    <div className="p-6 sm:p-8 space-y-6">
       {/* Cabeçalho */}
       <div className="flex flex-row items-start justify-between gap-3">
         <div className="min-w-0">
@@ -70,7 +70,7 @@ export default function Dashboard() {
       <KPICards leads={filtered} loading={loading} />
 
       {/* Bloco Central: ROI (col-8, ~66%) + Motivos de Perda (col-4, ~33%) */}
-      <div className="grid grid-cols-12 gap-8 items-stretch">
+      <div className="grid grid-cols-12 gap-6 items-stretch">
         <div className="col-span-12 lg:col-span-8">
           <RevenueHeroCard leads={filtered} loading={loading} />
         </div>

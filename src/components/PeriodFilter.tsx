@@ -77,9 +77,9 @@ export function PeriodFilter({ value, customRange, onChange }: Props) {
           type="button"
           onClick={() => onChange(o.key)}
           className={cn(
-            "h-7 px-3 rounded-full text-[11px] font-medium transition-colors",
+            "h-7 px-3.5 rounded-full text-[11px] font-medium transition-all",
             value === o.key
-              ? "bg-zinc-800 text-foreground"
+              ? "bg-white/10 text-foreground shadow-[inset_0_1px_0_0_rgba(255,255,255,0.08)]"
               : "bg-transparent text-zinc-500 hover:text-foreground"
           )}
         >
@@ -91,9 +91,9 @@ export function PeriodFilter({ value, customRange, onChange }: Props) {
           <button
             type="button"
             className={cn(
-              "h-7 px-3 rounded-full text-[11px] font-medium gap-1.5 transition-colors inline-flex items-center",
+              "h-7 px-3.5 rounded-full text-[11px] font-medium gap-1.5 transition-all inline-flex items-center",
               value === "custom"
-                ? "bg-zinc-800 text-foreground"
+                ? "bg-white/10 text-foreground shadow-[inset_0_1px_0_0_rgba(255,255,255,0.08)]"
                 : "bg-transparent text-zinc-500 hover:text-foreground"
             )}
           >
