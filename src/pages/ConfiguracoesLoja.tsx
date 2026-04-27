@@ -17,7 +17,16 @@ import {
   Clock,
   FileText,
   Link2,
+  MoreVertical,
+  UserPlus,
 } from "lucide-react";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { cn } from "@/lib/utils";
 import { toast } from "@/hooks/use-toast";
 
@@ -153,21 +162,173 @@ function GeneralPanel({ store }: { store: { id: string; name: string; role: stri
 }
 
 /* ---------- EQUIPE ---------- */
+type TeamRole = "Dono" | "Administrador" | "Gerente" | "Vendedor";
+type TeamStatus = "Ativo" | "Convite pendente" | "Inativo";
+type TeamMember = {
+  id: string;
+  name: string;
+  email: string;
+  role: TeamRole;
+  status: TeamStatus;
+};
+
+const MOCK_TEAM: TeamMember[] = [
+  { id: "u1", name: "João Carlos", email: "joao@oticadominante.com", role: "Dono", status: "Ativo" },
+  { id: "u2", name: "Ricardo Almeida", email: "ricardo@oticadominante.com", role: "Administrador", status: "Ativo" },
+  { id: "u3", name: "Ana Souza", email: "ana@oticadominante.com", role: "Gerente", status: "Ativo" },
+  { id: "u4", name: "Felipe Mendes", email: "felipe@oticadominante.com", role: "Vendedor", status: "Ativo" },
+];
+
+function roleBadgeClasses(role: TeamRole) {
+  switch (role) {
+    case "Dono":
+      return "bg-slate-900 text-slate-50 dark:bg-slate-100 dark:text-slate-900";
+    case "Administrador":
+      return "bg-blue-100 text-blue-800 dark:bg-blue-500/15 dark:text-blue-300";
+    case "Gerente":
+      return "bg-violet-100 text-violet-800 dark:bg-violet-500/15 dark:text-violet-300";
+    case "Vendedor":
+      return "bg-emerald-100 text-emerald-800 dark:bg-emerald-500/15 dark:text-emerald-300";
+  }
+}
+
+function getInitials(name: string) {
+  return name
+    .split(" ")
+    .map((n) => n[0])
+    .slice(0, 2)
+    .join("")
+    .toUpperCase();
+}
+
 function TeamPanel({ storesCount }: { storesCount: number }) {
+  function handleInvite() {
+    toast({
+      title: "Convidar usuário",
+      description: "Em breve: envio de convite por email com link mágico.",
+    });
+  }
+
+  function handleAction(action: string, member: TeamMember) {
+    toast({
+      title: `${action}: ${member.name}`,
+      description: member.email,
+    });
+  }
+
   return (
-    <SectionCard
-      title="Equipe da filial"
-      description="Em breve: convide vendedores e gerentes específicos para esta loja."
-    >
-      <div className="rounded-lg border border-dashed border-border p-6 text-center">
-        <Users className="h-6 w-6 mx-auto text-muted-foreground mb-2" />
-        <p className="text-sm font-medium text-foreground">Gerenciamento de equipe</p>
-        <p className="text-xs text-muted-foreground mt-1">
-          Você gerencia {storesCount} {storesCount === 1 ? "filial" : "filiais"}. Em breve será possível
-          atribuir vendedores e gerentes individualmente por loja.
-        </p>
+    <section className="rounded-2xl border border-border bg-card p-5 sm:p-6 shadow-[0_1px_2px_rgba(0,0,0,0.02)]">
+      {/* Cabeçalho */}
+      <header className="flex items-center justify-between gap-4 pb-5">
+        <div className="min-w-0">
+          <h2 className="text-base font-semibold tracking-tight text-foreground">
+            Membros da Filial
+          </h2>
+          <p className="text-xs text-muted-foreground mt-0.5">
+            {MOCK_TEAM.length} {MOCK_TEAM.length === 1 ? "usuário" : "usuários"} com acesso a esta loja
+            {storesCount > 1 ? ` · ${storesCount} filiais no workspace` : ""}.
+          </p>
+        </div>
+        <Button
+          onClick={handleInvite}
+          className="gap-2 bg-emerald-500 hover:bg-emerald-500/90 text-white shrink-0"
+        >
+          <UserPlus className="h-4 w-4" />
+          Convidar Usuário
+        </Button>
+      </header>
+
+      {/* Tabela minimalista */}
+      <div className="border-t border-border">
+        {/* Header da tabela */}
+        <div className="hidden sm:grid grid-cols-[1.6fr_1fr_0.8fr_40px] items-center gap-4 px-1 py-3 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground border-b border-border">
+          <span>Usuário</span>
+          <span>Nível de acesso</span>
+          <span>Status</span>
+          <span className="sr-only">Ações</span>
+        </div>
+
+        <ul className="divide-y divide-border">
+          {MOCK_TEAM.map((m) => (
+            <li
+              key={m.id}
+              className="grid grid-cols-[1fr_auto] sm:grid-cols-[1.6fr_1fr_0.8fr_40px] items-center gap-4 px-1 py-4 group"
+            >
+              {/* Usuário */}
+              <div className="flex items-center gap-3 min-w-0">
+                <Avatar className="h-9 w-9 shrink-0">
+                  <AvatarFallback className="bg-muted text-foreground text-xs font-semibold">
+                    {getInitials(m.name)}
+                  </AvatarFallback>
+                </Avatar>
+                <div className="min-w-0">
+                  <p className="text-sm font-semibold text-foreground truncate">{m.name}</p>
+                  <p className="text-xs text-muted-foreground truncate">{m.email}</p>
+                </div>
+              </div>
+
+              {/* Nível de acesso */}
+              <div className="hidden sm:block">
+                <span
+                  className={cn(
+                    "inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium",
+                    roleBadgeClasses(m.role)
+                  )}
+                >
+                  {m.role}
+                </span>
+              </div>
+
+              {/* Status */}
+              <div className="hidden sm:flex items-center gap-2">
+                <span className="relative flex h-1.5 w-1.5">
+                  <span className="absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-60 animate-ping" />
+                  <span className="relative inline-flex h-1.5 w-1.5 rounded-full bg-emerald-500" />
+                </span>
+                <span className="text-xs text-foreground">{m.status}</span>
+              </div>
+
+              {/* Ações */}
+              <div className="flex justify-end">
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="h-8 w-8 text-muted-foreground hover:text-foreground"
+                      aria-label={`Ações para ${m.name}`}
+                    >
+                      <MoreVertical className="h-4 w-4" />
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end" className="w-48">
+                    <DropdownMenuItem onClick={() => handleAction("Editar permissões", m)}>
+                      Editar permissões
+                    </DropdownMenuItem>
+                    <DropdownMenuItem onClick={() => handleAction("Reenviar convite", m)}>
+                      Reenviar convite
+                    </DropdownMenuItem>
+                    <DropdownMenuSeparator />
+                    <DropdownMenuItem
+                      onClick={() => handleAction("Remover acesso", m)}
+                      className="text-destructive focus:text-destructive"
+                      disabled={m.role === "Dono"}
+                    >
+                      Remover acesso
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
+              </div>
+            </li>
+          ))}
+        </ul>
       </div>
-    </SectionCard>
+
+      <p className="text-[11px] text-muted-foreground pt-4 mt-2 border-t border-border">
+        Permissões persistidas em <code className="font-mono">user_stores</code> com isolamento por{" "}
+        <code className="font-mono">store_id</code>.
+      </p>
+    </section>
   );
 }
 
