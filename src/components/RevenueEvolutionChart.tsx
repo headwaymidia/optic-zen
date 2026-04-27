@@ -157,7 +157,7 @@ export function RevenueEvolutionChart({ leads }: Props) {
     active.vendas && active.leads && active.agendamentos;
 
   return (
-    <Card className="glass-card rounded-xl border border-border p-7">
+    <Card className="glass-card rounded-xl border border-border p-4 sm:p-5">
       {/* Header */}
       <div className="flex items-start justify-between mb-5 flex-wrap gap-4">
         <div>
@@ -297,7 +297,7 @@ export function RevenueEvolutionChart({ leads }: Props) {
       </div>
 
       {/* Chart */}
-      <div className="h-[320px] w-full -mx-2">
+      <div className="h-[240px] w-full -mx-2">
         <ResponsiveContainer width="100%" height="100%">
           <ComposedChart
             data={data}
