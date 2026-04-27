@@ -90,9 +90,10 @@ export default function Dashboard() {
             <PeriodKPIRow leads={leads} range={range} inline />
           </div>
 
-          {/* 4. Velocidade & Follow-up — largura total */}
-          <div className="pt-2">
+          {/* 4. Velocidade & Ranking — lado a lado 50/50 */}
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 pt-2 items-stretch">
             <ResponseSpeedCard leads={filtered} />
+            <SalesRanking leads={filtered} />
           </div>
 
           {/* 5. Funil Vertical */}
@@ -100,9 +101,6 @@ export default function Dashboard() {
 
           {/* 6. Evolução (gráfico 3-em-1) */}
           <RevenueEvolutionChart leads={leads} />
-
-          {/* 7. Ranking de Vendedores */}
-          <SalesRanking leads={filtered} />
         </>
       )}
     </div>
