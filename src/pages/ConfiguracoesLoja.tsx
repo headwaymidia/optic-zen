@@ -9,11 +9,14 @@ import {
   Settings,
   Users,
   Plug,
-  QrCode,
   Power,
   Copy,
   Check,
   ShieldCheck,
+  BadgeCheck,
+  Clock,
+  FileText,
+  Link2,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { toast } from "@/hooks/use-toast";
@@ -28,25 +31,42 @@ const TABS: { key: TabKey; label: string; icon: typeof Settings }[] = [
 
 /**
  * Mock de "store secrets" — futuramente virá da tabela `stores` no Supabase
- * com colunas: whatsapp_number, api_token, instance_id, status (online|offline).
- * Cada store tem credenciais isoladas.
+ * com colunas isoladas por filial:
+ *   whatsapp_number, phone_number_id, waba_id, access_token, status, business_name.
+ * Cada loja possui sua própria conta na Meta Cloud API.
  */
 function getMockStoreIntegration(storeId: string) {
-  // Hash simples para gerar números/IDs estáveis por loja
+  // Hash determinístico para gerar IDs estáveis por loja
   let h = 0;
   for (let i = 0; i < storeId.length; i++) h = (h * 31 + storeId.charCodeAt(i)) >>> 0;
-  const seed = h % 9000 + 1000;
-  const tail = String((h * 7) % 9000 + 1000);
-  // 1ª loja (storeId começa com store-centro) fica "online"; demais variam
-  const online = storeId === "store-centro" || (h % 3 !== 0);
+  const seed = (h % 9000) + 1000;
+  const tail = String(((h * 7) % 9000) + 1000);
+  const online = storeId === "store-centro" || h % 3 !== 0;
+  // IDs no padrão Meta Graph API: 15 a 16 dígitos
+  const phone_number_id = String(100000000000000n + BigInt(h % 999999999));
+  const waba_id = String(200000000000000n + BigInt((h * 11) % 999999999));
+  // Access token Meta começa com "EAAG..." (System User Token)
+  const access_token = `EAAG${(h * 17).toString(36)}${(h * 29).toString(36)}ZD`.padEnd(60, "x");
   return {
     whatsapp_number: `+55 11 9${seed}-${tail}`,
-    instance_id: `inst_${storeId.slice(-6)}_${(h % 999).toString(36)}`,
-    api_token: `wh_${storeId.slice(-4)}_${(h * 13).toString(36).slice(0, 18)}`,
+    business_name: storeId === "store-centro" ? "Ótica Dominante" : `Filial ${storeId.slice(-4).toUpperCase()}`,
+    phone_number_id,
+    waba_id,
+    access_token,
     status: online ? ("online" as const) : ("offline" as const),
     last_sync: online ? "Há 2 minutos" : "Há 3 dias",
   };
 }
+
+/** Templates aprovados na Meta para esta loja (mock). */
+const MOCK_TEMPLATES = [
+  { name: "alerta_agendamento", category: "UTILITY", status: "approved" as const },
+  { name: "recuperacao_orcamento", category: "MARKETING", status: "approved" as const },
+  { name: "confirmacao_exame", category: "UTILITY", status: "approved" as const },
+  { name: "boas_vindas_cliente", category: "MARKETING", status: "approved" as const },
+  { name: "promocao_lentes_premium", category: "MARKETING", status: "in_review" as const },
+];
+
 
 export default function ConfiguracoesLoja() {
   const { currentStore, stores } = useStores();
