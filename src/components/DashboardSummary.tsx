@@ -109,7 +109,7 @@ export function KpiStack({ leads, loading }: { leads: Lead[]; loading: boolean }
   );
 }
 
-/** KPIs compactos: 4 cards minimalistas. */
+/** KPIs compactos: 4 cards minimalistas — paleta limpa (Blue/Emerald + neutros). */
 export function KPICards({ leads, loading }: { leads: Lead[]; loading: boolean }) {
   const total = leads.length;
   const agendou = leads.filter((l) => l.status === "Agendou Exame").length;
@@ -119,10 +119,10 @@ export function KPICards({ leads, loading }: { leads: Lead[]; loading: boolean }
   const ticket = vendas > 0 ? totalFat / vendas : 0;
 
   const items = [
-    { key: "total", label: "Total de Leads", value: total, icon: Users, color: "text-blue-600 dark:text-blue-400", bg: "bg-blue-50 dark:bg-blue-500/10" },
-    { key: "agendou", label: "Agendou Exame", value: agendou, icon: Calendar, color: "text-purple-600 dark:text-purple-400", bg: "bg-purple-50 dark:bg-purple-500/10" },
-    { key: "vendas", label: "Vendas Concluídas", value: vendas, icon: ShoppingBag, color: "text-emerald-600 dark:text-emerald-400", bg: "bg-emerald-50 dark:bg-emerald-500/10" },
-    { key: "ticket", label: "Ticket Médio", value: formatBRL(ticket), icon: DollarSign, color: "text-amber-600 dark:text-amber-400", bg: "bg-amber-50 dark:bg-amber-500/10" },
+    { key: "total",   label: "Total de Leads",    value: total,             icon: Users,       color: "text-blue-600 dark:text-blue-400",       bg: "bg-blue-50 dark:bg-blue-500/10" },
+    { key: "agendou", label: "Agendou Exame",     value: agendou,           icon: Calendar,    color: "text-slate-600 dark:text-slate-300",     bg: "bg-slate-100 dark:bg-slate-500/10" },
+    { key: "vendas",  label: "Vendas Concluídas", value: vendas,            icon: ShoppingBag, color: "text-emerald-600 dark:text-emerald-400", bg: "bg-emerald-50 dark:bg-emerald-500/10" },
+    { key: "ticket",  label: "Ticket Médio",      value: formatBRL(ticket), icon: DollarSign,  color: "text-emerald-600 dark:text-emerald-400", bg: "bg-emerald-50 dark:bg-emerald-500/10" },
   ] as const;
 
   return (
@@ -130,18 +130,18 @@ export function KPICards({ leads, loading }: { leads: Lead[]; loading: boolean }
       {items.map((s) => (
         <Card
           key={s.key}
-          className="border border-border dark:border-white/5 rounded-xl shadow-[0_1px_2px_rgba(15,23,42,0.04)] hover:shadow-[0_2px_8px_rgba(15,23,42,0.06)] dark:hover:shadow-[0_0_20px_-8px_hsl(217_91%_60%/0.3)] transition-shadow bg-card"
+          className="border border-border dark:border-white/5 rounded-lg shadow-[0_1px_2px_rgba(15,23,42,0.04)] bg-card"
         >
           <CardContent className="p-3">
             <div className="flex items-center justify-between">
-              <p className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground truncate">
+              <p className="text-[10px] font-medium uppercase tracking-wider text-muted-foreground truncate">
                 {s.label}
               </p>
               <div className={`flex h-6 w-6 items-center justify-center rounded-md ${s.bg}`}>
                 <s.icon className={`h-3 w-3 ${s.color}`} />
               </div>
             </div>
-            <div className="text-2xl font-black tabular-nums text-foreground leading-none mt-2 tracking-tight">
+            <div className="text-2xl font-bold tabular-nums text-foreground leading-none mt-2 tracking-tight">
               {loading ? "—" : s.value}
             </div>
           </CardContent>
