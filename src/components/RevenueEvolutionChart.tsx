@@ -152,8 +152,8 @@ export function RevenueEvolutionChart({ leads }: Props) {
       {/* Header com totais */}
       <div className="flex items-start justify-between mb-5 flex-wrap gap-4">
         <div>
-          <p className="text-[10px] uppercase tracking-[0.3em] text-muted-foreground font-bold mb-1.5">
-            Evolução · {cfg.label}
+          <p className="text-base sm:text-lg font-semibold tracking-tight text-foreground mb-1">
+            Evolução de {cfg.titleSuffix}
           </p>
           <p className="text-[10px] uppercase tracking-[0.2em] text-muted-foreground/70 font-medium">
             Últimos 30 dias
