@@ -11,6 +11,7 @@ type Severity = "high" | "medium" | "low";
 
 interface Insight {
   severity: Severity;
+  source: "whatsapp" | "processo" | "pdv";
   title: string;
   improvement: string;
 }
@@ -30,24 +31,54 @@ export function ImprovementInsightsCard({ leads }: Props) {
         "Compareceu e Não Comprou",
       ].includes(l.status)
     ).length;
+    const attended = leads.filter((l) =>
+      ["Compareceu e Comprou", "Compareceu e Não Comprou"].includes(l.status)
+    ).length;
     const sold = leads.filter((l) => l.status === "Compareceu e Comprou").length;
+    const noShow = leads.filter((l) => l.status === "Não Compareceu").length;
     const lost = leads.filter((l) => l.status === "Compareceu e Não Comprou");
 
-    // 1. Gargalo de Agendamento
+    // 1. 🟠/🔴 Gargalo de Agendamento (Lead → Agendamento < 50%)
     if (totalLeads >= 5) {
       const conv = (scheduled / totalLeads) * 100;
       if (conv < 50) {
         list.push({
           severity: conv < 30 ? "high" : "medium",
-          title: `Gargalo de Agendamento: conversão Lead → Agendamento em ${conv.toFixed(
-            0
-          )}%.`,
-          improvement: "Revisar script de abordagem no WhatsApp.",
+          source: "whatsapp",
+          title: `Taxa de Agendamento Baixa (${conv.toFixed(0)}%). Sua equipe não está convertendo o lead do WhatsApp em visita física.`,
+          improvement: "Treinar script de convite para exame.",
         });
       }
     }
 
-    // 2. Lentidão no retorno
+    // 2. 🔴 Fuga de Receita / Vazamento no PDV (Vendas / Comparecimentos < 70%)
+    if (attended >= 3) {
+      const closeRate = (sold / attended) * 100;
+      if (closeRate < 70) {
+        const leak = attended - sold;
+        list.push({
+          severity: closeRate < 50 ? "high" : "medium",
+          source: "pdv",
+          title: `Vazamento no PDV: ${leak} ${leak === 1 ? "cliente veio" : "clientes vieram"} à loja mas ${leak === 1 ? "saiu" : "saíram"} sem comprar.`,
+          improvement: "Verificar se a objeção é preço ou falta de estoque de armações.",
+        });
+      }
+    }
+
+    // 3. 🟡 Alerta de No-Show (Comparecimentos / Agendamentos < 60%)
+    if (scheduled >= 5) {
+      const showRate = (attended / scheduled) * 100;
+      if (showRate < 60) {
+        list.push({
+          severity: showRate < 40 ? "high" : "medium",
+          source: "processo",
+          title: `Alerta de Não-Comparecimento: ${noShow} agendados não compareceram (${(100 - showRate).toFixed(0)}% de no-show).`,
+          improvement: "Implementar confirmação de consulta 2h antes via WhatsApp.",
+        });
+      }
+    }
+
+    // 4. Lentidão no retorno (WhatsApp)
     const now = Date.now();
     const slow = leads.filter((l) => {
       if (l.status !== "Aguardando Resposta" && l.status !== "Novo Lead") return false;
@@ -57,14 +88,13 @@ export function ImprovementInsightsCard({ leads }: Props) {
     if (slow > 0) {
       list.push({
         severity: slow >= 5 ? "high" : "medium",
-        title: `Lentidão no Retorno: ${slow} ${
-          slow === 1 ? "lead aguardando" : "leads aguardando"
-        } há mais de 20 minutos.`,
+        source: "whatsapp",
+        title: `Lentidão no Retorno: ${slow} ${slow === 1 ? "lead aguardando" : "leads aguardando"} há mais de 20 minutos no WhatsApp.`,
         improvement: "Cobrar equipe de vendas imediatamente.",
       });
     }
 
-    // 3. Objeção de preço
+    // 5. Objeção de preço recorrente
     const priceLost = lost.filter((l) => {
       const n = (l.notes || "").toLowerCase();
       return PRICE_MATCH.some((m) => n.includes(m));
@@ -72,26 +102,13 @@ export function ImprovementInsightsCard({ leads }: Props) {
     if (priceLost >= 2) {
       list.push({
         severity: priceLost >= 4 ? "high" : "medium",
-        title: `Objeção de Preço: ${priceLost} perdas por valor alto.`,
-        improvement: "Reforçar condições de parcelamento no primeiro contato.",
+        source: "whatsapp",
+        title: `Objeção de Preço recorrente: ${priceLost} perdas por valor alto detectadas nas conversas.`,
+        improvement: "Reforçar parcelamento e garantia já no primeiro contato.",
       });
     }
 
-    // 4. Baixo fechamento
-    if (scheduled >= 5) {
-      const close = (sold / scheduled) * 100;
-      if (close < 30) {
-        list.push({
-          severity: close < 15 ? "high" : "medium",
-          title: `Dificuldade no Fechamento: ${close.toFixed(
-            0
-          )}% dos agendamentos viram venda.`,
-          improvement: "Treinar quebra de objeções e oferta de garantia.",
-        });
-      }
-    }
-
-    // 5. Sem follow-up
+    // 6. Falta de follow-up (WhatsApp)
     const noFu = leads.filter(
       (l) =>
         (Number(l.follow_up_count) || 0) === 0 &&
@@ -100,11 +117,15 @@ export function ImprovementInsightsCard({ leads }: Props) {
     if (noFu >= 3) {
       list.push({
         severity: "medium",
+        source: "whatsapp",
         title: `${noFu} leads ativos sem nenhum follow-up registrado.`,
         improvement: "Definir cadência mínima de 3 contatos por lead.",
       });
     }
 
+    // ordena por severidade
+    const order = { high: 0, medium: 1, low: 2 };
+    list.sort((a, b) => order[a.severity] - order[b.severity]);
     return list.slice(0, 5);
   }, [leads]);
 
