@@ -73,10 +73,10 @@ export function SalesThermometer({ leads }: SalesThermometerProps) {
       </CardHeader>
 
       <CardContent className="px-6 pb-6 pt-2 space-y-6">
-        {/* Trilha de vidro: cinza escuro + preenchimento gradiente esmeralda → ciano */}
-        <div className="relative h-1.5 w-full rounded-full bg-zinc-900 overflow-hidden ring-1 ring-inset ring-white/5">
+        {/* Trilha ultra-fina (2px) com gradiente neon ciano → esmeralda */}
+        <div className="relative h-[2px] w-full rounded-full bg-white/5 overflow-hidden">
           <div
-            className="absolute inset-y-0 left-0 rounded-full bg-gradient-to-r from-emerald-500 to-cyan-400 transition-all shadow-[0_0_12px_rgba(16,185,129,0.35)]"
+            className="absolute inset-y-0 left-0 rounded-full bg-gradient-to-r from-cyan-500 to-emerald-500 transition-all shadow-[0_0_10px_rgba(16,185,129,0.45)]"
             style={{ width: `${overallConv}%` }}
           />
         </div>
