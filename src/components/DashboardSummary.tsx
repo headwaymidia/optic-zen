@@ -21,22 +21,31 @@ export function RevenueHeroCard({ leads, loading }: { leads: Lead[]; loading: bo
   const orgPct = 100 - adsPct;
 
   return (
-    <Card className="border border-border bg-card rounded-lg h-full">
+    <Card className="border border-white/10 bg-card rounded-lg h-full">
       <CardContent className="p-8 h-full flex flex-col justify-between gap-8">
-        {/* Eyebrow */}
+        {/* Eyebrow + indicador de pulso (live) */}
         <div className="flex items-center justify-between">
           <p className="text-[10px] uppercase tracking-[0.18em] text-muted-foreground font-medium">
             Faturamento Gerado
           </p>
-          <span className="text-[10px] text-muted-foreground tabular-nums">
-            {buyers.length} {buyers.length === 1 ? "venda" : "vendas"}
-          </span>
+          <div className="flex items-center gap-2">
+            <span className="relative flex h-1.5 w-1.5">
+              <span className="absolute inline-flex h-full w-full rounded-full bg-emerald-500 animate-pulse-soft" />
+              <span className="relative inline-flex h-1.5 w-1.5 rounded-full bg-emerald-500" />
+            </span>
+            <span className="text-[10px] text-muted-foreground tabular-nums">
+              {buyers.length} {buyers.length === 1 ? "venda" : "vendas"}
+            </span>
+          </div>
         </div>
 
-        {/* Valor protagonista — branco puro, geométrico */}
+        {/* Valor protagonista — gradiente metalizado branco→cinza claro, font-black */}
         <p
-          className="text-5xl sm:text-6xl font-medium tabular-nums tracking-tight leading-none text-foreground"
-          style={{ fontFamily: "Inter, ui-sans-serif, system-ui, sans-serif" }}
+          className="text-5xl sm:text-6xl font-black tabular-nums tracking-tight leading-none bg-clip-text text-transparent"
+          style={{
+            fontFamily: "Inter, ui-sans-serif, system-ui, sans-serif",
+            backgroundImage: "linear-gradient(180deg, #ffffff 0%, #d4d4d8 100%)",
+          }}
         >
           {loading ? "—" : formatBRL(totalFaturamento)}
         </p>
@@ -62,7 +71,7 @@ export function RevenueHeroCard({ leads, loading }: { leads: Lead[]; loading: bo
             </span>
           </div>
           {!loading && totalFaturamento > 0 && (
-            <div className="h-px w-full overflow-hidden bg-border flex">
+            <div className="h-px w-full overflow-hidden bg-white/10 flex">
               <div className="h-full bg-foreground transition-all" style={{ width: `${adsPct}%` }} />
               <div className="h-full bg-muted-foreground/40 transition-all" style={{ width: `${orgPct}%` }} />
             </div>
@@ -94,16 +103,16 @@ export function KPICards({ leads, loading }: { leads: Lead[]; loading: boolean }
       {items.map((s) => (
         <Card
           key={s.key}
-          className="border border-border bg-card rounded-lg"
+          className="border border-white/10 bg-card rounded-lg"
         >
           <CardContent className="p-4">
             <div className="flex items-center justify-between mb-3">
-              <p className="text-[10px] font-medium uppercase tracking-[0.12em] text-muted-foreground truncate">
+              <p className="text-xs font-medium uppercase tracking-widest text-muted-foreground truncate">
                 {s.label}
               </p>
               <s.icon className="h-3.5 w-3.5 text-muted-foreground" strokeWidth={1.5} />
             </div>
-            <div className="text-2xl font-medium tabular-nums text-foreground leading-none tracking-tight">
+            <div className="text-2xl font-bold tabular-nums text-foreground leading-none tracking-tight">
               {loading ? "—" : s.value}
             </div>
           </CardContent>

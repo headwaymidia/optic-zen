@@ -150,6 +150,12 @@ export function LeadsVsSalesTimeline({ leads, embedded = false }: { leads: Lead[
     <div className="h-[160px] w-full">
       <ResponsiveContainer width="100%" height="100%">
         <AreaChart data={data} margin={{ top: 8, right: 12, left: -16, bottom: 0 }}>
+          <defs>
+            <linearGradient id="gVendasArea" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stopColor={EMERALD} stopOpacity={0.12} />
+              <stop offset="100%" stopColor={EMERALD} stopOpacity={0} />
+            </linearGradient>
+          </defs>
           <XAxis
             dataKey="date"
             tick={{ fontSize: 10, fill: ZINC_500 }}
@@ -168,7 +174,7 @@ export function LeadsVsSalesTimeline({ leads, embedded = false }: { leads: Lead[
             cursor={{ stroke: ZINC_700, strokeOpacity: 0.4, strokeWidth: 1 }}
           />
           <Area type="monotone" dataKey="novos" name="Leads" stroke={WHITE} strokeWidth={1.25} fill="transparent" dot={false} activeDot={{ r: 3, fill: WHITE }} />
-          <Area type="monotone" dataKey="vendas" name="Vendas" stroke={EMERALD} strokeWidth={1.25} fill="transparent" dot={false} activeDot={{ r: 3, fill: EMERALD }} />
+          <Area type="monotone" dataKey="vendas" name="Vendas" stroke={EMERALD} strokeWidth={1.5} fill="url(#gVendasArea)" fillOpacity={1} dot={false} activeDot={{ r: 3, fill: EMERALD }} />
         </AreaChart>
       </ResponsiveContainer>
     </div>
@@ -177,7 +183,7 @@ export function LeadsVsSalesTimeline({ leads, embedded = false }: { leads: Lead[
   if (embedded) return chart;
 
   return (
-    <Card className="border border-border bg-card rounded-lg">
+    <Card className="border border-white/10 bg-card rounded-lg">
       <CardHeader className="pb-2 pt-4 px-5">
         <CardTitle className="text-[11px] font-medium uppercase tracking-[0.14em] text-muted-foreground">Leads vs Vendas</CardTitle>
       </CardHeader>
@@ -197,7 +203,7 @@ export function LossReasonsDonut({ leads }: { leads: Lead[] }) {
   }, [leads]);
 
   return (
-    <Card className="border border-border bg-card rounded-lg h-full">
+    <Card className="border border-white/10 bg-card rounded-lg h-full">
       <CardHeader className="pb-2 pt-4 px-5">
         <CardTitle className="text-[11px] font-medium uppercase tracking-[0.14em] text-muted-foreground">
           Motivos de Perda
