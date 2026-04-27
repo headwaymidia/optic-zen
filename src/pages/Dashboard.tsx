@@ -69,12 +69,12 @@ export default function Dashboard() {
       {/* Linha única de 4 KPIs */}
       <KPICards leads={filtered} loading={loading} />
 
-      {/* Bloco Central: ROI (col-9, 75%) + Motivos de Perda (col-3, 25%) */}
+      {/* Bloco Central: ROI (col-8, ~66%) + Motivos de Perda (col-4, ~33%) */}
       <div className="grid grid-cols-12 gap-3 items-stretch">
-        <div className="col-span-12 lg:col-span-9">
+        <div className="col-span-12 lg:col-span-8">
           <RevenueHeroCard leads={filtered} loading={loading} />
         </div>
-        <div className="col-span-12 lg:col-span-3">
+        <div className="col-span-12 lg:col-span-4">
           <LossReasonsDonut leads={filtered} />
         </div>
       </div>
@@ -83,17 +83,17 @@ export default function Dashboard() {
       <SalesThermometer leads={filtered} />
 
       {/* Performance 100% */}
-      <Card className="border border-border dark:border-white/5 rounded-lg shadow-[0_1px_2px_rgba(15,23,42,0.04)] bg-card">
+      <Card className="border border-border bg-card rounded-lg">
         <Tabs defaultValue="timeline" className="w-full">
-          <CardHeader className="pb-2 pt-3 px-4 flex-row items-center justify-between gap-3 space-y-0">
-            <CardTitle className="text-sm font-bold uppercase tracking-wider">
+          <CardHeader className="pb-2 pt-4 px-5 flex-row items-center justify-between gap-3 space-y-0">
+            <CardTitle className="text-[11px] font-medium uppercase tracking-[0.14em] text-muted-foreground">
               Performance
             </CardTitle>
-            <TabsList className="h-7">
-              <TabsTrigger value="timeline" className="text-[11px] h-5 px-2">
+            <TabsList className="h-7 bg-muted/50">
+              <TabsTrigger value="timeline" className="text-[11px] h-5 px-2.5 data-[state=active]:bg-secondary">
                 Leads vs Vendas
               </TabsTrigger>
-              <TabsTrigger value="volume" className="text-[11px] h-5 px-2">
+              <TabsTrigger value="volume" className="text-[11px] h-5 px-2.5 data-[state=active]:bg-secondary">
                 Volume diário
               </TabsTrigger>
             </TabsList>

@@ -70,13 +70,19 @@ export function PeriodFilter({ value, customRange, onChange }: Props) {
   const [draft, setDraft] = useState<{ from?: Date; to?: Date }>(customRange ?? {});
 
   return (
-    <div className="flex flex-wrap items-center gap-2">
+    <div className="flex flex-wrap items-center gap-1">
       {OPTIONS.map((o) => (
         <Button
           key={o.key}
           size="sm"
-          variant={value === o.key ? "default" : "outline"}
+          variant="ghost"
           onClick={() => onChange(o.key)}
+          className={cn(
+            "h-7 px-3 text-[11px] font-medium rounded-md transition-colors",
+            value === o.key
+              ? "bg-secondary text-foreground hover:bg-secondary"
+              : "text-muted-foreground hover:bg-secondary/50 hover:text-foreground"
+          )}
         >
           {o.label}
         </Button>
@@ -85,10 +91,15 @@ export function PeriodFilter({ value, customRange, onChange }: Props) {
         <PopoverTrigger asChild>
           <Button
             size="sm"
-            variant={value === "custom" ? "default" : "outline"}
-            className={cn("gap-2")}
+            variant="ghost"
+            className={cn(
+              "h-7 px-3 text-[11px] font-medium rounded-md gap-1.5 transition-colors",
+              value === "custom"
+                ? "bg-secondary text-foreground hover:bg-secondary"
+                : "text-muted-foreground hover:bg-secondary/50 hover:text-foreground"
+            )}
           >
-            <CalendarIcon className="h-4 w-4" />
+            <CalendarIcon className="h-3 w-3" strokeWidth={1.5} />
             {value === "custom" && customRange?.from && customRange?.to
               ? `${format(customRange.from, "dd/MM")} – ${format(customRange.to, "dd/MM")}`
               : "Personalizado"}
@@ -102,7 +113,7 @@ export function PeriodFilter({ value, customRange, onChange }: Props) {
             numberOfMonths={2}
             locale={ptBR}
           />
-          <div className="flex justify-end gap-2 p-3 border-t">
+          <div className="flex justify-end gap-2 p-3 border-t border-border">
             <Button size="sm" variant="ghost" onClick={() => setOpen(false)}>Cancelar</Button>
             <Button
               size="sm"
