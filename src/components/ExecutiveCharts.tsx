@@ -70,9 +70,9 @@ function classifyLoss(notes: string | null): string {
 const tooltipStyle = {
   backgroundColor: "hsl(var(--card))",
   border: "1px solid hsl(var(--border))",
-  borderRadius: 8,
+  borderRadius: 6,
   color: "hsl(var(--foreground))",
-  fontSize: 12,
+  fontSize: 11,
 };
 
 export function ConversionFunnel({ leads }: { leads: Lead[] }) {
