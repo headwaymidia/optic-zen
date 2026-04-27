@@ -22,8 +22,8 @@ function formatBRL(v: number) {
 }
 
 /**
- * Card de Faturamento — Apple Design System.
- * Tipografia Inter, valor em preto/branco puro, indicadores sutis em cinza.
+ * Bloco de Faturamento — Coração do Dashboard (Apple Style).
+ * Valor gigante + linha horizontal limpa: Anúncios (verde) | Orgânico (cinza).
  */
 export function RoiMegaCard({ leads }: Props) {
   const { total, pago, organico, pctPago, salesCount } = useMemo(() => {
@@ -45,70 +45,74 @@ export function RoiMegaCard({ leads }: Props) {
 
   return (
     <Card
-      className="rounded-2xl border bg-white border-zinc-200/80 shadow-sm dark:bg-[#111111] dark:border-[#222222] dark:shadow-none px-7 py-6"
-      style={{ fontFamily: "'Inter','Geist Sans',-apple-system,BlinkMacSystemFont,sans-serif" }}
+      className="rounded-2xl border bg-white border-zinc-200/80 shadow-sm dark:bg-[#111111] dark:border-zinc-800 dark:shadow-none px-8 py-10 sm:py-12"
+      style={{
+        fontFamily:
+          "'Inter','Geist Sans',-apple-system,BlinkMacSystemFont,sans-serif",
+      }}
     >
-      <div className="flex items-center justify-between gap-10 flex-wrap">
-        {/* Esquerda — Valor principal */}
-        <div className="min-w-0">
-          <p className="text-[10px] uppercase tracking-[0.28em] text-zinc-500 dark:text-zinc-500 font-medium mb-3">
-            Vendas · Faturamento
-          </p>
-          <p
-            className="text-4xl sm:text-5xl font-bold tracking-tighter leading-none tabular-nums text-[#1D1D1F] dark:text-white"
-            style={{ fontFeatureSettings: "'tnum','ss01'" }}
-          >
-            {formatBRL(total)}
-          </p>
-          <p className="text-[11px] tabular-nums mt-3 text-zinc-500 dark:text-zinc-500 font-medium">
-            {salesCount} vendas concluídas
-          </p>
+      {/* Rótulo discreto */}
+      <p className="text-[10px] uppercase tracking-[0.32em] text-zinc-500 dark:text-zinc-500 font-medium mb-4">
+        Vendas · Faturamento
+      </p>
+
+      {/* Valor principal — palco */}
+      <p
+        className="text-5xl sm:text-6xl font-bold tracking-tighter leading-none tabular-nums text-[#1D1D1F] dark:text-white"
+        style={{ fontFeatureSettings: "'tnum','ss01'" }}
+      >
+        {formatBRL(total)}
+      </p>
+
+      {/* Quebra de origem — linha horizontal limpa */}
+      <div className="mt-6 flex flex-wrap items-center gap-x-8 gap-y-3 text-[12px]">
+        <div className="flex items-center gap-2">
+          <span
+            className="h-1.5 w-1.5 rounded-full bg-emerald-500"
+            aria-hidden
+          />
+          <span className="uppercase tracking-[0.18em] text-zinc-500 font-medium">
+            Anúncios
+          </span>
+          <span className="font-semibold tabular-nums text-emerald-600 dark:text-emerald-400">
+            {formatBRL(pago)}
+          </span>
+          <span className="text-[10px] text-zinc-400 dark:text-zinc-500 tabular-nums font-medium">
+            {pctPago.toFixed(0)}%
+          </span>
         </div>
 
-        {/* Direita — Split Anúncios / Orgânico */}
-        <div className="flex-1 max-w-[360px] min-w-[220px] space-y-4">
-          {/* Anúncios */}
-          <div>
-            <div className="flex items-center justify-between mb-1.5">
-              <span className="text-[11px] font-medium uppercase tracking-[0.18em] text-zinc-500 dark:text-zinc-500">
-                Anúncios
-              </span>
-              <span className="text-[12px] font-semibold tabular-nums text-[#1D1D1F] dark:text-white">
-                {formatBRL(pago)}
-                <span className="ml-1.5 text-[10px] font-medium text-zinc-400 dark:text-zinc-500">
-                  {pctPago.toFixed(0)}%
-                </span>
-              </span>
-            </div>
-            <div className="h-[2px] w-full rounded-full bg-zinc-100 dark:bg-[#1c1c1c] overflow-hidden">
-              <div
-                className="h-full rounded-full transition-all bg-[#1D1D1F] dark:bg-white"
-                style={{ width: `${pctPago}%` }}
-              />
-            </div>
-          </div>
-
-          {/* Orgânico */}
-          <div>
-            <div className="flex items-center justify-between mb-1.5">
-              <span className="text-[11px] font-medium uppercase tracking-[0.18em] text-zinc-500 dark:text-zinc-500">
-                Orgânico
-              </span>
-              <span className="text-[12px] font-semibold tabular-nums text-[#1D1D1F] dark:text-white">
-                {formatBRL(organico)}
-                <span className="ml-1.5 text-[10px] font-medium text-zinc-400 dark:text-zinc-500">
-                  {pctOrg.toFixed(0)}%
-                </span>
-              </span>
-            </div>
-            <div className="h-[2px] w-full rounded-full bg-zinc-100 dark:bg-[#1c1c1c] overflow-hidden">
-              <div
-                className="h-full rounded-full transition-all bg-zinc-400 dark:bg-zinc-600"
-                style={{ width: `${pctOrg}%` }}
-              />
-            </div>
-          </div>
+        <div className="flex items-center gap-2">
+          <span
+            className="h-1.5 w-1.5 rounded-full bg-zinc-400 dark:bg-zinc-500"
+            aria-hidden
+          />
+          <span className="uppercase tracking-[0.18em] text-zinc-500 font-medium">
+            Orgânico
+          </span>
+          <span className="font-semibold tabular-nums text-zinc-700 dark:text-zinc-300">
+            {formatBRL(organico)}
+          </span>
+          <span className="text-[10px] text-zinc-400 dark:text-zinc-500 tabular-nums font-medium">
+            {pctOrg.toFixed(0)}%
+          </span>
         </div>
+
+        <div className="ml-auto text-[10px] uppercase tracking-[0.22em] text-zinc-400 dark:text-zinc-500 tabular-nums font-medium">
+          {salesCount} vendas
+        </div>
+      </div>
+
+      {/* Barra ultra-fina (2px) */}
+      <div className="mt-4 flex h-[2px] w-full rounded-full overflow-hidden bg-zinc-100 dark:bg-[#1c1c1c]">
+        <div
+          className="h-full rounded-full transition-all bg-emerald-500"
+          style={{ width: `${pctPago}%` }}
+        />
+        <div
+          className="h-full rounded-full transition-all bg-zinc-300 dark:bg-zinc-700"
+          style={{ width: `${pctOrg}%` }}
+        />
       </div>
     </Card>
   );
