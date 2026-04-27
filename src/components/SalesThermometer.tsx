@@ -48,8 +48,8 @@ export function SalesThermometer({ leads }: SalesThermometerProps) {
         count: total,
         conv: null,
         accent: "bg-blue-500",
-        textAccent: "text-blue-600",
-        bg: "bg-blue-50",
+        textAccent: "text-blue-600 dark:text-blue-300",
+        bg: "bg-blue-50 dark:bg-blue-500/10",
         ring: "ring-blue-200",
       },
       {
@@ -59,8 +59,8 @@ export function SalesThermometer({ leads }: SalesThermometerProps) {
         count: agendou,
         conv: total > 0 ? agendou / total : null,
         accent: "bg-purple-500",
-        textAccent: "text-purple-600",
-        bg: "bg-purple-50",
+        textAccent: "text-purple-600 dark:text-purple-300",
+        bg: "bg-purple-50 dark:bg-purple-500/10",
         ring: "ring-purple-200",
       },
       {
@@ -70,8 +70,8 @@ export function SalesThermometer({ leads }: SalesThermometerProps) {
         count: compareceu,
         conv: agendou > 0 ? compareceu / agendou : null,
         accent: "bg-cyan-500",
-        textAccent: "text-cyan-600",
-        bg: "bg-cyan-50",
+        textAccent: "text-cyan-600 dark:text-cyan-300",
+        bg: "bg-cyan-50 dark:bg-cyan-500/10",
         ring: "ring-cyan-200",
       },
       {
@@ -81,8 +81,8 @@ export function SalesThermometer({ leads }: SalesThermometerProps) {
         count: comprou,
         conv: compareceu > 0 ? comprou / compareceu : null,
         accent: "bg-emerald-500",
-        textAccent: "text-emerald-600",
-        bg: "bg-emerald-50",
+        textAccent: "text-emerald-600 dark:text-emerald-300",
+        bg: "bg-emerald-50 dark:bg-emerald-500/10",
         ring: "ring-emerald-200",
       },
     ];
