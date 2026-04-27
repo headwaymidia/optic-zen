@@ -158,16 +158,12 @@ export function LeadsVsSalesTimeline({ leads, embedded = false }: { leads: Lead[
                 <feMergeNode in="SourceGraphic" />
               </feMerge>
             </filter>
-            <linearGradient id="leadsFill" x1="0" y1="0" x2="0" y2="1">
-              <stop offset="0%" stopColor={WHITE} stopOpacity={0.05} />
-              <stop offset="100%" stopColor={WHITE} stopOpacity={0} />
-            </linearGradient>
           </defs>
           <XAxis dataKey="date" hide />
           <YAxis hide />
           <Tooltip contentStyle={tooltipStyle} cursor={false} />
-          <Area type="monotone" dataKey="novos" name="Leads" stroke={WHITE} strokeWidth={1.25} fill="url(#leadsFill)" dot={false} activeDot={{ r: 2.5, fill: WHITE }} />
-          <Area type="monotone" dataKey="vendas" name="Vendas" stroke={EMERALD} strokeWidth={1.25} fill="none" dot={false} activeDot={{ r: 2.5, fill: EMERALD }} filter="url(#emeraldGlow)" />
+          <Area type="monotone" dataKey="novos" name="Leads" stroke={WHITE} strokeWidth={1.5} fill="none" dot={false} activeDot={{ r: 2.5, fill: WHITE }} />
+          <Area type="monotone" dataKey="vendas" name="Vendas" stroke={EMERALD} strokeWidth={1.5} fill="none" dot={false} activeDot={{ r: 2.5, fill: EMERALD }} filter="url(#emeraldGlow)" />
         </AreaChart>
       </ResponsiveContainer>
     </div>
@@ -208,7 +204,7 @@ export function LossReasonsDonut({ leads }: { leads: Lead[] }) {
             Sem dados de perda no período.
           </div>
         ) : (
-          <div className="h-[180px] w-full">
+          <div className="relative h-[180px] w-full">
             <ResponsiveContainer width="100%" height="100%">
               <PieChart>
                 <Tooltip contentStyle={tooltipStyle} formatter={(v: number, n: string) => [`${v} leads`, n]} />
@@ -218,10 +214,11 @@ export function LossReasonsDonut({ leads }: { leads: Lead[] }) {
                   nameKey="name"
                   cx="50%"
                   cy="45%"
-                  innerRadius={60}
-                  outerRadius={64}
+                  innerRadius={62}
+                  outerRadius={65}
                   paddingAngle={2}
                   stroke="none"
+                  strokeWidth={3}
                 >
                   {data.map((d) => (
                     <Cell key={d.name} fill={d.color} />
@@ -235,6 +232,13 @@ export function LossReasonsDonut({ leads }: { leads: Lead[] }) {
                 />
               </PieChart>
             </ResponsiveContainer>
+            {/* Ícone discreto centralizado no anel */}
+            <div className="pointer-events-none absolute inset-0 flex items-start justify-center" style={{ paddingTop: "calc(45% - 8px)" }}>
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#52525b" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
+                <circle cx="12" cy="12" r="10" />
+                <line x1="4.93" y1="4.93" x2="19.07" y2="19.07" />
+              </svg>
+            </div>
           </div>
         )}
       </CardContent>
