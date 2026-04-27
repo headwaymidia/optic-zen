@@ -203,7 +203,7 @@ export function LossReasonsDonut({ leads }: { leads: Lead[] }) {
   }, [leads]);
 
   return (
-    <Card className="border border-border bg-card rounded-lg h-full">
+    <Card className="border border-white/10 bg-card rounded-lg h-full">
       <CardHeader className="pb-2 pt-4 px-5">
         <CardTitle className="text-[11px] font-medium uppercase tracking-[0.14em] text-muted-foreground">
           Motivos de Perda
