@@ -8,7 +8,7 @@ function formatBRL(value: number) {
   return value.toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
 }
 
-/** Card hero de Faturamento — High-End Minimalist (preto puro, branco protagonista). */
+/** Card hero de Faturamento — Luxury Enterprise (glass, gradiente metalizado, ping live). */
 export function RevenueHeroCard({ leads, loading }: { leads: Lead[]; loading: boolean }) {
   const buyers = leads.filter((l) => l.status === "Compareceu e Comprou");
   const totalFaturamento = buyers.reduce((sum, l) => sum + (Number(l.sale_value) || 0), 0);
@@ -21,59 +21,61 @@ export function RevenueHeroCard({ leads, loading }: { leads: Lead[]; loading: bo
   const orgPct = 100 - adsPct;
 
   return (
-    <Card className="border border-white/10 bg-card rounded-lg h-full">
+    <Card className="glass-card rounded-lg h-full border-0">
       <CardContent className="p-8 h-full flex flex-col justify-between gap-8">
-        {/* Eyebrow + indicador de pulso (live) */}
+        {/* Eyebrow */}
         <div className="flex items-center justify-between">
-          <p className="text-[10px] uppercase tracking-[0.18em] text-muted-foreground font-medium">
+          <p className="text-[11px] uppercase tracking-[0.2em] text-muted-foreground font-extralight">
             Faturamento Gerado
           </p>
-          <div className="flex items-center gap-2">
-            <span className="relative flex h-1.5 w-1.5">
-              <span className="absolute inline-flex h-full w-full rounded-full bg-emerald-500 animate-pulse-soft" />
-              <span className="relative inline-flex h-1.5 w-1.5 rounded-full bg-emerald-500" />
-            </span>
-            <span className="text-[10px] text-muted-foreground tabular-nums">
-              {buyers.length} {buyers.length === 1 ? "venda" : "vendas"}
-            </span>
-          </div>
+          <span className="text-[10px] text-muted-foreground tabular-nums font-extralight tracking-wider">
+            {buyers.length} {buyers.length === 1 ? "VENDA" : "VENDAS"}
+          </span>
         </div>
 
-        {/* Valor protagonista — gradiente metalizado branco→cinza claro, font-black */}
-        <p
-          className="text-5xl sm:text-6xl font-black tabular-nums tracking-tight leading-none bg-clip-text text-transparent"
-          style={{
-            fontFamily: "Inter, ui-sans-serif, system-ui, sans-serif",
-            backgroundImage: "linear-gradient(180deg, #ffffff 0%, #d4d4d8 100%)",
-          }}
-        >
-          {loading ? "—" : formatBRL(totalFaturamento)}
-        </p>
+        {/* Valor centralizado + ping live */}
+        <div className="flex flex-col items-center justify-center gap-3 py-2">
+          <div className="flex items-center gap-3">
+            <p
+              className="text-luxury-gradient text-5xl sm:text-6xl font-medium tabular-nums tracking-tight leading-none"
+              style={{ fontFamily: "Inter, ui-sans-serif, system-ui, sans-serif" }}
+            >
+              {loading ? "—" : formatBRL(totalFaturamento)}
+            </p>
+            <span className="relative flex h-2 w-2 mt-2" aria-label="Live">
+              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" />
+              <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500" />
+            </span>
+          </div>
+          <p className="text-[10px] uppercase tracking-[0.25em] text-muted-foreground/60 font-extralight">
+            Tempo Real
+          </p>
+        </div>
 
         {/* Breakdown ultra-discreto */}
         <div className="space-y-2.5">
           <div className="flex items-center justify-between text-[11px]">
-            <span className="text-muted-foreground">Tráfego Pago</span>
+            <span className="text-muted-foreground font-extralight tracking-wider uppercase">Tráfego Pago</span>
             <span className="tabular-nums text-foreground font-medium">
               {loading ? "—" : formatBRL(faturamentoAds)}
               {!loading && totalFaturamento > 0 && (
-                <span className="ml-2 text-muted-foreground font-normal">{adsPct.toFixed(0)}%</span>
+                <span className="ml-2 text-muted-foreground font-extralight">{adsPct.toFixed(0)}%</span>
               )}
             </span>
           </div>
           <div className="flex items-center justify-between text-[11px]">
-            <span className="text-muted-foreground">Orgânico</span>
+            <span className="text-muted-foreground font-extralight tracking-wider uppercase">Orgânico</span>
             <span className="tabular-nums text-foreground font-medium">
               {loading ? "—" : formatBRL(faturamentoOrganico)}
               {!loading && totalFaturamento > 0 && (
-                <span className="ml-2 text-muted-foreground font-normal">{orgPct.toFixed(0)}%</span>
+                <span className="ml-2 text-muted-foreground font-extralight">{orgPct.toFixed(0)}%</span>
               )}
             </span>
           </div>
           {!loading && totalFaturamento > 0 && (
-            <div className="h-px w-full overflow-hidden bg-white/10 flex">
-              <div className="h-full bg-foreground transition-all" style={{ width: `${adsPct}%` }} />
-              <div className="h-full bg-muted-foreground/40 transition-all" style={{ width: `${orgPct}%` }} />
+            <div className="h-px w-full overflow-hidden bg-white/5 flex">
+              <div className="h-full bg-foreground/80 transition-all" style={{ width: `${adsPct}%` }} />
+              <div className="h-full bg-muted-foreground/30 transition-all" style={{ width: `${orgPct}%` }} />
             </div>
           )}
         </div>
@@ -82,7 +84,7 @@ export function RevenueHeroCard({ leads, loading }: { leads: Lead[]; loading: bo
   );
 }
 
-/** KPIs minimalistas — 4 cards, ícones de linha em cinza claro. */
+/** KPIs Luxury — labels extralight tracking máximo, números medium. */
 export function KPICards({ leads, loading }: { leads: Lead[]; loading: boolean }) {
   const total = leads.length;
   const agendou = leads.filter((l) => l.status === "Agendou Exame").length;
@@ -101,18 +103,15 @@ export function KPICards({ leads, loading }: { leads: Lead[]; loading: boolean }
   return (
     <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
       {items.map((s) => (
-        <Card
-          key={s.key}
-          className="border border-white/10 bg-card rounded-lg"
-        >
+        <Card key={s.key} className="glass-card rounded-lg border-0">
           <CardContent className="p-4">
             <div className="flex items-center justify-between mb-3">
-              <p className="text-xs font-medium uppercase tracking-widest text-muted-foreground truncate">
+              <p className="text-[11px] font-extralight uppercase tracking-[0.2em] text-muted-foreground truncate">
                 {s.label}
               </p>
-              <s.icon className="h-3.5 w-3.5 text-muted-foreground" strokeWidth={1.5} />
+              <s.icon className="h-3.5 w-3.5 text-muted-foreground" strokeWidth={1.25} />
             </div>
-            <div className="text-2xl font-bold tabular-nums text-foreground leading-none tracking-tight">
+            <div className="text-2xl font-medium tabular-nums text-foreground leading-none tracking-tight">
               {loading ? "—" : s.value}
             </div>
           </CardContent>
