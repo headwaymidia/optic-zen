@@ -70,17 +70,20 @@ export function PeriodFilter({ value, customRange, onChange }: Props) {
   const [draft, setDraft] = useState<{ from?: Date; to?: Date }>(customRange ?? {});
 
   return (
-    <div className="flex flex-wrap items-center gap-1.5">
+    <div
+      className="flex flex-wrap items-center gap-1"
+      style={{ fontFamily: "'Inter','Geist Sans',-apple-system,BlinkMacSystemFont,sans-serif" }}
+    >
       {OPTIONS.map((o) => (
         <button
           key={o.key}
           type="button"
           onClick={() => onChange(o.key)}
           className={cn(
-            "h-7 px-3.5 rounded-full text-[11px] font-medium transition-all",
+            "h-8 px-3.5 rounded-full text-[12px] font-medium transition-all",
             value === o.key
-              ? "bg-white/10 text-foreground shadow-[inset_0_1px_0_0_rgba(255,255,255,0.08)]"
-              : "bg-transparent text-zinc-500 hover:text-foreground"
+              ? "bg-zinc-100 text-[#1D1D1F] dark:bg-white/10 dark:text-white"
+              : "bg-transparent text-zinc-500 hover:text-[#1D1D1F] dark:hover:text-white"
           )}
         >
           {o.label}
@@ -91,13 +94,13 @@ export function PeriodFilter({ value, customRange, onChange }: Props) {
           <button
             type="button"
             className={cn(
-              "h-7 px-3.5 rounded-full text-[11px] font-medium gap-1.5 transition-all inline-flex items-center",
+              "h-8 px-3.5 rounded-full text-[12px] font-medium gap-1.5 transition-all inline-flex items-center",
               value === "custom"
-                ? "bg-white/10 text-foreground shadow-[inset_0_1px_0_0_rgba(255,255,255,0.08)]"
-                : "bg-transparent text-zinc-500 hover:text-foreground"
+                ? "bg-zinc-100 text-[#1D1D1F] dark:bg-white/10 dark:text-white"
+                : "bg-transparent text-zinc-500 hover:text-[#1D1D1F] dark:hover:text-white"
             )}
           >
-            <CalendarIcon className="h-3 w-3" strokeWidth={1.5} />
+            <CalendarIcon className="h-3 w-3" strokeWidth={1.75} />
             {value === "custom" && customRange?.from && customRange?.to
               ? `${format(customRange.from, "dd/MM")} – ${format(customRange.to, "dd/MM")}`
               : "Personalizado"}
