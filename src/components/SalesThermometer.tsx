@@ -2,7 +2,7 @@ import { Fragment, useMemo } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Lead } from "@/lib/supabase";
 import { cn } from "@/lib/utils";
-import { AlertTriangle, TrendingDown, Thermometer, CheckCircle2 } from "lucide-react";
+import { AlertTriangle, TrendingDown, Thermometer, CheckCircle2, ChevronRight } from "lucide-react";
 
 interface SalesThermometerProps {
   leads: Lead[];
@@ -126,7 +126,7 @@ export function SalesThermometer({ leads }: SalesThermometerProps) {
   }
 
   return (
-    <Card className="overflow-hidden">
+    <Card className="overflow-hidden border-0 border-t-4 border-t-rose-400 rounded-2xl shadow-[0_4px_24px_-8px_rgba(15,23,42,0.08)] bg-white">
       <CardHeader className="pb-3">
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
           <div className="flex items-center gap-2">
@@ -134,15 +134,15 @@ export function SalesThermometer({ leads }: SalesThermometerProps) {
             <CardTitle className="text-base">Termômetro de Vendas</CardTitle>
           </div>
           <div className="flex items-center gap-2 text-xs">
-            <span className="text-slate-500">Conversão geral</span>
+            <span className="text-slate-500 font-medium">Conversão geral</span>
             <span
               className={cn(
-                "px-2 py-0.5 rounded-full font-bold tabular-nums",
+                "px-3 py-1 rounded-full font-black tabular-nums text-white text-xs shadow-sm",
                 overallConv >= 10
-                  ? "bg-emerald-100 text-emerald-700"
+                  ? "bg-gradient-to-r from-emerald-500 to-emerald-600"
                   : overallConv >= 5
-                    ? "bg-amber-100 text-amber-700"
-                    : "bg-rose-100 text-rose-700"
+                    ? "bg-gradient-to-r from-amber-500 to-amber-600"
+                    : "bg-gradient-to-r from-rose-500 to-rose-600"
               )}
             >
               {overallConv.toFixed(1)}%
@@ -199,11 +199,14 @@ export function SalesThermometer({ leads }: SalesThermometerProps) {
                   </div>
                 </div>
 
-                {/* Conector com taxa de conversão */}
+                {/* Conector com taxa de conversão (fluxo fluido) */}
                 {i < stages.length - 1 && (
-                  <div
-                    className="sm:col-span-1 flex sm:flex-col items-center justify-center gap-1 py-1 sm:py-0"
-                  >
+                  <div className="sm:col-span-1 relative flex sm:flex-col items-center justify-center gap-1 py-1 sm:py-0">
+                    {/* Linha tracejada conectora (desktop) */}
+                    <div
+                      aria-hidden
+                      className="hidden sm:block absolute top-1/2 left-0 right-0 h-px border-t border-dashed border-slate-300 -z-0"
+                    />
                     {(() => {
                       const next = stages[i + 1];
                       const conv = next.conv;
@@ -211,29 +214,26 @@ export function SalesThermometer({ leads }: SalesThermometerProps) {
                       const pctNum = conv === null ? 0 : conv * 100;
                       const tone =
                         conv === null
-                          ? "text-slate-400 bg-slate-100"
+                          ? "text-slate-500 bg-white border-slate-200"
                           : isBottleneck
-                            ? "text-amber-700 bg-amber-100"
+                            ? "text-amber-700 bg-white border-amber-300"
                             : pctNum >= 60
-                              ? "text-emerald-700 bg-emerald-100"
-                              : pctNum >= 30
-                                ? "text-amber-700 bg-amber-100"
-                                : "text-amber-700 bg-amber-100";
+                              ? "text-emerald-700 bg-white border-emerald-200"
+                              : "text-amber-700 bg-white border-amber-200";
                       return (
-                        <>
-                          <span
-                            className={cn(
-                              "inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[11px] font-bold tabular-nums",
-                              tone
-                            )}
-                          >
-                            {isBottleneck && <TrendingDown className="h-3 w-3" />}
-                            {formatPct(conv)}
-                          </span>
-                          <span className="hidden sm:block text-[9px] text-slate-400 uppercase tracking-wide">
-                            convertem
-                          </span>
-                        </>
+                        <span
+                          className={cn(
+                            "relative z-10 inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-[11px] font-black tabular-nums shadow-sm",
+                            tone
+                          )}
+                        >
+                          {isBottleneck ? (
+                            <TrendingDown className="h-3 w-3" />
+                          ) : (
+                            <ChevronRight className="h-3 w-3" />
+                          )}
+                          {formatPct(conv)}
+                        </span>
                       );
                     })()}
                   </div>
