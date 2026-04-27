@@ -83,25 +83,32 @@ export function SalesThermometer({ leads }: SalesThermometerProps) {
         </div>
 
         {/* Indicadores — 4 colunas com gap maior */}
-        <div className="grid grid-cols-4 gap-8 pt-1">
+        <div className="grid grid-cols-4 gap-6 pt-1">
           {stages.map((s, i) => {
             const isLast = i === stages.length - 1;
+            const Icon = s.Icon;
             return (
-              <div key={s.key} className="flex flex-col gap-2 min-w-0">
-                <span className="text-[10px] uppercase tracking-[0.2em] text-zinc-500 font-medium truncate">
-                  {s.label}
-                </span>
+              <div key={s.key} className="flex flex-col gap-2.5 min-w-0">
+                <div className="flex items-center gap-2">
+                  <Icon
+                    className={cn("h-3.5 w-3.5 shrink-0", isLast ? "text-emerald-400" : "text-zinc-500")}
+                    strokeWidth={1.5}
+                  />
+                  <span className="text-[10px] uppercase tracking-[0.25em] text-zinc-500 font-semibold truncate">
+                    {s.label}
+                  </span>
+                </div>
                 <div className="flex items-baseline gap-2">
                   <span
                     className={cn(
-                      "font-mono-luxe text-lg font-semibold tabular-nums leading-none",
+                      "font-mono-luxe text-xl font-bold tabular-nums tracking-tighter leading-none",
                       isLast ? "text-emerald-400" : "text-foreground"
                     )}
                   >
                     {s.count}
                   </span>
                   {i > 0 && (
-                    <span className="font-mono-luxe text-[11px] tabular-nums text-zinc-500 font-light">
+                    <span className="font-mono-luxe text-[11px] tabular-nums text-zinc-500 font-medium">
                       {formatPct(s.conv)}
                     </span>
                   )}
