@@ -101,12 +101,12 @@ export function KPICards({ leads, loading }: { leads: Lead[]; loading: boolean }
   ] as const;
 
   return (
-    <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+    <div className="grid grid-cols-2 lg:grid-cols-4 gap-6">
       {items.map((s) => (
         <Card key={s.key} className="glass-card rounded-lg border-0">
-          <CardContent className="p-4">
-            <div className="flex items-center justify-between mb-3">
-              <p className="text-[11px] font-extralight uppercase tracking-[0.2em] text-muted-foreground truncate">
+          <CardContent className="p-5">
+            <div className="flex items-center justify-between mb-4">
+              <p className="text-[10px] font-light uppercase tracking-[0.3em] text-muted-foreground truncate">
                 {s.label}
               </p>
               <s.icon className="h-3.5 w-3.5 text-muted-foreground" strokeWidth={1.25} />
