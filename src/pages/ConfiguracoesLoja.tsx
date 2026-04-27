@@ -27,6 +27,21 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { cn } from "@/lib/utils";
 import { toast } from "@/hooks/use-toast";
 
@@ -202,12 +217,7 @@ function getInitials(name: string) {
 }
 
 function TeamPanel({ storesCount }: { storesCount: number }) {
-  function handleInvite() {
-    toast({
-      title: "Convidar usuário",
-      description: "Em breve: envio de convite por email com link mágico.",
-    });
-  }
+  const [inviteOpen, setInviteOpen] = useState(false);
 
   function handleAction(action: string, member: TeamMember) {
     toast({
@@ -230,13 +240,15 @@ function TeamPanel({ storesCount }: { storesCount: number }) {
           </p>
         </div>
         <Button
-          onClick={handleInvite}
+          onClick={() => setInviteOpen(true)}
           className="gap-2 bg-emerald-500 hover:bg-emerald-500/90 text-white shrink-0"
         >
           <UserPlus className="h-4 w-4" />
           Convidar Usuário
         </Button>
       </header>
+
+      <InviteMemberDialog open={inviteOpen} onOpenChange={setInviteOpen} />
 
       {/* Tabela minimalista */}
       <div className="border-t border-border">
@@ -329,6 +341,117 @@ function TeamPanel({ storesCount }: { storesCount: number }) {
         <code className="font-mono">store_id</code>.
       </p>
     </section>
+  );
+}
+
+/* ---------- INVITE DIALOG ---------- */
+function InviteMemberDialog({
+  open,
+  onOpenChange,
+}: {
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+}) {
+  const [email, setEmail] = useState("");
+  const [role, setRole] = useState<TeamRole>("Vendedor");
+  const [submitting, setSubmitting] = useState(false);
+
+  function reset() {
+    setEmail("");
+    setRole("Vendedor");
+    setSubmitting(false);
+  }
+
+  function handleSubmit(e: React.FormEvent) {
+    e.preventDefault();
+    if (!email.trim()) return;
+    setSubmitting(true);
+    setTimeout(() => {
+      onOpenChange(false);
+      reset();
+      toast({
+        title: "✅ Convite enviado com sucesso!",
+        description: "O usuário receberá um link de acesso.",
+      });
+    }, 400);
+  }
+
+  return (
+    <Dialog
+      open={open}
+      onOpenChange={(o) => {
+        onOpenChange(o);
+        if (!o) reset();
+      }}
+    >
+      <DialogContent className="sm:max-w-[460px] rounded-2xl">
+        <DialogHeader>
+          <DialogTitle className="text-lg font-semibold tracking-tight">
+            Convidar Novo Membro
+          </DialogTitle>
+          <DialogDescription className="text-sm text-muted-foreground">
+            Envie um convite para adicionar um novo colaborador a esta filial.
+          </DialogDescription>
+        </DialogHeader>
+
+        <form onSubmit={handleSubmit} className="space-y-5 pt-2">
+          <div className="space-y-2">
+            <Label
+              htmlFor="invite-email"
+              className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground"
+            >
+              E-mail do colaborador
+            </Label>
+            <Input
+              id="invite-email"
+              type="email"
+              required
+              autoFocus
+              placeholder="exemplo@otica.com"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              className="h-10"
+            />
+          </div>
+
+          <div className="space-y-2">
+            <Label className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
+              Cargo / Permissão
+            </Label>
+            <Select value={role} onValueChange={(v) => setRole(v as TeamRole)}>
+              <SelectTrigger className="h-10">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="Dono">Dono</SelectItem>
+                <SelectItem value="Administrador">Administrador</SelectItem>
+                <SelectItem value="Gerente">Gerente</SelectItem>
+                <SelectItem value="Vendedor">Vendedor</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+
+          <DialogFooter className="gap-2 sm:justify-between pt-2">
+            <Button
+              type="button"
+              variant="ghost"
+              onClick={() => onOpenChange(false)}
+              className="text-muted-foreground hover:text-foreground"
+            >
+              Cancelar
+            </Button>
+            <Button
+              type="submit"
+              disabled={submitting || !email.trim()}
+              className="gap-2 bg-emerald-500 hover:bg-emerald-500/90 text-white"
+            >
+              <UserPlus className="h-4 w-4" />
+              {submitting ? "Enviando…" : "Enviar Convite"}
+            </Button>
+          </DialogFooter>
+        </form>
+      </DialogContent>
+    </Dialog>
   );
 }
 
