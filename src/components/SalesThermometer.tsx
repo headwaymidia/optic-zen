@@ -14,7 +14,7 @@ interface SalesThermometerProps {
  * Estilo Linear/Vercel — sem círculos, sem cores fortes.
  */
 export function SalesThermometer({ leads }: SalesThermometerProps) {
-  const stages = useMemo<Stage[]>(() => {
+  const stages = useMemo(() => {
     const total = leads.length;
     const agendou = leads.filter((l) =>
       ["Agendou Exame", "Não Compareceu", "Compareceu e Comprou", "Compareceu e Não Comprou"].includes(l.status)
