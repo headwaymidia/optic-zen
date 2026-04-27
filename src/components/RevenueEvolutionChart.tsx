@@ -262,7 +262,7 @@ export function RevenueEvolutionChart({ leads }: Props) {
           <AreaChart data={data} margin={{ top: 8, right: 12, left: 12, bottom: 0 }}>
             <defs>
               <linearGradient id="metricGradient" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="0%" stopColor={cfg.color} stopOpacity={0.18} />
+                <stop offset="0%" stopColor={cfg.color} stopOpacity={0.22} />
                 <stop offset="100%" stopColor={cfg.color} stopOpacity={0} />
               </linearGradient>
               <linearGradient id="metricGradientPrev" x1="0" y1="0" x2="0" y2="1">
