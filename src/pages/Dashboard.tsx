@@ -5,8 +5,8 @@ import { PeriodFilter, PeriodKey, getPeriodRange } from "@/components/PeriodFilt
 import { SalesRanking } from "@/components/SalesRanking";
 import { PeriodKPIRow } from "@/components/PeriodKPIRow";
 import { RoiMegaCard } from "@/components/RoiMegaCard";
-import { TeamPerformancePanel } from "@/components/TeamPerformancePanel";
-import { ResponseSpeedPanel } from "@/components/ResponseSpeedPanel";
+import { ResponseSpeedCard } from "@/components/ResponseSpeedCard";
+import { ImprovementInsightsCard } from "@/components/ImprovementInsightsCard";
 import { ObjectionRadar } from "@/components/ObjectionRadar";
 import { VerticalNeonFunnel } from "@/components/VerticalNeonFunnel";
 import { RevenueEvolutionChart } from "@/components/RevenueEvolutionChart";
@@ -91,10 +91,10 @@ export default function Dashboard() {
           {/* 3. Linha de Métricas de Volume */}
           <PeriodKPIRow leads={leads} range={range} />
 
-          {/* 4. Tração & Equipe | Velocidade | Objeções */}
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 pt-2">
-            <TeamPerformancePanel leads={filtered} />
-            <ResponseSpeedPanel leads={filtered} />
+          {/* 4. Velocidade de Atendimento | Pontos de Melhoria */}
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 pt-2 items-stretch">
+            <ResponseSpeedCard leads={filtered} />
+            <ImprovementInsightsCard leads={filtered} />
           </div>
           <ObjectionRadar leads={filtered} />
 
