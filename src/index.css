@@ -2,36 +2,68 @@
 @tailwind components;
 @tailwind utilities;
 
-/* Definition of the design system. All colors, gradients, fonts, etc should be defined here. 
-All colors MUST be HSL.
-Plus Jakarta Sans is the primary font for a Premium Enterprise feel.
-*/
+/* Dashpro Neon — Dual Theme (Light Premium + Dark Performance).
+ * Acentos vibrantes (Verde #22C55E, Amarelo #FACC15) preservados em ambos.
+ * Light: bg-slate-50, cards brancos, sombras suaves, sem glow.
+ * Dark: bg #0A0A0A, cards #111111, glows neon ativos.
+ */
 
 @layer base {
-  :root,
+  :root {
+    /* LIGHT MODE — Premium clean (slate base) */
+    --background: 210 20% 98%;          /* slate-50 */
+    --foreground: 222 47% 11%;          /* slate-900 */
+    --card: 0 0% 100%;                  /* white */
+    --card-foreground: 222 47% 11%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 222 47% 11%;
+    --primary: 142 71% 38%;             /* emerald-700 sólido p/ contraste */
+    --primary-foreground: 0 0% 100%;
+    --secondary: 210 40% 96%;
+    --secondary-foreground: 222 47% 11%;
+    --muted: 210 40% 96%;
+    --muted-foreground: 215 16% 47%;    /* slate-500 */
+    --accent: 142 71% 45%;              /* emerald-500 */
+    --accent-foreground: 0 0% 100%;
+    --destructive: 0 84% 60%;
+    --destructive-foreground: 0 0% 100%;
+    --border: 214 32% 91%;              /* slate-200 */
+    --input: 214 32% 91%;
+    --ring: 142 71% 45%;
+
+    --radius: 0.75rem;
+
+    --sidebar-background: 0 0% 100%;
+    --sidebar-foreground: 222 47% 11%;
+    --sidebar-primary: 142 71% 38%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 210 40% 96%;
+    --sidebar-accent-foreground: 222 47% 11%;
+    --sidebar-border: 214 32% 91%;
+    --sidebar-ring: 142 71% 45%;
+  }
+
   .dark {
-    /* Dashpro Neon — Painel de Controle de Conversão (DARK ONLY) */
+    /* DARK MODE — Dashpro Neon */
     --background: 0 0% 4%;             /* #0A0A0A */
     --foreground: 0 0% 98%;
     --card: 0 0% 7%;                   /* #111111 */
     --card-foreground: 0 0% 98%;
     --popover: 0 0% 7%;
     --popover-foreground: 0 0% 98%;
-    --primary: 48 96% 53%;             /* #FACC15 — Amarelo Neon */
+    --primary: 48 96% 53%;             /* #FACC15 */
     --primary-foreground: 0 0% 5%;
     --secondary: 0 0% 13%;             /* #222222 */
     --secondary-foreground: 0 0% 98%;
     --muted: 0 0% 10%;
     --muted-foreground: 0 0% 60%;
-    --accent: 142 71% 45%;             /* #22C55E — Verde Neon */
+    --accent: 142 71% 45%;             /* #22C55E */
     --accent-foreground: 0 0% 5%;
     --destructive: 0 84% 60%;
     --destructive-foreground: 0 0% 98%;
     --border: 0 0% 13%;                /* #222222 */
     --input: 0 0% 13%;
     --ring: 48 96% 53%;
-
-    --radius: 0.75rem;
 
     --sidebar-background: 0 0% 4%;
     --sidebar-foreground: 0 0% 84%;
@@ -89,20 +121,32 @@ Plus Jakarta Sans is the primary font for a Premium Enterprise feel.
   }
   .animate-pulse-border { animation: pulse-border-red 1.6s ease-in-out infinite; }
 
-  /* Dashpro Neon — card opaco preto absoluto, borda zinc fina */
-  .glass-card,
-  .dark .glass-card {
-    background-color: #111111;
-    border: 1px solid #222222;
+  /* glass-card — LIGHT: branco puro com sombra suave; DARK: preto opaco */
+  .glass-card {
+    background-color: #ffffff;
+    border: 1px solid hsl(214 32% 91%);
     box-shadow:
-      inset 0 1px 0 0 rgba(255, 255, 255, 0.03),
-      0 1px 0 0 rgba(0, 0, 0, 0.50),
-      0 8px 24px -16px rgba(0, 0, 0, 0.80);
+      0 1px 2px 0 rgba(15, 23, 42, 0.04),
+      0 4px 12px -4px rgba(15, 23, 42, 0.08);
     transition: border-color 220ms ease, box-shadow 220ms ease;
     backdrop-filter: none;
     -webkit-backdrop-filter: none;
   }
-  .glass-card:hover,
+  .glass-card:hover {
+    border-color: hsl(214 32% 85%);
+    box-shadow:
+      0 2px 4px 0 rgba(15, 23, 42, 0.05),
+      0 8px 24px -6px rgba(15, 23, 42, 0.12);
+  }
+
+  .dark .glass-card {
+    background-color: #111111;
+    border-color: #222222;
+    box-shadow:
+      inset 0 1px 0 0 rgba(255, 255, 255, 0.03),
+      0 1px 0 0 rgba(0, 0, 0, 0.50),
+      0 8px 24px -16px rgba(0, 0, 0, 0.80);
+  }
   .dark .glass-card:hover {
     border-color: #2e2e2e;
     box-shadow:
@@ -110,40 +154,55 @@ Plus Jakarta Sans is the primary font for a Premium Enterprise feel.
       0 12px 32px -16px rgba(0, 0, 0, 0.90);
   }
 
-  .dark [data-sidebar="sidebar"],
   [data-sidebar="sidebar"] {
-    background-color: #0A0A0A;
+    background-color: hsl(var(--sidebar-background));
   }
 
+  /* Light: gradient sutil cinza→preto. Dark: branco→zinc. */
   .text-luxury-gradient {
-    background-image: linear-gradient(180deg, #ffffff 0%, #a1a1aa 100%);
+    background-image: linear-gradient(180deg, hsl(222 47% 11%) 0%, hsl(215 16% 47%) 100%);
     -webkit-background-clip: text;
     background-clip: text;
     color: transparent;
   }
+  .dark .text-luxury-gradient {
+    background-image: linear-gradient(180deg, #ffffff 0%, #a1a1aa 100%);
+  }
 
-  .text-white-glow { filter: drop-shadow(0 0 15px rgba(255, 255, 255, 0.10)); }
+  .text-white-glow { filter: none; }
+  .dark .text-white-glow { filter: drop-shadow(0 0 15px rgba(255, 255, 255, 0.10)); }
 
-  /* Glow Neon — Verde (vendas/dinheiro) */
-  .neon-glow-green {
+  /* Glow Neon — apenas no DARK (light usa cores sólidas para contraste) */
+  .neon-glow-green { text-shadow: none; }
+  .neon-glow-yellow { text-shadow: none; }
+  .dark .neon-glow-green {
     text-shadow:
       0 0 8px rgba(34, 197, 94, 0.55),
       0 0 24px rgba(34, 197, 94, 0.30);
   }
-  /* Glow Neon — Amarelo (atenção/leads) */
-  .neon-glow-yellow {
+  .dark .neon-glow-yellow {
     text-shadow:
       0 0 8px rgba(250, 204, 21, 0.55),
       0 0 24px rgba(250, 204, 21, 0.30);
   }
-  /* Drop-shadow neon p/ blocos */
+
   .neon-shadow-yellow {
+    box-shadow:
+      0 0 0 1px rgba(250, 204, 21, 0.35),
+      0 0 16px -4px rgba(250, 204, 21, 0.30);
+  }
+  .neon-shadow-green {
+    box-shadow:
+      0 0 0 1px rgba(34, 197, 94, 0.35),
+      0 0 16px -4px rgba(34, 197, 94, 0.30);
+  }
+  .dark .neon-shadow-yellow {
     box-shadow:
       0 0 0 1px rgba(250, 204, 21, 0.35),
       0 0 24px -4px rgba(250, 204, 21, 0.45),
       inset 0 1px 0 0 rgba(255, 255, 255, 0.20);
   }
-  .neon-shadow-green {
+  .dark .neon-shadow-green {
     box-shadow:
       0 0 0 1px rgba(34, 197, 94, 0.35),
       0 0 24px -4px rgba(34, 197, 94, 0.45),
@@ -172,20 +231,19 @@ Plus Jakarta Sans is the primary font for a Premium Enterprise feel.
   background-color: #94a3b8;
 }
 
-/* Robust horizontal scrollbar specifically for Kanban */
 .kanban-scroll::-webkit-scrollbar {
-  height: 12px; /* Altura confortável para clicar na horizontal */
-  width: 6px;  /* Mantém a vertical fina */
+  height: 12px;
+  width: 6px;
 }
 .kanban-scroll::-webkit-scrollbar-track {
-  background: #f1f5f9; /* Fundo cinza bem claro para mostrar onde é a trilha */
+  background: #f1f5f9;
   border-radius: 8px;
-  margin: 0 10px; /* Dá um respiro nas pontas */
+  margin: 0 10px;
 }
 .kanban-scroll::-webkit-scrollbar-thumb {
   background-color: #cbd5e1;
   border-radius: 8px;
-  border: 2px solid #f1f5f9; /* Efeito de 'borda' para parecer flutuante */
+  border: 2px solid #f1f5f9;
 }
 .kanban-scroll::-webkit-scrollbar-thumb:hover {
   background-color: #94a3b8;
