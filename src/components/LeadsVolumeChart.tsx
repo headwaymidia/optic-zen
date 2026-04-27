@@ -103,7 +103,7 @@ export function LeadsVolumeChart({ leads, from, to }: Props) {
         <div className="h-[220px] w-full">
           <ResponsiveContainer width="100%" height="100%">
             <BarChart data={data} margin={{ top: 6, right: 8, left: -16, bottom: 0 }}>
-              <CartesianGrid strokeDasharray="3 3" className="stroke-border" vertical={false} />
+              
               <XAxis dataKey="date" tick={{ fontSize: 10 }} className="fill-muted-foreground" axisLine={false} tickLine={false} />
               <YAxis allowDecimals={false} tick={{ fontSize: 10 }} className="fill-muted-foreground" axisLine={false} tickLine={false} width={28} />
               <Tooltip content={renderTooltip} cursor={{ fill: "hsl(var(--muted) / 0.4)" }} />
