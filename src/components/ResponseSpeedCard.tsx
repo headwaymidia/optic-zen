@@ -78,9 +78,9 @@ export function ResponseSpeedCard({ leads }: Props) {
         </p>
       </div>
 
-      <div className="flex-1 grid grid-cols-1 sm:grid-cols-5 gap-8 items-center">
+      <div className="flex-1 grid grid-cols-1 sm:grid-cols-2 gap-10 items-center">
         {/* Cronômetro — esquerda */}
-        <div className="sm:col-span-2 flex flex-col items-center sm:items-start text-center sm:text-left">
+        <div className="flex flex-col items-start text-left">
           <p className="text-[10px] font-medium uppercase tracking-[0.22em] text-zinc-400 mb-3">
             Tempo Médio · 1º contato
           </p>
@@ -107,7 +107,7 @@ export function ResponseSpeedCard({ leads }: Props) {
         </div>
 
         {/* Distribuição — direita */}
-        <div className="sm:col-span-3 space-y-3 sm:border-l sm:border-slate-200 sm:dark:border-[#222222] sm:pl-8">
+        <div className="space-y-4 sm:border-l sm:border-slate-200 sm:dark:border-[#222222] sm:pl-10">
           {rows.map((r) => {
             const pct = (r.value / totalDist) * 100;
             return (
