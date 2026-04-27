@@ -42,11 +42,11 @@ export function RevenueHeroCard({ leads, loading }: { leads: Lead[]; loading: bo
           </span>
         </div>
 
-        {/* Valor centralizado + ping live */}
+        {/* Valor centralizado — gradiente neon esmeralda→branco→esmeralda + drop-shadow glow */}
         <div className="flex flex-col items-center justify-center gap-4 py-2">
           <div className="flex items-center gap-3">
             <p
-              className="text-6xl font-semibold tabular-nums tracking-tighter leading-none text-white"
+              className="text-7xl font-bold tabular-nums tracking-tighter leading-none bg-gradient-to-r from-emerald-400 via-white to-emerald-400 bg-clip-text text-transparent drop-shadow-[0_0_15px_rgba(16,185,129,0.20)]"
               style={{ fontFamily: "Inter, ui-sans-serif, system-ui, sans-serif" }}
             >
               {loading ? "—" : formatBRL(totalFaturamento)}
