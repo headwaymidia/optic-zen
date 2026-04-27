@@ -1,8 +1,8 @@
-import { Fragment, useMemo } from "react";
+import { useMemo } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Lead } from "@/lib/supabase";
 import { cn } from "@/lib/utils";
-import { AlertTriangle, TrendingDown, Thermometer, CheckCircle2, ChevronRight } from "lucide-react";
+import { AlertTriangle, TrendingDown, Thermometer, CheckCircle2 } from "lucide-react";
 
 interface SalesThermometerProps {
   leads: Lead[];
