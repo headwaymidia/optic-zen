@@ -154,7 +154,7 @@ export function LeadsVsSalesTimeline({ leads }: { leads: Lead[] }) {
         <p className="text-[11px] text-muted-foreground">Últimos 7 dias</p>
       </CardHeader>
       <CardContent className="px-2 pb-3">
-        <div className="h-[220px] w-full">
+        <div className="h-[160px] w-full">
           <ResponsiveContainer width="100%" height="100%">
             <AreaChart data={data} margin={{ top: 8, right: 12, left: -16, bottom: 0 }}>
               <defs>
@@ -198,11 +198,11 @@ export function LossReasonsDonut({ leads }: { leads: Lead[] }) {
       </CardHeader>
       <CardContent className="px-2 pb-3">
         {data.length === 0 ? (
-          <div className="h-[220px] flex items-center justify-center text-xs text-muted-foreground">
+          <div className="h-[160px] flex items-center justify-center text-xs text-muted-foreground">
             Sem dados de perda no período.
           </div>
         ) : (
-          <div className="h-[220px] w-full">
+          <div className="h-[160px] w-full">
             <ResponsiveContainer width="100%" height="100%">
               <PieChart>
                 <Tooltip contentStyle={tooltipStyle} formatter={(v: number, n: string) => [`${v} leads`, n]} />

@@ -100,7 +100,7 @@ export function LeadsVolumeChart({ leads, from, to }: Props) {
         <CardTitle className="text-sm font-bold uppercase tracking-wider">Volume de leads por dia</CardTitle>
       </CardHeader>
       <CardContent className="px-2 pb-3">
-        <div className="h-[220px] w-full">
+        <div className="h-[160px] w-full">
           <ResponsiveContainer width="100%" height="100%">
             <BarChart data={data} margin={{ top: 6, right: 8, left: -16, bottom: 0 }}>
               
