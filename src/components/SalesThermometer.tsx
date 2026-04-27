@@ -47,12 +47,12 @@ export function SalesThermometer({ leads }: SalesThermometerProps) {
     return (
       <Card className="glass-card rounded-lg border-0">
         <CardHeader className="pb-2 pt-4 px-5">
-          <CardTitle className="text-[11px] font-extralight uppercase tracking-[0.2em] text-muted-foreground">
+          <CardTitle className="text-[10px] font-light uppercase tracking-[0.3em] text-muted-foreground">
             Funil de Conversão
           </CardTitle>
         </CardHeader>
-        <CardContent className="px-5 pb-5">
-          <p className="text-xs text-muted-foreground py-2 font-extralight">Sem leads no período.</p>
+        <CardContent className="px-6 pb-6">
+          <p className="text-xs text-muted-foreground py-2 font-light">Sem leads no período.</p>
         </CardContent>
       </Card>
     );
@@ -60,13 +60,13 @@ export function SalesThermometer({ leads }: SalesThermometerProps) {
 
   return (
     <Card className="glass-card rounded-lg border-0">
-      <CardHeader className="pb-3 pt-4 px-5 flex-row items-center justify-between space-y-0">
-        <CardTitle className="text-[11px] font-extralight uppercase tracking-[0.2em] text-muted-foreground">
+      <CardHeader className="pb-3 pt-5 px-6 flex-row items-center justify-between space-y-0">
+        <CardTitle className="text-[10px] font-light uppercase tracking-[0.3em] text-muted-foreground">
           Funil de Conversão
         </CardTitle>
         <span className="text-[11px] tabular-nums text-foreground font-medium">
           {overallConv.toFixed(1)}%
-          <span className="ml-1.5 text-muted-foreground font-extralight uppercase tracking-wider text-[10px]">
+          <span className="ml-2 text-muted-foreground font-light uppercase tracking-[0.2em] text-[9px]">
             conversão total
           </span>
         </span>

@@ -32,7 +32,7 @@ export default function Dashboard() {
   const periodSummary = `Exibindo dados de ${format(range.from, "dd/MM", { locale: ptBR })} a ${format(range.to, "dd/MM", { locale: ptBR })}`;
 
   return (
-    <div className="p-3 sm:p-4 space-y-3">
+    <div className="p-4 sm:p-6 space-y-6">
       {/* Cabeçalho */}
       <div className="flex flex-row items-start justify-between gap-3">
         <div className="min-w-0">
@@ -70,7 +70,7 @@ export default function Dashboard() {
       <KPICards leads={filtered} loading={loading} />
 
       {/* Bloco Central: ROI (col-8, ~66%) + Motivos de Perda (col-4, ~33%) */}
-      <div className="grid grid-cols-12 gap-3 items-stretch">
+      <div className="grid grid-cols-12 gap-6 items-stretch">
         <div className="col-span-12 lg:col-span-8">
           <RevenueHeroCard leads={filtered} loading={loading} />
         </div>
@@ -85,15 +85,21 @@ export default function Dashboard() {
       {/* Performance 100% */}
       <Card className="glass-card rounded-lg border-0">
         <Tabs defaultValue="timeline" className="w-full">
-          <CardHeader className="pb-2 pt-4 px-5 flex-row items-center justify-between gap-3 space-y-0">
-            <CardTitle className="text-[11px] font-extralight uppercase tracking-[0.2em] text-muted-foreground">
+          <CardHeader className="pb-2 pt-5 px-6 flex-row items-center justify-between gap-3 space-y-0">
+            <CardTitle className="text-[10px] font-light uppercase tracking-[0.3em] text-muted-foreground">
               Performance
             </CardTitle>
-            <TabsList className="h-7 bg-transparent gap-1 p-0">
-              <TabsTrigger value="timeline" className="text-[11px] font-extralight uppercase tracking-[0.15em] h-7 px-3 rounded-md border border-transparent data-[state=active]:border-white/10 data-[state=active]:bg-transparent data-[state=active]:text-foreground text-muted-foreground">
+            <TabsList className="h-7 bg-transparent gap-4 p-0">
+              <TabsTrigger
+                value="timeline"
+                className="relative text-[10px] font-light uppercase tracking-[0.3em] h-7 px-0 rounded-none bg-transparent text-muted-foreground transition-colors hover:text-foreground data-[state=active]:bg-transparent data-[state=active]:text-foreground data-[state=active]:after:content-[''] data-[state=active]:after:absolute data-[state=active]:after:left-0 data-[state=active]:after:right-0 data-[state=active]:after:-bottom-1 data-[state=active]:after:h-px data-[state=active]:after:bg-foreground"
+              >
                 Leads vs Vendas
               </TabsTrigger>
-              <TabsTrigger value="volume" className="text-[11px] font-extralight uppercase tracking-[0.15em] h-7 px-3 rounded-md border border-transparent data-[state=active]:border-white/10 data-[state=active]:bg-transparent data-[state=active]:text-foreground text-muted-foreground">
+              <TabsTrigger
+                value="volume"
+                className="relative text-[10px] font-light uppercase tracking-[0.3em] h-7 px-0 rounded-none bg-transparent text-muted-foreground transition-colors hover:text-foreground data-[state=active]:bg-transparent data-[state=active]:text-foreground data-[state=active]:after:content-[''] data-[state=active]:after:absolute data-[state=active]:after:left-0 data-[state=active]:after:right-0 data-[state=active]:after:-bottom-1 data-[state=active]:after:h-px data-[state=active]:after:bg-foreground"
+              >
                 Volume diário
               </TabsTrigger>
             </TabsList>

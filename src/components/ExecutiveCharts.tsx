@@ -147,38 +147,31 @@ export function LeadsVsSalesTimeline({ leads, embedded = false }: { leads: Lead[
   }, [leads]);
 
   const chart = (
-    <div className="h-[160px] w-full">
+    <div className="h-[180px] w-full">
       <ResponsiveContainer width="100%" height="100%">
-        <AreaChart data={data} margin={{ top: 8, right: 12, left: -16, bottom: 0 }}>
+        <AreaChart data={data} margin={{ top: 12, right: 12, left: 12, bottom: 0 }}>
           <defs>
             <linearGradient id="gVendasArea" x1="0" y1="0" x2="0" y2="1">
-              <stop offset="0%" stopColor={EMERALD} stopOpacity={0.03} />
+              <stop offset="0%" stopColor={EMERALD} stopOpacity={0.08} />
               <stop offset="100%" stopColor={EMERALD} stopOpacity={0} />
             </linearGradient>
             <linearGradient id="gLeadsArea" x1="0" y1="0" x2="0" y2="1">
-              <stop offset="0%" stopColor={WHITE} stopOpacity={0.03} />
+              <stop offset="0%" stopColor={WHITE} stopOpacity={0.04} />
               <stop offset="100%" stopColor={WHITE} stopOpacity={0} />
             </linearGradient>
+            <filter id="emeraldGlow" x="-20%" y="-50%" width="140%" height="200%">
+              <feGaussianBlur stdDeviation="2.5" result="blur" />
+              <feMerge>
+                <feMergeNode in="blur" />
+                <feMergeNode in="SourceGraphic" />
+              </feMerge>
+            </filter>
           </defs>
-          <XAxis
-            dataKey="date"
-            tick={{ fontSize: 10, fill: ZINC_500 }}
-            axisLine={false}
-            tickLine={false}
-          />
-          <YAxis
-            allowDecimals={false}
-            tick={{ fontSize: 10, fill: ZINC_500 }}
-            axisLine={false}
-            tickLine={false}
-            width={28}
-          />
-          <Tooltip
-            contentStyle={tooltipStyle}
-            cursor={{ stroke: ZINC_700, strokeOpacity: 0.3, strokeWidth: 1 }}
-          />
+          <XAxis dataKey="date" hide />
+          <YAxis hide />
+          <Tooltip contentStyle={tooltipStyle} cursor={false} />
           <Area type="monotone" dataKey="novos" name="Leads" stroke={WHITE} strokeWidth={1} fill="url(#gLeadsArea)" fillOpacity={1} dot={false} activeDot={{ r: 2.5, fill: WHITE }} />
-          <Area type="monotone" dataKey="vendas" name="Vendas" stroke={EMERALD} strokeWidth={1} fill="url(#gVendasArea)" fillOpacity={1} dot={false} activeDot={{ r: 2.5, fill: EMERALD }} />
+          <Area type="monotone" dataKey="vendas" name="Vendas" stroke={EMERALD} strokeWidth={1.25} fill="url(#gVendasArea)" fillOpacity={1} dot={false} activeDot={{ r: 2.5, fill: EMERALD }} filter="url(#emeraldGlow)" />
         </AreaChart>
       </ResponsiveContainer>
     </div>
@@ -188,8 +181,8 @@ export function LeadsVsSalesTimeline({ leads, embedded = false }: { leads: Lead[
 
   return (
     <Card className="glass-card rounded-lg border-0">
-      <CardHeader className="pb-2 pt-4 px-5">
-        <CardTitle className="text-[11px] font-extralight uppercase tracking-[0.2em] text-muted-foreground">Leads vs Vendas</CardTitle>
+      <CardHeader className="pb-2 pt-5 px-6">
+        <CardTitle className="text-[10px] font-light uppercase tracking-[0.3em] text-muted-foreground">Leads vs Vendas</CardTitle>
       </CardHeader>
       <CardContent className="px-2 pb-3">{chart}</CardContent>
     </Card>
@@ -208,8 +201,8 @@ export function LossReasonsDonut({ leads }: { leads: Lead[] }) {
 
   return (
     <Card className="glass-card rounded-lg h-full border-0">
-      <CardHeader className="pb-2 pt-4 px-5">
-        <CardTitle className="text-[11px] font-extralight uppercase tracking-[0.2em] text-muted-foreground">
+      <CardHeader className="pb-2 pt-5 px-6">
+        <CardTitle className="text-[10px] font-light uppercase tracking-[0.3em] text-muted-foreground">
           Motivos de Perda
         </CardTitle>
       </CardHeader>

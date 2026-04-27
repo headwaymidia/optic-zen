@@ -70,40 +70,38 @@ export function PeriodFilter({ value, customRange, onChange }: Props) {
   const [draft, setDraft] = useState<{ from?: Date; to?: Date }>(customRange ?? {});
 
   return (
-    <div className="flex flex-wrap items-center gap-1">
+    <div className="flex flex-wrap items-center gap-5">
       {OPTIONS.map((o) => (
-        <Button
+        <button
           key={o.key}
-          size="sm"
-          variant="ghost"
+          type="button"
           onClick={() => onChange(o.key)}
           className={cn(
-            "h-7 px-3 text-[11px] font-extralight uppercase tracking-[0.15em] rounded-md bg-transparent transition-colors",
+            "relative h-7 px-0 text-[10px] font-light uppercase tracking-[0.3em] bg-transparent transition-colors",
             value === o.key
-              ? "border border-white/10 text-foreground hover:bg-transparent"
-              : "border border-transparent text-muted-foreground hover:text-foreground hover:bg-transparent"
+              ? "text-foreground after:content-[''] after:absolute after:left-0 after:right-0 after:-bottom-1 after:h-px after:bg-foreground"
+              : "text-muted-foreground hover:text-foreground"
           )}
         >
           {o.label}
-        </Button>
+        </button>
       ))}
       <Popover open={open} onOpenChange={setOpen}>
         <PopoverTrigger asChild>
-          <Button
-            size="sm"
-            variant="ghost"
+          <button
+            type="button"
             className={cn(
-              "h-7 px-3 text-[11px] font-extralight uppercase tracking-[0.15em] rounded-md gap-1.5 bg-transparent transition-colors",
+              "relative h-7 px-0 text-[10px] font-light uppercase tracking-[0.3em] gap-1.5 bg-transparent transition-colors inline-flex items-center",
               value === "custom"
-                ? "border border-white/10 text-foreground hover:bg-transparent"
-                : "border border-transparent text-muted-foreground hover:text-foreground hover:bg-transparent"
+                ? "text-foreground after:content-[''] after:absolute after:left-0 after:right-0 after:-bottom-1 after:h-px after:bg-foreground"
+                : "text-muted-foreground hover:text-foreground"
             )}
           >
             <CalendarIcon className="h-3 w-3" strokeWidth={1.25} />
             {value === "custom" && customRange?.from && customRange?.to
               ? `${format(customRange.from, "dd/MM")} – ${format(customRange.to, "dd/MM")}`
               : "Personalizado"}
-          </Button>
+          </button>
         </PopoverTrigger>
         <PopoverContent className="w-auto p-0" align="end">
           <Calendar
