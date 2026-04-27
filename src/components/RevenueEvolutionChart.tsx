@@ -76,7 +76,10 @@ export function RevenueEvolutionChart({ leads }: Props) {
             </p>
           </div>
           <div className="text-right">
-            <p className="font-mono-luxe text-xl font-bold tabular-nums tracking-tighter text-emerald-400 leading-none">
+            <p
+              className="font-mono-luxe text-xl font-bold tabular-nums tracking-tighter leading-none neon-glow-yellow"
+              style={{ color: NEON_YELLOW }}
+            >
               {roiRatio}x
             </p>
             <p className="text-[9px] uppercase tracking-[0.25em] text-zinc-600 font-semibold mt-1.5">
@@ -91,12 +94,13 @@ export function RevenueEvolutionChart({ leads }: Props) {
           <AreaChart data={data} margin={{ top: 8, right: 12, left: 12, bottom: 0 }}>
             <defs>
               <linearGradient id="revEvolutionGradient" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="0%" stopColor={EMERALD} stopOpacity={0.18} />
-                <stop offset="100%" stopColor={EMERALD} stopOpacity={0} />
+                <stop offset="0%" stopColor={NEON_GREEN} stopOpacity={0.55} />
+                <stop offset="60%" stopColor={NEON_GREEN} stopOpacity={0.15} />
+                <stop offset="100%" stopColor={NEON_GREEN} stopOpacity={0} />
               </linearGradient>
               <linearGradient id="adsEvolutionGradient" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="0%" stopColor="#ffffff" stopOpacity={0.04} />
-                <stop offset="100%" stopColor="#ffffff" stopOpacity={0} />
+                <stop offset="0%" stopColor={NEON_YELLOW} stopOpacity={0.10} />
+                <stop offset="100%" stopColor={NEON_YELLOW} stopOpacity={0} />
               </linearGradient>
             </defs>
             <CartesianGrid stroke="rgba(255,255,255,0.04)" vertical={false} />
@@ -129,7 +133,8 @@ export function RevenueEvolutionChart({ leads }: Props) {
             <Area
               type="monotone"
               dataKey="ads"
-              stroke="rgba(255,255,255,0.30)"
+              stroke={NEON_YELLOW}
+              strokeOpacity={0.55}
               strokeWidth={1}
               strokeDasharray="3 3"
               fill="url(#adsEvolutionGradient)"
@@ -138,11 +143,12 @@ export function RevenueEvolutionChart({ leads }: Props) {
             <Area
               type="monotone"
               dataKey="receita"
-              stroke="#ffffff"
-              strokeWidth={1.5}
+              stroke={NEON_GREEN}
+              strokeWidth={2}
               fill="url(#revEvolutionGradient)"
               dot={false}
-              activeDot={{ r: 4, fill: EMERALD, stroke: "#fff", strokeWidth: 1.5 }}
+              activeDot={{ r: 4, fill: NEON_GREEN, stroke: "#0A0A0A", strokeWidth: 2 }}
+              style={{ filter: "drop-shadow(0 0 6px rgba(34,197,94,0.55))" }}
             />
           </AreaChart>
         </ResponsiveContainer>
