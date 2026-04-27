@@ -158,12 +158,19 @@ export function LeadsVsSalesTimeline({ leads, embedded = false }: { leads: Lead[
                 <feMergeNode in="SourceGraphic" />
               </feMerge>
             </filter>
+            <filter id="whiteGlow" x="-20%" y="-50%" width="140%" height="200%">
+              <feGaussianBlur stdDeviation="2" result="blur" />
+              <feMerge>
+                <feMergeNode in="blur" />
+                <feMergeNode in="SourceGraphic" />
+              </feMerge>
+            </filter>
           </defs>
           <XAxis dataKey="date" hide />
           <YAxis hide />
           <Tooltip contentStyle={tooltipStyle} cursor={false} />
-          <Area type="monotone" dataKey="novos" name="Leads" stroke={WHITE} strokeWidth={1.5} fill="none" dot={false} activeDot={{ r: 2.5, fill: WHITE }} />
-          <Area type="monotone" dataKey="vendas" name="Vendas" stroke={EMERALD} strokeWidth={1.5} fill="none" dot={false} activeDot={{ r: 2.5, fill: EMERALD }} filter="url(#emeraldGlow)" />
+          <Area type="monotone" dataKey="novos" name="Leads" stroke={WHITE} strokeWidth={1} fill="none" dot={false} activeDot={{ r: 2.5, fill: WHITE }} filter="url(#whiteGlow)" />
+          <Area type="monotone" dataKey="vendas" name="Vendas" stroke={EMERALD} strokeWidth={1.25} fill="none" dot={false} activeDot={{ r: 2.5, fill: EMERALD }} filter="url(#emeraldGlow)" />
         </AreaChart>
       </ResponsiveContainer>
     </div>

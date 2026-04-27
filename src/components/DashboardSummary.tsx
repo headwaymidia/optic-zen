@@ -21,23 +21,32 @@ export function RevenueHeroCard({ leads, loading }: { leads: Lead[]; loading: bo
   const orgPct = 100 - adsPct;
 
   return (
-    <Card className="glass-card rounded-lg h-full border-0">
-      <CardContent className="p-10 h-full flex flex-col justify-between gap-10">
-        {/* Eyebrow */}
+    <Card className="glass-card rounded-lg h-full border-0 relative overflow-hidden">
+      {/* Iluminação radial esmeralda no centro */}
+      <div
+        className="pointer-events-none absolute inset-0"
+        style={{
+          background:
+            "radial-gradient(circle at 50% 55%, rgba(16,185,129,0.10) 0%, rgba(16,185,129,0.04) 35%, transparent 70%)",
+        }}
+        aria-hidden
+      />
+      <CardContent className="p-12 h-full flex flex-col justify-between gap-12 relative">
+        {/* Eyebrow — assinatura discreta */}
         <div className="flex items-center justify-between">
-          <p className="text-[10px] uppercase tracking-[0.2em] text-zinc-500 font-bold">
+          <p className="text-[9px] uppercase tracking-[0.3em] text-zinc-500 font-medium">
             Faturamento Gerado
           </p>
-          <span className="text-[10px] text-zinc-500 tabular-nums font-bold tracking-[0.2em] uppercase">
+          <span className="text-[9px] text-zinc-500 tabular-nums font-medium tracking-[0.3em] uppercase">
             {buyers.length} {buyers.length === 1 ? "Venda" : "Vendas"}
           </span>
         </div>
 
-        {/* Valor centralizado + halo branco + ping live */}
-        <div className="flex flex-col items-center justify-center gap-3 py-2">
+        {/* Valor centralizado + ping live */}
+        <div className="flex flex-col items-center justify-center gap-4 py-2">
           <div className="flex items-center gap-3">
             <p
-              className="text-white text-white-glow text-6xl font-bold tabular-nums tracking-tighter leading-none"
+              className="text-7xl font-bold tabular-nums tracking-tighter leading-none bg-gradient-to-b from-white to-zinc-400 bg-clip-text text-transparent"
               style={{ fontFamily: "Inter, ui-sans-serif, system-ui, sans-serif" }}
             >
               {loading ? "—" : formatBRL(totalFaturamento)}
@@ -47,7 +56,7 @@ export function RevenueHeroCard({ leads, loading }: { leads: Lead[]; loading: bo
               <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500" />
             </span>
           </div>
-          <p className="text-[9px] uppercase tracking-[0.3em] text-zinc-600 font-medium">
+          <p className="text-[9px] uppercase tracking-[0.3em] text-zinc-500 font-medium">
             Tempo Real
           </p>
         </div>
@@ -105,11 +114,11 @@ export function KPICards({ leads, loading }: { leads: Lead[]; loading: boolean }
       {items.map((s) => (
         <Card key={s.key} className="glass-card rounded-lg border-0">
           <CardContent className="p-5">
-            <div className="flex items-center justify-between mb-4">
-              <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-zinc-500 truncate">
+            <div className="flex items-center justify-between mb-5">
+              <p className="text-[9px] font-medium uppercase tracking-[0.3em] text-zinc-500 truncate">
                 {s.label}
               </p>
-              <s.icon className="h-3.5 w-3.5 text-zinc-500" strokeWidth={1.25} />
+              <s.icon className="h-3.5 w-3.5 text-zinc-600" strokeWidth={1.25} />
             </div>
             <div className="text-2xl font-medium tabular-nums text-foreground leading-none tracking-tight">
               {loading ? "—" : s.value}
