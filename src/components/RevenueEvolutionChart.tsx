@@ -21,7 +21,7 @@ import {
 import { ptBR } from "date-fns/locale";
 import { cn } from "@/lib/utils";
 
-type MetricKey = "faturamento" | "leads" | "agendamentos" | "vendas";
+type MetricKey = "vendas" | "leads" | "agendamentos";
 
 interface MetricConfig {
   key: MetricKey;
@@ -30,13 +30,15 @@ interface MetricConfig {
   colorLight: string;   // light-mode solid
   isCurrency: boolean;
   shortLabel: string;
+  titleSuffix: string;
 }
 
 const METRICS: Record<MetricKey, MetricConfig> = {
-  faturamento: {
-    key: "faturamento",
-    label: "Faturamento",
-    shortLabel: "Receita",
+  vendas: {
+    key: "vendas",
+    label: "Vendas (Faturamento)",
+    shortLabel: "Vendas",
+    titleSuffix: "Vendas (Faturamento)",
     color: "#22C55E",
     colorLight: "#059669",
     isCurrency: true,
@@ -45,34 +47,28 @@ const METRICS: Record<MetricKey, MetricConfig> = {
     key: "leads",
     label: "Leads",
     shortLabel: "Leads",
-    color: "#3B82F6",
-    colorLight: "#1D4ED8",
+    titleSuffix: "Leads",
+    color: "#FACC15",
+    colorLight: "#CA8A04",
     isCurrency: false,
   },
   agendamentos: {
     key: "agendamentos",
     label: "Agendamentos",
     shortLabel: "Agendamentos",
-    color: "#A855F7",
-    colorLight: "#7E22CE",
-    isCurrency: false,
-  },
-  vendas: {
-    key: "vendas",
-    label: "Vendas",
-    shortLabel: "Vendas",
-    color: "#FACC15",
-    colorLight: "#CA8A04",
+    titleSuffix: "Agendamentos",
+    color: "#06B6D4",
+    colorLight: "#0E7490",
     isCurrency: false,
   },
 };
 
+// Mantém alinhamento com PeriodKPIRow (status canônicos do funil)
 const SCHEDULED_STATUSES = new Set([
-  "Agendado",
-  "Confirmado",
-  "Compareceu",
+  "Agendou Exame",
   "Compareceu e Comprou",
   "Compareceu e Não Comprou",
+  "Não Compareceu",
 ]);
 
 function formatBRL(v: number) {
@@ -97,7 +93,7 @@ interface Props {
  * Funciona em Light & Dark com cores semânticas.
  */
 export function RevenueEvolutionChart({ leads }: Props) {
-  const [metric, setMetric] = useState<MetricKey>("faturamento");
+  const [metric, setMetric] = useState<MetricKey>("vendas");
   const [compare, setCompare] = useState(false);
 
   const cfg = METRICS[metric];
@@ -112,7 +108,8 @@ export function RevenueEvolutionChart({ leads }: Props) {
 
     const compute = (day: Date): number => {
       switch (metric) {
-        case "faturamento":
+        case "vendas":
+          // Vendas = Faturamento (valor financeiro consolidado)
           return leads
             .filter(
               (l) =>
@@ -129,12 +126,6 @@ export function RevenueEvolutionChart({ leads }: Props) {
             (l) =>
               l.status &&
               SCHEDULED_STATUSES.has(l.status) &&
-              isSameDay(parseISO(l.updated_at ?? l.created_at!), day)
-          ).length;
-        case "vendas":
-          return leads.filter(
-            (l) =>
-              l.status === "Compareceu e Comprou" &&
               isSameDay(parseISO(l.updated_at ?? l.created_at!), day)
           ).length;
       }
@@ -161,8 +152,8 @@ export function RevenueEvolutionChart({ leads }: Props) {
       {/* Header com totais */}
       <div className="flex items-start justify-between mb-5 flex-wrap gap-4">
         <div>
-          <p className="text-[10px] uppercase tracking-[0.3em] text-muted-foreground font-bold mb-1.5">
-            Evolução · {cfg.label}
+          <p className="text-base sm:text-lg font-semibold tracking-tight text-foreground mb-1">
+            Evolução de {cfg.titleSuffix}
           </p>
           <p className="text-[10px] uppercase tracking-[0.2em] text-muted-foreground/70 font-medium">
             Últimos 30 dias
@@ -271,7 +262,7 @@ export function RevenueEvolutionChart({ leads }: Props) {
           <AreaChart data={data} margin={{ top: 8, right: 12, left: 12, bottom: 0 }}>
             <defs>
               <linearGradient id="metricGradient" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="0%" stopColor={cfg.color} stopOpacity={0.18} />
+                <stop offset="0%" stopColor={cfg.color} stopOpacity={0.22} />
                 <stop offset="100%" stopColor={cfg.color} stopOpacity={0} />
               </linearGradient>
               <linearGradient id="metricGradientPrev" x1="0" y1="0" x2="0" y2="1">
@@ -381,7 +372,7 @@ export function RevenueEvolutionChart({ leads }: Props) {
               type="monotone"
               dataKey="atual"
               stroke={cfg.color}
-              strokeWidth={2}
+              strokeWidth={3}
               fill="url(#metricGradient)"
               dot={false}
               activeDot={{

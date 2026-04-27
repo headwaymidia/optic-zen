@@ -55,7 +55,7 @@ export function RoiMegaCard({ leads }: Props) {
 
       <div className="relative flex flex-col items-center text-center gap-3">
         <p className="text-[10px] uppercase tracking-[0.35em] text-slate-500 dark:text-zinc-500 font-bold">
-          Faturamento Total · BI
+          Vendas (Faturamento) · Total Consolidado
         </p>
         <p className="font-mono-luxe text-6xl sm:text-7xl lg:text-8xl font-bold tracking-tighter leading-none tabular-nums neon-glow-green text-emerald-600 dark:text-[#22C55E]">
           {formatBRL(total)}

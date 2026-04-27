@@ -43,11 +43,27 @@ export function PeriodKPIRow({ leads, range }: Props) {
     const vCur = leads.filter((l) => l.status === "Compareceu e Comprou" && inCur(l.updated_at ?? l.created_at)).length;
     const vPrev = leads.filter((l) => l.status === "Compareceu e Comprou" && inPrev(l.updated_at ?? l.created_at)).length;
 
+    const aproveitamento = totalCur > 0 ? (agCur / totalCur) * 100 : 0;
+    const aproveitamentoPrev = totalPrev > 0 ? (agPrev / totalPrev) * 100 : 0;
+    const aproveitamentoDelta =
+      aproveitamentoPrev === 0
+        ? aproveitamento > 0
+          ? 100
+          : null
+        : aproveitamento - aproveitamentoPrev; // pontos percentuais
+
     return [
-      { label: "Total Leads", value: totalCur, delta: pctDelta(totalCur, totalPrev), accent: "yellow" as const },
-      { label: "Agendamentos", value: agCur, delta: pctDelta(agCur, agPrev), accent: "yellow" as const },
-      { label: "Comparecimentos", value: atCur, delta: pctDelta(atCur, atPrev), accent: "yellow" as const },
-      { label: "Vendas Concluídas", value: vCur, delta: pctDelta(vCur, vPrev), accent: "green" as const },
+      { label: "Total Leads", value: totalCur, delta: pctDelta(totalCur, totalPrev), accent: "yellow" as const, suffix: "" },
+      { label: "Agendamentos", value: agCur, delta: pctDelta(agCur, agPrev), accent: "yellow" as const, suffix: "" },
+      {
+        label: "Aproveitamento de Leads",
+        value: Number(aproveitamento.toFixed(1)),
+        delta: aproveitamentoDelta,
+        accent: "yellow" as const,
+        suffix: "%",
+        deltaUnit: "pp" as const,
+      },
+      { label: "Vendas (Faturamento)", value: vCur, delta: pctDelta(vCur, vPrev), accent: "green" as const, suffix: "" },
     ];
   }, [leads, range]);
 
@@ -68,6 +84,7 @@ export function PeriodKPIRow({ leads, range }: Props) {
             ? "text-emerald-600 dark:text-[#22C55E]"
             : "text-amber-600 dark:text-[#FACC15]";
         const glowClass = it.accent === "green" ? "neon-glow-green" : "neon-glow-yellow";
+        const deltaUnit = (it as { deltaUnit?: "pp" }).deltaUnit ?? "%";
         return (
           <div key={it.label} className="px-5 py-4 flex flex-col gap-1.5">
             <p className="text-[10px] uppercase tracking-[0.25em] text-muted-foreground font-semibold">
@@ -82,10 +99,11 @@ export function PeriodKPIRow({ leads, range }: Props) {
                 )}
               >
                 {it.value}
+                {it.suffix}
               </span>
               <span className={cn("inline-flex items-center gap-0.5 text-[11px] font-mono-luxe font-semibold tabular-nums", tone)}>
                 <Icon className="h-3 w-3" strokeWidth={2.5} />
-                {it.delta === null ? "—" : `${Math.abs(it.delta).toFixed(0)}%`}
+                {it.delta === null ? "—" : `${Math.abs(it.delta).toFixed(deltaUnit === "pp" ? 1 : 0)}${deltaUnit}`}
               </span>
             </div>
           </div>
