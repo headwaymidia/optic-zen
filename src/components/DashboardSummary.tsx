@@ -22,61 +22,54 @@ export function RevenueHeroCard({ leads, loading }: { leads: Lead[]; loading: bo
 
   return (
     <Card className="border border-slate-800 bg-slate-900 text-slate-100 rounded-xl shadow-[0_4px_20px_-8px_rgba(15,23,42,0.4)] overflow-hidden h-full">
-      <CardContent className="p-5 h-full flex flex-col justify-between gap-4">
-        {/* Top: label + valor */}
-        <div>
-          <div className="flex items-center gap-2">
-            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-emerald-500/15 ring-1 ring-emerald-500/30">
-              <TrendingUp className="h-4 w-4 text-emerald-400" />
-            </div>
-            <p className="text-[11px] uppercase tracking-[0.15em] text-slate-400 font-bold">
-              Faturamento Gerado · ROI
-            </p>
-            <span className="ml-auto inline-flex h-1.5 w-1.5 rounded-full bg-emerald-400 shadow-[0_0_10px_hsl(160_84%_55%)]" />
+      <CardContent className="p-7 h-full flex flex-col items-center justify-center text-center gap-4">
+        {/* Eyebrow */}
+        <div className="flex items-center gap-2">
+          <div className="flex h-6 w-6 items-center justify-center rounded-md bg-emerald-500/15 ring-1 ring-emerald-500/30">
+            <TrendingUp className="h-3 w-3 text-emerald-400" />
           </div>
-
-          <p
-            className="text-4xl sm:text-5xl font-bold tabular-nums tracking-tight leading-none mt-3 text-emerald-400"
-            style={{ fontFamily: "Inter, ui-sans-serif, system-ui, sans-serif", textShadow: "0 0 24px hsl(160 84% 50% / 0.45)" }}
-          >
-            {loading ? "—" : formatBRL(totalFaturamento)}
+          <p className="text-[10px] uppercase tracking-[0.2em] text-slate-400 font-bold">
+            Faturamento Gerado · ROI
           </p>
+          <span className="inline-flex h-1.5 w-1.5 rounded-full bg-emerald-400 shadow-[0_0_10px_hsl(160_84%_55%)]" />
         </div>
 
-        {/* Bottom: breakdown ads/orgânico */}
-        <div className="space-y-2">
-          <div className="grid grid-cols-2 gap-3">
-            <div>
-              <p className="flex items-center gap-1 text-[10px] uppercase tracking-wider text-slate-400 font-bold">
-                <Megaphone className="h-3 w-3" />
-                Tráfego Pago
-              </p>
-              <p className="text-sm font-bold text-emerald-400 mt-0.5 tabular-nums">
-                {loading ? "—" : formatBRL(faturamentoAds)}
-                {!loading && totalFaturamento > 0 && (
-                  <span className="ml-1 text-[10px] text-slate-500 font-normal">
-                    {adsPct.toFixed(0)}%
-                  </span>
-                )}
-              </p>
-            </div>
-            <div>
-              <p className="flex items-center gap-1 text-[10px] uppercase tracking-wider text-slate-400 font-bold">
-                <Store className="h-3 w-3" />
-                Orgânico
-              </p>
-              <p className="text-sm font-bold text-slate-100 mt-0.5 tabular-nums">
-                {loading ? "—" : formatBRL(faturamentoOrganico)}
-                {!loading && totalFaturamento > 0 && (
-                  <span className="ml-1 text-[10px] text-slate-500 font-normal">
-                    {orgPct.toFixed(0)}%
-                  </span>
-                )}
-              </p>
-            </div>
+        {/* Valor protagonista */}
+        <p
+          className="text-5xl sm:text-6xl font-bold tabular-nums tracking-tight leading-none text-emerald-400"
+          style={{ fontFamily: "Inter, ui-sans-serif, system-ui, sans-serif", textShadow: "0 0 28px hsl(160 84% 50% / 0.5)" }}
+        >
+          {loading ? "—" : formatBRL(totalFaturamento)}
+        </p>
+
+        {/* Breakdown discreto */}
+        <div className="w-full max-w-sm space-y-1.5 pt-1">
+          <div className="flex items-center justify-between gap-3 text-[10px]">
+            <span className="flex items-center gap-1 text-slate-400">
+              <Megaphone className="h-2.5 w-2.5" />
+              Tráfego Pago
+            </span>
+            <span className="tabular-nums text-emerald-400 font-semibold">
+              {loading ? "—" : formatBRL(faturamentoAds)}
+              {!loading && totalFaturamento > 0 && (
+                <span className="ml-1 text-slate-500 font-normal">{adsPct.toFixed(0)}%</span>
+              )}
+            </span>
+          </div>
+          <div className="flex items-center justify-between gap-3 text-[10px]">
+            <span className="flex items-center gap-1 text-slate-400">
+              <Store className="h-2.5 w-2.5" />
+              Orgânico
+            </span>
+            <span className="tabular-nums text-slate-100 font-semibold">
+              {loading ? "—" : formatBRL(faturamentoOrganico)}
+              {!loading && totalFaturamento > 0 && (
+                <span className="ml-1 text-slate-500 font-normal">{orgPct.toFixed(0)}%</span>
+              )}
+            </span>
           </div>
           {!loading && totalFaturamento > 0 && (
-            <div className="h-1 w-full overflow-hidden rounded-full bg-slate-800 flex">
+            <div className="h-0.5 w-full overflow-hidden rounded-full bg-slate-800 flex">
               <div className="h-full bg-emerald-400 transition-all" style={{ width: `${adsPct}%` }} />
               <div className="h-full bg-emerald-700 transition-all" style={{ width: `${orgPct}%` }} />
             </div>

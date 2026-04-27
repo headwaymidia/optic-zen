@@ -111,7 +111,7 @@ export function SalesThermometer({ leads }: SalesThermometerProps) {
                 <div className="flex flex-col items-center min-w-0 flex-shrink-0 w-16">
                   <div
                     className={cn(
-                      "h-7 w-7 rounded-full flex items-center justify-center text-white text-[11px] font-bold tabular-nums shadow-[0_1px_2px_rgba(15,23,42,0.15)]",
+                      "h-5 w-5 rounded-full flex items-center justify-center text-white text-[9px] font-bold tabular-nums",
                       s.dot
                     )}
                   >
