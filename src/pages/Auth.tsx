@@ -245,11 +245,12 @@ export default function AuthPage() {
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_20%,rgba(255,255,255,0.04),transparent_60%)]" />
 
         <div className="relative flex flex-col justify-between w-full p-12 text-white">
-          <div className="flex items-center gap-2.5">
-            <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-white/10 backdrop-blur-sm border border-white/10">
-              <Eye className="h-4 w-4 text-white" />
-            </div>
-            <span className="text-sm font-bold tracking-tight">Ótica Dominante</span>
+          <div className="flex items-center">
+            <img
+              src={logoOticaDominante}
+              alt="Ótica Dominante — Powered by Headway Mídia"
+              className="h-12 w-auto object-contain invert brightness-0 invert"
+            />
           </div>
 
           <div className="space-y-5 max-w-md">
