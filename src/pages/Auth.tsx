@@ -98,11 +98,11 @@ export default function AuthPage() {
         <div className="flex-1 flex items-center justify-center px-6 py-10">
           <div className="w-full max-w-md space-y-8">
             {/* Brand */}
-            <div className="flex items-center">
+            <div className="flex items-center -ml-2">
               <img
                 src={logoOticaDominante}
                 alt="Ótica Dominante — Powered by Headway Mídia"
-                className="h-14 w-auto object-contain"
+                className="h-20 w-auto object-contain object-left"
               />
             </div>
 
@@ -245,36 +245,36 @@ export default function AuthPage() {
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_20%,rgba(255,255,255,0.04),transparent_60%)]" />
 
         <div className="relative flex flex-col justify-between w-full p-12 text-white">
-          <div className="flex items-center">
+          <div className="flex items-center -ml-3">
             <img
               src={logoOticaDominante}
               alt="Ótica Dominante — Powered by Headway Mídia"
-              className="h-12 w-auto object-contain invert brightness-0 invert"
+              className="h-20 w-auto object-contain object-left invert brightness-0 invert"
             />
           </div>
 
           <div className="space-y-5 max-w-md">
             <div className="inline-flex items-center gap-2 rounded-full bg-white/10 backdrop-blur-sm border border-white/10 px-3 py-1 text-[11px] font-semibold uppercase tracking-wider">
               <span className="h-1.5 w-1.5 rounded-full bg-emerald-400 animate-pulse" />
-              CRM Premium para Óticas
+              CRM Premium para Óticas e Clínicas
             </div>
             <h2 className="text-4xl xl:text-5xl font-extrabold tracking-tight leading-[1.05]">
-              O motor de vendas da sua ótica.
+              A inteligência comercial por trás do seu balcão.
             </h2>
             <p className="text-base xl:text-lg text-slate-300 leading-relaxed">
-              Método validado para escalar o faturamento do seu balcão.
+              O único CRM do mercado desenvolvido para blindar seu faturamento, organizar a equipe e transformar leads em clientes de alto ticket.
             </p>
           </div>
 
           <div className="space-y-3">
             <div className="flex items-center gap-3 text-sm text-slate-300">
-              <CheckDot /> Funil visual com Kanban arrastar-e-soltar
+              <CheckDot /> Funil visual de vendas focado em conversão
             </div>
             <div className="flex items-center gap-3 text-sm text-slate-300">
-              <CheckDot /> Atendimento integrado e prontuário digital
+              <CheckDot /> Atendimento de WhatsApp e CRM integrados
             </div>
             <div className="flex items-center gap-3 text-sm text-slate-300">
-              <CheckDot /> Gestão de pedidos e laboratório
+              <CheckDot /> Painel de performance para donos e gerentes
             </div>
           </div>
         </div>
