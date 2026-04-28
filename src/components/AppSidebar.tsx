@@ -4,7 +4,6 @@ import {
   LayoutDashboard,
   KanbanSquare,
   Users,
-  Eye,
   MessageCircle,
   ListChecks,
   Plus,
@@ -13,6 +12,7 @@ import {
   Handshake,
   LogOut,
 } from "lucide-react";
+import logoOticaDominante from "@/assets/logo-otica-dominante.png";
 import {
   Sidebar,
   SidebarContent,
@@ -77,15 +77,20 @@ export function AppSidebar() {
   return (
     <Sidebar collapsible="icon" className="border-r border-sidebar-border bg-sidebar transition-all duration-300 ease-in-out">
       <SidebarContent className="flex flex-col h-full bg-sidebar overflow-x-hidden">
-        <div className={cn("flex items-center gap-3 py-5 border-b border-sidebar-border", collapsed ? "px-2 justify-center" : "px-4")}>
-          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-primary to-primary/80 text-primary-foreground shadow-sm">
-            <Eye className="h-5 w-5" />
-          </div>
-          {!collapsed && (
-            <div className="min-w-0">
-              <p className="text-sm font-extrabold tracking-tight text-sidebar-foreground leading-tight">Ótica Dominante</p>
-              <p className="text-[10px] font-medium uppercase tracking-wider text-muted-foreground mt-0.5">Powered by Headway Mídia</p>
-            </div>
+        <div className={cn("flex items-center py-5 border-b border-sidebar-border", collapsed ? "px-2 justify-center" : "px-4 justify-start")}>
+          {collapsed ? (
+            <img
+              src={logoOticaDominante}
+              alt="Ótica Dominante"
+              className="h-9 w-9 object-contain object-left dark:invert"
+              style={{ objectPosition: "left center" }}
+            />
+          ) : (
+            <img
+              src={logoOticaDominante}
+              alt="Ótica Dominante — Powered by Headway Mídia"
+              className="h-12 w-auto object-contain dark:invert"
+            />
           )}
         </div>
 

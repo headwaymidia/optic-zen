@@ -8,6 +8,7 @@ import { Label } from "@/components/ui/label";
 import { toast } from "@/hooks/use-toast";
 import { Eye, ArrowLeft, Loader2 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import logoOticaDominante from "@/assets/logo-otica-dominante.png";
 
 type AuthMode = "LOGIN" | "REGISTER" | "RECOVERY";
 
@@ -97,18 +98,12 @@ export default function AuthPage() {
         <div className="flex-1 flex items-center justify-center px-6 py-10">
           <div className="w-full max-w-md space-y-8">
             {/* Brand */}
-            <div className="flex items-center gap-3">
-              <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-primary to-primary/80 text-primary-foreground shadow-sm">
-                <Eye className="h-5 w-5" />
-              </div>
-              <div className="leading-tight">
-                <p className="text-base font-extrabold tracking-tight text-slate-900">
-                  Ótica Dominante
-                </p>
-                <p className="text-[10px] font-medium uppercase tracking-wider text-slate-400">
-                  Powered by Headway Mídia
-                </p>
-              </div>
+            <div className="flex items-center">
+              <img
+                src={logoOticaDominante}
+                alt="Ótica Dominante — Powered by Headway Mídia"
+                className="h-14 w-auto object-contain"
+              />
             </div>
 
             {/* Title */}
@@ -250,11 +245,12 @@ export default function AuthPage() {
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_20%,rgba(255,255,255,0.04),transparent_60%)]" />
 
         <div className="relative flex flex-col justify-between w-full p-12 text-white">
-          <div className="flex items-center gap-2.5">
-            <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-white/10 backdrop-blur-sm border border-white/10">
-              <Eye className="h-4 w-4 text-white" />
-            </div>
-            <span className="text-sm font-bold tracking-tight">Ótica Dominante</span>
+          <div className="flex items-center">
+            <img
+              src={logoOticaDominante}
+              alt="Ótica Dominante — Powered by Headway Mídia"
+              className="h-12 w-auto object-contain invert brightness-0 invert"
+            />
           </div>
 
           <div className="space-y-5 max-w-md">
