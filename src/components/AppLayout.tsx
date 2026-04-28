@@ -5,6 +5,7 @@ import { BottomNav } from "./BottomNav";
 import { ThemeToggle } from "./ThemeToggle";
 import { useAuth } from "@/hooks/useAuth";
 import { LeadsProvider } from "@/hooks/useLeads";
+import { isOnboardingCompleted } from "@/pages/Onboarding";
 export default function AppLayout() {
   const { session, profile, loading } = useAuth();
 
@@ -12,6 +13,7 @@ export default function AppLayout() {
     return <div className="flex min-h-screen items-center justify-center text-muted-foreground">Carregando...</div>;
   }
   if (!session) return <Navigate to="/auth" replace />;
+  if (!isOnboardingCompleted()) return <Navigate to="/onboarding" replace />;
 
   return (
     <LeadsProvider>

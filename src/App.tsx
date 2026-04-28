@@ -15,6 +15,7 @@ import Configuracoes from "./pages/Configuracoes";
 import ConfiguracoesLoja from "./pages/ConfiguracoesLoja";
 import Tarefas from "./pages/Tarefas";
 import AuthPage from "./pages/Auth.tsx";
+import OnboardingPage from "./pages/Onboarding.tsx";
 import NotFound from "./pages/NotFound.tsx";
 
 const queryClient = new QueryClient();
@@ -30,6 +31,7 @@ const App = () => (
             <StoresProvider>
               <Routes>
                 <Route path="/auth" element={<AuthPage />} />
+                <Route path="/onboarding" element={<OnboardingPage />} />
                 <Route element={<AppLayout />}>
                   <Route path="/" element={<Dashboard />} />
                   <Route path="/whatsapp" element={<WhatsAppPage />} />
