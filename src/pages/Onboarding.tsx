@@ -59,11 +59,11 @@ export default function OnboardingPage() {
     <div className="min-h-screen w-full bg-zinc-50 flex flex-col items-center justify-center px-6 py-12">
       <div className="w-full max-w-md">
         {/* Logo */}
-        <div className="flex justify-center mb-10">
+        <div className="flex justify-center mb-8">
           <img
             src={logoOticaDominante}
             alt="Ótica Dominante — Powered by Headway Mídia"
-            className="h-16 w-auto object-contain"
+            className="h-20 w-auto object-contain"
           />
         </div>
 
