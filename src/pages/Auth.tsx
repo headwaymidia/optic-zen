@@ -101,7 +101,7 @@ export default function AuthPage() {
             <img
               src={logoOticaDominante}
               alt="Ótica Dominante — Powered by Headway Mídia"
-              className="h-40 w-auto mb-16 mx-auto block"
+              className="w-[350px] md:w-[450px] max-w-none h-auto object-contain scale-125 md:scale-150 mx-auto block mb-16"
             />
 
             {/* Title */}
