@@ -98,13 +98,11 @@ export default function AuthPage() {
         <div className="flex-1 flex items-center justify-center px-6 py-10">
           <div className="w-full max-w-md space-y-8">
             {/* Brand */}
-            <div className="flex justify-center mb-8">
-              <img
-                src={logoOticaDominante}
-                alt="Ótica Dominante — Powered by Headway Mídia"
-                className="h-20 w-auto object-contain"
-              />
-            </div>
+            <img
+              src={logoOticaDominante}
+              alt="Ótica Dominante — Powered by Headway Mídia"
+              className="h-40 w-auto mb-16 mx-auto block"
+            />
 
             {/* Title */}
             <div className="space-y-1.5">
