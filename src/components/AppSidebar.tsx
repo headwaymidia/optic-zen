@@ -77,19 +77,18 @@ export function AppSidebar() {
   return (
     <Sidebar collapsible="icon" className="border-r border-sidebar-border bg-sidebar transition-all duration-300 ease-in-out">
       <SidebarContent className="flex flex-col h-full bg-sidebar overflow-x-hidden">
-        <div className={cn("flex items-center py-5 border-b border-sidebar-border", collapsed ? "px-2 justify-center" : "px-4 justify-start")}>
+        <div className={cn("flex items-center border-b border-sidebar-border", collapsed ? "p-3 justify-center" : "p-4 justify-start")}>
           {collapsed ? (
             <img
               src={logoOticaDominante}
               alt="Ótica Dominante"
-              className="h-9 w-9 object-contain object-left dark:invert"
-              style={{ objectPosition: "left center" }}
+              className="h-10 w-auto object-contain dark:invert"
             />
           ) : (
             <img
               src={logoOticaDominante}
               alt="Ótica Dominante — Powered by Headway Mídia"
-              className="h-12 w-auto object-contain dark:invert"
+              className="h-14 w-auto object-contain dark:invert"
             />
           )}
         </div>

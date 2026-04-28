@@ -98,11 +98,11 @@ export default function AuthPage() {
         <div className="flex-1 flex items-center justify-center px-6 py-10">
           <div className="w-full max-w-md space-y-8">
             {/* Brand */}
-            <div className="flex items-center -ml-2">
+            <div className="flex justify-center mb-8">
               <img
                 src={logoOticaDominante}
                 alt="Ótica Dominante — Powered by Headway Mídia"
-                className="h-20 w-auto object-contain object-left"
+                className="h-20 w-auto object-contain"
               />
             </div>
 
@@ -245,11 +245,11 @@ export default function AuthPage() {
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_20%,rgba(255,255,255,0.04),transparent_60%)]" />
 
         <div className="relative flex flex-col justify-between w-full p-12 text-white">
-          <div className="flex items-center -ml-3">
+          <div className="flex items-center">
             <img
               src={logoOticaDominante}
               alt="Ótica Dominante — Powered by Headway Mídia"
-              className="h-20 w-auto object-contain object-left invert brightness-0 invert"
+              className="h-20 w-auto object-contain brightness-0 invert"
             />
           </div>
 
