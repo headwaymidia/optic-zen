@@ -45,6 +45,8 @@ export function ChatPanel({
   const [message, setMessage] = useState("");
   const [scriptsOpen, setScriptsOpen] = useState(false);
   const [gateStatus, setGateStatus] = useState<StageGate | null>(null);
+  const [isTyping, setIsTyping] = useState(false);
+  const [sentMessages, setSentMessages] = useState<{ from: "us"; text: string; time: string }[]>([]);
 
   const handleStatusChange = (next: LeadStatus) => {
     if (next === lead.status) return;
