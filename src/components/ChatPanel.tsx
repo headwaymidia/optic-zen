@@ -92,15 +92,41 @@ export function ChatPanel({
     setMessage(pendingDef.buildScript(firstName));
   };
 
-  // Envia o follow-up: incrementa contador + marca timestamp
+  // Envia o follow-up: mostra "digitando..." → adiciona no chat → persiste no DB
   const handleSendFollowUp = async () => {
     if (!message.trim() || !pendingDef) return;
+    const text = message.trim();
+    const now = new Date();
+    const time = now.toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" });
+
     promoteToInAttendance();
-    await updateLead(lead.id, {
-      follow_up_count: (lead.follow_up_count ?? 0) + 1,
-      last_follow_up_at: new Date().toISOString(),
-    });
     setMessage("");
+
+    // Efeito "digitando..." antes do despacho
+    setIsTyping(true);
+    await new Promise((r) => setTimeout(r, 1200));
+    setIsTyping(false);
+
+    // Mensagem aparece no histórico visível imediatamente
+    setSentMessages((prev) => [...prev, { from: "us", text, time }]);
+
+    // Registro no histórico de interações do contato (Supabase)
+    try {
+      await updateLead(lead.id, {
+        follow_up_count: (lead.follow_up_count ?? 0) + 1,
+        last_follow_up_at: now.toISOString(),
+      });
+      toast({
+        title: `Follow-up ${pendingLevel} enviado`,
+        description: `Registrado no histórico de ${firstName}.`,
+      });
+    } catch (err: any) {
+      toast({
+        title: "Falha ao registrar follow-up",
+        description: err?.message ?? "Tente novamente.",
+        variant: "destructive",
+      });
+    }
   };
 
   const applyScript = (scriptType: "agendar" | "receita" | "resgate" | "confirmar") => {
