@@ -33,9 +33,9 @@ interface StoresContextValue {
   refetch: () => Promise<void>;
   /**
    * Filtra um array de itens (com `store_id`) pela loja ativa.
-   * Itens sem `store_id` são preservados (compatibilidade com mocks).
+   * Itens sem `store_id` são preservados (compatibilidade com mocks/legado).
    */
-  filterByCurrentStore: <T extends { store_id?: string | null }>(items: T[]) => T[];
+  filterByCurrentStore: <T>(items: T[]) => T[];
 }
 
 const StoresContext = createContext<StoresContextValue | undefined>(undefined);
