@@ -82,9 +82,9 @@ export function AppSidebar() {
             <Eye className="h-5 w-5" strokeWidth={2.5} />
           </div>
           {!collapsed && (
-            <div className="leading-tight min-w-0">
-              <p className="text-sm font-bold text-sidebar-foreground truncate">Ótica Dominante</p>
-              <p className="text-[10px] font-semibold tracking-[0.18em] text-muted-foreground uppercase truncate">
+            <div className="leading-tight" style={{ maxWidth: 240 }}>
+              <p className="text-sm font-bold text-sidebar-foreground whitespace-nowrap">Ótica Dominante</p>
+              <p className="text-[10px] font-semibold tracking-[0.18em] text-muted-foreground uppercase whitespace-nowrap">
                 Powered by Headway Mídia
               </p>
             </div>
