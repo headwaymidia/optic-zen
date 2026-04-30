@@ -12,7 +12,8 @@ import {
   Handshake,
   LogOut,
 } from "lucide-react";
-import logoOticaDominante from "@/assets/logo-otica-dominante.png";
+import logoOticaDominanteDark from "@/assets/logo-otica-dominante-dark.svg";
+import logoOticaDominanteWhite from "@/assets/logo-otica-dominante-white.svg";
 import {
   Sidebar,
   SidebarContent,
@@ -77,19 +78,33 @@ export function AppSidebar() {
   return (
     <Sidebar collapsible="icon" className="border-r border-sidebar-border bg-sidebar transition-all duration-300 ease-in-out">
       <SidebarContent className="flex flex-col h-full bg-sidebar overflow-x-hidden">
-        <div className={cn("flex items-center border-b border-sidebar-border overflow-hidden", collapsed ? "p-3 justify-center" : "p-4 justify-start")}>
+        <div className={cn("flex items-center border-b border-sidebar-border", collapsed ? "p-3 justify-center" : "px-4 py-4 justify-start")}>
           {collapsed ? (
-            <img
-              src={logoOticaDominante}
-              alt="Ótica Dominante"
-              className="w-10 max-w-none h-auto scale-150 transform origin-center dark:invert"
-            />
+            <>
+              <img
+                src={logoOticaDominanteDark}
+                alt="Ótica Dominante"
+                className="h-10 w-auto object-contain block dark:hidden"
+              />
+              <img
+                src={logoOticaDominanteWhite}
+                alt="Ótica Dominante"
+                className="h-10 w-auto object-contain hidden dark:block"
+              />
+            </>
           ) : (
-            <img
-              src={logoOticaDominante}
-              alt="Ótica Dominante — Powered by Headway Mídia"
-              className="w-[200px] max-w-none h-auto scale-150 transform origin-left dark:invert"
-            />
+            <>
+              <img
+                src={logoOticaDominanteDark}
+                alt="Ótica Dominante — Powered by Headway Mídia"
+                className="h-12 w-auto object-contain block dark:hidden"
+              />
+              <img
+                src={logoOticaDominanteWhite}
+                alt="Ótica Dominante — Powered by Headway Mídia"
+                className="h-12 w-auto object-contain hidden dark:block"
+              />
+            </>
           )}
         </div>
 
