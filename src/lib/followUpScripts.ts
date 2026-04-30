@@ -13,41 +13,41 @@ interface FollowUpDef {
   buildScript: (firstName: string) => string;
 }
 
+// Copy padrão única para todos os níveis da cadência.
+// Variável {nome_do_cliente} é substituída pelo PRIMEIRO NOME do lead.
+const STANDARD_FOLLOW_UP = (firstName: string) =>
+  `Oi ${firstName}, tudo bem? sei que esta corrido por ai, mas queria entender se você já fez seu óculos? já possui receita?`;
+
 export const FOLLOW_UP_DEFS: FollowUpDef[] = [
   {
     level: 1,
     label: "Follow-up 1",
     hint: "Lembrete gentil",
-    buildScript: (n) =>
-      `Oi ${n}, tudo bem? 😊 Passando aqui só pra retomar nossa conversa sobre o seu interesse na ótica. Conseguiu pensar a respeito? Estou à disposição pra te ajudar!`,
+    buildScript: STANDARD_FOLLOW_UP,
   },
   {
     level: 2,
     label: "Follow-up 2",
-    hint: "Tirar dúvidas técnicas",
-    buildScript: (n) =>
-      `Olá ${n}! Aproveitando o contato — ficou alguma dúvida sobre as opções de lentes (antirreflexo, multifocal, transitions) ou sobre as armações que conversamos? Posso te orientar com calma pra você escolher o melhor pro seu dia a dia.`,
+    hint: "Reforço",
+    buildScript: STANDARD_FOLLOW_UP,
   },
   {
     level: 3,
     label: "Follow-up 3",
-    hint: "Proposta de valor / benefício exclusivo",
-    buildScript: (n) =>
-      `${n}, separei uma condição especial pra você: consigo segurar um desconto exclusivo + parcelamento facilitado se você fechar o seu óculos esta semana. Topa eu te enviar a proposta certinha?`,
+    hint: "Reengajamento",
+    buildScript: STANDARD_FOLLOW_UP,
   },
   {
     level: 4,
     label: "Follow-up 4",
-    hint: "Prova social / depoimento",
-    buildScript: (n) =>
-      `Oi ${n}! Acabou de sair mais uma cliente daqui super feliz com o óculos novo 😍 Recebemos esse tipo de feedback toda semana — qualidade da lente, atendimento e garantia fazem diferença. Quer que eu reserve um horário pra você vir experimentar?`,
+    hint: "Última chance",
+    buildScript: STANDARD_FOLLOW_UP,
   },
   {
     level: 5,
     label: "Follow-up 5 — Última tentativa",
-    hint: "Despedida educada (check-out)",
-    buildScript: (n) =>
-      `${n}, esse é meu último contato pra não te encher 🙏 Vou encerrar seu atendimento por enquanto, mas a ótica continua à sua disposição. Quando precisar de exame, óculos ou lente de contato, é só chamar aqui que te atendo na hora. Um abraço!`,
+    hint: "Despedida educada",
+    buildScript: STANDARD_FOLLOW_UP,
   },
 ];
 

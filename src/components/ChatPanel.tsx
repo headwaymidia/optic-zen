@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { toast } from "@/hooks/use-toast";
 import { INTEREST_TAGS, LEAD_SOURCES, Lead, LEAD_STATUSES, LeadStatus, SALESPEOPLE } from "@/lib/supabase";
 import { useLeads } from "@/hooks/useLeads";
 import { Button } from "@/components/ui/button";
@@ -44,6 +45,8 @@ export function ChatPanel({
   const [message, setMessage] = useState("");
   const [scriptsOpen, setScriptsOpen] = useState(false);
   const [gateStatus, setGateStatus] = useState<StageGate | null>(null);
+  const [isTyping, setIsTyping] = useState(false);
+  const [sentMessages, setSentMessages] = useState<{ from: "us"; text: string; time: string }[]>([]);
 
   const handleStatusChange = (next: LeadStatus) => {
     if (next === lead.status) return;
@@ -89,15 +92,41 @@ export function ChatPanel({
     setMessage(pendingDef.buildScript(firstName));
   };
 
-  // Envia o follow-up: incrementa contador + marca timestamp
+  // Envia o follow-up: mostra "digitando..." → adiciona no chat → persiste no DB
   const handleSendFollowUp = async () => {
     if (!message.trim() || !pendingDef) return;
+    const text = message.trim();
+    const now = new Date();
+    const time = now.toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" });
+
     promoteToInAttendance();
-    await updateLead(lead.id, {
-      follow_up_count: (lead.follow_up_count ?? 0) + 1,
-      last_follow_up_at: new Date().toISOString(),
-    });
     setMessage("");
+
+    // Efeito "digitando..." antes do despacho
+    setIsTyping(true);
+    await new Promise((r) => setTimeout(r, 1200));
+    setIsTyping(false);
+
+    // Mensagem aparece no histórico visível imediatamente
+    setSentMessages((prev) => [...prev, { from: "us", text, time }]);
+
+    // Registro no histórico de interações do contato (Supabase)
+    try {
+      await updateLead(lead.id, {
+        follow_up_count: (lead.follow_up_count ?? 0) + 1,
+        last_follow_up_at: now.toISOString(),
+      });
+      toast({
+        title: `Follow-up ${pendingLevel} enviado`,
+        description: `Registrado no histórico de ${firstName}.`,
+      });
+    } catch (err: any) {
+      toast({
+        title: "Falha ao registrar follow-up",
+        description: err?.message ?? "Tente novamente.",
+        variant: "destructive",
+      });
+    }
   };
 
   const applyScript = (scriptType: "agendar" | "receita" | "resgate" | "confirmar") => {
@@ -286,6 +315,26 @@ export function ChatPanel({
             </div>
           </div>
         ))}
+        {sentMessages.map((m, i) => (
+          <div key={`sent-${i}`} className="flex justify-end">
+            <div className="max-w-[80%] rounded-2xl px-3 py-1.5 shadow-sm text-sm bg-green-100 text-foreground rounded-br-sm dark:bg-green-900/40">
+              <p className="whitespace-pre-wrap break-words">{m.text}</p>
+              <p className="text-[10px] text-muted-foreground mt-0.5 text-right">{m.time}</p>
+            </div>
+          </div>
+        ))}
+        {isTyping && (
+          <div className="flex justify-end" aria-live="polite" aria-label="Digitando">
+            <div className="rounded-2xl rounded-br-sm bg-green-100 dark:bg-green-900/40 px-3 py-2 shadow-sm">
+              <span className="inline-flex items-center gap-1">
+                <span className="h-1.5 w-1.5 rounded-full bg-emerald-700/70 dark:bg-emerald-200/70 animate-bounce [animation-delay:-0.3s]" />
+                <span className="h-1.5 w-1.5 rounded-full bg-emerald-700/70 dark:bg-emerald-200/70 animate-bounce [animation-delay:-0.15s]" />
+                <span className="h-1.5 w-1.5 rounded-full bg-emerald-700/70 dark:bg-emerald-200/70 animate-bounce" />
+                <span className="ml-1 text-[10px] text-muted-foreground">digitando…</span>
+              </span>
+            </div>
+          </div>
+        )}
       </div>
 
       {/* Banner de Cadência — sugestão do próximo follow-up */}
