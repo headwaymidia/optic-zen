@@ -105,11 +105,11 @@ export default function Funil() {
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
                 placeholder="Pesquisar por nome ou telefone..."
-                className="pl-9 h-9 bg-white border-slate-200"
+                className="pl-9 h-9 bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 dark:text-white dark:placeholder:text-slate-400"
               />
             </div>
             <Select value={salesFilter} onValueChange={setSalesFilter}>
-              <SelectTrigger className="h-9 w-full sm:w-56 bg-white border-slate-200">
+              <SelectTrigger className="h-9 w-full sm:w-56 bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 dark:text-white">
                 <SelectValue placeholder="Vendedora" />
               </SelectTrigger>
               <SelectContent>
