@@ -9,8 +9,14 @@ import { Label } from "@/components/ui/label";
 import { toast } from "@/hooks/use-toast";
 import logoOticaDominante from "@/assets/logo-otica-dominante-dark.svg";
 
+/**
+ * @deprecated Mantido apenas para compatibilidade com imports antigos.
+ * O onboarding agora é decidido pelo estado real no Supabase
+ * (usuário tem ao menos 1 loja em `stores` via `useStores`).
+ */
 export const ONBOARDING_KEY = "od.onboarding.completed.v1";
 
+/** @deprecated Use `useStores().stores.length > 0`. */
 export function isOnboardingCompleted() {
   try {
     return localStorage.getItem(ONBOARDING_KEY) === "1";
@@ -20,15 +26,16 @@ export function isOnboardingCompleted() {
 }
 
 export default function OnboardingPage() {
-  const { session, loading } = useAuth();
-  const { addStore } = useStores();
+  const { session, loading: authLoading } = useAuth();
+  const { stores, loading: storesLoading, addStore } = useStores();
   const navigate = useNavigate();
   const [name, setName] = useState("");
   const [submitting, setSubmitting] = useState(false);
 
-  if (loading) return null;
+  if (authLoading || storesLoading) return null;
   if (!session) return <Navigate to="/auth" replace />;
-  if (isOnboardingCompleted()) return <Navigate to="/" replace />;
+  // Já possui ao menos uma loja → pula onboarding.
+  if (stores.length > 0) return <Navigate to="/" replace />;
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -41,6 +48,7 @@ export default function OnboardingPage() {
 
     if (!created) return;
 
+    // Mantém o flag legado (sem prejuízo) — fonte de verdade é o Supabase.
     try {
       localStorage.setItem(ONBOARDING_KEY, "1");
     } catch {
@@ -67,9 +75,7 @@ export default function OnboardingPage() {
           />
         </div>
 
-        {/* Card */}
         <div className="space-y-8">
-          {/* Headings */}
           <div className="space-y-3 text-center">
             <h1 className="text-3xl sm:text-4xl font-extrabold tracking-tight text-zinc-900 leading-[1.1]">
               Bem-vindo ao seu novo motor de vendas.
@@ -79,7 +85,6 @@ export default function OnboardingPage() {
             </p>
           </div>
 
-          {/* Form */}
           <form onSubmit={handleSubmit} className="space-y-5">
             <div className="space-y-2">
               <Label

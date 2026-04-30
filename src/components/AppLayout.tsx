@@ -5,15 +5,18 @@ import { BottomNav } from "./BottomNav";
 import { ThemeToggle } from "./ThemeToggle";
 import { useAuth } from "@/hooks/useAuth";
 import { LeadsProvider } from "@/hooks/useLeads";
-import { isOnboardingCompleted } from "@/pages/Onboarding";
+import { useStores } from "@/hooks/useStores";
+
 export default function AppLayout() {
   const { session, profile, loading } = useAuth();
+  const { stores, loading: storesLoading } = useStores();
 
-  if (loading) {
+  if (loading || storesLoading) {
     return <div className="flex min-h-screen items-center justify-center text-muted-foreground">Carregando...</div>;
   }
   if (!session) return <Navigate to="/auth" replace />;
-  if (!isOnboardingCompleted()) return <Navigate to="/onboarding" replace />;
+  // Sem loja cadastrada → fluxo de onboarding.
+  if (stores.length === 0) return <Navigate to="/onboarding" replace />;
 
   return (
     <LeadsProvider>
@@ -44,13 +47,7 @@ export default function AppLayout() {
               <ThemeToggle />
             </header>
             <main className="flex-1 overflow-auto pb-20 md:pb-0">
-              {!profile?.company_id ? (
-                <div className="p-8 text-center text-muted-foreground">
-                  Seu perfil não está vinculado a uma empresa. Contate o administrador.
-                </div>
-              ) : (
-                <Outlet />
-              )}
+              <Outlet />
             </main>
           </div>
           {/* Bottom Navigation — mobile only */}
