@@ -99,12 +99,12 @@ export default function AuthPage() {
         <div className="flex-1 flex items-center justify-center px-6 pt-20 pb-20">
           <div className="w-full max-w-md">
             {/* Brand */}
-            <div className="flex items-center justify-center" style={{ maxHeight: 110, marginBottom: 60 }}>
+            <div className="flex items-center justify-center" style={{ marginBottom: 60 }}>
               <img
                 src={logoOticaDominanteDark}
                 alt="Ótica Dominante"
-                className="h-auto w-auto object-contain"
-                style={{ maxHeight: 110, maxWidth: 320 }}
+                style={{ width: 300, height: "auto" }}
+                className="object-contain"
               />
             </div>
 
@@ -247,12 +247,12 @@ export default function AuthPage() {
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_20%,rgba(255,255,255,0.04),transparent_60%)]" />
 
         <div className="relative flex flex-col justify-between w-full p-12 text-white">
-          <div className="flex items-center" style={{ maxHeight: 110 }}>
+          <div className="flex items-center">
             <img
               src={logoOticaDominanteWhite}
               alt="Ótica Dominante"
-              className="h-auto w-auto object-contain"
-              style={{ maxHeight: 110, maxWidth: 320 }}
+              style={{ width: 300, height: "auto" }}
+              className="object-contain"
             />
           </div>
 
@@ -329,11 +329,11 @@ function SubmitButton({ submitting, label }: { submitting: boolean; label: strin
     <Button
       type="submit"
       disabled={submitting}
-      style={{ backgroundColor: "#00E5FF" }}
       className={cn(
-        "w-full h-11 rounded-lg text-sm font-semibold shadow-sm text-white",
-        "hover:brightness-110 hover:opacity-100 transition-all"
+        "w-full h-11 text-sm font-semibold shadow-sm text-white",
+        "bg-emerald-500 hover:bg-emerald-600 transition-colors"
       )}
+      style={{ borderRadius: 8 }}
     >
       {submitting ? (
         <>
@@ -372,11 +372,8 @@ function FooterSwitch({
 
 function CheckDot() {
   return (
-    <span
-      className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full"
-      style={{ backgroundColor: "rgba(0, 229, 255, 0.15)", borderColor: "rgba(0, 229, 255, 0.4)", borderWidth: 1, borderStyle: "solid" }}
-    >
-      <span className="h-1.5 w-1.5 rounded-full" style={{ backgroundColor: "#00E5FF" }} />
+    <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-emerald-400/20 border border-emerald-400/40">
+      <span className="h-1.5 w-1.5 rounded-full bg-emerald-400" />
     </span>
   );
 }
