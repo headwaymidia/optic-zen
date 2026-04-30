@@ -11,9 +11,8 @@ import {
   HelpCircle,
   Handshake,
   LogOut,
+  Eye,
 } from "lucide-react";
-import logoOticaDominanteDark from "@/assets/logo-otica-dominante-dark.svg";
-import logoOticaDominanteWhite from "@/assets/logo-otica-dominante-white.svg";
 import {
   Sidebar,
   SidebarContent,
