@@ -73,8 +73,8 @@ export default function Funil() {
       <div className="flex-1 flex flex-col min-w-0 min-h-0">
         <div className="p-3 sm:p-6 space-y-3 sm:space-y-4 flex-1 flex flex-col min-h-0">
           <div>
-            <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-slate-900">Funil de vendas</h1>
-            <p className="text-xs sm:text-sm text-slate-500 font-medium">
+            <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-slate-900 dark:text-white">Funil de vendas</h1>
+            <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400 font-medium">
               {isMobile ? "Toque em um card para conversar." : "Arraste para mover · Clique para conversar."}
             </p>
           </div>
@@ -84,13 +84,13 @@ export default function Funil() {
             {LEAD_STATUSES.map((s) => (
               <div
                 key={s}
-                className="shrink-0 min-w-[120px] w-[120px] bg-white border border-slate-100 rounded-lg px-3 py-2 shadow-[0_1px_2px_rgba(0,0,0,0.02)] hover:shadow-sm transition-shadow"
+                className="shrink-0 min-w-[120px] w-[120px] bg-white dark:bg-slate-800 border border-slate-100 dark:border-slate-700 rounded-lg px-3 py-2 shadow-[0_1px_2px_rgba(0,0,0,0.02)] hover:shadow-sm dark:shadow-none transition-shadow"
               >
                 <div className="flex items-center gap-1.5">
                   <span className={cn("h-2 w-2 rounded-full shrink-0", STATUS_DOT_COLORS[s])} />
-                  <span className="text-[10px] text-slate-500 truncate">{s}</span>
+                  <span className="text-[10px] text-slate-500 dark:text-slate-400 truncate">{s}</span>
                 </div>
-                <p className="text-base font-bold text-slate-800 tabular-nums mt-0.5">
+                <p className="text-base font-bold text-slate-800 dark:text-white tabular-nums mt-0.5">
                   {loading ? "—" : counts[s]}
                 </p>
               </div>
@@ -105,11 +105,11 @@ export default function Funil() {
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
                 placeholder="Pesquisar por nome ou telefone..."
-                className="pl-9 h-9 bg-white border-slate-200"
+                className="pl-9 h-9 bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 dark:text-white dark:placeholder:text-slate-400"
               />
             </div>
             <Select value={salesFilter} onValueChange={setSalesFilter}>
-              <SelectTrigger className="h-9 w-full sm:w-56 bg-white border-slate-200">
+              <SelectTrigger className="h-9 w-full sm:w-56 bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 dark:text-white">
                 <SelectValue placeholder="Vendedora" />
               </SelectTrigger>
               <SelectContent>
@@ -134,9 +134,9 @@ export default function Funil() {
           </div>
 
           {/* Central de Cadência — filtros por etapa de Follow-up */}
-          <div className="rounded-xl border border-slate-100 bg-white px-3 py-2 shadow-[0_1px_2px_rgba(0,0,0,0.02)]">
+          <div className="rounded-xl border border-slate-100 dark:border-slate-700 bg-white dark:bg-slate-800 px-3 py-2 shadow-[0_1px_2px_rgba(0,0,0,0.02)] dark:shadow-none">
             <Tabs value={String(cadence)} onValueChange={(v) => setCadence(v === "all" ? "all" : (Number(v) as CadenceFilter))}>
-              <TabsList className="bg-slate-50 h-auto flex-wrap gap-1 p-1">
+              <TabsList className="bg-slate-50 dark:bg-slate-900/50 h-auto flex-wrap gap-1 p-1">
                 <FuTabTrigger value="all" label="Geral" count={fuTotalPending} isAll />
                 {([1, 2, 3, 4, 5] as const).map((n) => (
                   <FuTabTrigger
@@ -165,7 +165,7 @@ export default function Funil() {
       {/* Direita: Chat panel — desktop, só renderiza quando há lead selecionado */}
       {!isMobile && selected && (
         <aside
-          className="hidden lg:flex shrink-0 border-l border-slate-100 bg-white flex-col min-h-0 overflow-hidden shadow-[-4px_0_24px_rgba(0,0,0,0.02)] w-[380px] xl:w-[420px] animate-slide-in-right"
+          className="hidden lg:flex shrink-0 border-l border-slate-100 dark:border-slate-700 bg-white dark:bg-slate-900 flex-col min-h-0 overflow-hidden shadow-[-4px_0_24px_rgba(0,0,0,0.02)] dark:shadow-none w-[380px] xl:w-[420px] animate-slide-in-right"
         >
           <div className="flex-1 min-h-0 flex flex-col">
             <ChatPanel lead={selected} onClose={() => setSelected(null)} />
@@ -203,17 +203,17 @@ function FuTabTrigger({
   return (
     <TabsTrigger
       value={value}
-      className="relative gap-1.5 data-[state=active]:bg-white data-[state=active]:shadow-sm"
+      className="relative gap-1.5 data-[state=active]:bg-white dark:data-[state=active]:bg-slate-800 dark:text-slate-300 dark:data-[state=active]:text-white data-[state=active]:shadow-sm"
     >
       <span className="font-semibold">{label}</span>
       <span
         className={cn(
           "inline-flex min-w-[1.25rem] items-center justify-center rounded-full px-1.5 py-0.5 text-[10px] font-bold tabular-nums",
           hasPending
-            ? "bg-amber-100 text-amber-900"
+            ? "bg-amber-100 text-amber-900 dark:bg-amber-900/40 dark:text-amber-100"
             : isAll && count > 0
               ? "bg-primary/10 text-primary"
-              : "bg-slate-100 text-slate-500"
+              : "bg-slate-100 text-slate-500 dark:bg-slate-700 dark:text-slate-300"
         )}
       >
         {count}
@@ -221,7 +221,7 @@ function FuTabTrigger({
       {hasPending && (
         <span
           aria-hidden
-          className="absolute -top-1 -right-1 h-2.5 w-2.5 rounded-full bg-red-500 ring-2 ring-white animate-pulse"
+          className="absolute -top-1 -right-1 h-2.5 w-2.5 rounded-full bg-red-500 ring-2 ring-white dark:ring-slate-900 animate-pulse"
         />
       )}
     </TabsTrigger>
