@@ -19,7 +19,11 @@ import {
   Link2,
   MoreVertical,
   UserPlus,
+  QrCode,
+  RefreshCw,
+  Smartphone,
 } from "lucide-react";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
   DropdownMenu,
   DropdownMenuContent,
