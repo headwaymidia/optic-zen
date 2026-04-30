@@ -165,7 +165,7 @@ export default function Funil() {
       {/* Direita: Chat panel — desktop, só renderiza quando há lead selecionado */}
       {!isMobile && selected && (
         <aside
-          className="hidden lg:flex shrink-0 border-l border-slate-100 bg-white flex-col min-h-0 overflow-hidden shadow-[-4px_0_24px_rgba(0,0,0,0.02)] w-[380px] xl:w-[420px] animate-slide-in-right"
+          className="hidden lg:flex shrink-0 border-l border-slate-100 dark:border-slate-700 bg-white dark:bg-slate-900 flex-col min-h-0 overflow-hidden shadow-[-4px_0_24px_rgba(0,0,0,0.02)] dark:shadow-none w-[380px] xl:w-[420px] animate-slide-in-right"
         >
           <div className="flex-1 min-h-0 flex flex-col">
             <ChatPanel lead={selected} onClose={() => setSelected(null)} />
