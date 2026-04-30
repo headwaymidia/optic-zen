@@ -96,16 +96,19 @@ export default function AuthPage() {
     <div className="h-screen w-screen overflow-hidden grid grid-cols-1 md:grid-cols-2 bg-white">
       {/* LEFT: Form */}
       <div className="flex flex-col h-full overflow-y-auto bg-white">
-        <div className="flex-1 flex items-center justify-center px-6 pt-20 pb-20">
-          <div className="w-full max-w-md">
+        <div className="flex-1 flex items-center justify-center px-6 py-10">
+          <div className="w-full max-w-md space-y-8">
             {/* Brand */}
-            <div className="flex items-center justify-center" style={{ marginBottom: 60 }}>
-              <img
-                src={logoOticaDominanteDark}
-                alt="Ótica Dominante"
-                style={{ width: 300, height: "auto" }}
-                className="object-contain"
-              />
+            <div className="flex items-center gap-3">
+              <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-emerald-500 text-white shadow-sm">
+                <Eye className="h-5 w-5" strokeWidth={2.5} />
+              </div>
+              <div className="leading-tight">
+                <p className="text-base font-bold text-slate-900">Ótica Dominante</p>
+                <p className="text-[10px] font-semibold tracking-[0.18em] text-slate-400 uppercase">
+                  Powered by Headway Mídia
+                </p>
+              </div>
             </div>
 
             {/* Title */}
