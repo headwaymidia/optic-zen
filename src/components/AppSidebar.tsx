@@ -11,9 +11,8 @@ import {
   HelpCircle,
   Handshake,
   LogOut,
+  Eye,
 } from "lucide-react";
-import logoOticaDominanteDark from "@/assets/logo-otica-dominante-dark.svg";
-import logoOticaDominanteWhite from "@/assets/logo-otica-dominante-white.svg";
 import {
   Sidebar,
   SidebarContent,
@@ -78,33 +77,17 @@ export function AppSidebar() {
   return (
     <Sidebar collapsible="icon" className="border-r border-sidebar-border bg-sidebar transition-all duration-300 ease-in-out">
       <SidebarContent className="flex flex-col h-full bg-sidebar overflow-x-hidden">
-        <div className={cn("flex items-center border-b border-sidebar-border", collapsed ? "p-3 justify-center" : "px-4 py-4 justify-start")}>
-          {collapsed ? (
-            <>
-              <img
-                src={logoOticaDominanteDark}
-                alt="Ótica Dominante"
-                className="h-10 w-auto object-contain block dark:hidden"
-              />
-              <img
-                src={logoOticaDominanteWhite}
-                alt="Ótica Dominante"
-                className="h-10 w-auto object-contain hidden dark:block"
-              />
-            </>
-          ) : (
-            <>
-              <img
-                src={logoOticaDominanteDark}
-                alt="Ótica Dominante — Powered by Headway Mídia"
-                className="h-12 w-auto object-contain block dark:hidden"
-              />
-              <img
-                src={logoOticaDominanteWhite}
-                alt="Ótica Dominante — Powered by Headway Mídia"
-                className="h-12 w-auto object-contain hidden dark:block"
-              />
-            </>
+        <div className={cn("flex items-center border-b border-sidebar-border", collapsed ? "p-3 justify-center" : "px-4 py-4 gap-3")}>
+          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-emerald-500 text-white shadow-sm">
+            <Eye className="h-5 w-5" strokeWidth={2.5} />
+          </div>
+          {!collapsed && (
+            <div className="leading-tight min-w-0">
+              <p className="text-sm font-bold text-sidebar-foreground truncate">Ótica Dominante</p>
+              <p className="text-[10px] font-semibold tracking-[0.18em] text-muted-foreground uppercase truncate">
+                Powered by Headway Mídia
+              </p>
+            </div>
           )}
         </div>
 
