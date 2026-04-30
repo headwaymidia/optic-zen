@@ -47,13 +47,7 @@ export default function AppLayout() {
               <ThemeToggle />
             </header>
             <main className="flex-1 overflow-auto pb-20 md:pb-0">
-              {!profile?.company_id ? (
-                <div className="p-8 text-center text-muted-foreground">
-                  Seu perfil não está vinculado a uma empresa. Contate o administrador.
-                </div>
-              ) : (
-                <Outlet />
-              )}
+              <Outlet />
             </main>
           </div>
           {/* Bottom Navigation — mobile only */}
