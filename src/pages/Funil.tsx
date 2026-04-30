@@ -203,17 +203,17 @@ function FuTabTrigger({
   return (
     <TabsTrigger
       value={value}
-      className="relative gap-1.5 data-[state=active]:bg-white data-[state=active]:shadow-sm"
+      className="relative gap-1.5 data-[state=active]:bg-white dark:data-[state=active]:bg-slate-800 dark:text-slate-300 dark:data-[state=active]:text-white data-[state=active]:shadow-sm"
     >
       <span className="font-semibold">{label}</span>
       <span
         className={cn(
           "inline-flex min-w-[1.25rem] items-center justify-center rounded-full px-1.5 py-0.5 text-[10px] font-bold tabular-nums",
           hasPending
-            ? "bg-amber-100 text-amber-900"
+            ? "bg-amber-100 text-amber-900 dark:bg-amber-900/40 dark:text-amber-100"
             : isAll && count > 0
               ? "bg-primary/10 text-primary"
-              : "bg-slate-100 text-slate-500"
+              : "bg-slate-100 text-slate-500 dark:bg-slate-700 dark:text-slate-300"
         )}
       >
         {count}
