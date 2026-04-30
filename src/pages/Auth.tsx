@@ -329,9 +329,10 @@ function SubmitButton({ submitting, label }: { submitting: boolean; label: strin
     <Button
       type="submit"
       disabled={submitting}
+      style={{ backgroundColor: "#00E5FF" }}
       className={cn(
-        "w-full h-11 rounded-lg text-sm font-semibold shadow-sm",
-        "bg-primary hover:bg-primary/90 text-primary-foreground"
+        "w-full h-11 rounded-lg text-sm font-semibold shadow-sm text-white",
+        "hover:brightness-110 hover:opacity-100 transition-all"
       )}
     >
       {submitting ? (
@@ -371,8 +372,11 @@ function FooterSwitch({
 
 function CheckDot() {
   return (
-    <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-emerald-400/20 border border-emerald-400/30">
-      <span className="h-1.5 w-1.5 rounded-full bg-emerald-400" />
+    <span
+      className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full"
+      style={{ backgroundColor: "rgba(0, 229, 255, 0.15)", borderColor: "rgba(0, 229, 255, 0.4)", borderWidth: 1, borderStyle: "solid" }}
+    >
+      <span className="h-1.5 w-1.5 rounded-full" style={{ backgroundColor: "#00E5FF" }} />
     </span>
   );
 }
