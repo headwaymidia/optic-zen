@@ -2,7 +2,18 @@ import { createClient } from "@supabase/supabase-js";
 
 export const supabase = createClient(
   "https://fxcgvlukzjmwzpzuvzcp.supabase.co",
-  "sb_publishable_BgnFYgwfBCXxZcqO2rQJWA_qDAjT4_R"
+  "sb_publishable_BgnFYgwfBCXxZcqO2rQJWA_qDAjT4_R",
+  {
+    auth: {
+      // Persiste a sessão entre reloads / fechamento de aba e reidrata o auth.uid()
+      // automaticamente para que o RLS por company_id funcione no retorno do usuário.
+      storage: typeof window !== "undefined" ? window.localStorage : undefined,
+      storageKey: "od.auth.session",
+      persistSession: true,
+      autoRefreshToken: true,
+      detectSessionInUrl: true,
+    },
+  }
 );
 
 export type LeadStatus =
