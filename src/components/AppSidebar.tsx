@@ -77,14 +77,25 @@ export function AppSidebar() {
   return (
     <Sidebar collapsible="icon" className="border-r border-sidebar-border bg-sidebar transition-all duration-300 ease-in-out">
       <SidebarContent className="flex flex-col h-full bg-sidebar overflow-x-hidden">
-        <div className={cn("flex items-center border-b border-sidebar-border", collapsed ? "p-3 justify-center" : "px-4 py-4 gap-3")}>
-          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-emerald-500 text-white shadow-sm">
-            <Eye className="h-5 w-5" strokeWidth={2.5} />
+        <div
+          className={cn("flex items-center border-b border-sidebar-border", collapsed ? "p-3 justify-center" : "py-4 gap-2.5")}
+          style={!collapsed ? { width: "100%", paddingLeft: 16, paddingRight: 20 } : undefined}
+        >
+          <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-emerald-500 text-white shadow-sm">
+            <Eye className="h-[18px] w-[18px]" strokeWidth={2.5} />
           </div>
           {!collapsed && (
-            <div className="leading-tight" style={{ maxWidth: 240 }}>
-              <p className="text-sm font-bold text-sidebar-foreground whitespace-nowrap">Ótica Dominante</p>
-              <p className="text-[10px] font-semibold tracking-[0.18em] text-muted-foreground uppercase whitespace-nowrap">
+            <div className="leading-tight" style={{ overflow: "visible" }}>
+              <p
+                className="text-sm font-bold text-sidebar-foreground"
+                style={{ whiteSpace: "nowrap", overflow: "visible" }}
+              >
+                Ótica Dominante
+              </p>
+              <p
+                className="font-semibold text-muted-foreground uppercase"
+                style={{ fontSize: "9px", letterSpacing: "0.5px", whiteSpace: "nowrap", overflow: "visible" }}
+              >
                 Powered by Headway Mídia
               </p>
             </div>
