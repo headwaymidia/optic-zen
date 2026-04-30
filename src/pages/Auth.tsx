@@ -102,7 +102,7 @@ export default function AuthPage() {
             <img
               src={logoOticaDominanteDark}
               alt="Ótica Dominante — Powered by Headway Mídia"
-              className="h-12 w-auto object-contain mx-auto block mb-10"
+              className="w-[280px] h-auto object-contain mx-auto block mb-10"
             />
 
             {/* Title */}
@@ -248,7 +248,7 @@ export default function AuthPage() {
             <img
               src={logoOticaDominanteWhite}
               alt="Ótica Dominante — Powered by Headway Mídia"
-              className="h-12 w-auto object-contain"
+              className="w-[280px] h-auto object-contain"
             />
           </div>
 

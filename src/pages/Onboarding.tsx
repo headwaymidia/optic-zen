@@ -63,7 +63,7 @@ export default function OnboardingPage() {
           <img
             src={logoOticaDominante}
             alt="Ótica Dominante — Powered by Headway Mídia"
-            className="h-12 w-auto object-contain"
+            className="w-[280px] h-auto object-contain"
           />
         </div>
 
