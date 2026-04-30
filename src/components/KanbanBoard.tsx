@@ -166,17 +166,17 @@ function LeadCardContent({ lead, onEdit, dragging, selected, cadenceHighlight }:
   return (
     <Card
       className={cn(
-        "p-3 select-none bg-white rounded-xl shadow-[0_2px_10px_-3px_rgba(6,81,237,0.08)] transition-all duration-300 ease-out hover:-translate-y-1 hover:shadow-md relative overflow-hidden border-0",
+        "p-3 select-none bg-white dark:bg-slate-800 rounded-xl shadow-[0_2px_10px_-3px_rgba(6,81,237,0.08)] dark:shadow-none dark:border dark:border-slate-700 transition-all duration-300 ease-out hover:-translate-y-1 hover:shadow-md dark:hover:border-slate-600 relative overflow-hidden border-0",
         cooling && "ring-1 ring-red-500/50 animate-pulse-border",
-        cadenceHighlight && "ring-2 ring-amber-400 ring-offset-1",
-        awaitingReply && !cadenceHighlight && "ring-2 ring-emerald-500 ring-offset-1",
+        cadenceHighlight && "ring-2 ring-amber-400 ring-offset-1 dark:ring-offset-slate-900",
+        awaitingReply && !cadenceHighlight && "ring-2 ring-emerald-500 ring-offset-1 dark:ring-offset-slate-900",
         dragging && "shadow-xl ring-2 ring-primary/30 -rotate-1 scale-105",
         selected && !dragging && "ring-2 ring-primary shadow-[0_8px_24px_-6px_rgba(6,81,237,0.15)]"
       )}
     >
       <div className="space-y-1.5">
         <div className="flex items-start justify-between gap-2">
-          <p className="text-sm font-medium text-slate-900 truncate flex-1 leading-tight">{lead.name}</p>
+          <p className="text-sm font-medium text-slate-900 dark:text-white truncate flex-1 leading-tight">{lead.name}</p>
           <div className="flex items-center gap-1 shrink-0">
             {lead.priority && (
               <Badge
