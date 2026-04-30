@@ -1,13 +1,54 @@
 import { createClient } from "@supabase/supabase-js";
 
+const REMEMBER_KEY = "od.auth.remember";
+
+/**
+ * Storage adaptativo: usa localStorage quando o usuário marca "Lembrar minha sessão"
+ * (persistência entre fechamentos do navegador) e sessionStorage caso contrário
+ * (sessão expira ao fechar a aba/navegador).
+ */
+function createAdaptiveStorage() {
+  if (typeof window === "undefined") return undefined as unknown as Storage;
+
+  const pickStore = (): Storage => {
+    const remember = window.localStorage.getItem(REMEMBER_KEY) !== "false";
+    return remember ? window.localStorage : window.sessionStorage;
+  };
+
+  return {
+    getItem: (key: string) => {
+      // Lê de ambos para resiliência (preferindo o store ativo)
+      return pickStore().getItem(key) ?? window.localStorage.getItem(key) ?? window.sessionStorage.getItem(key);
+    },
+    setItem: (key: string, value: string) => {
+      const active = pickStore();
+      active.setItem(key, value);
+      // Limpa o outro storage para evitar sessão duplicada
+      const other = active === window.localStorage ? window.sessionStorage : window.localStorage;
+      other.removeItem(key);
+    },
+    removeItem: (key: string) => {
+      window.localStorage.removeItem(key);
+      window.sessionStorage.removeItem(key);
+    },
+  } as Storage;
+}
+
+/**
+ * Define a preferência de "Lembrar minha sessão". Deve ser chamado ANTES
+ * de signInWithPassword para que o storage correto seja usado na gravação.
+ */
+export function setRememberSession(remember: boolean) {
+  if (typeof window === "undefined") return;
+  window.localStorage.setItem(REMEMBER_KEY, remember ? "true" : "false");
+}
+
 export const supabase = createClient(
   "https://fxcgvlukzjmwzpzuvzcp.supabase.co",
   "sb_publishable_BgnFYgwfBCXxZcqO2rQJWA_qDAjT4_R",
   {
     auth: {
-      // Persiste a sessão entre reloads / fechamento de aba e reidrata o auth.uid()
-      // automaticamente para que o RLS por company_id funcione no retorno do usuário.
-      storage: typeof window !== "undefined" ? window.localStorage : undefined,
+      storage: createAdaptiveStorage(),
       storageKey: "od.auth.session",
       persistSession: true,
       autoRefreshToken: true,

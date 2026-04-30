@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Navigate } from "react-router-dom";
-import { supabase } from "@/lib/supabase";
+import { supabase, setRememberSession } from "@/lib/supabase";
+import { Checkbox } from "@/components/ui/checkbox";
 import { useAuth } from "@/hooks/useAuth";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -17,6 +18,7 @@ export default function AuthPage() {
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [rememberMe, setRememberMe] = useState(true);
   const [submitting, setSubmitting] = useState(false);
 
   if (loading) return null;
@@ -25,6 +27,8 @@ export default function AuthPage() {
   async function handleLogin(e: React.FormEvent) {
     e.preventDefault();
     setSubmitting(true);
+    // Define o tipo de persistência (local vs sessão) ANTES do signIn
+    setRememberSession(rememberMe);
     const { error } = await supabase.auth.signInWithPassword({ email, password });
     setSubmitting(false);
     if (error) {
@@ -141,18 +145,9 @@ export default function AuthPage() {
                   required
                 />
                 <div className="space-y-1.5">
-                  <div className="flex items-center justify-between">
-                    <Label htmlFor="password" className="text-xs font-semibold text-slate-700">
-                      Senha
-                    </Label>
-                    <button
-                      type="button"
-                      onClick={() => setMode("RECOVERY")}
-                      className="text-xs font-medium text-zinc-500 hover:text-zinc-900 hover:underline transition-colors"
-                    >
-                      Esqueceu sua senha?
-                    </button>
-                  </div>
+                  <Label htmlFor="password" className="text-xs font-semibold text-slate-700">
+                    Senha
+                  </Label>
                   <Input
                     id="password"
                     type="password"
@@ -163,6 +158,29 @@ export default function AuthPage() {
                     placeholder="••••••••"
                     className="h-11 rounded-lg border border-zinc-200 bg-white text-zinc-900 placeholder:text-zinc-400 focus-visible:ring-2 focus-visible:ring-zinc-800 focus-visible:ring-offset-0 focus-visible:border-zinc-300"
                   />
+                </div>
+                <div className="flex items-center justify-between -mt-1">
+                  <label
+                    htmlFor="remember-me"
+                    className="flex items-center gap-2 cursor-pointer select-none"
+                  >
+                    <Checkbox
+                      id="remember-me"
+                      checked={rememberMe}
+                      onCheckedChange={(v) => setRememberMe(v === true)}
+                      className="h-4 w-4 rounded border-zinc-300 data-[state=checked]:bg-emerald-500 data-[state=checked]:border-emerald-500 data-[state=checked]:text-white"
+                    />
+                    <span className="text-xs font-medium text-slate-600">
+                      Lembrar minha sessão
+                    </span>
+                  </label>
+                  <button
+                    type="button"
+                    onClick={() => setMode("RECOVERY")}
+                    className="text-xs font-medium text-zinc-500 hover:text-zinc-900 hover:underline transition-colors"
+                  >
+                    Esqueceu sua senha?
+                  </button>
                 </div>
                 <SubmitButton submitting={submitting} label="Entrar na Plataforma" />
                 <FooterSwitch
