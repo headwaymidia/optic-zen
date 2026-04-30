@@ -96,17 +96,20 @@ export default function AuthPage() {
     <div className="h-screen w-screen overflow-hidden grid grid-cols-1 md:grid-cols-2 bg-white">
       {/* LEFT: Form */}
       <div className="flex flex-col h-full overflow-y-auto bg-white">
-        <div className="flex-1 flex items-center justify-center px-6 py-10">
-          <div className="w-full max-w-md space-y-8">
+        <div className="flex-1 flex items-center justify-center px-6 pt-20 pb-20">
+          <div className="w-full max-w-md">
             {/* Brand */}
-            <img
-              src={logoOticaDominanteDark}
-              alt="Ótica Dominante — Powered by Headway Mídia"
-              className="w-[280px] h-auto object-contain mx-auto block mb-10"
-            />
+            <div className="flex items-center justify-center" style={{ maxHeight: 110, marginBottom: 60 }}>
+              <img
+                src={logoOticaDominanteDark}
+                alt="Ótica Dominante"
+                className="h-auto w-auto object-contain"
+                style={{ maxHeight: 110, maxWidth: 320 }}
+              />
+            </div>
 
             {/* Title */}
-            <div className="space-y-1.5">
+            <div className="space-y-2 mb-8">
               {mode === "RECOVERY" && (
                 <button
                   type="button"
@@ -117,10 +120,10 @@ export default function AuthPage() {
                   Voltar
                 </button>
               )}
-              <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-slate-900">
+              <h1 className="text-[32px] leading-tight font-extrabold tracking-tight text-slate-900">
                 {title}
               </h1>
-              <p className="text-sm text-slate-500">{subtitle}</p>
+              <p className="text-base text-slate-500">{subtitle}</p>
             </div>
 
             {/* Forms */}
@@ -244,11 +247,12 @@ export default function AuthPage() {
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_20%,rgba(255,255,255,0.04),transparent_60%)]" />
 
         <div className="relative flex flex-col justify-between w-full p-12 text-white">
-          <div className="flex items-center">
+          <div className="flex items-center" style={{ maxHeight: 110 }}>
             <img
               src={logoOticaDominanteWhite}
-              alt="Ótica Dominante — Powered by Headway Mídia"
-              className="w-[280px] h-auto object-contain"
+              alt="Ótica Dominante"
+              className="h-auto w-auto object-contain"
+              style={{ maxHeight: 110, maxWidth: 320 }}
             />
           </div>
 
@@ -325,9 +329,10 @@ function SubmitButton({ submitting, label }: { submitting: boolean; label: strin
     <Button
       type="submit"
       disabled={submitting}
+      style={{ backgroundColor: "#00E5FF" }}
       className={cn(
-        "w-full h-11 rounded-lg text-sm font-semibold shadow-sm",
-        "bg-primary hover:bg-primary/90 text-primary-foreground"
+        "w-full h-11 rounded-lg text-sm font-semibold shadow-sm text-white",
+        "hover:brightness-110 hover:opacity-100 transition-all"
       )}
     >
       {submitting ? (
@@ -367,8 +372,11 @@ function FooterSwitch({
 
 function CheckDot() {
   return (
-    <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-emerald-400/20 border border-emerald-400/30">
-      <span className="h-1.5 w-1.5 rounded-full bg-emerald-400" />
+    <span
+      className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full"
+      style={{ backgroundColor: "rgba(0, 229, 255, 0.15)", borderColor: "rgba(0, 229, 255, 0.4)", borderWidth: 1, borderStyle: "solid" }}
+    >
+      <span className="h-1.5 w-1.5 rounded-full" style={{ backgroundColor: "#00E5FF" }} />
     </span>
   );
 }
