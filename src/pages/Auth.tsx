@@ -96,17 +96,20 @@ export default function AuthPage() {
     <div className="h-screen w-screen overflow-hidden grid grid-cols-1 md:grid-cols-2 bg-white">
       {/* LEFT: Form */}
       <div className="flex flex-col h-full overflow-y-auto bg-white">
-        <div className="flex-1 flex items-center justify-center px-6 py-10">
-          <div className="w-full max-w-md space-y-8">
+        <div className="flex-1 flex items-center justify-center px-6 pt-20 pb-20">
+          <div className="w-full max-w-md">
             {/* Brand */}
-            <img
-              src={logoOticaDominanteDark}
-              alt="Ótica Dominante — Powered by Headway Mídia"
-              className="w-[280px] h-auto object-contain mx-auto block mb-10"
-            />
+            <div className="flex items-center justify-center" style={{ maxHeight: 110, marginBottom: 60 }}>
+              <img
+                src={logoOticaDominanteDark}
+                alt="Ótica Dominante"
+                className="h-auto w-auto object-contain"
+                style={{ maxHeight: 110, maxWidth: 320 }}
+              />
+            </div>
 
             {/* Title */}
-            <div className="space-y-1.5">
+            <div className="space-y-2 mb-8">
               {mode === "RECOVERY" && (
                 <button
                   type="button"
@@ -117,10 +120,10 @@ export default function AuthPage() {
                   Voltar
                 </button>
               )}
-              <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-slate-900">
+              <h1 className="text-[32px] leading-tight font-extrabold tracking-tight text-slate-900">
                 {title}
               </h1>
-              <p className="text-sm text-slate-500">{subtitle}</p>
+              <p className="text-base text-slate-500">{subtitle}</p>
             </div>
 
             {/* Forms */}
