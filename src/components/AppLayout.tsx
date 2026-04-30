@@ -20,7 +20,7 @@ export default function AppLayout() {
       <SidebarProvider
         style={
           {
-            "--sidebar-width": "16rem",
+            "--sidebar-width": "280px",
             "--sidebar-width-icon": "5rem",
           } as React.CSSProperties
         }
