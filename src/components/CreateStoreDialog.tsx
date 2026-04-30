@@ -22,13 +22,14 @@ export function CreateStoreDialog({ open, onOpenChange }: Props) {
   const [name, setName] = useState("");
   const [submitting, setSubmitting] = useState(false);
 
-  function handleSubmit(e: React.FormEvent) {
+  async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     const trimmed = name.trim();
     if (!trimmed) return;
     setSubmitting(true);
-    const created = addStore({ name: trimmed });
+    const created = await addStore({ name: trimmed });
     setSubmitting(false);
+    if (!created) return;
     setName("");
     onOpenChange(false);
     toast({
