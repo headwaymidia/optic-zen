@@ -874,3 +874,93 @@ function WhatsAppGlyph({ className }: { className?: string }) {
     </svg>
   );
 }
+
+/** Painel de conexão via QR Code (WhatsApp Web) */
+function QrCodeConnectionPanel() {
+  const [qrStatus, setQrStatus] = useState<"waiting" | "connected">("waiting");
+  const [qrKey, setQrKey] = useState(0);
+
+  const handleRegenerate = () => {
+    setQrKey((k) => k + 1);
+    setQrStatus("waiting");
+    toast({
+      title: "Novo QR Code gerado",
+      description: "Aponte a câmera do seu celular para a tela.",
+    });
+  };
+
+  const handleSimulateConnect = () => {
+    setQrStatus("connected");
+    toast({
+      title: "Aparelho conectado",
+      description: "Sessão WhatsApp Web vinculada com sucesso.",
+    });
+  };
+
+  const isConnected = qrStatus === "connected";
+
+  return (
+    <div className="flex flex-col items-center gap-5 py-2">
+      {/* Status */}
+      <div
+        className={cn(
+          "inline-flex items-center gap-2 rounded-full px-3 py-1.5 text-xs font-medium border transition-colors",
+          isConnected
+            ? "bg-emerald-50 dark:bg-emerald-950/30 text-emerald-700 dark:text-emerald-300 border-emerald-200 dark:border-emerald-800"
+            : "bg-amber-50 dark:bg-amber-950/30 text-amber-700 dark:text-amber-300 border-amber-200 dark:border-amber-800"
+        )}
+        aria-live="polite"
+      >
+        <span
+          className={cn(
+            "h-2 w-2 rounded-full",
+            isConnected ? "bg-emerald-500" : "bg-amber-500 animate-pulse"
+          )}
+        />
+        {isConnected ? "Aparelho Conectado" : "Aguardando leitura..."}
+      </div>
+
+      {/* Placeholder do QR Code */}
+      <button
+        type="button"
+        onClick={handleSimulateConnect}
+        disabled={isConnected}
+        className={cn(
+          "relative h-56 w-56 rounded-2xl border-2 border-dashed flex items-center justify-center transition-all",
+          isConnected
+            ? "border-emerald-400 bg-emerald-50/50 dark:bg-emerald-950/20"
+            : "border-border bg-muted/30 hover:bg-muted/50 cursor-pointer"
+        )}
+        aria-label={isConnected ? "Conectado" : "QR Code para leitura"}
+      >
+        {isConnected ? (
+          <div className="flex flex-col items-center gap-2 text-emerald-600 dark:text-emerald-400">
+            <Smartphone className="h-12 w-12" />
+            <span className="text-xs font-semibold">Sessão ativa</span>
+          </div>
+        ) : (
+          <div key={qrKey} className="flex flex-col items-center gap-2 text-muted-foreground animate-in fade-in zoom-in-95 duration-300">
+            <QrCode className="h-28 w-28" strokeWidth={1.5} />
+            <span className="text-[10px] font-mono tracking-widest uppercase">QR Code</span>
+          </div>
+        )}
+      </button>
+
+      {/* Botão regenerar */}
+      <Button
+        type="button"
+        variant="outline"
+        onClick={handleRegenerate}
+        className="gap-2"
+      >
+        <RefreshCw className="h-4 w-4" />
+        Gerar novo QR Code
+      </Button>
+
+      {/* Instruções */}
+      <p className="text-xs text-muted-foreground text-center max-w-xs leading-relaxed">
+        Abra o WhatsApp no seu celular, vá em <span className="font-medium text-foreground">Aparelhos Conectados</span> e aponte a câmera para a tela.
+      </p>
+    </div>
+  );
+}
