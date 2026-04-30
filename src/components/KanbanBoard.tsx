@@ -389,18 +389,18 @@ function DroppableColumn({
     <div
       ref={setNodeRef}
       className={cn(
-        "flex w-[250px] min-w-[250px] max-w-[250px] shrink-0 snap-start flex-col h-full rounded-2xl bg-slate-50/70 border border-slate-100 transition-all duration-200 overflow-hidden",
+        "flex w-[250px] min-w-[250px] max-w-[250px] shrink-0 snap-start flex-col h-full rounded-2xl bg-slate-50/70 dark:bg-slate-900/50 border border-slate-100 dark:border-slate-800 transition-all duration-200 overflow-hidden",
         isOver && "bg-primary/5 border-primary/40 border-dashed ring-2 ring-primary/30 scale-[1.01]"
       )}
     >
-      <div className="flex items-center justify-between gap-2 border-b border-slate-100/60 p-3 shrink-0">
+      <div className="flex items-center justify-between gap-2 border-b border-slate-100/60 dark:border-slate-800 p-3 shrink-0">
         <div className="flex items-center gap-2.5 min-w-0">
           <span className={cn("h-2 w-2 shrink-0 rounded-full", STATUS_COLORS[status])} />
-          <h3 className="truncate text-sm font-bold tracking-wide text-slate-800">{status}</h3>
-          <span className="text-xs font-semibold text-slate-400 bg-white px-1.5 py-0.5 rounded-full shadow-sm">{count}</span>
+          <h3 className="truncate text-sm font-bold tracking-wide text-slate-800 dark:text-slate-100">{status}</h3>
+          <span className="text-xs font-semibold text-slate-400 dark:text-slate-300 bg-white dark:bg-slate-800 px-1.5 py-0.5 rounded-full shadow-sm dark:shadow-none">{count}</span>
         </div>
-        <Button size="icon" variant="ghost" className="h-7 w-7 hover:bg-white hover:shadow-sm rounded-lg" onClick={onAdd}>
-          <Plus className="h-4 w-4 text-slate-500" />
+        <Button size="icon" variant="ghost" className="h-7 w-7 hover:bg-white dark:hover:bg-slate-800 hover:shadow-sm rounded-lg" onClick={onAdd}>
+          <Plus className="h-4 w-4 text-slate-500 dark:text-slate-300" />
         </Button>
       </div>
       <div className="flex flex-col gap-1.5 p-2 flex-1 min-h-0 overflow-y-auto thin-scrollbar">
