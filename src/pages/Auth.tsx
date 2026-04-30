@@ -8,7 +8,8 @@ import { Label } from "@/components/ui/label";
 import { toast } from "@/hooks/use-toast";
 import { Eye, ArrowLeft, Loader2 } from "lucide-react";
 import { cn } from "@/lib/utils";
-import logoOticaDominante from "@/assets/logo-otica-dominante.png";
+import logoOticaDominanteDark from "@/assets/logo-otica-dominante-dark.svg";
+import logoOticaDominanteWhite from "@/assets/logo-otica-dominante-white.svg";
 
 type AuthMode = "LOGIN" | "REGISTER" | "RECOVERY";
 
@@ -99,9 +100,9 @@ export default function AuthPage() {
           <div className="w-full max-w-md space-y-8">
             {/* Brand */}
             <img
-              src={logoOticaDominante}
+              src={logoOticaDominanteDark}
               alt="Ótica Dominante — Powered by Headway Mídia"
-              className="w-[350px] md:w-[450px] max-w-none h-auto object-contain scale-125 md:scale-150 mx-auto block mb-16"
+              className="h-12 w-auto object-contain mx-auto block mb-10"
             />
 
             {/* Title */}
@@ -245,9 +246,9 @@ export default function AuthPage() {
         <div className="relative flex flex-col justify-between w-full p-12 text-white">
           <div className="flex items-center">
             <img
-              src={logoOticaDominante}
+              src={logoOticaDominanteWhite}
               alt="Ótica Dominante — Powered by Headway Mídia"
-              className="h-20 w-auto object-contain brightness-0 invert"
+              className="h-12 w-auto object-contain"
             />
           </div>
 

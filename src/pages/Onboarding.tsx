@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { toast } from "@/hooks/use-toast";
-import logoOticaDominante from "@/assets/logo-otica-dominante.png";
+import logoOticaDominante from "@/assets/logo-otica-dominante-dark.svg";
 
 export const ONBOARDING_KEY = "od.onboarding.completed.v1";
 
@@ -63,7 +63,7 @@ export default function OnboardingPage() {
           <img
             src={logoOticaDominante}
             alt="Ótica Dominante — Powered by Headway Mídia"
-            className="h-20 w-auto object-contain"
+            className="h-12 w-auto object-contain"
           />
         </div>
 
