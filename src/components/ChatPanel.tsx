@@ -315,6 +315,26 @@ export function ChatPanel({
             </div>
           </div>
         ))}
+        {sentMessages.map((m, i) => (
+          <div key={`sent-${i}`} className="flex justify-end">
+            <div className="max-w-[80%] rounded-2xl px-3 py-1.5 shadow-sm text-sm bg-green-100 text-foreground rounded-br-sm dark:bg-green-900/40">
+              <p className="whitespace-pre-wrap break-words">{m.text}</p>
+              <p className="text-[10px] text-muted-foreground mt-0.5 text-right">{m.time}</p>
+            </div>
+          </div>
+        ))}
+        {isTyping && (
+          <div className="flex justify-end" aria-live="polite" aria-label="Digitando">
+            <div className="rounded-2xl rounded-br-sm bg-green-100 dark:bg-green-900/40 px-3 py-2 shadow-sm">
+              <span className="inline-flex items-center gap-1">
+                <span className="h-1.5 w-1.5 rounded-full bg-emerald-700/70 dark:bg-emerald-200/70 animate-bounce [animation-delay:-0.3s]" />
+                <span className="h-1.5 w-1.5 rounded-full bg-emerald-700/70 dark:bg-emerald-200/70 animate-bounce [animation-delay:-0.15s]" />
+                <span className="h-1.5 w-1.5 rounded-full bg-emerald-700/70 dark:bg-emerald-200/70 animate-bounce" />
+                <span className="ml-1 text-[10px] text-muted-foreground">digitando…</span>
+              </span>
+            </div>
+          </div>
+        )}
       </div>
 
       {/* Banner de Cadência — sugestão do próximo follow-up */}
