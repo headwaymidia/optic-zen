@@ -247,11 +247,12 @@ export default function AuthPage() {
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_20%,rgba(255,255,255,0.04),transparent_60%)]" />
 
         <div className="relative flex flex-col justify-between w-full p-12 text-white">
-          <div className="flex items-center">
+          <div className="flex items-center" style={{ maxHeight: 110 }}>
             <img
               src={logoOticaDominanteWhite}
-              alt="Ótica Dominante — Powered by Headway Mídia"
-              className="w-[280px] h-auto object-contain"
+              alt="Ótica Dominante"
+              className="h-auto w-auto object-contain"
+              style={{ maxHeight: 110, maxWidth: 320 }}
             />
           </div>
 
