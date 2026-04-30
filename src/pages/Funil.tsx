@@ -73,8 +73,8 @@ export default function Funil() {
       <div className="flex-1 flex flex-col min-w-0 min-h-0">
         <div className="p-3 sm:p-6 space-y-3 sm:space-y-4 flex-1 flex flex-col min-h-0">
           <div>
-            <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-slate-900">Funil de vendas</h1>
-            <p className="text-xs sm:text-sm text-slate-500 font-medium">
+            <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-slate-900 dark:text-white">Funil de vendas</h1>
+            <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400 font-medium">
               {isMobile ? "Toque em um card para conversar." : "Arraste para mover · Clique para conversar."}
             </p>
           </div>
