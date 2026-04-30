@@ -19,7 +19,11 @@ import {
   Link2,
   MoreVertical,
   UserPlus,
+  QrCode,
+  RefreshCw,
+  Smartphone,
 } from "lucide-react";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -506,84 +510,115 @@ function IntegrationsPanel({ storeId, storeName }: { storeId: string; storeName:
         icon={<WhatsAppGlyph className="h-5 w-5 text-[#25D366]" />}
         rightSlot={<OfficialApiBadge />}
       >
-        {/* Header: business + número + status */}
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 pb-4 border-b border-border">
-          <div className="flex items-center gap-3 min-w-0">
-            <Avatar className="h-11 w-11 shrink-0">
-              <AvatarFallback className="bg-[#25D366]/10 text-[#1FAE54]">
-                <WhatsAppGlyph className="h-5 w-5" />
-              </AvatarFallback>
-            </Avatar>
-            <div className="min-w-0">
-              <p className="text-[11px] font-medium uppercase tracking-wider text-muted-foreground flex items-center gap-1.5">
-                <BadgeCheck className="h-3 w-3 text-[#1FAE54]" />
-                {integration.business_name}
-              </p>
-              <p className="text-base font-semibold tabular-nums text-foreground truncate">
-                {integration.whatsapp_number}
-              </p>
+        <Tabs defaultValue="api" className="w-full">
+          <TabsList className="grid w-full grid-cols-2 bg-muted/50 p-1 rounded-lg h-auto">
+            <TabsTrigger
+              value="api"
+              className="text-xs sm:text-sm gap-2 rounded-md data-[state=active]:bg-background data-[state=active]:text-emerald-600 dark:data-[state=active]:text-emerald-400 data-[state=active]:font-semibold data-[state=active]:shadow-sm data-[state=active]:border-b-2 data-[state=active]:border-emerald-500 transition-all duration-200"
+            >
+              <BadgeCheck className="h-4 w-4" />
+              API Oficial (Meta)
+            </TabsTrigger>
+            <TabsTrigger
+              value="qr"
+              className="text-xs sm:text-sm gap-2 rounded-md data-[state=active]:bg-background data-[state=active]:text-emerald-600 dark:data-[state=active]:text-emerald-400 data-[state=active]:font-semibold data-[state=active]:shadow-sm data-[state=active]:border-b-2 data-[state=active]:border-emerald-500 transition-all duration-200"
+            >
+              <QrCode className="h-4 w-4" />
+              QR Code (Web)
+            </TabsTrigger>
+          </TabsList>
+
+          <TabsContent
+            value="api"
+            className="mt-4 space-y-4 animate-in fade-in-50 slide-in-from-bottom-1 duration-300"
+          >
+            {/* Header: business + número + status */}
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 pb-4 border-b border-border">
+              <div className="flex items-center gap-3 min-w-0">
+                <Avatar className="h-11 w-11 shrink-0">
+                  <AvatarFallback className="bg-[#25D366]/10 text-[#1FAE54]">
+                    <WhatsAppGlyph className="h-5 w-5" />
+                  </AvatarFallback>
+                </Avatar>
+                <div className="min-w-0">
+                  <p className="text-[11px] font-medium uppercase tracking-wider text-muted-foreground flex items-center gap-1.5">
+                    <BadgeCheck className="h-3 w-3 text-[#1FAE54]" />
+                    {integration.business_name}
+                  </p>
+                  <p className="text-base font-semibold tabular-nums text-foreground truncate">
+                    {integration.whatsapp_number}
+                  </p>
+                </div>
+              </div>
+              <StatusBadge online={isOnline} />
             </div>
-          </div>
-          <StatusBadge online={isOnline} />
-        </div>
 
-        {/* Credenciais Meta Cloud API */}
-        <div className="space-y-3 pt-4">
-          <div className="flex items-center gap-2">
-            <p className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
-              Credenciais da Cloud API
-            </p>
-            <span className="h-px flex-1 bg-border" />
-            <span className="text-[10px] text-muted-foreground font-mono">graph.facebook.com / v21.0</span>
-          </div>
+            {/* Credenciais Meta Cloud API */}
+            <div className="space-y-3 pt-2">
+              <div className="flex items-center gap-2">
+                <p className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
+                  Credenciais da Cloud API
+                </p>
+                <span className="h-px flex-1 bg-border" />
+                <span className="text-[10px] text-muted-foreground font-mono">graph.facebook.com / v21.0</span>
+              </div>
 
-          <SecretRow
-            label="Phone Number ID"
-            value={maskToken(integration.phone_number_id, 4, 4)}
-            onCopy={() => handleCopy(integration.phone_number_id, "Phone Number ID")}
-            copied={copied}
-          />
-          <SecretRow
-            label="WABA ID (WhatsApp Business Account)"
-            value={maskToken(integration.waba_id, 4, 4)}
-            onCopy={() => handleCopy(integration.waba_id, "WABA ID")}
-            copied={copied}
-          />
-          <SecretRow
-            label="Access Token (System User)"
-            value={maskToken(integration.access_token, 6, 4)}
-            onCopy={() => handleCopy(integration.access_token, "Access Token")}
-            copied={copied}
-          />
-        </div>
+              <SecretRow
+                label="Phone Number ID"
+                value={maskToken(integration.phone_number_id, 4, 4)}
+                onCopy={() => handleCopy(integration.phone_number_id, "Phone Number ID")}
+                copied={copied}
+              />
+              <SecretRow
+                label="WABA ID (WhatsApp Business Account)"
+                value={maskToken(integration.waba_id, 4, 4)}
+                onCopy={() => handleCopy(integration.waba_id, "WABA ID")}
+                copied={copied}
+              />
+              <SecretRow
+                label="Access Token (System User)"
+                value={maskToken(integration.access_token, 6, 4)}
+                onCopy={() => handleCopy(integration.access_token, "Access Token")}
+                copied={copied}
+              />
+            </div>
 
-        <div className="flex items-center gap-2 pt-2 text-[11px] text-muted-foreground">
-          <ShieldCheck className="h-3.5 w-3.5" />
-          <span>
-            Credenciais criptografadas e isoladas por filial · Última sincronização: {integration.last_sync}
-          </span>
-        </div>
+            <div className="flex items-center gap-2 pt-2 text-[11px] text-muted-foreground">
+              <ShieldCheck className="h-3.5 w-3.5" />
+              <span>
+                Credenciais criptografadas e isoladas por filial · Última sincronização: {integration.last_sync}
+              </span>
+            </div>
 
-        {/* Ações */}
-        <div className="flex flex-col sm:flex-row gap-2 pt-4 border-t border-border">
-          {isOnline ? (
-            <>
-              <Button variant="outline" onClick={handleConnect} className="gap-2">
-                <Link2 className="h-4 w-4" />
-                Reconectar Conta Meta
-              </Button>
-              <Button variant="destructive" onClick={handleDisconnect} className="gap-2">
-                <Power className="h-4 w-4" />
-                Revogar Acesso
-              </Button>
-            </>
-          ) : (
-            <Button onClick={handleConnect} className="gap-2 bg-[#1877F2] hover:bg-[#1877F2]/90 text-white">
-              <MetaGlyph className="h-4 w-4" />
-              Conectar Conta Meta Business
-            </Button>
-          )}
-        </div>
+            {/* Ações */}
+            <div className="flex flex-col sm:flex-row gap-2 pt-4 border-t border-border">
+              {isOnline ? (
+                <>
+                  <Button variant="outline" onClick={handleConnect} className="gap-2">
+                    <Link2 className="h-4 w-4" />
+                    Reconectar Conta Meta
+                  </Button>
+                  <Button variant="destructive" onClick={handleDisconnect} className="gap-2">
+                    <Power className="h-4 w-4" />
+                    Revogar Acesso
+                  </Button>
+                </>
+              ) : (
+                <Button onClick={handleConnect} className="gap-2 bg-[#1877F2] hover:bg-[#1877F2]/90 text-white">
+                  <MetaGlyph className="h-4 w-4" />
+                  Conectar Conta Meta Business
+                </Button>
+              )}
+            </div>
+          </TabsContent>
+
+          <TabsContent
+            value="qr"
+            className="mt-4 animate-in fade-in-50 slide-in-from-bottom-1 duration-300"
+          >
+            <QrCodeConnectionPanel />
+          </TabsContent>
+        </Tabs>
       </SectionCard>
 
       {/* Templates de Mensagem */}
@@ -837,5 +872,95 @@ function WhatsAppGlyph({ className }: { className?: string }) {
     >
       <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.198-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51l-.57-.01c-.198 0-.52.074-.792.372s-1.04 1.016-1.04 2.479 1.065 2.876 1.213 3.074c.149.198 2.095 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.247-.694.247-1.289.173-1.413-.074-.124-.272-.198-.57-.347zM12.057 21.785h-.005a9.87 9.87 0 0 1-5.031-1.378l-.36-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 0 1-1.51-5.26c.002-5.45 4.436-9.884 9.889-9.884a9.83 9.83 0 0 1 6.991 2.898 9.825 9.825 0 0 1 2.892 6.994c-.003 5.45-4.437 9.884-9.888 9.884zm8.413-18.297A11.815 11.815 0 0 0 12.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 0 0 5.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 0 0-3.473-8.413z" />
     </svg>
+  );
+}
+
+/** Painel de conexão via QR Code (WhatsApp Web) */
+function QrCodeConnectionPanel() {
+  const [qrStatus, setQrStatus] = useState<"waiting" | "connected">("waiting");
+  const [qrKey, setQrKey] = useState(0);
+
+  const handleRegenerate = () => {
+    setQrKey((k) => k + 1);
+    setQrStatus("waiting");
+    toast({
+      title: "Novo QR Code gerado",
+      description: "Aponte a câmera do seu celular para a tela.",
+    });
+  };
+
+  const handleSimulateConnect = () => {
+    setQrStatus("connected");
+    toast({
+      title: "Aparelho conectado",
+      description: "Sessão WhatsApp Web vinculada com sucesso.",
+    });
+  };
+
+  const isConnected = qrStatus === "connected";
+
+  return (
+    <div className="flex flex-col items-center gap-5 py-2">
+      {/* Status */}
+      <div
+        className={cn(
+          "inline-flex items-center gap-2 rounded-full px-3 py-1.5 text-xs font-medium border transition-colors",
+          isConnected
+            ? "bg-emerald-50 dark:bg-emerald-950/30 text-emerald-700 dark:text-emerald-300 border-emerald-200 dark:border-emerald-800"
+            : "bg-amber-50 dark:bg-amber-950/30 text-amber-700 dark:text-amber-300 border-amber-200 dark:border-amber-800"
+        )}
+        aria-live="polite"
+      >
+        <span
+          className={cn(
+            "h-2 w-2 rounded-full",
+            isConnected ? "bg-emerald-500" : "bg-amber-500 animate-pulse"
+          )}
+        />
+        {isConnected ? "Aparelho Conectado" : "Aguardando leitura..."}
+      </div>
+
+      {/* Placeholder do QR Code */}
+      <button
+        type="button"
+        onClick={handleSimulateConnect}
+        disabled={isConnected}
+        className={cn(
+          "relative h-56 w-56 rounded-2xl border-2 border-dashed flex items-center justify-center transition-all",
+          isConnected
+            ? "border-emerald-400 bg-emerald-50/50 dark:bg-emerald-950/20"
+            : "border-border bg-muted/30 hover:bg-muted/50 cursor-pointer"
+        )}
+        aria-label={isConnected ? "Conectado" : "QR Code para leitura"}
+      >
+        {isConnected ? (
+          <div className="flex flex-col items-center gap-2 text-emerald-600 dark:text-emerald-400">
+            <Smartphone className="h-12 w-12" />
+            <span className="text-xs font-semibold">Sessão ativa</span>
+          </div>
+        ) : (
+          <div key={qrKey} className="flex flex-col items-center gap-2 text-muted-foreground animate-in fade-in zoom-in-95 duration-300">
+            <QrCode className="h-28 w-28" strokeWidth={1.5} />
+            <span className="text-[10px] font-mono tracking-widest uppercase">QR Code</span>
+          </div>
+        )}
+      </button>
+
+      {/* Botão regenerar */}
+      <Button
+        type="button"
+        variant="outline"
+        onClick={handleRegenerate}
+        className="gap-2"
+      >
+        <RefreshCw className="h-4 w-4" />
+        Gerar novo QR Code
+      </Button>
+
+      {/* Instruções */}
+      <p className="text-xs text-muted-foreground text-center max-w-xs leading-relaxed">
+        Abra o WhatsApp no seu celular, vá em <span className="font-medium text-foreground">Aparelhos Conectados</span> e aponte a câmera para a tela.
+      </p>
+    </div>
   );
 }
