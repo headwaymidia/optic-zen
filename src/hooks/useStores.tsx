@@ -1,4 +1,15 @@
-import { createContext, useCallback, useContext, useEffect, useMemo, useState, ReactNode } from "react";
+import {
+  createContext,
+  useCallback,
+  useContext,
+  useEffect,
+  useMemo,
+  useState,
+  ReactNode,
+} from "react";
+import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/hooks/useAuth";
+import { toast } from "@/hooks/use-toast";
 
 export type StoreRole = "Dono" | "Gerente" | "Vendedor";
 
@@ -9,140 +20,250 @@ export interface Store {
   role: StoreRole;
   /** Iniciais ou emoji curto exibido no avatar. */
   initial?: string;
+  owner_id?: string;
 }
 
 interface StoresContextValue {
   stores: Store[];
+  loading: boolean;
   currentStore: Store | null;
   currentStoreId: string | null;
   setCurrentStoreId: (id: string) => void;
-  addStore: (input: { name: string; role?: StoreRole }) => Store;
+  addStore: (input: { name: string; role?: StoreRole }) => Promise<Store | null>;
+  refetch: () => Promise<void>;
   /**
-   * Hook utilitário: dado um array de itens (mock), retorna apenas a fatia
-   * "pertencente" à loja atual de forma determinística pelo id do item.
-   * Permite simular isolamento de dados sem backend.
+   * Filtra um array de itens (com `store_id`) pela loja ativa.
+   * Itens sem `store_id` são preservados (compatibilidade com mocks/legado).
    */
-  filterByCurrentStore: <T extends { id?: string | number }>(items: T[]) => T[];
+  filterByCurrentStore: <T>(items: T[]) => T[];
 }
 
 const StoresContext = createContext<StoresContextValue | undefined>(undefined);
 
-const STORAGE_KEY = "od.stores.v1";
-const CURRENT_KEY = "od.stores.current.v1";
+/** Apenas preferência de UI — qual loja o usuário viu por último. NUNCA é fonte de dados. */
+const CURRENT_KEY = "od.stores.current.v2";
 
-const DEFAULT_STORES: Store[] = [
-  { id: "store-centro", name: "Ótica Dominante — Centro", role: "Dono", initial: "C" },
-  { id: "store-shopping", name: "Filial Shopping", role: "Dono", initial: "S" },
-  { id: "store-zonasul", name: "Filial Zona Sul", role: "Gerente", initial: "Z" },
-];
-
-function loadStores(): Store[] {
+function loadCurrentIdPref(): string | null {
   try {
-    const raw = localStorage.getItem(STORAGE_KEY);
-    if (!raw) return DEFAULT_STORES;
-    const parsed = JSON.parse(raw) as Store[];
-    return parsed.length ? parsed : DEFAULT_STORES;
+    return localStorage.getItem(CURRENT_KEY);
   } catch {
-    return DEFAULT_STORES;
+    return null;
   }
 }
 
-function loadCurrentId(fallback: string): string {
+function saveCurrentIdPref(id: string | null) {
   try {
-    return localStorage.getItem(CURRENT_KEY) || fallback;
+    if (id) localStorage.setItem(CURRENT_KEY, id);
+    else localStorage.removeItem(CURRENT_KEY);
   } catch {
-    return fallback;
+    /* ignore */
   }
 }
 
-/** Hash determinístico estável (FNV-1a curto) para distribuir itens entre lojas. */
-function hashToBucket(id: string | number, buckets: number) {
-  const s = String(id);
-  let h = 2166136261;
-  for (let i = 0; i < s.length; i++) {
-    h ^= s.charCodeAt(i);
-    h = (h * 16777619) >>> 0;
-  }
-  return h % Math.max(1, buckets);
+function initialFromName(name: string): string {
+  return name.trim().charAt(0).toUpperCase() || "L";
 }
 
 export function StoresProvider({ children }: { children: ReactNode }) {
-  const [stores, setStores] = useState<Store[]>(() => loadStores());
-  const [currentStoreId, setCurrentStoreIdState] = useState<string | null>(() => {
-    const list = loadStores();
-    return loadCurrentId(list[0]?.id ?? "");
-  });
+  const { session, user } = useAuth();
+  const [stores, setStores] = useState<Store[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [currentStoreId, setCurrentStoreIdState] = useState<string | null>(
+    () => loadCurrentIdPref()
+  );
 
-  useEffect(() => {
-    try {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(stores));
-    } catch {
-      /* ignore */
+  const fetchStores = useCallback(async () => {
+    if (!user) {
+      setStores([]);
+      setLoading(false);
+      return;
     }
-  }, [stores]);
+    setLoading(true);
 
-  useEffect(() => {
-    if (!currentStoreId) return;
-    try {
-      localStorage.setItem(CURRENT_KEY, currentStoreId);
-    } catch {
-      /* ignore */
+    // Busca lojas onde o usuário é membro (RLS já garante isolamento).
+    // Trazemos a role via store_members.
+    const { data, error } = await supabase
+      .from("store_members")
+      .select("role, store:stores(id, name, owner_id)")
+      .eq("user_id", user.id);
+
+    if (error) {
+      toast({
+        title: "Erro ao carregar lojas",
+        description: error.message,
+        variant: "destructive",
+      });
+      setStores([]);
+      setLoading(false);
+      return;
     }
-  }, [currentStoreId]);
+
+    const list: Store[] = (data ?? [])
+      .map((row: any) => {
+        if (!row.store) return null;
+        return {
+          id: row.store.id as string,
+          name: row.store.name as string,
+          owner_id: row.store.owner_id as string,
+          role: row.role as StoreRole,
+          initial: initialFromName(row.store.name as string),
+        };
+      })
+      .filter(Boolean) as Store[];
+
+    setStores(list);
+    setLoading(false);
+  }, [user]);
+
+  // Carrega lojas ao logar / trocar de usuário
+  useEffect(() => {
+    fetchStores();
+  }, [fetchStores]);
+
+  // Realtime: refaz busca quando store_members muda para esse usuário
+  useEffect(() => {
+    if (!user) return;
+    const ch = supabase
+      .channel(`store-members-${user.id}`)
+      .on(
+        "postgres_changes",
+        {
+          event: "*",
+          schema: "public",
+          table: "store_members",
+          filter: `user_id=eq.${user.id}`,
+        },
+        () => fetchStores()
+      )
+      .on(
+        "postgres_changes",
+        { event: "UPDATE", schema: "public", table: "stores" },
+        () => fetchStores()
+      )
+      .subscribe();
+    return () => {
+      supabase.removeChannel(ch);
+    };
+  }, [user, fetchStores]);
+
+  // Garante que currentStoreId é sempre uma loja válida do usuário
+  useEffect(() => {
+    if (loading) return;
+    if (!stores.length) {
+      if (currentStoreId !== null) {
+        setCurrentStoreIdState(null);
+        saveCurrentIdPref(null);
+      }
+      return;
+    }
+    const exists = stores.some((s) => s.id === currentStoreId);
+    if (!exists) {
+      const next = stores[0].id;
+      setCurrentStoreIdState(next);
+      saveCurrentIdPref(next);
+    }
+  }, [stores, loading, currentStoreId]);
+
+  // Limpa preferência ao deslogar
+  useEffect(() => {
+    if (!session) {
+      setCurrentStoreIdState(null);
+      saveCurrentIdPref(null);
+    }
+  }, [session]);
 
   const setCurrentStoreId = useCallback((id: string) => {
     setCurrentStoreIdState(id);
+    saveCurrentIdPref(id);
   }, []);
 
-  const addStore = useCallback<StoresContextValue["addStore"]>((input) => {
-    const id = `store-${Date.now().toString(36)}`;
-    const initial = input.name.trim().charAt(0).toUpperCase() || "L";
-    const newStore: Store = {
-      id,
-      name: input.name.trim(),
-      role: input.role ?? "Dono",
-      initial,
-    };
-    setStores((prev) => [...prev, newStore]);
-    setCurrentStoreIdState(id);
-    return newStore;
-  }, []);
+  const addStore = useCallback<StoresContextValue["addStore"]>(
+    async (input) => {
+      if (!user) {
+        toast({ title: "Faça login para criar uma loja", variant: "destructive" });
+        return null;
+      }
+      const name = input.name.trim();
+      if (!name) return null;
+
+      const { data: storeRow, error: storeErr } = await supabase
+        .from("stores")
+        .insert({ name, owner_id: user.id })
+        .select("id, name, owner_id")
+        .single();
+
+      if (storeErr || !storeRow) {
+        toast({
+          title: "Erro ao criar loja",
+          description: storeErr?.message,
+          variant: "destructive",
+        });
+        return null;
+      }
+
+      // Vincula o criador como Dono (idempotente — trigger handle_new_user só roda no signup)
+      const role: StoreRole = input.role ?? "Dono";
+      const { error: memberErr } = await supabase
+        .from("store_members")
+        .upsert(
+          { store_id: storeRow.id, user_id: user.id, role },
+          { onConflict: "store_id,user_id" }
+        );
+
+      if (memberErr) {
+        toast({
+          title: "Loja criada, mas falhou vincular usuário",
+          description: memberErr.message,
+          variant: "destructive",
+        });
+      }
+
+      const created: Store = {
+        id: storeRow.id,
+        name: storeRow.name,
+        owner_id: storeRow.owner_id,
+        role,
+        initial: initialFromName(storeRow.name),
+      };
+
+      setStores((prev) => {
+        if (prev.some((s) => s.id === created.id)) return prev;
+        return [...prev, created];
+      });
+      setCurrentStoreId(created.id);
+
+      return created;
+    },
+    [user, setCurrentStoreId]
+  );
 
   const currentStore = useMemo(
     () => stores.find((s) => s.id === currentStoreId) ?? stores[0] ?? null,
     [stores, currentStoreId]
   );
 
-  const storeIndex = useMemo(() => {
-    const idx = stores.findIndex((s) => s.id === currentStore?.id);
-    return idx >= 0 ? idx : 0;
-  }, [stores, currentStore]);
-
   const filterByCurrentStore = useCallback(
-    <T extends { id?: string | number }>(items: T[]): T[] => {
-      if (!stores.length) return items;
-      // Loja "principal" (índice 0) recebe todos os itens — simula a base original.
-      // Filiais recebem uma fatia determinística dos itens.
-      if (storeIndex === 0) return items;
-      const totalBuckets = stores.length;
-      return items.filter((item) => {
-        const key = item?.id ?? Math.random().toString(36);
-        return hashToBucket(key as string | number, totalBuckets) === storeIndex;
-      });
+    <T extends { store_id?: string | null }>(items: T[]): T[] => {
+      if (!currentStore) return [];
+      return items.filter(
+        (it) => !it.store_id || it.store_id === currentStore.id
+      );
     },
-    [stores, storeIndex]
+    [currentStore]
   );
 
   const value = useMemo<StoresContextValue>(
     () => ({
       stores,
+      loading,
       currentStore,
       currentStoreId: currentStore?.id ?? null,
       setCurrentStoreId,
       addStore,
+      refetch: fetchStores,
       filterByCurrentStore,
     }),
-    [stores, currentStore, setCurrentStoreId, addStore, filterByCurrentStore]
+    [stores, loading, currentStore, setCurrentStoreId, addStore, fetchStores, filterByCurrentStore]
   );
 
   return <StoresContext.Provider value={value}>{children}</StoresContext.Provider>;
