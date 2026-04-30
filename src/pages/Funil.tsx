@@ -221,7 +221,7 @@ function FuTabTrigger({
       {hasPending && (
         <span
           aria-hidden
-          className="absolute -top-1 -right-1 h-2.5 w-2.5 rounded-full bg-red-500 ring-2 ring-white animate-pulse"
+          className="absolute -top-1 -right-1 h-2.5 w-2.5 rounded-full bg-red-500 ring-2 ring-white dark:ring-slate-900 animate-pulse"
         />
       )}
     </TabsTrigger>
