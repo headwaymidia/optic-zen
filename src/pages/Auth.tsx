@@ -27,6 +27,8 @@ export default function AuthPage() {
   async function handleLogin(e: React.FormEvent) {
     e.preventDefault();
     setSubmitting(true);
+    // Define o tipo de persistência (local vs sessão) ANTES do signIn
+    setRememberSession(rememberMe);
     const { error } = await supabase.auth.signInWithPassword({ email, password });
     setSubmitting(false);
     if (error) {
