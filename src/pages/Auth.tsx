@@ -112,7 +112,7 @@ export default function AuthPage() {
             </div>
 
             {/* Title */}
-            <div className="space-y-2 mb-8">
+            <div className="space-y-1.5">
               {mode === "RECOVERY" && (
                 <button
                   type="button"
@@ -123,10 +123,10 @@ export default function AuthPage() {
                   Voltar
                 </button>
               )}
-              <h1 className="text-[32px] leading-tight font-extrabold tracking-tight text-slate-900">
+              <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-slate-900">
                 {title}
               </h1>
-              <p className="text-base text-slate-500">{subtitle}</p>
+              <p className="text-sm text-slate-500">{subtitle}</p>
             </div>
 
             {/* Forms */}
