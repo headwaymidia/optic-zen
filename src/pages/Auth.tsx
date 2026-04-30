@@ -8,8 +8,6 @@ import { Label } from "@/components/ui/label";
 import { toast } from "@/hooks/use-toast";
 import { Eye, ArrowLeft, Loader2 } from "lucide-react";
 import { cn } from "@/lib/utils";
-import logoOticaDominanteDark from "@/assets/logo-otica-dominante-dark.svg";
-import logoOticaDominanteWhite from "@/assets/logo-otica-dominante-white.svg";
 
 type AuthMode = "LOGIN" | "REGISTER" | "RECOVERY";
 
