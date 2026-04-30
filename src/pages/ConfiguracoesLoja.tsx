@@ -510,84 +510,115 @@ function IntegrationsPanel({ storeId, storeName }: { storeId: string; storeName:
         icon={<WhatsAppGlyph className="h-5 w-5 text-[#25D366]" />}
         rightSlot={<OfficialApiBadge />}
       >
-        {/* Header: business + número + status */}
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 pb-4 border-b border-border">
-          <div className="flex items-center gap-3 min-w-0">
-            <Avatar className="h-11 w-11 shrink-0">
-              <AvatarFallback className="bg-[#25D366]/10 text-[#1FAE54]">
-                <WhatsAppGlyph className="h-5 w-5" />
-              </AvatarFallback>
-            </Avatar>
-            <div className="min-w-0">
-              <p className="text-[11px] font-medium uppercase tracking-wider text-muted-foreground flex items-center gap-1.5">
-                <BadgeCheck className="h-3 w-3 text-[#1FAE54]" />
-                {integration.business_name}
-              </p>
-              <p className="text-base font-semibold tabular-nums text-foreground truncate">
-                {integration.whatsapp_number}
-              </p>
+        <Tabs defaultValue="api" className="w-full">
+          <TabsList className="grid w-full grid-cols-2 bg-muted/50 p-1 rounded-lg h-auto">
+            <TabsTrigger
+              value="api"
+              className="text-xs sm:text-sm gap-2 rounded-md data-[state=active]:bg-background data-[state=active]:text-emerald-600 dark:data-[state=active]:text-emerald-400 data-[state=active]:font-semibold data-[state=active]:shadow-sm data-[state=active]:border-b-2 data-[state=active]:border-emerald-500 transition-all duration-200"
+            >
+              <BadgeCheck className="h-4 w-4" />
+              API Oficial (Meta)
+            </TabsTrigger>
+            <TabsTrigger
+              value="qr"
+              className="text-xs sm:text-sm gap-2 rounded-md data-[state=active]:bg-background data-[state=active]:text-emerald-600 dark:data-[state=active]:text-emerald-400 data-[state=active]:font-semibold data-[state=active]:shadow-sm data-[state=active]:border-b-2 data-[state=active]:border-emerald-500 transition-all duration-200"
+            >
+              <QrCode className="h-4 w-4" />
+              QR Code (Web)
+            </TabsTrigger>
+          </TabsList>
+
+          <TabsContent
+            value="api"
+            className="mt-4 space-y-4 animate-in fade-in-50 slide-in-from-bottom-1 duration-300"
+          >
+            {/* Header: business + número + status */}
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 pb-4 border-b border-border">
+              <div className="flex items-center gap-3 min-w-0">
+                <Avatar className="h-11 w-11 shrink-0">
+                  <AvatarFallback className="bg-[#25D366]/10 text-[#1FAE54]">
+                    <WhatsAppGlyph className="h-5 w-5" />
+                  </AvatarFallback>
+                </Avatar>
+                <div className="min-w-0">
+                  <p className="text-[11px] font-medium uppercase tracking-wider text-muted-foreground flex items-center gap-1.5">
+                    <BadgeCheck className="h-3 w-3 text-[#1FAE54]" />
+                    {integration.business_name}
+                  </p>
+                  <p className="text-base font-semibold tabular-nums text-foreground truncate">
+                    {integration.whatsapp_number}
+                  </p>
+                </div>
+              </div>
+              <StatusBadge online={isOnline} />
             </div>
-          </div>
-          <StatusBadge online={isOnline} />
-        </div>
 
-        {/* Credenciais Meta Cloud API */}
-        <div className="space-y-3 pt-4">
-          <div className="flex items-center gap-2">
-            <p className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
-              Credenciais da Cloud API
-            </p>
-            <span className="h-px flex-1 bg-border" />
-            <span className="text-[10px] text-muted-foreground font-mono">graph.facebook.com / v21.0</span>
-          </div>
+            {/* Credenciais Meta Cloud API */}
+            <div className="space-y-3 pt-2">
+              <div className="flex items-center gap-2">
+                <p className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
+                  Credenciais da Cloud API
+                </p>
+                <span className="h-px flex-1 bg-border" />
+                <span className="text-[10px] text-muted-foreground font-mono">graph.facebook.com / v21.0</span>
+              </div>
 
-          <SecretRow
-            label="Phone Number ID"
-            value={maskToken(integration.phone_number_id, 4, 4)}
-            onCopy={() => handleCopy(integration.phone_number_id, "Phone Number ID")}
-            copied={copied}
-          />
-          <SecretRow
-            label="WABA ID (WhatsApp Business Account)"
-            value={maskToken(integration.waba_id, 4, 4)}
-            onCopy={() => handleCopy(integration.waba_id, "WABA ID")}
-            copied={copied}
-          />
-          <SecretRow
-            label="Access Token (System User)"
-            value={maskToken(integration.access_token, 6, 4)}
-            onCopy={() => handleCopy(integration.access_token, "Access Token")}
-            copied={copied}
-          />
-        </div>
+              <SecretRow
+                label="Phone Number ID"
+                value={maskToken(integration.phone_number_id, 4, 4)}
+                onCopy={() => handleCopy(integration.phone_number_id, "Phone Number ID")}
+                copied={copied}
+              />
+              <SecretRow
+                label="WABA ID (WhatsApp Business Account)"
+                value={maskToken(integration.waba_id, 4, 4)}
+                onCopy={() => handleCopy(integration.waba_id, "WABA ID")}
+                copied={copied}
+              />
+              <SecretRow
+                label="Access Token (System User)"
+                value={maskToken(integration.access_token, 6, 4)}
+                onCopy={() => handleCopy(integration.access_token, "Access Token")}
+                copied={copied}
+              />
+            </div>
 
-        <div className="flex items-center gap-2 pt-2 text-[11px] text-muted-foreground">
-          <ShieldCheck className="h-3.5 w-3.5" />
-          <span>
-            Credenciais criptografadas e isoladas por filial · Última sincronização: {integration.last_sync}
-          </span>
-        </div>
+            <div className="flex items-center gap-2 pt-2 text-[11px] text-muted-foreground">
+              <ShieldCheck className="h-3.5 w-3.5" />
+              <span>
+                Credenciais criptografadas e isoladas por filial · Última sincronização: {integration.last_sync}
+              </span>
+            </div>
 
-        {/* Ações */}
-        <div className="flex flex-col sm:flex-row gap-2 pt-4 border-t border-border">
-          {isOnline ? (
-            <>
-              <Button variant="outline" onClick={handleConnect} className="gap-2">
-                <Link2 className="h-4 w-4" />
-                Reconectar Conta Meta
-              </Button>
-              <Button variant="destructive" onClick={handleDisconnect} className="gap-2">
-                <Power className="h-4 w-4" />
-                Revogar Acesso
-              </Button>
-            </>
-          ) : (
-            <Button onClick={handleConnect} className="gap-2 bg-[#1877F2] hover:bg-[#1877F2]/90 text-white">
-              <MetaGlyph className="h-4 w-4" />
-              Conectar Conta Meta Business
-            </Button>
-          )}
-        </div>
+            {/* Ações */}
+            <div className="flex flex-col sm:flex-row gap-2 pt-4 border-t border-border">
+              {isOnline ? (
+                <>
+                  <Button variant="outline" onClick={handleConnect} className="gap-2">
+                    <Link2 className="h-4 w-4" />
+                    Reconectar Conta Meta
+                  </Button>
+                  <Button variant="destructive" onClick={handleDisconnect} className="gap-2">
+                    <Power className="h-4 w-4" />
+                    Revogar Acesso
+                  </Button>
+                </>
+              ) : (
+                <Button onClick={handleConnect} className="gap-2 bg-[#1877F2] hover:bg-[#1877F2]/90 text-white">
+                  <MetaGlyph className="h-4 w-4" />
+                  Conectar Conta Meta Business
+                </Button>
+              )}
+            </div>
+          </TabsContent>
+
+          <TabsContent
+            value="qr"
+            className="mt-4 animate-in fade-in-50 slide-in-from-bottom-1 duration-300"
+          >
+            <QrCodeConnectionPanel />
+          </TabsContent>
+        </Tabs>
       </SectionCard>
 
       {/* Templates de Mensagem */}
