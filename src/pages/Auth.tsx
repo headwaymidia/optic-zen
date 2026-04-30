@@ -8,8 +8,6 @@ import { Label } from "@/components/ui/label";
 import { toast } from "@/hooks/use-toast";
 import { Eye, ArrowLeft, Loader2 } from "lucide-react";
 import { cn } from "@/lib/utils";
-import logoOticaDominanteDark from "@/assets/logo-otica-dominante-dark.svg";
-import logoOticaDominanteWhite from "@/assets/logo-otica-dominante-white.svg";
 
 type AuthMode = "LOGIN" | "REGISTER" | "RECOVERY";
 
@@ -96,20 +94,23 @@ export default function AuthPage() {
     <div className="h-screen w-screen overflow-hidden grid grid-cols-1 md:grid-cols-2 bg-white">
       {/* LEFT: Form */}
       <div className="flex flex-col h-full overflow-y-auto bg-white">
-        <div className="flex-1 flex items-center justify-center px-6 pt-20 pb-20">
-          <div className="w-full max-w-md">
+        <div className="flex-1 flex items-center justify-center px-6 py-10">
+          <div className="w-full max-w-md space-y-8">
             {/* Brand */}
-            <div className="flex items-center justify-center" style={{ marginBottom: 60 }}>
-              <img
-                src={logoOticaDominanteDark}
-                alt="Ótica Dominante"
-                style={{ width: 300, height: "auto" }}
-                className="object-contain"
-              />
+            <div className="flex items-center gap-3">
+              <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-emerald-500 text-white shadow-sm">
+                <Eye className="h-5 w-5" strokeWidth={2.5} />
+              </div>
+              <div className="leading-tight">
+                <p className="text-base font-bold text-slate-900">Ótica Dominante</p>
+                <p className="text-[10px] font-semibold tracking-[0.18em] text-slate-400 uppercase">
+                  Powered by Headway Mídia
+                </p>
+              </div>
             </div>
 
             {/* Title */}
-            <div className="space-y-2 mb-8">
+            <div className="space-y-1.5">
               {mode === "RECOVERY" && (
                 <button
                   type="button"
@@ -120,10 +121,10 @@ export default function AuthPage() {
                   Voltar
                 </button>
               )}
-              <h1 className="text-[32px] leading-tight font-extrabold tracking-tight text-slate-900">
+              <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-slate-900">
                 {title}
               </h1>
-              <p className="text-base text-slate-500">{subtitle}</p>
+              <p className="text-sm text-slate-500">{subtitle}</p>
             </div>
 
             {/* Forms */}
@@ -247,37 +248,36 @@ export default function AuthPage() {
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_20%,rgba(255,255,255,0.04),transparent_60%)]" />
 
         <div className="relative flex flex-col justify-between w-full p-12 text-white">
-          <div className="flex items-center">
-            <img
-              src={logoOticaDominanteWhite}
-              alt="Ótica Dominante"
-              style={{ width: 300, height: "auto" }}
-              className="object-contain"
-            />
+          <div className="flex items-center gap-3">
+            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-emerald-500 text-white shadow-sm">
+              <Eye className="h-5 w-5" strokeWidth={2.5} />
+            </div>
+            <div className="leading-tight">
+              <p className="text-base font-bold text-white">Ótica Dominante</p>
+              <p className="text-[10px] font-semibold tracking-[0.18em] text-slate-400 uppercase">
+                Powered by Headway Mídia
+              </p>
+            </div>
           </div>
 
           <div className="space-y-5 max-w-md">
-            <div className="inline-flex items-center gap-2 rounded-full bg-white/10 backdrop-blur-sm border border-white/10 px-3 py-1 text-[11px] font-semibold uppercase tracking-wider">
-              <span className="h-1.5 w-1.5 rounded-full bg-emerald-400 animate-pulse" />
-              CRM Premium para Óticas e Clínicas
-            </div>
             <h2 className="text-4xl xl:text-5xl font-extrabold tracking-tight leading-[1.05]">
-              A inteligência comercial por trás do seu balcão.
+              O motor de vendas da sua ótica.
             </h2>
             <p className="text-base xl:text-lg text-slate-300 leading-relaxed">
-              O único CRM do mercado desenvolvido para blindar seu faturamento, organizar a equipe e transformar leads em clientes de alto ticket.
+              Centralize leads, organize sua equipe e transforme cada atendimento em uma venda fechada com inteligência total.
             </p>
           </div>
 
           <div className="space-y-3">
             <div className="flex items-center gap-3 text-sm text-slate-300">
-              <CheckDot /> Funil visual de vendas focado em conversão
+              <CheckDot /> Funil visual com Kanban arrastar-e-soltar
             </div>
             <div className="flex items-center gap-3 text-sm text-slate-300">
-              <CheckDot /> Atendimento de WhatsApp e CRM integrados
+              <CheckDot /> Atendimento integrado e prontuário digital
             </div>
             <div className="flex items-center gap-3 text-sm text-slate-300">
-              <CheckDot /> Painel de performance para donos e gerentes
+              <CheckDot /> Gestão de pedidos e laboratório
             </div>
           </div>
         </div>
