@@ -36,9 +36,10 @@ export default function OnboardingPage() {
     if (!trimmed) return;
     setSubmitting(true);
 
-    // Simula a criação da loja (mock)
-    await new Promise((r) => setTimeout(r, 600));
-    const created = addStore({ name: trimmed });
+    const created = await addStore({ name: trimmed });
+    setSubmitting(false);
+
+    if (!created) return;
 
     try {
       localStorage.setItem(ONBOARDING_KEY, "1");
@@ -51,7 +52,6 @@ export default function OnboardingPage() {
       description: `"${created.name}" está pronta. Bem-vindo ao seu motor de vendas.`,
     });
 
-    setSubmitting(false);
     navigate("/", { replace: true });
   }
 
