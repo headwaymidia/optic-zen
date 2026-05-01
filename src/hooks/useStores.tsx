@@ -193,9 +193,19 @@ export function StoresProvider({ children }: { children: ReactNode }) {
         .single();
 
       if (storeErr || !storeRow) {
+        // Log completo do erro para debug (RLS, network, etc.)
+        console.error("[useStores.addStore] Falha no INSERT em stores:", {
+          error: storeErr,
+          message: storeErr?.message,
+          details: (storeErr as any)?.details,
+          hint: (storeErr as any)?.hint,
+          code: (storeErr as any)?.code,
+          payload: { name, owner_id: user.id },
+        });
         toast({
           title: "Erro ao criar loja",
-          description: storeErr?.message,
+          description:
+            storeErr?.message ?? "Não foi possível criar a loja. Tente novamente.",
           variant: "destructive",
         });
         return null;
