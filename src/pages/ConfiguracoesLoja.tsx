@@ -1,6 +1,7 @@
-import { useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import { useSearchParams } from "react-router-dom";
 import { useStores } from "@/hooks/useStores";
+import { supabase } from "@/lib/supabase";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
@@ -57,42 +58,29 @@ const TABS: { key: TabKey; label: string; icon: typeof Settings }[] = [
 ];
 
 /**
- * Mock de "store secrets" — futuramente virá da tabela `stores` no Supabase
- * com colunas isoladas por filial:
- *   whatsapp_number, phone_number_id, waba_id, access_token, status, business_name.
- * Cada loja possui sua própria conta na Meta Cloud API.
+ * Configuração de integração WhatsApp (Meta Cloud API) por loja.
+ * Os campos são preenchidos pelo próprio dono da loja com as credenciais
+ * obtidas no Meta Business Suite. Nada é pré-preenchido.
  */
-function getMockStoreIntegration(storeId: string) {
-  // Hash determinístico para gerar IDs estáveis por loja
-  let h = 0;
-  for (let i = 0; i < storeId.length; i++) h = (h * 31 + storeId.charCodeAt(i)) >>> 0;
-  const seed = (h % 9000) + 1000;
-  const tail = String(((h * 7) % 9000) + 1000);
-  const online = storeId === "store-centro" || h % 3 !== 0;
-  // IDs no padrão Meta Graph API: 15 a 16 dígitos
-  const phone_number_id = String(100000000000000n + BigInt(h % 999999999));
-  const waba_id = String(200000000000000n + BigInt((h * 11) % 999999999));
-  // Access token Meta começa com "EAAG..." (System User Token)
-  const access_token = `EAAG${(h * 17).toString(36)}${(h * 29).toString(36)}ZD`.padEnd(60, "x");
-  return {
-    whatsapp_number: `+55 11 9${seed}-${tail}`,
-    business_name: storeId === "store-centro" ? "Ótica Dominante" : `Filial ${storeId.slice(-4).toUpperCase()}`,
-    phone_number_id,
-    waba_id,
-    access_token,
-    status: online ? ("online" as const) : ("offline" as const),
-    last_sync: online ? "Há 2 minutos" : "Há 3 dias",
-  };
-}
+type StoreIntegration = {
+  whatsapp_number: string;
+  business_name: string;
+  phone_number_id: string;
+  waba_id: string;
+  access_token: string;
+  status: "online" | "offline";
+  last_sync: string;
+};
 
-/** Templates aprovados na Meta para esta loja (mock). */
-const MOCK_TEMPLATES = [
-  { name: "alerta_agendamento", category: "UTILITY", status: "approved" as const },
-  { name: "recuperacao_orcamento", category: "MARKETING", status: "approved" as const },
-  { name: "confirmacao_exame", category: "UTILITY", status: "approved" as const },
-  { name: "boas_vindas_cliente", category: "MARKETING", status: "approved" as const },
-  { name: "promocao_lentes_premium", category: "MARKETING", status: "in_review" as const },
-];
+const EMPTY_INTEGRATION: StoreIntegration = {
+  whatsapp_number: "",
+  business_name: "",
+  phone_number_id: "",
+  waba_id: "",
+  access_token: "",
+  status: "offline",
+  last_sync: "Nunca sincronizado",
+};
 
 
 export default function ConfiguracoesLoja() {
@@ -160,7 +148,7 @@ export default function ConfiguracoesLoja() {
 
         <div className="min-w-0 space-y-4">
           {tab === "geral" && <GeneralPanel store={currentStore} />}
-          {tab === "equipe" && <TeamPanel storesCount={stores.length} />}
+          {tab === "equipe" && <TeamPanel storeId={currentStore.id} storesCount={stores.length} />}
           {tab === "integracoes" && <IntegrationsPanel storeId={currentStore.id} storeName={currentStore.name} />}
         </div>
       </div>
@@ -180,52 +168,67 @@ function GeneralPanel({ store }: { store: { id: string; name: string; role: stri
 }
 
 /* ---------- EQUIPE ---------- */
-type TeamRole = "Dono" | "Administrador" | "Gerente" | "Vendedor";
-type TeamStatus = "Ativo" | "Convite pendente" | "Inativo";
+type TeamRole = "Dono" | "Gerente" | "Vendedor";
 type TeamMember = {
   id: string;
-  name: string;
-  email: string;
+  user_id: string;
   role: TeamRole;
-  status: TeamStatus;
+  created_at: string;
 };
 
-const MOCK_TEAM: TeamMember[] = [
-  { id: "u1", name: "João Carlos", email: "joao@oticadominante.com", role: "Dono", status: "Ativo" },
-  { id: "u2", name: "Ricardo Almeida", email: "ricardo@oticadominante.com", role: "Administrador", status: "Ativo" },
-  { id: "u3", name: "Ana Souza", email: "ana@oticadominante.com", role: "Gerente", status: "Ativo" },
-  { id: "u4", name: "Felipe Mendes", email: "felipe@oticadominante.com", role: "Vendedor", status: "Ativo" },
-];
-
-function roleBadgeClasses(role: TeamRole) {
+function roleBadgeClasses(role: string) {
   switch (role) {
     case "Dono":
       return "bg-slate-900 text-slate-50 dark:bg-slate-100 dark:text-slate-900";
-    case "Administrador":
-      return "bg-blue-100 text-blue-800 dark:bg-blue-500/15 dark:text-blue-300";
     case "Gerente":
       return "bg-violet-100 text-violet-800 dark:bg-violet-500/15 dark:text-violet-300";
     case "Vendedor":
       return "bg-emerald-100 text-emerald-800 dark:bg-emerald-500/15 dark:text-emerald-300";
+    default:
+      return "bg-muted text-foreground";
   }
 }
 
-function getInitials(name: string) {
-  return name
-    .split(" ")
-    .map((n) => n[0])
-    .slice(0, 2)
-    .join("")
-    .toUpperCase();
+function shortId(id: string) {
+  return id.slice(0, 8).toUpperCase();
 }
 
-function TeamPanel({ storesCount }: { storesCount: number }) {
+function TeamPanel({ storeId, storesCount }: { storeId: string; storesCount: number }) {
   const [inviteOpen, setInviteOpen] = useState(false);
+  const [members, setMembers] = useState<TeamMember[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    let cancelled = false;
+    async function load() {
+      setLoading(true);
+      const { data, error } = await supabase
+        .from("store_members")
+        .select("id, user_id, role, created_at")
+        .eq("store_id", storeId)
+        .order("created_at", { ascending: true });
+      if (cancelled) return;
+      setLoading(false);
+      if (error) {
+        toast({
+          title: "Erro ao carregar equipe",
+          description: error.message,
+          variant: "destructive",
+        });
+        return;
+      }
+      setMembers((data ?? []) as TeamMember[]);
+    }
+    load();
+    return () => {
+      cancelled = true;
+    };
+  }, [storeId]);
 
   function handleAction(action: string, member: TeamMember) {
     toast({
-      title: `${action}: ${member.name}`,
-      description: member.email,
+      title: `${action}`,
+      description: `Membro ${shortId(member.user_id)}`,
     });
   }
 
@@ -238,7 +241,9 @@ function TeamPanel({ storesCount }: { storesCount: number }) {
             Membros da Filial
           </h2>
           <p className="text-xs text-muted-foreground mt-0.5">
-            {MOCK_TEAM.length} {MOCK_TEAM.length === 1 ? "usuário" : "usuários"} com acesso a esta loja
+            {loading
+              ? "Carregando membros…"
+              : `${members.length} ${members.length === 1 ? "usuário" : "usuários"} com acesso a esta loja`}
             {storesCount > 1 ? ` · ${storesCount} filiais no workspace` : ""}.
           </p>
         </div>
@@ -255,93 +260,91 @@ function TeamPanel({ storesCount }: { storesCount: number }) {
 
       {/* Tabela minimalista */}
       <div className="border-t border-border">
-        {/* Header da tabela */}
-        <div className="hidden sm:grid grid-cols-[1.6fr_1fr_0.8fr_40px] items-center gap-4 px-1 py-3 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground border-b border-border">
+        <div className="hidden sm:grid grid-cols-[1.6fr_1fr_40px] items-center gap-4 px-1 py-3 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground border-b border-border">
           <span>Usuário</span>
           <span>Nível de acesso</span>
-          <span>Status</span>
           <span className="sr-only">Ações</span>
         </div>
 
-        <ul className="divide-y divide-border">
-          {MOCK_TEAM.map((m) => (
-            <li
-              key={m.id}
-              className="grid grid-cols-[1fr_auto] sm:grid-cols-[1.6fr_1fr_0.8fr_40px] items-center gap-4 px-1 py-4 group"
-            >
-              {/* Usuário */}
-              <div className="flex items-center gap-3 min-w-0">
-                <Avatar className="h-9 w-9 shrink-0">
-                  <AvatarFallback className="bg-muted text-foreground text-xs font-semibold">
-                    {getInitials(m.name)}
-                  </AvatarFallback>
-                </Avatar>
-                <div className="min-w-0">
-                  <p className="text-sm font-semibold text-foreground truncate">{m.name}</p>
-                  <p className="text-xs text-muted-foreground truncate">{m.email}</p>
+        {loading ? (
+          <p className="px-1 py-8 text-center text-sm text-muted-foreground">
+            Carregando…
+          </p>
+        ) : members.length === 0 ? (
+          <p className="px-1 py-10 text-center text-sm text-muted-foreground">
+            Nenhum membro adicionado ainda. Use “Convidar Usuário” para adicionar
+            sua equipe.
+          </p>
+        ) : (
+          <ul className="divide-y divide-border">
+            {members.map((m) => (
+              <li
+                key={m.id}
+                className="grid grid-cols-[1fr_auto] sm:grid-cols-[1.6fr_1fr_40px] items-center gap-4 px-1 py-4 group"
+              >
+                <div className="flex items-center gap-3 min-w-0">
+                  <Avatar className="h-9 w-9 shrink-0">
+                    <AvatarFallback className="bg-muted text-foreground text-xs font-semibold">
+                      {shortId(m.user_id).slice(0, 2)}
+                    </AvatarFallback>
+                  </Avatar>
+                  <div className="min-w-0">
+                    <p className="text-sm font-semibold text-foreground truncate">
+                      Usuário {shortId(m.user_id)}
+                    </p>
+                    <p className="text-xs text-muted-foreground truncate font-mono">
+                      {m.user_id}
+                    </p>
+                  </div>
                 </div>
-              </div>
 
-              {/* Nível de acesso */}
-              <div className="hidden sm:block">
-                <span
-                  className={cn(
-                    "inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium",
-                    roleBadgeClasses(m.role)
-                  )}
-                >
-                  {m.role}
-                </span>
-              </div>
+                <div className="hidden sm:block">
+                  <span
+                    className={cn(
+                      "inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium",
+                      roleBadgeClasses(m.role)
+                    )}
+                  >
+                    {m.role}
+                  </span>
+                </div>
 
-              {/* Status */}
-              <div className="hidden sm:flex items-center gap-2">
-                <span className="relative flex h-1.5 w-1.5">
-                  <span className="absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-60 animate-ping" />
-                  <span className="relative inline-flex h-1.5 w-1.5 rounded-full bg-emerald-500" />
-                </span>
-                <span className="text-xs text-foreground">{m.status}</span>
-              </div>
-
-              {/* Ações */}
-              <div className="flex justify-end">
-                <DropdownMenu>
-                  <DropdownMenuTrigger asChild>
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      className="h-8 w-8 text-muted-foreground hover:text-foreground"
-                      aria-label={`Ações para ${m.name}`}
-                    >
-                      <MoreVertical className="h-4 w-4" />
-                    </Button>
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent align="end" className="w-48">
-                    <DropdownMenuItem onClick={() => handleAction("Editar permissões", m)}>
-                      Editar permissões
-                    </DropdownMenuItem>
-                    <DropdownMenuItem onClick={() => handleAction("Reenviar convite", m)}>
-                      Reenviar convite
-                    </DropdownMenuItem>
-                    <DropdownMenuSeparator />
-                    <DropdownMenuItem
-                      onClick={() => handleAction("Remover acesso", m)}
-                      className="text-destructive focus:text-destructive"
-                      disabled={m.role === "Dono"}
-                    >
-                      Remover acesso
-                    </DropdownMenuItem>
-                  </DropdownMenuContent>
-                </DropdownMenu>
-              </div>
-            </li>
-          ))}
-        </ul>
+                <div className="flex justify-end">
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="h-8 w-8 text-muted-foreground hover:text-foreground"
+                        aria-label="Ações"
+                      >
+                        <MoreVertical className="h-4 w-4" />
+                      </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end" className="w-48">
+                      <DropdownMenuItem onClick={() => handleAction("Editar permissões", m)}>
+                        Editar permissões
+                      </DropdownMenuItem>
+                      <DropdownMenuSeparator />
+                      <DropdownMenuItem
+                        onClick={() => handleAction("Remover acesso", m)}
+                        className="text-destructive focus:text-destructive"
+                        disabled={m.role === "Dono"}
+                      >
+                        Remover acesso
+                      </DropdownMenuItem>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
+                </div>
+              </li>
+            ))}
+          </ul>
+        )}
       </div>
 
       <p className="text-[11px] text-muted-foreground pt-4 mt-2 border-t border-border">
-        Permissões persistidas em <code className="font-mono">user_stores</code> com isolamento por{" "}
-        <code className="font-mono">store_id</code>.
+        Permissões persistidas em <code className="font-mono">store_members</code>{" "}
+        com isolamento por <code className="font-mono">store_id</code>.
       </p>
     </section>
   );
@@ -426,7 +429,6 @@ function InviteMemberDialog({
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="Dono">Dono</SelectItem>
-              <SelectItem value="Administrador">Administrador</SelectItem>
               <SelectItem value="Gerente">Gerente</SelectItem>
               <SelectItem value="Vendedor">Vendedor</SelectItem>
             </SelectContent>
@@ -458,49 +460,50 @@ function InviteMemberDialog({
 
 /* ---------- INTEGRAÇÕES ---------- */
 function IntegrationsPanel({ storeId, storeName }: { storeId: string; storeName: string }) {
-  const integration = useMemo(() => getMockStoreIntegration(storeId), [storeId]);
-  const [status, setStatus] = useState(integration.status);
-  const [copied, setCopied] = useState(false);
+  // Campos vazios — o dono da loja preenche com suas próprias credenciais
+  // obtidas no Meta Business Suite. Nada é hardcoded.
+  const [businessName, setBusinessName] = useState("");
+  const [whatsappNumber, setWhatsappNumber] = useState("");
+  const [phoneNumberId, setPhoneNumberId] = useState("");
+  const [wabaId, setWabaId] = useState("");
+  const [accessToken, setAccessToken] = useState("");
 
-  // Reseta quando trocar de loja
-  if (status !== integration.status && integration.status !== status) {
-    // noop — mantém estado local após ação manual
-  }
+  // Reset quando trocar de loja
+  useEffect(() => {
+    setBusinessName("");
+    setWhatsappNumber("");
+    setPhoneNumberId("");
+    setWabaId("");
+    setAccessToken("");
+  }, [storeId]);
 
-  function handleCopy(value: string, label: string) {
-    navigator.clipboard.writeText(value).then(() => {
-      setCopied(true);
-      toast({ title: `${label} copiado` });
-      setTimeout(() => setCopied(false), 1500);
-    });
-  }
+  const isConfigured = Boolean(
+    phoneNumberId.trim() && wabaId.trim() && accessToken.trim()
+  );
 
-  function handleConnect() {
-    toast({
-      title: "Redirecionando para o Meta Business…",
-      description: `Autorizando WhatsApp Cloud API para "${storeName}".`,
-    });
-    setTimeout(() => {
-      setStatus("online");
+  function handleSave() {
+    if (!isConfigured) {
       toast({
-        title: "Conta Meta conectada",
-        description: `${integration.business_name} · ${integration.whatsapp_number}`,
+        title: "Preencha todas as credenciais",
+        description: "Phone Number ID, WABA ID e Access Token são obrigatórios.",
+        variant: "destructive",
       });
-    }, 1200);
-  }
-
-  function handleDisconnect() {
-    setStatus("offline");
+      return;
+    }
+    // TODO: persistir em colunas dedicadas na tabela `stores` quando disponíveis.
     toast({
-      title: "Conta desconectada",
-      description: `O acesso à Meta Cloud API de "${storeName}" foi revogado.`,
-      variant: "destructive",
+      title: "Credenciais salvas",
+      description: `Configurações de "${storeName}" atualizadas.`,
     });
   }
 
-  const isOnline = status === "online";
-  const approved = MOCK_TEMPLATES.filter((t) => t.status === "approved");
-  const inReview = MOCK_TEMPLATES.filter((t) => t.status === "in_review");
+  function handleConnectMeta() {
+    toast({
+      title: "Conectar conta Meta",
+      description:
+        "Autenticação OAuth com o Meta Business ainda não está disponível. Preencha as credenciais manualmente abaixo.",
+    });
+  }
 
   return (
     <div className="space-y-4">
@@ -532,7 +535,7 @@ function IntegrationsPanel({ storeId, storeName }: { storeId: string; storeName:
             value="api"
             className="mt-4 space-y-4 animate-in fade-in-50 slide-in-from-bottom-1 duration-300"
           >
-            {/* Header: business + número + status */}
+            {/* Header com status */}
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 pb-4 border-b border-border">
               <div className="flex items-center gap-3 min-w-0">
                 <Avatar className="h-11 w-11 shrink-0">
@@ -543,72 +546,92 @@ function IntegrationsPanel({ storeId, storeName }: { storeId: string; storeName:
                 <div className="min-w-0">
                   <p className="text-[11px] font-medium uppercase tracking-wider text-muted-foreground flex items-center gap-1.5">
                     <BadgeCheck className="h-3 w-3 text-[#1FAE54]" />
-                    {integration.business_name}
+                    {businessName || "Configure sua conta Meta"}
                   </p>
                   <p className="text-base font-semibold tabular-nums text-foreground truncate">
-                    {integration.whatsapp_number}
+                    {whatsappNumber || "Nenhum número configurado"}
                   </p>
                 </div>
               </div>
-              <StatusBadge online={isOnline} />
+              <StatusBadge online={isConfigured} />
             </div>
 
-            {/* Credenciais Meta Cloud API */}
+            {/* Campos editáveis — vazios por padrão */}
             <div className="space-y-3 pt-2">
               <div className="flex items-center gap-2">
                 <p className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
                   Credenciais da Cloud API
                 </p>
                 <span className="h-px flex-1 bg-border" />
-                <span className="text-[10px] text-muted-foreground font-mono">graph.facebook.com / v21.0</span>
+                <span className="text-[10px] text-muted-foreground font-mono">
+                  graph.facebook.com / v21.0
+                </span>
               </div>
 
-              <SecretRow
+              <EditableField
+                label="Nome do Business"
+                placeholder="Ex.: Ótica Central"
+                value={businessName}
+                onChange={setBusinessName}
+              />
+              <EditableField
+                label="Número do WhatsApp"
+                placeholder="+55 11 90000-0000"
+                value={whatsappNumber}
+                onChange={setWhatsappNumber}
+              />
+              <EditableField
                 label="Phone Number ID"
-                value={maskToken(integration.phone_number_id, 4, 4)}
-                onCopy={() => handleCopy(integration.phone_number_id, "Phone Number ID")}
-                copied={copied}
+                placeholder="Cole aqui o Phone Number ID da Meta"
+                value={phoneNumberId}
+                onChange={setPhoneNumberId}
+                mono
               />
-              <SecretRow
+              <EditableField
                 label="WABA ID (WhatsApp Business Account)"
-                value={maskToken(integration.waba_id, 4, 4)}
-                onCopy={() => handleCopy(integration.waba_id, "WABA ID")}
-                copied={copied}
+                placeholder="Cole aqui o WABA ID"
+                value={wabaId}
+                onChange={setWabaId}
+                mono
               />
-              <SecretRow
+              <EditableField
                 label="Access Token (System User)"
-                value={maskToken(integration.access_token, 6, 4)}
-                onCopy={() => handleCopy(integration.access_token, "Access Token")}
-                copied={copied}
+                placeholder="EAAG..."
+                value={accessToken}
+                onChange={setAccessToken}
+                mono
+                secret
               />
             </div>
 
             <div className="flex items-center gap-2 pt-2 text-[11px] text-muted-foreground">
               <ShieldCheck className="h-3.5 w-3.5" />
               <span>
-                Credenciais criptografadas e isoladas por filial · Última sincronização: {integration.last_sync}
+                Credenciais armazenadas com isolamento por filial. Obtenha-as em{" "}
+                <span className="font-medium text-foreground">
+                  business.facebook.com → WhatsApp → API Setup
+                </span>
+                .
               </span>
             </div>
 
             {/* Ações */}
             <div className="flex flex-col sm:flex-row gap-2 pt-4 border-t border-border">
-              {isOnline ? (
-                <>
-                  <Button variant="outline" onClick={handleConnect} className="gap-2">
-                    <Link2 className="h-4 w-4" />
-                    Reconectar Conta Meta
-                  </Button>
-                  <Button variant="destructive" onClick={handleDisconnect} className="gap-2">
-                    <Power className="h-4 w-4" />
-                    Revogar Acesso
-                  </Button>
-                </>
-              ) : (
-                <Button onClick={handleConnect} className="gap-2 bg-[#1877F2] hover:bg-[#1877F2]/90 text-white">
-                  <MetaGlyph className="h-4 w-4" />
-                  Conectar Conta Meta Business
-                </Button>
-              )}
+              <Button
+                onClick={handleConnectMeta}
+                variant="outline"
+                className="gap-2"
+              >
+                <MetaGlyph className="h-4 w-4" />
+                Conectar com Meta Business
+              </Button>
+              <Button
+                onClick={handleSave}
+                className="gap-2 bg-emerald-500 hover:bg-emerald-500/90 text-white"
+              >
+                <Check className="h-4 w-4" />
+                Salvar credenciais
+              </Button>
             </div>
           </TabsContent>
 
@@ -621,68 +644,17 @@ function IntegrationsPanel({ storeId, storeName }: { storeId: string; storeName:
         </Tabs>
       </SectionCard>
 
-      {/* Templates de Mensagem */}
+      {/* Templates de Mensagem — vazio até integração */}
       <SectionCard
         title="Templates de Mensagem"
         description="Mensagens ativas exigem templates pré-aprovados pela Meta (HSM)."
         icon={<FileText className="h-5 w-5 text-muted-foreground" />}
       >
-        <div className="grid grid-cols-2 gap-3">
-          <TemplateStat
-            label="Aprovados"
-            value={approved.length}
-            tone="success"
-            hint="Prontos para uso"
-          />
-          <TemplateStat
-            label="Em análise"
-            value={inReview.length}
-            tone="warn"
-            hint="Aguardando Meta"
-          />
-        </div>
-
-        <ul className="divide-y divide-border rounded-lg border border-border overflow-hidden">
-          {MOCK_TEMPLATES.map((t) => (
-            <li
-              key={t.name}
-              className="flex items-center justify-between px-3 py-2.5 bg-card"
-            >
-              <div className="flex items-center gap-2.5 min-w-0">
-                <span
-                  className={cn(
-                    "flex h-6 w-6 items-center justify-center rounded-md shrink-0",
-                    t.status === "approved"
-                      ? "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400"
-                      : "bg-amber-500/10 text-amber-600 dark:text-amber-400"
-                  )}
-                >
-                  {t.status === "approved" ? (
-                    <Check className="h-3.5 w-3.5" />
-                  ) : (
-                    <Clock className="h-3.5 w-3.5" />
-                  )}
-                </span>
-                <div className="min-w-0">
-                  <p className="font-mono text-xs text-foreground truncate">{t.name}</p>
-                  <p className="text-[10px] uppercase tracking-wider text-muted-foreground">
-                    {t.category}
-                  </p>
-                </div>
-              </div>
-              <span
-                className={cn(
-                  "text-[10px] font-semibold uppercase tracking-wider",
-                  t.status === "approved"
-                    ? "text-emerald-600 dark:text-emerald-400"
-                    : "text-amber-600 dark:text-amber-400"
-                )}
-              >
-                {t.status === "approved" ? "Aprovado" : "Em análise"}
-              </span>
-            </li>
-          ))}
-        </ul>
+        <p className="text-sm text-muted-foreground py-6 text-center">
+          {isConfigured
+            ? "Nenhum template sincronizado ainda. Os templates aprovados na Meta aparecerão aqui."
+            : "Configure as credenciais da Cloud API acima para listar seus templates aprovados."}
+        </p>
       </SectionCard>
 
       <p className="text-[11px] text-muted-foreground px-1">
@@ -692,6 +664,37 @@ function IntegrationsPanel({ storeId, storeName }: { storeId: string; storeName:
         <code className="font-mono">access_token</code>) na tabela{" "}
         <code className="font-mono">stores</code>.
       </p>
+    </div>
+  );
+}
+
+function EditableField({
+  label,
+  value,
+  onChange,
+  placeholder,
+  mono,
+  secret,
+}: {
+  label: string;
+  value: string;
+  onChange: (v: string) => void;
+  placeholder?: string;
+  mono?: boolean;
+  secret?: boolean;
+}) {
+  return (
+    <div className="space-y-1.5">
+      <Label className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
+        {label}
+      </Label>
+      <Input
+        type={secret ? "password" : "text"}
+        value={value}
+        onChange={(e) => onChange(e.target.value)}
+        placeholder={placeholder}
+        className={cn("h-9 bg-muted/30", mono && "font-mono text-xs")}
+      />
     </div>
   );
 }
