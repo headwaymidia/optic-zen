@@ -111,7 +111,12 @@ export default function OnboardingPage() {
             <Button
               type="submit"
               disabled={submitting || !name.trim()}
-              className="w-full h-14 rounded-xl text-base font-semibold bg-zinc-900 hover:bg-zinc-800 text-white shadow-sm gap-2 group transition-all"
+              className={cn(
+                "w-full h-14 rounded-xl text-base font-semibold shadow-sm gap-2 group transition-colors",
+                name.trim()
+                  ? "bg-emerald-500 hover:bg-emerald-600 text-white"
+                  : "bg-zinc-200 text-zinc-400 hover:bg-zinc-200 cursor-not-allowed disabled:opacity-100"
+              )}
             >
               {submitting ? (
                 <>
