@@ -57,42 +57,29 @@ const TABS: { key: TabKey; label: string; icon: typeof Settings }[] = [
 ];
 
 /**
- * Mock de "store secrets" — futuramente virá da tabela `stores` no Supabase
- * com colunas isoladas por filial:
- *   whatsapp_number, phone_number_id, waba_id, access_token, status, business_name.
- * Cada loja possui sua própria conta na Meta Cloud API.
+ * Configuração de integração WhatsApp (Meta Cloud API) por loja.
+ * Os campos são preenchidos pelo próprio dono da loja com as credenciais
+ * obtidas no Meta Business Suite. Nada é pré-preenchido.
  */
-function getMockStoreIntegration(storeId: string) {
-  // Hash determinístico para gerar IDs estáveis por loja
-  let h = 0;
-  for (let i = 0; i < storeId.length; i++) h = (h * 31 + storeId.charCodeAt(i)) >>> 0;
-  const seed = (h % 9000) + 1000;
-  const tail = String(((h * 7) % 9000) + 1000);
-  const online = storeId === "store-centro" || h % 3 !== 0;
-  // IDs no padrão Meta Graph API: 15 a 16 dígitos
-  const phone_number_id = String(100000000000000n + BigInt(h % 999999999));
-  const waba_id = String(200000000000000n + BigInt((h * 11) % 999999999));
-  // Access token Meta começa com "EAAG..." (System User Token)
-  const access_token = `EAAG${(h * 17).toString(36)}${(h * 29).toString(36)}ZD`.padEnd(60, "x");
-  return {
-    whatsapp_number: `+55 11 9${seed}-${tail}`,
-    business_name: storeId === "store-centro" ? "Ótica Dominante" : `Filial ${storeId.slice(-4).toUpperCase()}`,
-    phone_number_id,
-    waba_id,
-    access_token,
-    status: online ? ("online" as const) : ("offline" as const),
-    last_sync: online ? "Há 2 minutos" : "Há 3 dias",
-  };
-}
+type StoreIntegration = {
+  whatsapp_number: string;
+  business_name: string;
+  phone_number_id: string;
+  waba_id: string;
+  access_token: string;
+  status: "online" | "offline";
+  last_sync: string;
+};
 
-/** Templates aprovados na Meta para esta loja (mock). */
-const MOCK_TEMPLATES = [
-  { name: "alerta_agendamento", category: "UTILITY", status: "approved" as const },
-  { name: "recuperacao_orcamento", category: "MARKETING", status: "approved" as const },
-  { name: "confirmacao_exame", category: "UTILITY", status: "approved" as const },
-  { name: "boas_vindas_cliente", category: "MARKETING", status: "approved" as const },
-  { name: "promocao_lentes_premium", category: "MARKETING", status: "in_review" as const },
-];
+const EMPTY_INTEGRATION: StoreIntegration = {
+  whatsapp_number: "",
+  business_name: "",
+  phone_number_id: "",
+  waba_id: "",
+  access_token: "",
+  status: "offline",
+  last_sync: "Nunca sincronizado",
+};
 
 
 export default function ConfiguracoesLoja() {
