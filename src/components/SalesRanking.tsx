@@ -9,12 +9,6 @@ interface RankItem {
   count: number;
 }
 
-const MOCK_RANKING: RankItem[] = [
-  { name: "João Silva", revenue: 4500, count: 7 },
-  { name: "Maria Souza", revenue: 3040, count: 5 },
-  { name: "Carla Mendes", revenue: 2120, count: 4 },
-];
-
 const POSITION_LABEL = ["1º", "2º", "3º"];
 
 const POSITION_STYLE = [
@@ -41,12 +35,10 @@ export function SalesRanking({ leads }: { leads: Lead[] }) {
         cur.revenue += Number(l.sale_value ?? 0);
         counts.set(key, cur);
       });
-    const real = Array.from(counts.entries())
+    return Array.from(counts.entries())
       .map(([name, v]) => ({ name, ...v }))
       .sort((a, b) => b.revenue - a.revenue || b.count - a.count)
       .slice(0, 3);
-
-    return real.length > 0 ? real : MOCK_RANKING;
   }, [leads]);
 
   const max = ranking[0]?.revenue || 1;
