@@ -29,7 +29,7 @@ interface StoresContextValue {
   currentStore: Store | null;
   currentStoreId: string | null;
   setCurrentStoreId: (id: string) => void;
-  addStore: (input: { name: string; role?: StoreRole }) => Promise<Store | null>;
+  addStore: (input: { name: string; role?: StoreRole; throwOnError?: boolean }) => Promise<Store | null>;
   refetch: () => Promise<void>;
   /**
    * Filtra um array de itens (com `store_id`) pela loja ativa.
@@ -65,7 +65,7 @@ function initialFromName(name: string): string {
 }
 
 export function StoresProvider({ children }: { children: ReactNode }) {
-  const { session, user } = useAuth();
+  const { session, user: authContextUser } = useAuth();
   const [stores, setStores] = useState<Store[]>([]);
   const [loading, setLoading] = useState(true);
   const [currentStoreId, setCurrentStoreIdState] = useState<string | null>(
@@ -73,7 +73,7 @@ export function StoresProvider({ children }: { children: ReactNode }) {
   );
 
   const fetchStores = useCallback(async () => {
-    if (!user) {
+    if (!authContextUser) {
       setStores([]);
       setLoading(false);
       return;
@@ -85,7 +85,7 @@ export function StoresProvider({ children }: { children: ReactNode }) {
     const { data, error } = await supabase
       .from("store_members")
       .select("role, store:stores(id, name, owner_id)")
-      .eq("user_id", user.id);
+      .eq("user_id", authContextUser.id);
 
     if (error) {
       toast({
@@ -113,7 +113,7 @@ export function StoresProvider({ children }: { children: ReactNode }) {
 
     setStores(list);
     setLoading(false);
-  }, [user]);
+  }, [authContextUser]);
 
   // Carrega lojas ao logar / trocar de usuário
   useEffect(() => {
@@ -122,16 +122,16 @@ export function StoresProvider({ children }: { children: ReactNode }) {
 
   // Realtime: refaz busca quando store_members muda para esse usuário
   useEffect(() => {
-    if (!user) return;
+    if (!authContextUser) return;
     const ch = supabase
-      .channel(`store-members-${user.id}`)
+      .channel(`store-members-${authContextUser.id}`)
       .on(
         "postgres_changes",
         {
           event: "*",
           schema: "public",
           table: "store_members",
-          filter: `user_id=eq.${user.id}`,
+          filter: `user_id=eq.${authContextUser.id}`,
         },
         () => fetchStores()
       )
@@ -144,7 +144,7 @@ export function StoresProvider({ children }: { children: ReactNode }) {
     return () => {
       supabase.removeChannel(ch);
     };
-  }, [user, fetchStores]);
+  }, [authContextUser, fetchStores]);
 
   // Garante que currentStoreId é sempre uma loja válida do usuário
   useEffect(() => {
@@ -179,33 +179,45 @@ export function StoresProvider({ children }: { children: ReactNode }) {
 
   const addStore = useCallback<StoresContextValue["addStore"]>(
     async (input) => {
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
+
+      console.log("Usuário autenticado:", user);
+
       if (!user) {
+        const authError = new Error("Usuário autenticado não encontrado.");
+        if (input.throwOnError) throw authError;
         toast({ title: "Faça login para criar uma loja", variant: "destructive" });
         return null;
       }
       const name = input.name.trim();
       if (!name) return null;
 
-      const { data: storeRow, error: storeErr } = await supabase
+      const { data: storeRow, error } = await supabase
         .from("stores")
         .insert({ name, owner_id: user.id })
         .select("id, name, owner_id")
         .single();
 
-      if (storeErr || !storeRow) {
+      if (error || !storeRow) {
+        console.log("Erro completo:", JSON.stringify(error, null, 2));
         // Log completo do erro para debug (RLS, network, etc.)
         console.error("[useStores.addStore] Falha no INSERT em stores:", {
-          error: storeErr,
-          message: storeErr?.message,
-          details: (storeErr as any)?.details,
-          hint: (storeErr as any)?.hint,
-          code: (storeErr as any)?.code,
+          error,
+          message: error?.message,
+          details: (error as any)?.details,
+          hint: (error as any)?.hint,
+          code: (error as any)?.code,
           payload: { name, owner_id: user.id },
         });
+        if (input.throwOnError) {
+          throw error ?? new Error("INSERT em stores não retornou a loja criada.");
+        }
         toast({
           title: "Erro ao criar loja",
           description:
-            storeErr?.message ?? "Não foi possível criar a loja. Tente novamente.",
+            error?.message ?? "INSERT em stores não retornou a loja criada.",
           variant: "destructive",
         });
         return null;
@@ -244,7 +256,7 @@ export function StoresProvider({ children }: { children: ReactNode }) {
 
       return created;
     },
-    [user, setCurrentStoreId]
+    [setCurrentStoreId]
   );
 
   const currentStore = useMemo(

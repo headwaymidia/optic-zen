@@ -52,13 +52,12 @@ export default function OnboardingPage() {
     setSubmitting(true);
 
     try {
-      const created = await addStore({ name: trimmed });
+      const created = await addStore({ name: trimmed, throwOnError: true });
 
       if (!created) {
-        // addStore já mostrou um toast de erro; garantimos um fallback visível.
         toast({
-          title: "Não foi possível criar a loja",
-          description: "Tente novamente em instantes.",
+          title: "Erro ao criar loja",
+          description: "INSERT em stores não retornou a loja criada.",
           variant: "destructive",
         });
         setSubmitting(false);
@@ -81,8 +80,8 @@ export default function OnboardingPage() {
     } catch (err: any) {
       console.error("[Onboarding.handleSubmit] Erro inesperado ao criar loja:", err);
       toast({
-        title: "Erro inesperado ao criar loja",
-        description: err?.message ?? "Tente novamente.",
+        title: "Erro ao criar loja",
+        description: err?.message ?? "Erro desconhecido ao inserir em stores.",
         variant: "destructive",
       });
       setSubmitting(false);
