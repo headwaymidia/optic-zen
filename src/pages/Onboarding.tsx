@@ -66,13 +66,17 @@ export default function OnboardingPage() {
   return (
     <div className="min-h-screen w-full bg-zinc-50 flex flex-col items-center justify-center px-6 py-12">
       <div className="w-full max-w-md">
-        {/* Logo */}
-        <div className="flex justify-center mb-8">
-          <img
-            src={logoOticaDominante}
-            alt="Ótica Dominante — Powered by Headway Mídia"
-            className="w-[280px] h-auto object-contain"
-          />
+        {/* Brand header (mesmo do Auth) */}
+        <div className="flex items-center justify-center gap-3 mb-8">
+          <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-emerald-500 text-white shadow-sm">
+            <Eye className="h-5 w-5" strokeWidth={2.5} />
+          </div>
+          <div className="leading-tight">
+            <p className="text-base font-bold text-slate-900">Ótica Dominante</p>
+            <p className="text-[10px] font-semibold tracking-[0.18em] text-slate-400 uppercase">
+              Powered by Headway Mídia
+            </p>
+          </div>
         </div>
 
         <div className="space-y-8">
