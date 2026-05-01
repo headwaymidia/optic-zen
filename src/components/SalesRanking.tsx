@@ -55,48 +55,56 @@ export function SalesRanking({ leads }: { leads: Lead[] }) {
         </p>
       </div>
 
-      <ol className="flex-1 flex flex-col justify-center space-y-7">
-        {ranking.map((r, i) => {
-          const pct = Math.max(8, (r.revenue / max) * 100);
-          return (
-            <li key={r.name} className="space-y-2">
-              <div className="flex items-center justify-between gap-3">
-                <div className="flex items-center gap-3 min-w-0">
-                  <span
-                    className={`inline-flex h-7 w-7 shrink-0 items-center justify-center rounded-full text-[11px] font-semibold border ${POSITION_STYLE[i]}`}
-                  >
-                    {i === 0 ? (
-                      <Trophy className="h-3.5 w-3.5" strokeWidth={2.2} />
-                    ) : (
-                      POSITION_LABEL[i]
-                    )}
-                  </span>
-                  <span className="text-[14px] font-medium text-[#1D1D1F] dark:text-white truncate">
-                    {r.name}
+      {ranking.length === 0 ? (
+        <div className="flex-1 flex items-center justify-center">
+          <p className="text-[12px] text-zinc-400 dark:text-zinc-500 text-center">
+            Nenhuma venda registrada ainda.
+          </p>
+        </div>
+      ) : (
+        <ol className="flex-1 flex flex-col justify-center space-y-7">
+          {ranking.map((r, i) => {
+            const pct = Math.max(8, (r.revenue / max) * 100);
+            return (
+              <li key={r.name} className="space-y-2">
+                <div className="flex items-center justify-between gap-3">
+                  <div className="flex items-center gap-3 min-w-0">
+                    <span
+                      className={`inline-flex h-7 w-7 shrink-0 items-center justify-center rounded-full text-[11px] font-semibold border ${POSITION_STYLE[i]}`}
+                    >
+                      {i === 0 ? (
+                        <Trophy className="h-3.5 w-3.5" strokeWidth={2.2} />
+                      ) : (
+                        POSITION_LABEL[i]
+                      )}
+                    </span>
+                    <span className="text-[14px] font-medium text-[#1D1D1F] dark:text-white truncate">
+                      {r.name}
+                    </span>
+                  </div>
+                  <span className="text-[15px] font-semibold tabular-nums tracking-tight text-[#1D1D1F] dark:text-white shrink-0">
+                    {r.revenue.toLocaleString("pt-BR", {
+                      style: "currency",
+                      currency: "BRL",
+                      maximumFractionDigits: 0,
+                    })}
                   </span>
                 </div>
-                <span className="text-[15px] font-semibold tabular-nums tracking-tight text-[#1D1D1F] dark:text-white shrink-0">
-                  {r.revenue.toLocaleString("pt-BR", {
-                    style: "currency",
-                    currency: "BRL",
-                    maximumFractionDigits: 0,
-                  })}
-                </span>
-              </div>
-              <div className="h-[3px] w-full rounded-full bg-slate-100 dark:bg-[#1c1c1c] overflow-hidden">
-                <div
-                  className={`h-full rounded-full ${BAR_STYLE[i]} transition-all`}
-                  style={{ width: `${pct}%` }}
-                />
-              </div>
-              <p className="text-[10px] font-medium uppercase tracking-[0.18em] text-zinc-400">
-                {r.count} venda{r.count > 1 ? "s" : ""} concluída
-                {r.count > 1 ? "s" : ""}
-              </p>
-            </li>
-          );
-        })}
-      </ol>
+                <div className="h-[3px] w-full rounded-full bg-slate-100 dark:bg-[#1c1c1c] overflow-hidden">
+                  <div
+                    className={`h-full rounded-full ${BAR_STYLE[i]} transition-all`}
+                    style={{ width: `${pct}%` }}
+                  />
+                </div>
+                <p className="text-[10px] font-medium uppercase tracking-[0.18em] text-zinc-400">
+                  {r.count} venda{r.count > 1 ? "s" : ""} concluída
+                  {r.count > 1 ? "s" : ""}
+                </p>
+              </li>
+            );
+          })}
+        </ol>
+      )}
     </Card>
   );
 }
