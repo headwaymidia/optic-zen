@@ -32,35 +32,60 @@ export default function OnboardingPage() {
   const [name, setName] = useState("");
   const [submitting, setSubmitting] = useState(false);
 
-  if (authLoading || storesLoading) return null;
+  if (authLoading) {
+    return (
+      <div className="min-h-screen w-full flex items-center justify-center bg-zinc-50 text-zinc-500 text-sm">
+        Carregando...
+      </div>
+    );
+  }
   if (!session) return <Navigate to="/auth" replace />;
-  // Já possui ao menos uma loja → pula onboarding.
-  if (stores.length > 0) return <Navigate to="/" replace />;
+  // Já possui ao menos uma loja e não está no meio de uma criação → pula onboarding.
+  if (!storesLoading && stores.length > 0 && !submitting) {
+    return <Navigate to="/" replace />;
+  }
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     const trimmed = name.trim();
-    if (!trimmed) return;
+    if (!trimmed || submitting) return;
     setSubmitting(true);
 
-    const created = await addStore({ name: trimmed });
-    setSubmitting(false);
-
-    if (!created) return;
-
-    // Mantém o flag legado (sem prejuízo) — fonte de verdade é o Supabase.
     try {
-      localStorage.setItem(ONBOARDING_KEY, "1");
-    } catch {
-      /* ignore */
+      const created = await addStore({ name: trimmed });
+
+      if (!created) {
+        // addStore já mostrou um toast de erro; garantimos um fallback visível.
+        toast({
+          title: "Não foi possível criar a loja",
+          description: "Tente novamente em instantes.",
+          variant: "destructive",
+        });
+        setSubmitting(false);
+        return;
+      }
+
+      try {
+        localStorage.setItem(ONBOARDING_KEY, "1");
+      } catch {
+        /* ignore */
+      }
+
+      toast({
+        title: "Loja criada com sucesso!",
+        description: `"${created.name}" está pronta. Bem-vindo ao seu motor de vendas.`,
+      });
+
+      // Navega imediatamente; AppLayout enxergará a loja recém-criada via state local do hook.
+      navigate("/", { replace: true });
+    } catch (err: any) {
+      toast({
+        title: "Erro inesperado ao criar loja",
+        description: err?.message ?? "Tente novamente.",
+        variant: "destructive",
+      });
+      setSubmitting(false);
     }
-
-    toast({
-      title: "Loja criada com sucesso!",
-      description: `"${created.name}" está pronta. Bem-vindo ao seu motor de vendas.`,
-    });
-
-    navigate("/", { replace: true });
   }
 
   return (
