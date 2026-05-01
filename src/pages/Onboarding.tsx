@@ -1,13 +1,13 @@
 import { useState } from "react";
 import { Navigate, useNavigate } from "react-router-dom";
-import { ArrowRight, Loader2 } from "lucide-react";
+import { ArrowRight, Eye, Loader2 } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { useStores } from "@/hooks/useStores";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { toast } from "@/hooks/use-toast";
-import logoOticaDominante from "@/assets/logo-otica-dominante-dark.svg";
+import { cn } from "@/lib/utils";
 
 /**
  * @deprecated Mantido apenas para compatibilidade com imports antigos.
@@ -66,13 +66,17 @@ export default function OnboardingPage() {
   return (
     <div className="min-h-screen w-full bg-zinc-50 flex flex-col items-center justify-center px-6 py-12">
       <div className="w-full max-w-md">
-        {/* Logo */}
-        <div className="flex justify-center mb-8">
-          <img
-            src={logoOticaDominante}
-            alt="Ótica Dominante — Powered by Headway Mídia"
-            className="w-[280px] h-auto object-contain"
-          />
+        {/* Brand header (mesmo do Auth) */}
+        <div className="flex items-center justify-center gap-3 mb-8">
+          <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-emerald-500 text-white shadow-sm">
+            <Eye className="h-5 w-5" strokeWidth={2.5} />
+          </div>
+          <div className="leading-tight">
+            <p className="text-base font-bold text-slate-900">Ótica Dominante</p>
+            <p className="text-[10px] font-semibold tracking-[0.18em] text-slate-400 uppercase">
+              Powered by Headway Mídia
+            </p>
+          </div>
         </div>
 
         <div className="space-y-8">
@@ -107,7 +111,12 @@ export default function OnboardingPage() {
             <Button
               type="submit"
               disabled={submitting || !name.trim()}
-              className="w-full h-14 rounded-xl text-base font-semibold bg-zinc-900 hover:bg-zinc-800 text-white shadow-sm gap-2 group transition-all"
+              className={cn(
+                "w-full h-14 rounded-xl text-base font-semibold shadow-sm gap-2 group transition-colors",
+                name.trim()
+                  ? "bg-emerald-500 hover:bg-emerald-600 text-white"
+                  : "bg-zinc-200 text-zinc-400 hover:bg-zinc-200 cursor-not-allowed disabled:opacity-100"
+              )}
             >
               {submitting ? (
                 <>
