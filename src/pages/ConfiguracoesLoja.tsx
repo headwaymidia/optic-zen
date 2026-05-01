@@ -429,7 +429,6 @@ function InviteMemberDialog({
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="Dono">Dono</SelectItem>
-              <SelectItem value="Administrador">Administrador</SelectItem>
               <SelectItem value="Gerente">Gerente</SelectItem>
               <SelectItem value="Vendedor">Vendedor</SelectItem>
             </SelectContent>
@@ -461,49 +460,50 @@ function InviteMemberDialog({
 
 /* ---------- INTEGRAÇÕES ---------- */
 function IntegrationsPanel({ storeId, storeName }: { storeId: string; storeName: string }) {
-  const integration = useMemo(() => getMockStoreIntegration(storeId), [storeId]);
-  const [status, setStatus] = useState(integration.status);
-  const [copied, setCopied] = useState(false);
+  // Campos vazios — o dono da loja preenche com suas próprias credenciais
+  // obtidas no Meta Business Suite. Nada é hardcoded.
+  const [businessName, setBusinessName] = useState("");
+  const [whatsappNumber, setWhatsappNumber] = useState("");
+  const [phoneNumberId, setPhoneNumberId] = useState("");
+  const [wabaId, setWabaId] = useState("");
+  const [accessToken, setAccessToken] = useState("");
 
-  // Reseta quando trocar de loja
-  if (status !== integration.status && integration.status !== status) {
-    // noop — mantém estado local após ação manual
-  }
+  // Reset quando trocar de loja
+  useEffect(() => {
+    setBusinessName("");
+    setWhatsappNumber("");
+    setPhoneNumberId("");
+    setWabaId("");
+    setAccessToken("");
+  }, [storeId]);
 
-  function handleCopy(value: string, label: string) {
-    navigator.clipboard.writeText(value).then(() => {
-      setCopied(true);
-      toast({ title: `${label} copiado` });
-      setTimeout(() => setCopied(false), 1500);
-    });
-  }
+  const isConfigured = Boolean(
+    phoneNumberId.trim() && wabaId.trim() && accessToken.trim()
+  );
 
-  function handleConnect() {
-    toast({
-      title: "Redirecionando para o Meta Business…",
-      description: `Autorizando WhatsApp Cloud API para "${storeName}".`,
-    });
-    setTimeout(() => {
-      setStatus("online");
+  function handleSave() {
+    if (!isConfigured) {
       toast({
-        title: "Conta Meta conectada",
-        description: `${integration.business_name} · ${integration.whatsapp_number}`,
+        title: "Preencha todas as credenciais",
+        description: "Phone Number ID, WABA ID e Access Token são obrigatórios.",
+        variant: "destructive",
       });
-    }, 1200);
-  }
-
-  function handleDisconnect() {
-    setStatus("offline");
+      return;
+    }
+    // TODO: persistir em colunas dedicadas na tabela `stores` quando disponíveis.
     toast({
-      title: "Conta desconectada",
-      description: `O acesso à Meta Cloud API de "${storeName}" foi revogado.`,
-      variant: "destructive",
+      title: "Credenciais salvas",
+      description: `Configurações de "${storeName}" atualizadas.`,
     });
   }
 
-  const isOnline = status === "online";
-  const approved = MOCK_TEMPLATES.filter((t) => t.status === "approved");
-  const inReview = MOCK_TEMPLATES.filter((t) => t.status === "in_review");
+  function handleConnectMeta() {
+    toast({
+      title: "Conectar conta Meta",
+      description:
+        "Autenticação OAuth com o Meta Business ainda não está disponível. Preencha as credenciais manualmente abaixo.",
+    });
+  }
 
   return (
     <div className="space-y-4">
@@ -535,7 +535,7 @@ function IntegrationsPanel({ storeId, storeName }: { storeId: string; storeName:
             value="api"
             className="mt-4 space-y-4 animate-in fade-in-50 slide-in-from-bottom-1 duration-300"
           >
-            {/* Header: business + número + status */}
+            {/* Header com status */}
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 pb-4 border-b border-border">
               <div className="flex items-center gap-3 min-w-0">
                 <Avatar className="h-11 w-11 shrink-0">
@@ -546,72 +546,92 @@ function IntegrationsPanel({ storeId, storeName }: { storeId: string; storeName:
                 <div className="min-w-0">
                   <p className="text-[11px] font-medium uppercase tracking-wider text-muted-foreground flex items-center gap-1.5">
                     <BadgeCheck className="h-3 w-3 text-[#1FAE54]" />
-                    {integration.business_name}
+                    {businessName || "Configure sua conta Meta"}
                   </p>
                   <p className="text-base font-semibold tabular-nums text-foreground truncate">
-                    {integration.whatsapp_number}
+                    {whatsappNumber || "Nenhum número configurado"}
                   </p>
                 </div>
               </div>
-              <StatusBadge online={isOnline} />
+              <StatusBadge online={isConfigured} />
             </div>
 
-            {/* Credenciais Meta Cloud API */}
+            {/* Campos editáveis — vazios por padrão */}
             <div className="space-y-3 pt-2">
               <div className="flex items-center gap-2">
                 <p className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
                   Credenciais da Cloud API
                 </p>
                 <span className="h-px flex-1 bg-border" />
-                <span className="text-[10px] text-muted-foreground font-mono">graph.facebook.com / v21.0</span>
+                <span className="text-[10px] text-muted-foreground font-mono">
+                  graph.facebook.com / v21.0
+                </span>
               </div>
 
-              <SecretRow
+              <EditableField
+                label="Nome do Business"
+                placeholder="Ex.: Ótica Central"
+                value={businessName}
+                onChange={setBusinessName}
+              />
+              <EditableField
+                label="Número do WhatsApp"
+                placeholder="+55 11 90000-0000"
+                value={whatsappNumber}
+                onChange={setWhatsappNumber}
+              />
+              <EditableField
                 label="Phone Number ID"
-                value={maskToken(integration.phone_number_id, 4, 4)}
-                onCopy={() => handleCopy(integration.phone_number_id, "Phone Number ID")}
-                copied={copied}
+                placeholder="Cole aqui o Phone Number ID da Meta"
+                value={phoneNumberId}
+                onChange={setPhoneNumberId}
+                mono
               />
-              <SecretRow
+              <EditableField
                 label="WABA ID (WhatsApp Business Account)"
-                value={maskToken(integration.waba_id, 4, 4)}
-                onCopy={() => handleCopy(integration.waba_id, "WABA ID")}
-                copied={copied}
+                placeholder="Cole aqui o WABA ID"
+                value={wabaId}
+                onChange={setWabaId}
+                mono
               />
-              <SecretRow
+              <EditableField
                 label="Access Token (System User)"
-                value={maskToken(integration.access_token, 6, 4)}
-                onCopy={() => handleCopy(integration.access_token, "Access Token")}
-                copied={copied}
+                placeholder="EAAG..."
+                value={accessToken}
+                onChange={setAccessToken}
+                mono
+                secret
               />
             </div>
 
             <div className="flex items-center gap-2 pt-2 text-[11px] text-muted-foreground">
               <ShieldCheck className="h-3.5 w-3.5" />
               <span>
-                Credenciais criptografadas e isoladas por filial · Última sincronização: {integration.last_sync}
+                Credenciais armazenadas com isolamento por filial. Obtenha-as em{" "}
+                <span className="font-medium text-foreground">
+                  business.facebook.com → WhatsApp → API Setup
+                </span>
+                .
               </span>
             </div>
 
             {/* Ações */}
             <div className="flex flex-col sm:flex-row gap-2 pt-4 border-t border-border">
-              {isOnline ? (
-                <>
-                  <Button variant="outline" onClick={handleConnect} className="gap-2">
-                    <Link2 className="h-4 w-4" />
-                    Reconectar Conta Meta
-                  </Button>
-                  <Button variant="destructive" onClick={handleDisconnect} className="gap-2">
-                    <Power className="h-4 w-4" />
-                    Revogar Acesso
-                  </Button>
-                </>
-              ) : (
-                <Button onClick={handleConnect} className="gap-2 bg-[#1877F2] hover:bg-[#1877F2]/90 text-white">
-                  <MetaGlyph className="h-4 w-4" />
-                  Conectar Conta Meta Business
-                </Button>
-              )}
+              <Button
+                onClick={handleConnectMeta}
+                variant="outline"
+                className="gap-2"
+              >
+                <MetaGlyph className="h-4 w-4" />
+                Conectar com Meta Business
+              </Button>
+              <Button
+                onClick={handleSave}
+                className="gap-2 bg-emerald-500 hover:bg-emerald-500/90 text-white"
+              >
+                <Check className="h-4 w-4" />
+                Salvar credenciais
+              </Button>
             </div>
           </TabsContent>
 
@@ -624,68 +644,17 @@ function IntegrationsPanel({ storeId, storeName }: { storeId: string; storeName:
         </Tabs>
       </SectionCard>
 
-      {/* Templates de Mensagem */}
+      {/* Templates de Mensagem — vazio até integração */}
       <SectionCard
         title="Templates de Mensagem"
         description="Mensagens ativas exigem templates pré-aprovados pela Meta (HSM)."
         icon={<FileText className="h-5 w-5 text-muted-foreground" />}
       >
-        <div className="grid grid-cols-2 gap-3">
-          <TemplateStat
-            label="Aprovados"
-            value={approved.length}
-            tone="success"
-            hint="Prontos para uso"
-          />
-          <TemplateStat
-            label="Em análise"
-            value={inReview.length}
-            tone="warn"
-            hint="Aguardando Meta"
-          />
-        </div>
-
-        <ul className="divide-y divide-border rounded-lg border border-border overflow-hidden">
-          {MOCK_TEMPLATES.map((t) => (
-            <li
-              key={t.name}
-              className="flex items-center justify-between px-3 py-2.5 bg-card"
-            >
-              <div className="flex items-center gap-2.5 min-w-0">
-                <span
-                  className={cn(
-                    "flex h-6 w-6 items-center justify-center rounded-md shrink-0",
-                    t.status === "approved"
-                      ? "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400"
-                      : "bg-amber-500/10 text-amber-600 dark:text-amber-400"
-                  )}
-                >
-                  {t.status === "approved" ? (
-                    <Check className="h-3.5 w-3.5" />
-                  ) : (
-                    <Clock className="h-3.5 w-3.5" />
-                  )}
-                </span>
-                <div className="min-w-0">
-                  <p className="font-mono text-xs text-foreground truncate">{t.name}</p>
-                  <p className="text-[10px] uppercase tracking-wider text-muted-foreground">
-                    {t.category}
-                  </p>
-                </div>
-              </div>
-              <span
-                className={cn(
-                  "text-[10px] font-semibold uppercase tracking-wider",
-                  t.status === "approved"
-                    ? "text-emerald-600 dark:text-emerald-400"
-                    : "text-amber-600 dark:text-amber-400"
-                )}
-              >
-                {t.status === "approved" ? "Aprovado" : "Em análise"}
-              </span>
-            </li>
-          ))}
-        </ul>
+        <p className="text-sm text-muted-foreground py-6 text-center">
+          {isConfigured
+            ? "Nenhum template sincronizado ainda. Os templates aprovados na Meta aparecerão aqui."
+            : "Configure as credenciais da Cloud API acima para listar seus templates aprovados."}
+        </p>
       </SectionCard>
 
       <p className="text-[11px] text-muted-foreground px-1">
@@ -695,6 +664,37 @@ function IntegrationsPanel({ storeId, storeName }: { storeId: string; storeName:
         <code className="font-mono">access_token</code>) na tabela{" "}
         <code className="font-mono">stores</code>.
       </p>
+    </div>
+  );
+}
+
+function EditableField({
+  label,
+  value,
+  onChange,
+  placeholder,
+  mono,
+  secret,
+}: {
+  label: string;
+  value: string;
+  onChange: (v: string) => void;
+  placeholder?: string;
+  mono?: boolean;
+  secret?: boolean;
+}) {
+  return (
+    <div className="space-y-1.5">
+      <Label className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
+        {label}
+      </Label>
+      <Input
+        type={secret ? "password" : "text"}
+        value={value}
+        onChange={(e) => onChange(e.target.value)}
+        placeholder={placeholder}
+        className={cn("h-9 bg-muted/30", mono && "font-mono text-xs")}
+      />
     </div>
   );
 }
