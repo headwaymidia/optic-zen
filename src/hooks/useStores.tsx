@@ -179,33 +179,45 @@ export function StoresProvider({ children }: { children: ReactNode }) {
 
   const addStore = useCallback<StoresContextValue["addStore"]>(
     async (input) => {
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
+
+      console.log("Usuário autenticado:", user);
+
       if (!user) {
+        const authError = new Error("Usuário autenticado não encontrado.");
+        if (input.throwOnError) throw authError;
         toast({ title: "Faça login para criar uma loja", variant: "destructive" });
         return null;
       }
       const name = input.name.trim();
       if (!name) return null;
 
-      const { data: storeRow, error: storeErr } = await supabase
+      const { data: storeRow, error } = await supabase
         .from("stores")
         .insert({ name, owner_id: user.id })
         .select("id, name, owner_id")
         .single();
 
-      if (storeErr || !storeRow) {
+      if (error || !storeRow) {
+        console.log("Erro completo:", JSON.stringify(error, null, 2));
         // Log completo do erro para debug (RLS, network, etc.)
         console.error("[useStores.addStore] Falha no INSERT em stores:", {
-          error: storeErr,
-          message: storeErr?.message,
-          details: (storeErr as any)?.details,
-          hint: (storeErr as any)?.hint,
-          code: (storeErr as any)?.code,
+          error,
+          message: error?.message,
+          details: (error as any)?.details,
+          hint: (error as any)?.hint,
+          code: (error as any)?.code,
           payload: { name, owner_id: user.id },
         });
+        if (input.throwOnError) {
+          throw error ?? new Error("INSERT em stores não retornou a loja criada.");
+        }
         toast({
           title: "Erro ao criar loja",
           description:
-            storeErr?.message ?? "Não foi possível criar a loja. Tente novamente.",
+            error?.message ?? "INSERT em stores não retornou a loja criada.",
           variant: "destructive",
         });
         return null;
@@ -244,7 +256,7 @@ export function StoresProvider({ children }: { children: ReactNode }) {
 
       return created;
     },
-    [user, setCurrentStoreId]
+    [setCurrentStoreId]
   );
 
   const currentStore = useMemo(
