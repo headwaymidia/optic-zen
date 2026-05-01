@@ -8,6 +8,21 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { toast } from "@/hooks/use-toast";
 import { cn } from "@/lib/utils";
+import { supabase } from "@/integrations/supabase/client";
+
+/** Aguarda a sessão do Supabase ficar disponível (até `timeoutMs`). */
+async function waitForAuthUser(timeoutMs = 3000) {
+  const start = Date.now();
+  // Tenta getUser → getSession em loop curto
+  while (Date.now() - start < timeoutMs) {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (user) return user;
+    const { data: { session } } = await supabase.auth.getSession();
+    if (session?.user) return session.user;
+    await new Promise((r) => setTimeout(r, 250));
+  }
+  return null;
+}
 
 /**
  * @deprecated Mantido apenas para compatibilidade com imports antigos.
@@ -52,6 +67,23 @@ export default function OnboardingPage() {
     setSubmitting(true);
 
     try {
+      // Garante que a sessão do Supabase está disponível antes de tentar o INSERT.
+      const authedUser = await waitForAuthUser(3000);
+      if (!authedUser) {
+        toast({
+          title: "Aguarde, carregando sessão...",
+          description: "Tentando novamente em instantes.",
+        });
+        setSubmitting(false);
+        // Retry automático após 1s
+        setTimeout(() => {
+          const form = document.getElementById("onboarding-form") as HTMLFormElement | null;
+          form?.requestSubmit();
+        }, 1000);
+        return;
+      }
+      console.log("[Onboarding] Usuário autenticado:", authedUser);
+
       const created = await addStore({ name: trimmed, throwOnError: true });
 
       if (!created) {
@@ -114,7 +146,7 @@ export default function OnboardingPage() {
             </p>
           </div>
 
-          <form onSubmit={handleSubmit} className="space-y-5">
+          <form id="onboarding-form" onSubmit={handleSubmit} className="space-y-5">
             <div className="space-y-2">
               <Label
                 htmlFor="store-name"
