@@ -1,13 +1,13 @@
 import { useState } from "react";
 import { Navigate, useNavigate } from "react-router-dom";
-import { ArrowRight, Loader2 } from "lucide-react";
+import { ArrowRight, Eye, Loader2 } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { useStores } from "@/hooks/useStores";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { toast } from "@/hooks/use-toast";
-import logoOticaDominante from "@/assets/logo-otica-dominante-dark.svg";
+import { cn } from "@/lib/utils";
 
 /**
  * @deprecated Mantido apenas para compatibilidade com imports antigos.
