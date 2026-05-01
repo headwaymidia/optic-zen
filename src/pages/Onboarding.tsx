@@ -79,6 +79,7 @@ export default function OnboardingPage() {
       // Navega imediatamente; AppLayout enxergará a loja recém-criada via state local do hook.
       navigate("/", { replace: true });
     } catch (err: any) {
+      console.error("[Onboarding.handleSubmit] Erro inesperado ao criar loja:", err);
       toast({
         title: "Erro inesperado ao criar loja",
         description: err?.message ?? "Tente novamente.",
