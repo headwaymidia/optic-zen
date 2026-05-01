@@ -7,7 +7,7 @@ import {
   useState,
   ReactNode,
 } from "react";
-import { supabase } from "@/integrations/supabase/client";
+import { supabase } from "@/lib/supabase";
 import { useAuth } from "@/hooks/useAuth";
 import { toast } from "@/hooks/use-toast";
 
@@ -180,13 +180,14 @@ export function StoresProvider({ children }: { children: ReactNode }) {
   const addStore = useCallback<StoresContextValue["addStore"]>(
     async (input) => {
       const {
-        data: { user },
-      } = await supabase.auth.getUser();
+        data: { session: activeSession },
+      } = await supabase.auth.getSession();
+      const user = activeSession?.user ?? null;
 
       console.log("Usuário autenticado:", user);
 
       if (!user) {
-        const authError = new Error("Usuário autenticado não encontrado.");
+        const authError = new Error("Sessão não encontrada.");
         if (input.throwOnError) throw authError;
         toast({ title: "Faça login para criar uma loja", variant: "destructive" });
         return null;

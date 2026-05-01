@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Navigate, useNavigate } from "react-router-dom";
 import { ArrowRight, Eye, Loader2 } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
@@ -8,21 +8,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { toast } from "@/hooks/use-toast";
 import { cn } from "@/lib/utils";
-import { supabase } from "@/integrations/supabase/client";
-
-/** Aguarda a sessão do Supabase ficar disponível (até `timeoutMs`). */
-async function waitForAuthUser(timeoutMs = 3000) {
-  const start = Date.now();
-  // Tenta getUser → getSession em loop curto
-  while (Date.now() - start < timeoutMs) {
-    const { data: { user } } = await supabase.auth.getUser();
-    if (user) return user;
-    const { data: { session } } = await supabase.auth.getSession();
-    if (session?.user) return session.user;
-    await new Promise((r) => setTimeout(r, 250));
-  }
-  return null;
-}
+import { supabase } from "@/lib/supabase";
 
 /**
  * @deprecated Mantido apenas para compatibilidade com imports antigos.
@@ -46,15 +32,36 @@ export default function OnboardingPage() {
   const navigate = useNavigate();
   const [name, setName] = useState("");
   const [submitting, setSubmitting] = useState(false);
+  const [checkingSession, setCheckingSession] = useState(true);
+  const [hasActiveSession, setHasActiveSession] = useState<boolean | null>(null);
 
-  if (authLoading) {
+  useEffect(() => {
+    let mounted = true;
+
+    supabase.auth.getSession().then(({ data: { session: activeSession } }) => {
+      if (!mounted) return;
+      if (!activeSession) {
+        toast({
+          title: "Sua conta foi confirmada! Faça login para continuar.",
+        });
+      }
+      setHasActiveSession(Boolean(activeSession));
+      setCheckingSession(false);
+    });
+
+    return () => {
+      mounted = false;
+    };
+  }, []);
+
+  if (authLoading || checkingSession) {
     return (
       <div className="min-h-screen w-full flex items-center justify-center bg-zinc-50 text-zinc-500 text-sm">
         Carregando...
       </div>
     );
   }
-  if (!session) return <Navigate to="/auth" replace />;
+  if (!session || hasActiveSession === false) return <Navigate to="/auth" replace />;
   // Já possui ao menos uma loja e não está no meio de uma criação → pula onboarding.
   if (!storesLoading && stores.length > 0 && !submitting) {
     return <Navigate to="/" replace />;
@@ -67,22 +74,19 @@ export default function OnboardingPage() {
     setSubmitting(true);
 
     try {
-      // Garante que a sessão do Supabase está disponível antes de tentar o INSERT.
-      const authedUser = await waitForAuthUser(3000);
-      if (!authedUser) {
+      const {
+        data: { session: activeSession },
+      } = await supabase.auth.getSession();
+
+      if (!activeSession?.user) {
         toast({
-          title: "Aguarde, carregando sessão...",
-          description: "Tentando novamente em instantes.",
+          title: "Sua conta foi confirmada! Faça login para continuar.",
         });
         setSubmitting(false);
-        // Retry automático após 1s
-        setTimeout(() => {
-          const form = document.getElementById("onboarding-form") as HTMLFormElement | null;
-          form?.requestSubmit();
-        }, 1000);
+        navigate("/auth", { replace: true });
         return;
       }
-      console.log("[Onboarding] Usuário autenticado:", authedUser);
+      console.log("[Onboarding] Sessão ativa:", activeSession.user);
 
       const created = await addStore({ name: trimmed, throwOnError: true });
 

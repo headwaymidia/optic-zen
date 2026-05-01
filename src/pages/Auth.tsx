@@ -1,8 +1,9 @@
 import { useState } from "react";
-import { Navigate } from "react-router-dom";
+import { Navigate, useNavigate } from "react-router-dom";
 import { supabase, setRememberSession } from "@/lib/supabase";
 import { Checkbox } from "@/components/ui/checkbox";
 import { useAuth } from "@/hooks/useAuth";
+import { useStores } from "@/hooks/useStores";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -14,6 +15,8 @@ type AuthMode = "LOGIN" | "REGISTER" | "RECOVERY";
 
 export default function AuthPage() {
   const { session, loading } = useAuth();
+  const { stores, loading: storesLoading, refetch } = useStores();
+  const navigate = useNavigate();
   const [mode, setMode] = useState<AuthMode>("LOGIN");
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
@@ -21,8 +24,8 @@ export default function AuthPage() {
   const [rememberMe, setRememberMe] = useState(true);
   const [submitting, setSubmitting] = useState(false);
 
-  if (loading) return null;
-  if (session) return <Navigate to="/" replace />;
+  if (loading || (session && storesLoading)) return null;
+  if (session) return <Navigate to={stores.length > 0 ? "/" : "/onboarding"} replace />;
 
   async function handleLogin(e: React.FormEvent) {
     e.preventDefault();
@@ -33,7 +36,21 @@ export default function AuthPage() {
     setSubmitting(false);
     if (error) {
       toast({ title: "Erro ao entrar", description: error.message, variant: "destructive" });
+      return;
     }
+
+    await refetch();
+    const { data, error: storesError } = await supabase
+      .from("store_members")
+      .select("store:stores(id)")
+      .limit(1);
+
+    if (storesError) {
+      toast({ title: "Erro ao verificar loja", description: storesError.message, variant: "destructive" });
+      return;
+    }
+
+    navigate((data?.length ?? 0) > 0 ? "/" : "/onboarding", { replace: true });
   }
 
   async function handleRegister(e: React.FormEvent) {
