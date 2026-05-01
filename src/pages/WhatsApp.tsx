@@ -31,16 +31,12 @@ const SOURCE_EMOJI: Record<string, string> = {
   Outro: "🔗",
 };
 
-const MOCK_PREVIEWS = [
-  "Pode me passar o endereço?",
-  "Boa tarde, gostaria de marcar um exame",
-  "Vocês atendem amanhã?",
-  "Quanto custa a armação?",
-  "Obrigado!",
-  "Vou confirmar e te aviso",
-  "Recebi, muito obrigada 🙏",
-];
-const MOCK_HOURS = ["10:45", "09:12", "11:03", "08:30", "14:21", "15:48", "16:02"];
+function formatLeadTime(iso: string | null) {
+  if (!iso) return "";
+  const d = new Date(iso);
+  if (isNaN(d.getTime())) return "";
+  return d.toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" });
+}
 
 function initials(name: string) {
   return name.split(" ").map((p) => p[0]).slice(0, 2).join("").toUpperCase();
@@ -114,10 +110,9 @@ export default function WhatsAppPage() {
           {!loading && filtered.length === 0 && (
             <p className="p-4 text-sm text-muted-foreground">Nenhum contato</p>
           )}
-          {filtered.map((lead, i) => {
-            const preview = MOCK_PREVIEWS[i % MOCK_PREVIEWS.length];
-            const hour = MOCK_HOURS[i % MOCK_HOURS.length];
-            const unread = i % 3 === 0;
+          {filtered.map((lead) => {
+            const preview = lead.notes?.trim() || "Sem mensagens ainda";
+            const hour = formatLeadTime(lead.last_interaction ?? lead.last_inbound_at ?? lead.created_at);
             const active = selectedId === lead.id;
             return (
               <button
@@ -136,13 +131,10 @@ export default function WhatsAppPage() {
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center justify-between gap-2">
                     <p className="font-medium text-sm truncate">{lead.name}</p>
-                    <span className="text-[11px] text-muted-foreground shrink-0">{hour}</span>
+                    {hour && <span className="text-[11px] text-muted-foreground shrink-0">{hour}</span>}
                   </div>
                   <div className="flex items-center justify-between gap-2 mt-0.5">
                     <p className="text-xs text-muted-foreground truncate">{preview}</p>
-                    {unread && (
-                      <span className="h-2.5 w-2.5 rounded-full bg-green-500 shrink-0" aria-label="Não lido" />
-                    )}
                   </div>
                 </div>
               </button>
