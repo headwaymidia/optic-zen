@@ -125,7 +125,7 @@ export interface Prescription {
 
 export interface Lead {
   id: string;
-  company_id: string;
+  store_id: string;
   name: string;
   phone: string | null;
   status: LeadStatus;
