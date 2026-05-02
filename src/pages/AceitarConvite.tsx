@@ -77,12 +77,24 @@ export default function AceitarConvitePage() {
       setAccepting(false);
       return;
     }
+    const acceptedStoreId = typeof data === "string" ? data : invite.store_id;
+    let storeName = invite.store_name;
+    if (acceptedStoreId) {
+      const { data: storeRow } = await supabase
+        .from("stores")
+        .select("name")
+        .eq("id", acceptedStoreId)
+        .maybeSingle();
+      if (storeRow?.name) storeName = storeRow.name;
+    }
     toast({
       title: "Bem-vindo à equipe!",
-      description: `Você agora tem acesso a "${invite.store_name}".`,
+      description: storeName
+        ? `Você agora tem acesso a "${storeName}".`
+        : "Convite aceito com sucesso.",
     });
     await refetch();
-    if (typeof data === "string") setCurrentStoreId(data);
+    if (acceptedStoreId) setCurrentStoreId(acceptedStoreId);
     navigate("/", { replace: true });
   }
 
