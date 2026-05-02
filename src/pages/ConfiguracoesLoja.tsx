@@ -544,10 +544,12 @@ function InviteMemberDialog({
     >
       <ResponsiveDialogHeader>
         <ResponsiveDialogTitle className="text-lg font-semibold tracking-tight">
-          Convidar Novo Membro
+          {createdLink ? "Convite gerado!" : "Convidar Novo Membro"}
         </ResponsiveDialogTitle>
         <ResponsiveDialogDescription className="text-sm text-muted-foreground">
-          Gere um link de convite e envie ao colaborador por WhatsApp ou e-mail.
+          {createdLink
+            ? "Copie o link abaixo e envie ao colaborador."
+            : "Gere um link de convite e envie ao colaborador por WhatsApp ou e-mail."}
         </ResponsiveDialogDescription>
       </ResponsiveDialogHeader>
 
