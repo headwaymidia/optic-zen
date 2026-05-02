@@ -561,27 +561,39 @@ function InviteMemberDialog({
       {createdLink ? (
         <div className="space-y-4 pt-2">
           <div className="rounded-lg border border-emerald-200 bg-emerald-50 p-3 text-sm text-emerald-900 dark:bg-emerald-500/10 dark:border-emerald-500/30 dark:text-emerald-200">
-            Convite criado para <span className="font-semibold">{email}</span> como{" "}
+            ✅ Convite criado para <span className="font-semibold">{email}</span> como{" "}
             <span className="font-semibold">{role}</span>.
           </div>
           <div className="space-y-2">
             <Label className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
-              Link de convite (já copiado)
+              Link de convite
             </Label>
             <div className="flex gap-2">
-              <Input readOnly value={createdLink} className="h-11 font-mono text-xs" />
+              <Input
+                readOnly
+                value={createdLink}
+                onFocus={(e) => e.currentTarget.select()}
+                className="h-11 font-mono text-xs"
+              />
               <Button
                 type="button"
-                variant="outline"
-                className="h-11 shrink-0"
+                className="h-11 shrink-0 gap-2 bg-emerald-500 hover:bg-emerald-500/90 text-white"
                 onClick={async () => {
-                  await navigator.clipboard.writeText(createdLink);
-                  toast({ title: "Link copiado!" });
+                  try {
+                    await navigator.clipboard.writeText(createdLink);
+                    toast({ title: "Link copiado!" });
+                  } catch {
+                    toast({ title: "Não foi possível copiar", variant: "destructive" });
+                  }
                 }}
               >
                 <Copy className="h-4 w-4" />
+                Copiar link
               </Button>
             </div>
+            <p className="text-sm font-medium text-foreground pt-1">
+              Envie este link para o funcionário pelo WhatsApp ou email.
+            </p>
             <p className="text-[11px] text-muted-foreground">
               Válido por 7 dias. Quem abrir o link cria a conta com este e-mail e entra
               direto no Dashboard da loja.
@@ -590,7 +602,8 @@ function InviteMemberDialog({
           <ResponsiveDialogFooter>
             <Button
               type="button"
-              className="h-11 bg-emerald-500 hover:bg-emerald-500/90 text-white"
+              variant="outline"
+              className="h-11"
               onClick={() => onOpenChange(false)}
             >
               Concluir
