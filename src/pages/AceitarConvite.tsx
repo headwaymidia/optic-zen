@@ -65,10 +65,18 @@ export default function AceitarConvitePage() {
   async function handleAccept() {
     if (!token || !invite) return;
     setAccepting(true);
+    console.log("[AceitarConvite] aceitando convite:", {
+      token,
+      store_id: invite.store_id,
+      role: invite.role,
+    });
+
     const { data, error: rpcErr } = await supabase.rpc("accept_store_invite", {
       _token: token,
     });
+
     if (rpcErr) {
+      console.error("[AceitarConvite] RPC accept_store_invite falhou:", rpcErr);
       toast({
         title: "Erro ao aceitar convite",
         description: rpcErr.message,
@@ -77,24 +85,36 @@ export default function AceitarConvitePage() {
       setAccepting(false);
       return;
     }
-    const acceptedStoreId = typeof data === "string" ? data : invite.store_id;
+
+    const acceptedStoreId =
+      typeof data === "string" && data ? data : invite.store_id;
+    console.log("[AceitarConvite] convite aceito, store_id:", acceptedStoreId);
+
+    // Busca nome real da loja para o toast
     let storeName = invite.store_name;
-    if (acceptedStoreId) {
-      const { data: storeRow } = await supabase
-        .from("stores")
-        .select("name")
-        .eq("id", acceptedStoreId)
-        .maybeSingle();
-      if (storeRow?.name) storeName = storeRow.name;
+    const { data: storeRow, error: storeErr } = await supabase
+      .from("stores")
+      .select("name")
+      .eq("id", acceptedStoreId)
+      .maybeSingle();
+    if (storeErr) {
+      console.error("[AceitarConvite] erro ao buscar nome da loja:", storeErr);
     }
+    if (storeRow?.name) storeName = storeRow.name;
+
     toast({
       title: "Bem-vindo à equipe!",
       description: storeName
         ? `Você agora tem acesso a "${storeName}".`
         : "Convite aceito com sucesso.",
     });
+
+    // Seleciona a loja do convite ANTES do refetch para evitar race
+    setCurrentStoreId(acceptedStoreId);
     await refetch();
-    if (acceptedStoreId) setCurrentStoreId(acceptedStoreId);
+    // Garante novamente após refetch (pode ter sido sobrescrito)
+    setCurrentStoreId(acceptedStoreId);
+
     navigate("/", { replace: true });
   }
 
