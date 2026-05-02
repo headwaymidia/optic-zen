@@ -16,6 +16,7 @@ import ConfiguracoesLoja from "./pages/ConfiguracoesLoja";
 import Tarefas from "./pages/Tarefas";
 import AuthPage from "./pages/Auth.tsx";
 import OnboardingPage from "./pages/Onboarding.tsx";
+import AceitarConvitePage from "./pages/AceitarConvite.tsx";
 import NotFound from "./pages/NotFound.tsx";
 
 const queryClient = new QueryClient();
@@ -32,6 +33,7 @@ const App = () => (
               <Routes>
                 <Route path="/auth" element={<AuthPage />} />
                 <Route path="/onboarding" element={<OnboardingPage />} />
+                <Route path="/aceitar-convite/:token" element={<AceitarConvitePage />} />
                 <Route element={<AppLayout />}>
                   <Route path="/" element={<Dashboard />} />
                   <Route path="/whatsapp" element={<WhatsAppPage />} />
