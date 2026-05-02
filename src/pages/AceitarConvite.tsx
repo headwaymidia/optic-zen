@@ -115,6 +115,13 @@ export default function AceitarConvitePage() {
     // Garante novamente após refetch (pode ter sido sobrescrito)
     setCurrentStoreId(acceptedStoreId);
 
+    // Limpa token pendente para que o Onboarding não tente voltar para cá
+    try {
+      localStorage.removeItem("od.pendingInviteToken");
+    } catch {
+      /* ignore */
+    }
+
     navigate("/", { replace: true });
   }
 
