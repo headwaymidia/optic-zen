@@ -3,6 +3,7 @@ import { useSearchParams } from "react-router-dom";
 import { useStores } from "@/hooks/useStores";
 import { supabase } from "@/lib/supabase";
 import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
@@ -506,9 +507,7 @@ function InviteMemberDialog({
       return;
     }
 
-    console.log("[invite] inserting", { storeId, email: trimmed, role, invited_by: user.id });
-
-    const { data: inserted, error } = await supabase
+    const { data, error } = await supabase
       .from("store_invites")
       .insert({
         store_id: storeId,
@@ -517,12 +516,11 @@ function InviteMemberDialog({
         invited_by: user.id,
       })
       .select("token")
-      .maybeSingle();
+      .single();
 
-    console.log("[invite] insert result", { inserted, error });
+    setSubmitting(false);
 
     if (error) {
-      setSubmitting(false);
       const msg = error.message.includes("uniq_pending_invite")
         ? "Já existe um convite pendente para este e-mail."
         : error.message;
@@ -530,43 +528,9 @@ function InviteMemberDialog({
       return;
     }
 
-    // Fallback: se o INSERT não retornou o token (RLS no SELECT pós-insert),
-    // busca o convite mais recente para esse e-mail/loja.
-    let token = inserted?.token as string | undefined;
-    if (!token) {
-      console.warn("[invite] insert sem token retornado, buscando via SELECT…");
-      const { data: found, error: findErr } = await supabase
-        .from("store_invites")
-        .select("token")
-        .eq("store_id", storeId)
-        .eq("email", trimmed)
-        .eq("status", "pendente")
-        .order("created_at", { ascending: false })
-        .limit(1)
-        .maybeSingle();
-      console.log("[invite] fallback select result", { found, findErr });
-      token = found?.token as string | undefined;
-    }
-
-    setSubmitting(false);
-
-    if (!token) {
-      toast({
-        title: "Convite criado, mas link indisponível",
-        description: "Recarregue a página e copie o link na lista de convites pendentes.",
-        variant: "destructive",
-      });
-      onInvited();
-      return;
-    }
-
-    const link = buildInviteLink(token);
-    console.log("[invite] link gerado", link);
+    const link = buildInviteLink(data.token);
     setCreatedLink(link);
-    toast({
-      title: "✅ Convite criado!",
-      description: "Copie o link abaixo e envie ao colaborador.",
-    });
+    toast({ title: "✅ Convite gerado!" });
     onInvited();
   }
 
@@ -580,10 +544,12 @@ function InviteMemberDialog({
     >
       <ResponsiveDialogHeader>
         <ResponsiveDialogTitle className="text-lg font-semibold tracking-tight">
-          Convidar Novo Membro
+          {createdLink ? "Convite gerado!" : "Convidar Novo Membro"}
         </ResponsiveDialogTitle>
         <ResponsiveDialogDescription className="text-sm text-muted-foreground">
-          Gere um link de convite e envie ao colaborador por WhatsApp ou e-mail.
+          {createdLink
+            ? "Copie o link abaixo e envie ao colaborador."
+            : "Gere um link de convite e envie ao colaborador por WhatsApp ou e-mail."}
         </ResponsiveDialogDescription>
       </ResponsiveDialogHeader>
 
@@ -597,45 +563,43 @@ function InviteMemberDialog({
             <Label className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
               Link de convite
             </Label>
-            <div className="flex gap-2">
-              <Input
-                readOnly
-                value={createdLink}
-                onFocus={(e) => e.currentTarget.select()}
-                className="h-11 font-mono text-xs"
-              />
-              <Button
-                type="button"
-                className="h-11 shrink-0 gap-2 bg-emerald-500 hover:bg-emerald-500/90 text-white"
-                onClick={async () => {
-                  try {
-                    await navigator.clipboard.writeText(createdLink);
-                    toast({ title: "Link copiado!" });
-                  } catch {
-                    toast({ title: "Não foi possível copiar", variant: "destructive" });
-                  }
-                }}
-              >
-                <Copy className="h-4 w-4" />
-                Copiar link
-              </Button>
-            </div>
+            <Textarea
+              readOnly
+              value={createdLink}
+              onFocus={(e) => e.currentTarget.select()}
+              rows={3}
+              className="font-mono text-xs resize-none break-all"
+            />
+            <Button
+              type="button"
+              className="w-full h-11 gap-2 bg-emerald-500 hover:bg-emerald-500/90 text-white"
+              onClick={async () => {
+                try {
+                  await navigator.clipboard.writeText(createdLink);
+                  toast({ title: "Link copiado!" });
+                } catch {
+                  toast({ title: "Não foi possível copiar", variant: "destructive" });
+                }
+              }}
+            >
+              <Copy className="h-4 w-4" />
+              Copiar link
+            </Button>
             <p className="text-sm font-medium text-foreground pt-1">
-              Envie este link para o funcionário pelo WhatsApp ou email.
+              Envie este link pelo WhatsApp para o funcionário.
             </p>
             <p className="text-[11px] text-muted-foreground">
-              Válido por 7 dias. Quem abrir o link cria a conta com este e-mail e entra
-              direto no Dashboard da loja.
+              Válido por 7 dias.
             </p>
           </div>
           <ResponsiveDialogFooter>
             <Button
               type="button"
               variant="outline"
-              className="h-11"
+              className="h-11 w-full"
               onClick={() => onOpenChange(false)}
             >
-              Concluir
+              Fechar
             </Button>
           </ResponsiveDialogFooter>
         </div>
