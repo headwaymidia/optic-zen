@@ -80,17 +80,23 @@ export function StoresProvider({ children }: { children: ReactNode }) {
     }
     setLoading(true);
 
-    // Busca lojas onde o usuário é membro (RLS já garante isolamento).
-    // Trazemos a role via store_members.
-    const { data, error } = await supabase
-      .from("store_members")
-      .select("role, store:stores(id, name, owner_id)")
-      .eq("user_id", authContextUser.id);
+    // Busca em paralelo: lojas onde é membro + lojas onde é dono.
+    // Isso garante que aparecem mesmo se o vínculo em store_members estiver faltando.
+    const [membersRes, ownedRes] = await Promise.all([
+      supabase
+        .from("store_members")
+        .select("role, store:stores(id, name, owner_id)")
+        .eq("user_id", authContextUser.id),
+      supabase
+        .from("stores")
+        .select("id, name, owner_id")
+        .eq("owner_id", authContextUser.id),
+    ]);
 
-    if (error) {
+    if (membersRes.error && ownedRes.error) {
       toast({
         title: "Erro ao carregar lojas",
-        description: error.message,
+        description: membersRes.error.message,
         variant: "destructive",
       });
       setStores([]);
@@ -98,20 +104,34 @@ export function StoresProvider({ children }: { children: ReactNode }) {
       return;
     }
 
-    const list: Store[] = (data ?? [])
-      .map((row: any) => {
-        if (!row.store) return null;
-        return {
-          id: row.store.id as string,
-          name: row.store.name as string,
-          owner_id: row.store.owner_id as string,
-          role: row.role as StoreRole,
-          initial: initialFromName(row.store.name as string),
-        };
-      })
-      .filter(Boolean) as Store[];
+    const map = new Map<string, Store>();
 
-    setStores(list);
+    // 1) Lojas via store_members (com role real)
+    for (const row of membersRes.data ?? []) {
+      const s: any = (row as any).store;
+      if (!s) continue;
+      map.set(s.id, {
+        id: s.id,
+        name: s.name,
+        owner_id: s.owner_id,
+        role: (row as any).role as StoreRole,
+        initial: initialFromName(s.name),
+      });
+    }
+
+    // 2) Lojas onde é owner mas não estão em store_members → entram como Dono
+    for (const s of ownedRes.data ?? []) {
+      if (map.has(s.id)) continue;
+      map.set(s.id, {
+        id: s.id,
+        name: s.name,
+        owner_id: s.owner_id,
+        role: "Dono",
+        initial: initialFromName(s.name),
+      });
+    }
+
+    setStores(Array.from(map.values()));
     setLoading(false);
   }, [authContextUser]);
 
