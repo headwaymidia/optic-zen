@@ -62,6 +62,25 @@ export default function OnboardingPage() {
     );
   }
   if (!session || hasActiveSession === false) return <Navigate to="/auth" replace />;
+
+  // Usuário convidado: não deve criar loja própria.
+  // 1) Se ainda há um token pendente salvo (login feito via fluxo de convite), envia para aceitar.
+  // 2) Se o user_metadata marca `invited: true`, manda direto para o Dashboard.
+  const pendingInviteToken =
+    typeof window !== "undefined"
+      ? localStorage.getItem("od.pendingInviteToken")
+      : null;
+  const isInvitedUser = Boolean(
+    (session?.user?.user_metadata as any)?.invited
+  );
+
+  if (pendingInviteToken) {
+    return <Navigate to={`/aceitar-convite/${pendingInviteToken}`} replace />;
+  }
+  if (isInvitedUser) {
+    return <Navigate to="/" replace />;
+  }
+
   // Já possui ao menos uma loja e não está no meio de uma criação → pula onboarding.
   if (!storesLoading && stores.length > 0 && !submitting) {
     return <Navigate to="/" replace />;

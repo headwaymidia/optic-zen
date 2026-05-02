@@ -19,6 +19,20 @@ export default function AuthPage() {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const redirectTo = searchParams.get("redirect");
+
+  // Persiste o token de convite para sobreviver ao redirect de confirmação de email.
+  useEffect(() => {
+    if (redirectTo && redirectTo.startsWith("/aceitar-convite/")) {
+      const token = redirectTo.replace("/aceitar-convite/", "").trim();
+      if (token) {
+        try {
+          localStorage.setItem("od.pendingInviteToken", token);
+        } catch {
+          /* ignore */
+        }
+      }
+    }
+  }, [redirectTo]);
   const initialMode: AuthMode =
     searchParams.get("mode") === "signup" ? "REGISTER" : "LOGIN";
   const prefilledEmail = searchParams.get("email") ?? "";
