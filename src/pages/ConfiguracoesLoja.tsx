@@ -529,14 +529,9 @@ function InviteMemberDialog({
 
     const link = buildInviteLink(data.token);
     setCreatedLink(link);
-    try {
-      await navigator.clipboard.writeText(link);
-    } catch {
-      /* ignore */
-    }
     toast({
       title: "✅ Convite criado!",
-      description: "Link copiado para a área de transferência.",
+      description: "Copie o link abaixo e envie ao colaborador.",
     });
     onInvited();
   }
