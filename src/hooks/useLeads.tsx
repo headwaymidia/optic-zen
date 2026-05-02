@@ -1,6 +1,6 @@
 import { createContext, useCallback, useContext, useEffect, useState, ReactNode } from "react";
 import { Lead, LeadStatus, supabase } from "@/lib/supabase";
-import { useAuth } from "@/hooks/useAuth";
+import { useStores } from "@/hooks/useStores";
 import { toast } from "@/hooks/use-toast";
 
 interface LeadsContextValue {
@@ -16,12 +16,12 @@ interface LeadsContextValue {
 const LeadsContext = createContext<LeadsContextValue | undefined>(undefined);
 
 export function LeadsProvider({ children }: { children: ReactNode }) {
-  const { profile } = useAuth();
+  const { currentStoreId } = useStores();
   const [leads, setLeads] = useState<Lead[]>([]);
   const [loading, setLoading] = useState(true);
 
   const refetch = useCallback(async () => {
-    if (!profile?.company_id) {
+    if (!currentStoreId) {
       setLeads([]);
       setLoading(false);
       return;
@@ -30,33 +30,33 @@ export function LeadsProvider({ children }: { children: ReactNode }) {
     const { data, error } = await supabase
       .from("leads")
       .select("*")
-      .eq("company_id", profile.company_id)
+      .eq("store_id", currentStoreId)
       .order("created_at", { ascending: false });
     setLoading(false);
     if (error) {
       toast({ title: "Erro ao carregar leads", description: error.message, variant: "destructive" });
       return;
     }
-    setLeads((data ?? []) as Lead[]);
-  }, [profile?.company_id]);
+    setLeads((data ?? []) as unknown as Lead[]);
+  }, [currentStoreId]);
 
   useEffect(() => {
     refetch();
   }, [refetch]);
 
-  // Realtime subscription scoped to this company
+  // Realtime subscription scoped to this store
   useEffect(() => {
-    if (!profile?.company_id) return;
+    if (!currentStoreId) return;
     const channel = supabase
-      .channel(`leads-${profile.company_id}`)
+      .channel(`leads-${currentStoreId}`)
       .on(
         "postgres_changes",
-        { event: "*", schema: "public", table: "leads", filter: `company_id=eq.${profile.company_id}` },
+        { event: "*", schema: "public", table: "leads", filter: `store_id=eq.${currentStoreId}` },
         () => { refetch(); }
       )
       .subscribe();
     return () => { supabase.removeChannel(channel); };
-  }, [profile?.company_id, refetch]);
+  }, [currentStoreId, refetch]);
 
   const updateStatus = useCallback(async (leadId: string, status: LeadStatus) => {
     setLeads((prev) => prev.map((l) => (l.id === leadId ? { ...l, status } : l)));

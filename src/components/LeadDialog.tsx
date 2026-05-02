@@ -8,6 +8,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { INTEREST_TAGS, LEAD_SOURCES, LEAD_STATUSES, Lead, LeadPriority, LeadStatus, SALESPEOPLE, supabase } from "@/lib/supabase";
 import { useAuth } from "@/hooks/useAuth";
+import { useStores } from "@/hooks/useStores";
 import { toast } from "@/hooks/use-toast";
 import { Copy, Sparkles, MapPin, IdCard, Cake, Eye } from "lucide-react";
 import { maskCPF } from "@/lib/masks";
@@ -23,7 +24,8 @@ interface Props {
 const PRIORITIES: LeadPriority[] = ["Baixa", "Média", "Alta"];
 
 export function LeadDialog({ open, onOpenChange, lead, defaultStatus, onSaved }: Props) {
-  const { user, profile } = useAuth();
+  const { user } = useAuth();
+  const { currentStoreId } = useStores();
   const [name, setName] = useState("");
   const [phone, setPhone] = useState("");
   const [status, setStatus] = useState<LeadStatus>("Novo Lead");
@@ -61,8 +63,8 @@ export function LeadDialog({ open, onOpenChange, lead, defaultStatus, onSaved }:
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
-    if (!profile?.company_id || !user) {
-      toast({ title: "Erro", description: "Perfil não encontrado.", variant: "destructive" });
+    if (!currentStoreId || !user) {
+      toast({ title: "Erro", description: "Selecione uma loja antes de salvar.", variant: "destructive" });
       return;
     }
     setSaving(true);
@@ -72,7 +74,7 @@ export function LeadDialog({ open, onOpenChange, lead, defaultStatus, onSaved }:
       status,
       priority,
       notes: notes || null,
-      company_id: profile.company_id,
+      store_id: currentStoreId,
       responsible_id: lead?.responsible_id ?? user.id,
       sale_value: showSaleValue && saleValue ? Number(saleValue) : null,
       lead_source: leadSource || null,
