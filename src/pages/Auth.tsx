@@ -1,5 +1,5 @@
-import { useState } from "react";
-import { Navigate, useNavigate } from "react-router-dom";
+import { useEffect, useState } from "react";
+import { Navigate, useNavigate, useSearchParams } from "react-router-dom";
 import { supabase, setRememberSession } from "@/lib/supabase";
 import { Checkbox } from "@/components/ui/checkbox";
 import { useAuth } from "@/hooks/useAuth";
@@ -17,15 +17,23 @@ export default function AuthPage() {
   const { session, loading } = useAuth();
   const { stores, loading: storesLoading, refetch } = useStores();
   const navigate = useNavigate();
-  const [mode, setMode] = useState<AuthMode>("LOGIN");
+  const [searchParams] = useSearchParams();
+  const redirectTo = searchParams.get("redirect");
+  const initialMode: AuthMode =
+    searchParams.get("mode") === "signup" ? "REGISTER" : "LOGIN";
+  const prefilledEmail = searchParams.get("email") ?? "";
+  const [mode, setMode] = useState<AuthMode>(initialMode);
   const [name, setName] = useState("");
-  const [email, setEmail] = useState("");
+  const [email, setEmail] = useState(prefilledEmail);
   const [password, setPassword] = useState("");
   const [rememberMe, setRememberMe] = useState(true);
   const [submitting, setSubmitting] = useState(false);
 
   if (loading || (session && storesLoading)) return null;
-  if (session) return <Navigate to={stores.length > 0 ? "/" : "/onboarding"} replace />;
+  if (session) {
+    if (redirectTo) return <Navigate to={redirectTo} replace />;
+    return <Navigate to={stores.length > 0 ? "/" : "/onboarding"} replace />;
+  }
 
   async function handleLogin(e: React.FormEvent) {
     e.preventDefault();
@@ -50,6 +58,10 @@ export default function AuthPage() {
       return;
     }
 
+    if (redirectTo) {
+      navigate(redirectTo, { replace: true });
+      return;
+    }
     navigate((data?.length ?? 0) > 0 ? "/" : "/onboarding", { replace: true });
   }
 
@@ -60,7 +72,9 @@ export default function AuthPage() {
       email,
       password,
       options: {
-        emailRedirectTo: `${window.location.origin}/`,
+        emailRedirectTo: redirectTo
+          ? `${window.location.origin}${redirectTo}`
+          : `${window.location.origin}/`,
         data: { name: name.trim() || undefined },
       },
     });
