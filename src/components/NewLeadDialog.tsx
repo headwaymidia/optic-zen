@@ -4,7 +4,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/lib/supabase";
-import { useAuth } from "@/hooks/useAuth";
+import { useStores } from "@/hooks/useStores";
 import { useLeads } from "@/hooks/useLeads";
 import { toast } from "@/hooks/use-toast";
 import { maskCPF } from "@/lib/masks";
@@ -17,7 +17,7 @@ export function NewLeadDialog({
   open: boolean;
   onOpenChange: (o: boolean) => void;
 }) {
-  const { profile } = useAuth();
+  const { currentStoreId } = useStores();
   const { refetch } = useLeads();
   const [name, setName] = useState("");
   const [phone, setPhone] = useState("");
@@ -41,13 +41,13 @@ export function NewLeadDialog({
       toast({ title: "Nome obrigatório", variant: "destructive" });
       return;
     }
-    if (!profile?.company_id) {
-      toast({ title: "Sem empresa associada", variant: "destructive" });
+    if (!currentStoreId) {
+      toast({ title: "Selecione uma loja antes de criar o lead", variant: "destructive" });
       return;
     }
     setSaving(true);
     const { error } = await supabase.from("leads").insert({
-      company_id: profile.company_id,
+      store_id: currentStoreId,
       name: name.trim(),
       phone: phone.trim() || null,
       bairro: bairro.trim() || null,
