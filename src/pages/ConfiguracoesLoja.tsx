@@ -506,9 +506,7 @@ function InviteMemberDialog({
       return;
     }
 
-    console.log("[invite] inserting", { storeId, email: trimmed, role, invited_by: user.id });
-
-    const { data: inserted, error } = await supabase
+    const { data, error } = await supabase
       .from("store_invites")
       .insert({
         store_id: storeId,
@@ -517,12 +515,11 @@ function InviteMemberDialog({
         invited_by: user.id,
       })
       .select("token")
-      .maybeSingle();
+      .single();
 
-    console.log("[invite] insert result", { inserted, error });
+    setSubmitting(false);
 
     if (error) {
-      setSubmitting(false);
       const msg = error.message.includes("uniq_pending_invite")
         ? "Já existe um convite pendente para este e-mail."
         : error.message;
@@ -530,43 +527,9 @@ function InviteMemberDialog({
       return;
     }
 
-    // Fallback: se o INSERT não retornou o token (RLS no SELECT pós-insert),
-    // busca o convite mais recente para esse e-mail/loja.
-    let token = inserted?.token as string | undefined;
-    if (!token) {
-      console.warn("[invite] insert sem token retornado, buscando via SELECT…");
-      const { data: found, error: findErr } = await supabase
-        .from("store_invites")
-        .select("token")
-        .eq("store_id", storeId)
-        .eq("email", trimmed)
-        .eq("status", "pendente")
-        .order("created_at", { ascending: false })
-        .limit(1)
-        .maybeSingle();
-      console.log("[invite] fallback select result", { found, findErr });
-      token = found?.token as string | undefined;
-    }
-
-    setSubmitting(false);
-
-    if (!token) {
-      toast({
-        title: "Convite criado, mas link indisponível",
-        description: "Recarregue a página e copie o link na lista de convites pendentes.",
-        variant: "destructive",
-      });
-      onInvited();
-      return;
-    }
-
-    const link = buildInviteLink(token);
-    console.log("[invite] link gerado", link);
+    const link = buildInviteLink(data.token);
     setCreatedLink(link);
-    toast({
-      title: "✅ Convite criado!",
-      description: "Copie o link abaixo e envie ao colaborador.",
-    });
+    toast({ title: "✅ Convite gerado!" });
     onInvited();
   }
 
