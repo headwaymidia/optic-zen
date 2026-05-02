@@ -563,45 +563,43 @@ function InviteMemberDialog({
             <Label className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
               Link de convite
             </Label>
-            <div className="flex gap-2">
-              <Input
-                readOnly
-                value={createdLink}
-                onFocus={(e) => e.currentTarget.select()}
-                className="h-11 font-mono text-xs"
-              />
-              <Button
-                type="button"
-                className="h-11 shrink-0 gap-2 bg-emerald-500 hover:bg-emerald-500/90 text-white"
-                onClick={async () => {
-                  try {
-                    await navigator.clipboard.writeText(createdLink);
-                    toast({ title: "Link copiado!" });
-                  } catch {
-                    toast({ title: "Não foi possível copiar", variant: "destructive" });
-                  }
-                }}
-              >
-                <Copy className="h-4 w-4" />
-                Copiar link
-              </Button>
-            </div>
+            <Textarea
+              readOnly
+              value={createdLink}
+              onFocus={(e) => e.currentTarget.select()}
+              rows={3}
+              className="font-mono text-xs resize-none break-all"
+            />
+            <Button
+              type="button"
+              className="w-full h-11 gap-2 bg-emerald-500 hover:bg-emerald-500/90 text-white"
+              onClick={async () => {
+                try {
+                  await navigator.clipboard.writeText(createdLink);
+                  toast({ title: "Link copiado!" });
+                } catch {
+                  toast({ title: "Não foi possível copiar", variant: "destructive" });
+                }
+              }}
+            >
+              <Copy className="h-4 w-4" />
+              Copiar link
+            </Button>
             <p className="text-sm font-medium text-foreground pt-1">
-              Envie este link para o funcionário pelo WhatsApp ou email.
+              Envie este link pelo WhatsApp para o funcionário.
             </p>
             <p className="text-[11px] text-muted-foreground">
-              Válido por 7 dias. Quem abrir o link cria a conta com este e-mail e entra
-              direto no Dashboard da loja.
+              Válido por 7 dias.
             </p>
           </div>
           <ResponsiveDialogFooter>
             <Button
               type="button"
               variant="outline"
-              className="h-11"
+              className="h-11 w-full"
               onClick={() => onOpenChange(false)}
             >
-              Concluir
+              Fechar
             </Button>
           </ResponsiveDialogFooter>
         </div>
