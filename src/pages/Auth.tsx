@@ -68,6 +68,7 @@ export default function AuthPage() {
   async function handleRegister(e: React.FormEvent) {
     e.preventDefault();
     setSubmitting(true);
+    const isInvite = Boolean(redirectTo && redirectTo.startsWith("/aceitar-convite/"));
     const { error } = await supabase.auth.signUp({
       email,
       password,
@@ -75,7 +76,10 @@ export default function AuthPage() {
         emailRedirectTo: redirectTo
           ? `${window.location.origin}${redirectTo}`
           : `${window.location.origin}/`,
-        data: { name: name.trim() || undefined },
+        data: {
+          name: name.trim() || undefined,
+          invited: isInvite || undefined,
+        },
       },
     });
     setSubmitting(false);
