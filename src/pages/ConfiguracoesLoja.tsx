@@ -176,6 +176,15 @@ type TeamMember = {
   created_at: string;
 };
 
+type PendingInvite = {
+  id: string;
+  email: string;
+  role: TeamRole;
+  token: string;
+  created_at: string;
+  expires_at: string;
+};
+
 function roleBadgeClasses(role: string) {
   switch (role) {
     case "Dono":
@@ -193,48 +202,94 @@ function shortId(id: string) {
   return id.slice(0, 8).toUpperCase();
 }
 
+function buildInviteLink(token: string) {
+  return `${window.location.origin}/aceitar-convite/${token}`;
+}
+
 function TeamPanel({ storeId, storesCount }: { storeId: string; storesCount: number }) {
   const [inviteOpen, setInviteOpen] = useState(false);
   const [members, setMembers] = useState<TeamMember[]>([]);
+  const [invites, setInvites] = useState<PendingInvite[]>([]);
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    let cancelled = false;
-    async function load() {
-      setLoading(true);
-      const { data, error } = await supabase
+  async function loadAll() {
+    setLoading(true);
+    const [{ data: m, error: mErr }, { data: i, error: iErr }] = await Promise.all([
+      supabase
         .from("store_members")
         .select("id, user_id, role, created_at")
         .eq("store_id", storeId)
-        .order("created_at", { ascending: true });
-      if (cancelled) return;
-      setLoading(false);
-      if (error) {
-        toast({
-          title: "Erro ao carregar equipe",
-          description: error.message,
-          variant: "destructive",
-        });
-        return;
-      }
-      setMembers((data ?? []) as TeamMember[]);
+        .order("created_at", { ascending: true }),
+      supabase
+        .from("store_invites")
+        .select("id, email, role, token, created_at, expires_at")
+        .eq("store_id", storeId)
+        .eq("status", "pendente")
+        .order("created_at", { ascending: false }),
+    ]);
+    setLoading(false);
+    if (mErr) {
+      toast({ title: "Erro ao carregar equipe", description: mErr.message, variant: "destructive" });
+    } else {
+      setMembers((m ?? []) as TeamMember[]);
     }
-    load();
-    return () => {
-      cancelled = true;
-    };
+    if (iErr) {
+      toast({ title: "Erro ao carregar convites", description: iErr.message, variant: "destructive" });
+    } else {
+      setInvites((i ?? []) as PendingInvite[]);
+    }
+  }
+
+  useEffect(() => {
+    loadAll();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [storeId]);
 
-  function handleAction(action: string, member: TeamMember) {
-    toast({
-      title: `${action}`,
-      description: `Membro ${shortId(member.user_id)}`,
-    });
+  async function handleRemoveMember(member: TeamMember) {
+    if (member.role === "Dono") {
+      toast({ title: "Não é possível remover o Dono.", variant: "destructive" });
+      return;
+    }
+    if (!confirm("Remover este membro da loja? Ele perderá acesso imediatamente.")) return;
+    const { error } = await supabase
+      .from("store_members")
+      .delete()
+      .eq("id", member.id);
+    if (error) {
+      toast({ title: "Erro ao remover membro", description: error.message, variant: "destructive" });
+      return;
+    }
+    toast({ title: "Membro removido." });
+    loadAll();
   }
+
+  async function handleRevokeInvite(invite: PendingInvite) {
+    if (!confirm(`Revogar convite enviado para ${invite.email}?`)) return;
+    const { error } = await supabase
+      .from("store_invites")
+      .update({ status: "revogado" })
+      .eq("id", invite.id);
+    if (error) {
+      toast({ title: "Erro ao revogar convite", description: error.message, variant: "destructive" });
+      return;
+    }
+    toast({ title: "Convite revogado." });
+    loadAll();
+  }
+
+  async function handleCopyLink(invite: PendingInvite) {
+    try {
+      await navigator.clipboard.writeText(buildInviteLink(invite.token));
+      toast({ title: "Link copiado!", description: "Envie pelo WhatsApp ou e-mail." });
+    } catch {
+      toast({ title: "Não foi possível copiar", variant: "destructive" });
+    }
+  }
+
+  const totalCount = members.length + invites.length;
 
   return (
     <section className="rounded-2xl border border-border bg-card p-5 sm:p-6 shadow-[0_1px_2px_rgba(0,0,0,0.02)]">
-      {/* Cabeçalho */}
       <header className="flex items-center justify-between gap-4 pb-5">
         <div className="min-w-0">
           <h2 className="text-base font-semibold tracking-tight text-foreground">
@@ -243,7 +298,7 @@ function TeamPanel({ storeId, storesCount }: { storeId: string; storesCount: num
           <p className="text-xs text-muted-foreground mt-0.5">
             {loading
               ? "Carregando membros…"
-              : `${members.length} ${members.length === 1 ? "usuário" : "usuários"} com acesso a esta loja`}
+              : `${members.length} ativos · ${invites.length} aguardando`}
             {storesCount > 1 ? ` · ${storesCount} filiais no workspace` : ""}.
           </p>
         </div>
@@ -256,9 +311,13 @@ function TeamPanel({ storeId, storesCount }: { storeId: string; storesCount: num
         </Button>
       </header>
 
-      <InviteMemberDialog open={inviteOpen} onOpenChange={setInviteOpen} />
+      <InviteMemberDialog
+        open={inviteOpen}
+        onOpenChange={setInviteOpen}
+        storeId={storeId}
+        onInvited={loadAll}
+      />
 
-      {/* Tabela minimalista */}
       <div className="border-t border-border">
         <div className="hidden sm:grid grid-cols-[1.6fr_1fr_40px] items-center gap-4 px-1 py-3 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground border-b border-border">
           <span>Usuário</span>
@@ -267,13 +326,10 @@ function TeamPanel({ storeId, storesCount }: { storeId: string; storesCount: num
         </div>
 
         {loading ? (
-          <p className="px-1 py-8 text-center text-sm text-muted-foreground">
-            Carregando…
-          </p>
-        ) : members.length === 0 ? (
+          <p className="px-1 py-8 text-center text-sm text-muted-foreground">Carregando…</p>
+        ) : totalCount === 0 ? (
           <p className="px-1 py-10 text-center text-sm text-muted-foreground">
-            Nenhum membro adicionado ainda. Use “Convidar Usuário” para adicionar
-            sua equipe.
+            Nenhum membro adicionado ainda. Use “Convidar Usuário” para adicionar sua equipe.
           </p>
         ) : (
           <ul className="divide-y divide-border">
@@ -322,16 +378,77 @@ function TeamPanel({ storeId, storesCount }: { storeId: string; storesCount: num
                       </Button>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align="end" className="w-48">
-                      <DropdownMenuItem onClick={() => handleAction("Editar permissões", m)}>
-                        Editar permissões
-                      </DropdownMenuItem>
-                      <DropdownMenuSeparator />
                       <DropdownMenuItem
-                        onClick={() => handleAction("Remover acesso", m)}
+                        onClick={() => handleRemoveMember(m)}
                         className="text-destructive focus:text-destructive"
                         disabled={m.role === "Dono"}
                       >
                         Remover acesso
+                      </DropdownMenuItem>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
+                </div>
+              </li>
+            ))}
+
+            {invites.map((inv) => (
+              <li
+                key={inv.id}
+                className="grid grid-cols-[1fr_auto] sm:grid-cols-[1.6fr_1fr_40px] items-center gap-4 px-1 py-4 group"
+              >
+                <div className="flex items-center gap-3 min-w-0">
+                  <Avatar className="h-9 w-9 shrink-0">
+                    <AvatarFallback className="bg-amber-100 text-amber-800 text-xs font-semibold dark:bg-amber-500/15 dark:text-amber-300">
+                      <Clock className="h-4 w-4" />
+                    </AvatarFallback>
+                  </Avatar>
+                  <div className="min-w-0">
+                    <p className="text-sm font-semibold text-foreground truncate">
+                      {inv.email}
+                    </p>
+                    <p className="text-xs text-muted-foreground truncate">
+                      Convite enviado · expira em{" "}
+                      {new Date(inv.expires_at).toLocaleDateString("pt-BR")}
+                    </p>
+                  </div>
+                </div>
+
+                <div className="hidden sm:flex items-center gap-2">
+                  <span
+                    className={cn(
+                      "inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium",
+                      roleBadgeClasses(inv.role)
+                    )}
+                  >
+                    {inv.role}
+                  </span>
+                  <span className="inline-flex items-center gap-1 rounded-full bg-amber-100 text-amber-800 dark:bg-amber-500/15 dark:text-amber-300 px-2.5 py-0.5 text-xs font-medium">
+                    <Clock className="h-3 w-3" /> Aguardando
+                  </span>
+                </div>
+
+                <div className="flex justify-end">
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="h-8 w-8 text-muted-foreground hover:text-foreground"
+                        aria-label="Ações"
+                      >
+                        <MoreVertical className="h-4 w-4" />
+                      </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end" className="w-56">
+                      <DropdownMenuItem onClick={() => handleCopyLink(inv)}>
+                        <Copy className="h-4 w-4 mr-2" /> Copiar link do convite
+                      </DropdownMenuItem>
+                      <DropdownMenuSeparator />
+                      <DropdownMenuItem
+                        onClick={() => handleRevokeInvite(inv)}
+                        className="text-destructive focus:text-destructive"
+                      >
+                        Revogar convite
                       </DropdownMenuItem>
                     </DropdownMenuContent>
                   </DropdownMenu>
@@ -354,32 +471,74 @@ function TeamPanel({ storeId, storesCount }: { storeId: string; storesCount: num
 function InviteMemberDialog({
   open,
   onOpenChange,
+  storeId,
+  onInvited,
 }: {
   open: boolean;
   onOpenChange: (open: boolean) => void;
+  storeId: string;
+  onInvited: () => void;
 }) {
   const [email, setEmail] = useState("");
   const [role, setRole] = useState<TeamRole>("Vendedor");
   const [submitting, setSubmitting] = useState(false);
+  const [createdLink, setCreatedLink] = useState<string | null>(null);
 
   function reset() {
     setEmail("");
     setRole("Vendedor");
     setSubmitting(false);
+    setCreatedLink(null);
   }
 
-  function handleSubmit(e: React.FormEvent) {
+  async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
-    if (!email.trim()) return;
+    const trimmed = email.trim().toLowerCase();
+    if (!trimmed) return;
     setSubmitting(true);
-    setTimeout(() => {
-      onOpenChange(false);
-      reset();
-      toast({
-        title: "✅ Convite enviado com sucesso!",
-        description: "O usuário receberá um link de acesso.",
-      });
-    }, 400);
+
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+    if (!user) {
+      toast({ title: "Sessão expirada", variant: "destructive" });
+      setSubmitting(false);
+      return;
+    }
+
+    const { data, error } = await supabase
+      .from("store_invites")
+      .insert({
+        store_id: storeId,
+        email: trimmed,
+        role,
+        invited_by: user.id,
+      })
+      .select("token")
+      .single();
+
+    setSubmitting(false);
+
+    if (error) {
+      const msg = error.message.includes("uniq_pending_invite")
+        ? "Já existe um convite pendente para este e-mail."
+        : error.message;
+      toast({ title: "Erro ao criar convite", description: msg, variant: "destructive" });
+      return;
+    }
+
+    const link = buildInviteLink(data.token);
+    setCreatedLink(link);
+    try {
+      await navigator.clipboard.writeText(link);
+    } catch {
+      /* ignore */
+    }
+    toast({
+      title: "✅ Convite criado!",
+      description: "Link copiado para a área de transferência.",
+    });
+    onInvited();
   }
 
   return (
@@ -395,65 +554,106 @@ function InviteMemberDialog({
           Convidar Novo Membro
         </ResponsiveDialogTitle>
         <ResponsiveDialogDescription className="text-sm text-muted-foreground">
-          Envie um convite para adicionar um novo colaborador a esta filial.
+          Gere um link de convite e envie ao colaborador por WhatsApp ou e-mail.
         </ResponsiveDialogDescription>
       </ResponsiveDialogHeader>
 
-      <form onSubmit={handleSubmit} className="space-y-5 pt-2">
-        <div className="space-y-2">
-          <Label
-            htmlFor="invite-email"
-            className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground"
-          >
-            E-mail do colaborador
-          </Label>
-          <Input
-            id="invite-email"
-            type="email"
-            required
-            autoFocus
-            placeholder="exemplo@otica.com"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            className="h-11"
-          />
+      {createdLink ? (
+        <div className="space-y-4 pt-2">
+          <div className="rounded-lg border border-emerald-200 bg-emerald-50 p-3 text-sm text-emerald-900 dark:bg-emerald-500/10 dark:border-emerald-500/30 dark:text-emerald-200">
+            Convite criado para <span className="font-semibold">{email}</span> como{" "}
+            <span className="font-semibold">{role}</span>.
+          </div>
+          <div className="space-y-2">
+            <Label className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
+              Link de convite (já copiado)
+            </Label>
+            <div className="flex gap-2">
+              <Input readOnly value={createdLink} className="h-11 font-mono text-xs" />
+              <Button
+                type="button"
+                variant="outline"
+                className="h-11 shrink-0"
+                onClick={async () => {
+                  await navigator.clipboard.writeText(createdLink);
+                  toast({ title: "Link copiado!" });
+                }}
+              >
+                <Copy className="h-4 w-4" />
+              </Button>
+            </div>
+            <p className="text-[11px] text-muted-foreground">
+              Válido por 7 dias. Quem abrir o link cria a conta com este e-mail e entra
+              direto no Dashboard da loja.
+            </p>
+          </div>
+          <ResponsiveDialogFooter>
+            <Button
+              type="button"
+              className="h-11 bg-emerald-500 hover:bg-emerald-500/90 text-white"
+              onClick={() => onOpenChange(false)}
+            >
+              Concluir
+            </Button>
+          </ResponsiveDialogFooter>
         </div>
+      ) : (
+        <form onSubmit={handleSubmit} className="space-y-5 pt-2">
+          <div className="space-y-2">
+            <Label
+              htmlFor="invite-email"
+              className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground"
+            >
+              E-mail do colaborador
+            </Label>
+            <Input
+              id="invite-email"
+              type="email"
+              required
+              autoFocus
+              placeholder="exemplo@otica.com"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              className="h-11"
+            />
+          </div>
 
-        <div className="space-y-2">
-          <Label className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
-            Cargo / Permissão
-          </Label>
-          <Select value={role} onValueChange={(v) => setRole(v as TeamRole)}>
-            <SelectTrigger className="h-11">
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="Dono">Dono</SelectItem>
-              <SelectItem value="Gerente">Gerente</SelectItem>
-              <SelectItem value="Vendedor">Vendedor</SelectItem>
-            </SelectContent>
-          </Select>
-        </div>
+          <div className="space-y-2">
+            <Label className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
+              Cargo / Permissão
+            </Label>
+            <Select value={role} onValueChange={(v) => setRole(v as TeamRole)}>
+              <SelectTrigger className="h-11">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="Dono">Dono</SelectItem>
+                <SelectItem value="Gerente">Gerente</SelectItem>
+                <SelectItem value="Vendedor">Vendedor</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
 
-        <ResponsiveDialogFooter className="sm:justify-between">
-          <Button
-            type="button"
-            variant="ghost"
-            onClick={() => onOpenChange(false)}
-            className="h-11 text-muted-foreground hover:text-foreground"
-          >
-            Cancelar
-          </Button>
-          <Button
-            type="submit"
-            disabled={submitting || !email.trim()}
-            className="h-11 gap-2 bg-emerald-500 hover:bg-emerald-500/90 text-white"
-          >
-            <UserPlus className="h-4 w-4" />
-            {submitting ? "Enviando…" : "Enviar Convite"}
-          </Button>
-        </ResponsiveDialogFooter>
-      </form>
+          <ResponsiveDialogFooter className="sm:justify-between">
+            <Button
+              type="button"
+              variant="ghost"
+              onClick={() => onOpenChange(false)}
+              className="h-11 text-muted-foreground hover:text-foreground"
+            >
+              Cancelar
+            </Button>
+            <Button
+              type="submit"
+              disabled={submitting || !email.trim()}
+              className="h-11 gap-2 bg-emerald-500 hover:bg-emerald-500/90 text-white"
+            >
+              <UserPlus className="h-4 w-4" />
+              {submitting ? "Gerando…" : "Gerar Convite"}
+            </Button>
+          </ResponsiveDialogFooter>
+        </form>
+      )}
     </ResponsiveDialog>
   );
 }
