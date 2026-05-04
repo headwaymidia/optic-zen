@@ -175,6 +175,8 @@ type TeamMember = {
   user_id: string;
   role: TeamRole;
   created_at: string;
+  full_name: string | null;
+  email: string | null;
 };
 
 type PendingInvite = {
