@@ -371,15 +371,17 @@ function TeamPanel({ storeId, storesCount }: { storeId: string; storesCount: num
               >
                 <div className="flex items-center gap-3 min-w-0">
                   {(() => {
-                    const email = m.email ?? "";
+                    const email = (m.email ?? "").trim();
                     const fullName = (m.full_name ?? "").trim();
-                    const hasRealName = fullName.length > 0 && fullName.toLowerCase() !== email.toLowerCase();
-                    const primary = email || fullName || `Usuário ${shortId(m.user_id)}`;
-                    const secondary = hasRealName ? fullName : null;
+                    const hasRealName =
+                      fullName.length > 0 && fullName.toLowerCase() !== email.toLowerCase();
+                    // Prioridade: nome real > email. NUNCA mostrar UUID.
+                    const primary = hasRealName ? fullName : email || "Membro sem e-mail";
+                    const secondary = hasRealName && email ? email : null;
                     const initialsSource = email || fullName;
                     const initials = initialsSource
                       ? initialsSource.slice(0, 2).toUpperCase()
-                      : shortId(m.user_id).slice(0, 2);
+                      : "?";
                     return (
                       <>
                         <Avatar className="h-9 w-9 shrink-0">
