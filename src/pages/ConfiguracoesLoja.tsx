@@ -350,19 +350,35 @@ function TeamPanel({ storeId, storesCount }: { storeId: string; storesCount: num
                 className="grid grid-cols-[1fr_auto] sm:grid-cols-[1.6fr_1fr_40px] items-center gap-4 px-1 py-4 group"
               >
                 <div className="flex items-center gap-3 min-w-0">
-                  <Avatar className="h-9 w-9 shrink-0">
-                    <AvatarFallback className="bg-muted text-foreground text-xs font-semibold">
-                      {shortId(m.user_id).slice(0, 2)}
-                    </AvatarFallback>
-                  </Avatar>
-                  <div className="min-w-0">
-                    <p className="text-sm font-semibold text-foreground truncate">
-                      Usuário {shortId(m.user_id)}
-                    </p>
-                    <p className="text-xs text-muted-foreground truncate font-mono">
-                      {m.user_id}
-                    </p>
-                  </div>
+                  {(() => {
+                    const displayName =
+                      (m.full_name && m.full_name.trim()) ||
+                      m.email ||
+                      `Usuário ${shortId(m.user_id)}`;
+                    const initials = displayName
+                      .split(/\s+/)
+                      .filter(Boolean)
+                      .slice(0, 2)
+                      .map((p) => p.charAt(0).toUpperCase())
+                      .join("") || displayName.slice(0, 2).toUpperCase();
+                    return (
+                      <>
+                        <Avatar className="h-9 w-9 shrink-0">
+                          <AvatarFallback className="bg-muted text-foreground text-xs font-semibold">
+                            {initials}
+                          </AvatarFallback>
+                        </Avatar>
+                        <div className="min-w-0">
+                          <p className="text-sm font-semibold text-foreground truncate">
+                            {displayName}
+                          </p>
+                          <p className="text-xs text-muted-foreground truncate">
+                            {m.email ?? m.user_id}
+                          </p>
+                        </div>
+                      </>
+                    );
+                  })()}
                 </div>
 
                 <div className="hidden sm:block">
