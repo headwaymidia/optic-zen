@@ -371,16 +371,15 @@ function TeamPanel({ storeId, storesCount }: { storeId: string; storesCount: num
               >
                 <div className="flex items-center gap-3 min-w-0">
                   {(() => {
-                    const displayName =
-                      (m.full_name && m.full_name.trim()) ||
-                      m.email ||
-                      `Usuário ${shortId(m.user_id)}`;
-                    const initials = displayName
-                      .split(/\s+/)
-                      .filter(Boolean)
-                      .slice(0, 2)
-                      .map((p) => p.charAt(0).toUpperCase())
-                      .join("") || displayName.slice(0, 2).toUpperCase();
+                    const email = m.email ?? "";
+                    const fullName = (m.full_name ?? "").trim();
+                    const hasRealName = fullName.length > 0 && fullName.toLowerCase() !== email.toLowerCase();
+                    const primary = email || fullName || `Usuário ${shortId(m.user_id)}`;
+                    const secondary = hasRealName ? fullName : null;
+                    const initialsSource = email || fullName;
+                    const initials = initialsSource
+                      ? initialsSource.slice(0, 2).toUpperCase()
+                      : shortId(m.user_id).slice(0, 2);
                     return (
                       <>
                         <Avatar className="h-9 w-9 shrink-0">
@@ -390,11 +389,13 @@ function TeamPanel({ storeId, storesCount }: { storeId: string; storesCount: num
                         </Avatar>
                         <div className="min-w-0">
                           <p className="text-sm font-semibold text-foreground truncate">
-                            {displayName}
+                            {primary}
                           </p>
-                          <p className="text-xs text-muted-foreground truncate">
-                            {m.email ?? m.user_id}
-                          </p>
+                          {secondary && (
+                            <p className="text-xs text-muted-foreground truncate">
+                              {secondary}
+                            </p>
+                          )}
                         </div>
                       </>
                     );
