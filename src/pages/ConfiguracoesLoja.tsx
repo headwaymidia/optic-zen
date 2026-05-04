@@ -220,7 +220,7 @@ function TeamPanel({ storeId, storesCount }: { storeId: string; storesCount: num
     const [{ data: m, error: mErr }, { data: i, error: iErr }] = await Promise.all([
       supabase
         .from("store_members")
-        .select("id, user_id, role, created_at")
+        .select("id, user_id, role, created_at, profile:profiles(full_name, email)")
         .eq("store_id", storeId)
         .order("created_at", { ascending: true }),
       supabase
@@ -234,7 +234,15 @@ function TeamPanel({ storeId, storesCount }: { storeId: string; storesCount: num
     if (mErr) {
       toast({ title: "Erro ao carregar equipe", description: mErr.message, variant: "destructive" });
     } else {
-      setMembers((m ?? []) as TeamMember[]);
+      const mapped: TeamMember[] = (m ?? []).map((row: any) => ({
+        id: row.id,
+        user_id: row.user_id,
+        role: row.role,
+        created_at: row.created_at,
+        full_name: row.profile?.full_name ?? null,
+        email: row.profile?.email ?? null,
+      }));
+      setMembers(mapped);
     }
     if (iErr) {
       toast({ title: "Erro ao carregar convites", description: iErr.message, variant: "destructive" });
