@@ -175,6 +175,8 @@ type TeamMember = {
   user_id: string;
   role: TeamRole;
   created_at: string;
+  full_name: string | null;
+  email: string | null;
 };
 
 type PendingInvite = {
@@ -218,7 +220,7 @@ function TeamPanel({ storeId, storesCount }: { storeId: string; storesCount: num
     const [{ data: m, error: mErr }, { data: i, error: iErr }] = await Promise.all([
       supabase
         .from("store_members")
-        .select("id, user_id, role, created_at")
+        .select("id, user_id, role, created_at, profile:profiles(full_name, email)")
         .eq("store_id", storeId)
         .order("created_at", { ascending: true }),
       supabase
@@ -232,7 +234,15 @@ function TeamPanel({ storeId, storesCount }: { storeId: string; storesCount: num
     if (mErr) {
       toast({ title: "Erro ao carregar equipe", description: mErr.message, variant: "destructive" });
     } else {
-      setMembers((m ?? []) as TeamMember[]);
+      const mapped: TeamMember[] = (m ?? []).map((row: any) => ({
+        id: row.id,
+        user_id: row.user_id,
+        role: row.role,
+        created_at: row.created_at,
+        full_name: row.profile?.full_name ?? null,
+        email: row.profile?.email ?? null,
+      }));
+      setMembers(mapped);
     }
     if (iErr) {
       toast({ title: "Erro ao carregar convites", description: iErr.message, variant: "destructive" });
@@ -340,19 +350,35 @@ function TeamPanel({ storeId, storesCount }: { storeId: string; storesCount: num
                 className="grid grid-cols-[1fr_auto] sm:grid-cols-[1.6fr_1fr_40px] items-center gap-4 px-1 py-4 group"
               >
                 <div className="flex items-center gap-3 min-w-0">
-                  <Avatar className="h-9 w-9 shrink-0">
-                    <AvatarFallback className="bg-muted text-foreground text-xs font-semibold">
-                      {shortId(m.user_id).slice(0, 2)}
-                    </AvatarFallback>
-                  </Avatar>
-                  <div className="min-w-0">
-                    <p className="text-sm font-semibold text-foreground truncate">
-                      Usuário {shortId(m.user_id)}
-                    </p>
-                    <p className="text-xs text-muted-foreground truncate font-mono">
-                      {m.user_id}
-                    </p>
-                  </div>
+                  {(() => {
+                    const displayName =
+                      (m.full_name && m.full_name.trim()) ||
+                      m.email ||
+                      `Usuário ${shortId(m.user_id)}`;
+                    const initials = displayName
+                      .split(/\s+/)
+                      .filter(Boolean)
+                      .slice(0, 2)
+                      .map((p) => p.charAt(0).toUpperCase())
+                      .join("") || displayName.slice(0, 2).toUpperCase();
+                    return (
+                      <>
+                        <Avatar className="h-9 w-9 shrink-0">
+                          <AvatarFallback className="bg-muted text-foreground text-xs font-semibold">
+                            {initials}
+                          </AvatarFallback>
+                        </Avatar>
+                        <div className="min-w-0">
+                          <p className="text-sm font-semibold text-foreground truncate">
+                            {displayName}
+                          </p>
+                          <p className="text-xs text-muted-foreground truncate">
+                            {m.email ?? m.user_id}
+                          </p>
+                        </div>
+                      </>
+                    );
+                  })()}
                 </div>
 
                 <div className="hidden sm:block">
