@@ -220,7 +220,7 @@ function TeamPanel({ storeId, storesCount }: { storeId: string; storesCount: num
     const [{ data: m, error: mErr }, { data: i, error: iErr }] = await Promise.all([
       supabase
         .from("store_members")
-        .select("id, user_id, role, created_at, profile:profiles(full_name, email)")
+        .select("id, user_id, role, created_at")
         .eq("store_id", storeId)
         .order("created_at", { ascending: true }),
       supabase
@@ -230,20 +230,40 @@ function TeamPanel({ storeId, storesCount }: { storeId: string; storesCount: num
         .eq("status", "pendente")
         .order("created_at", { ascending: false }),
     ]);
-    setLoading(false);
+
     if (mErr) {
+      setLoading(false);
       toast({ title: "Erro ao carregar equipe", description: mErr.message, variant: "destructive" });
     } else {
-      const mapped: TeamMember[] = (m ?? []).map((row: any) => ({
-        id: row.id,
-        user_id: row.user_id,
-        role: row.role,
-        created_at: row.created_at,
-        full_name: row.profile?.full_name ?? null,
-        email: row.profile?.email ?? null,
-      }));
+      const userIds = Array.from(new Set((m ?? []).map((r: any) => r.user_id)));
+      let profileMap = new Map<string, { full_name: string | null; email: string | null }>();
+      if (userIds.length > 0) {
+        const { data: profs, error: pErr } = await supabase
+          .from("profiles")
+          .select("id, full_name, email")
+          .in("id", userIds);
+        if (pErr) {
+          console.error("Erro ao carregar profiles:", pErr);
+        } else {
+          profileMap = new Map(
+            (profs ?? []).map((p: any) => [p.id, { full_name: p.full_name, email: p.email }])
+          );
+        }
+      }
+      const mapped: TeamMember[] = (m ?? []).map((row: any) => {
+        const p = profileMap.get(row.user_id);
+        return {
+          id: row.id,
+          user_id: row.user_id,
+          role: row.role,
+          created_at: row.created_at,
+          full_name: p?.full_name ?? null,
+          email: p?.email ?? null,
+        };
+      });
       setMembers(mapped);
     }
+    setLoading(false);
     if (iErr) {
       toast({ title: "Erro ao carregar convites", description: iErr.message, variant: "destructive" });
     } else {
@@ -351,16 +371,15 @@ function TeamPanel({ storeId, storesCount }: { storeId: string; storesCount: num
               >
                 <div className="flex items-center gap-3 min-w-0">
                   {(() => {
-                    const displayName =
-                      (m.full_name && m.full_name.trim()) ||
-                      m.email ||
-                      `Usuário ${shortId(m.user_id)}`;
-                    const initials = displayName
-                      .split(/\s+/)
-                      .filter(Boolean)
-                      .slice(0, 2)
-                      .map((p) => p.charAt(0).toUpperCase())
-                      .join("") || displayName.slice(0, 2).toUpperCase();
+                    const email = m.email ?? "";
+                    const fullName = (m.full_name ?? "").trim();
+                    const hasRealName = fullName.length > 0 && fullName.toLowerCase() !== email.toLowerCase();
+                    const primary = email || fullName || `Usuário ${shortId(m.user_id)}`;
+                    const secondary = hasRealName ? fullName : null;
+                    const initialsSource = email || fullName;
+                    const initials = initialsSource
+                      ? initialsSource.slice(0, 2).toUpperCase()
+                      : shortId(m.user_id).slice(0, 2);
                     return (
                       <>
                         <Avatar className="h-9 w-9 shrink-0">
@@ -370,11 +389,13 @@ function TeamPanel({ storeId, storesCount }: { storeId: string; storesCount: num
                         </Avatar>
                         <div className="min-w-0">
                           <p className="text-sm font-semibold text-foreground truncate">
-                            {displayName}
+                            {primary}
                           </p>
-                          <p className="text-xs text-muted-foreground truncate">
-                            {m.email ?? m.user_id}
-                          </p>
+                          {secondary && (
+                            <p className="text-xs text-muted-foreground truncate">
+                              {secondary}
+                            </p>
+                          )}
                         </div>
                       </>
                     );
