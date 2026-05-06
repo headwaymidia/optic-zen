@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { Navigate, useNavigate } from "react-router-dom";
-import { ArrowRight, Eye, Loader2 } from "lucide-react";
+import { ArrowLeft, ArrowRight, Eye, Loader2 } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { useStores } from "@/hooks/useStores";
 import { Button } from "@/components/ui/button";
