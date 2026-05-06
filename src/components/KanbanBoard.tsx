@@ -349,7 +349,7 @@ function LeadCardContent({ lead, onEdit, dragging, selected, cadenceHighlight }:
           )}
           {(() => {
             const isExamColumn = lead.status === "Agendou Exame";
-            const examDate = isExamColumn ? lead.follow_up_date : null;
+            const examDate = lead.exam_date || (isExamColumn ? lead.follow_up_date : null);
             const showExam = isExamColumn && !!examDate;
             const aging = isAging(lead);
             return (
