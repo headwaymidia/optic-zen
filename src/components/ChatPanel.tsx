@@ -283,6 +283,18 @@ export function ChatPanel({
                 <PrescriptionForm lead={lead} />
               </AccordionContent>
             </AccordionItem>
+            <AccordionItem value="exam" className="border-0 border-b">
+              <AccordionTrigger className="px-3 py-2 text-xs font-medium hover:no-underline hover:bg-muted/50">
+                <span className="flex items-center gap-2 flex-1 text-left">
+                  <CalendarClock className="h-3.5 w-3.5 text-primary" />
+                  <span>Agendar Exame</span>
+                  <ChecklistBadge ok={!!lead.exam_date} />
+                </span>
+              </AccordionTrigger>
+              <AccordionContent className="px-3 pb-3 pt-0">
+                <ExamScheduler lead={lead} />
+              </AccordionContent>
+            </AccordionItem>
             <AccordionItem value="lab" className="border-0">
               <AccordionTrigger className="px-3 py-2 text-xs font-medium hover:no-underline hover:bg-muted/50">
                 <span className="flex items-center gap-2 flex-1 text-left">
