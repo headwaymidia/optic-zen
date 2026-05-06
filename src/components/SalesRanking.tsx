@@ -114,6 +114,8 @@ export function SalesRanking({ leads }: { leads: Lead[] }) {
                     >
                       {i === 0 ? (
                         <Trophy className="h-3.5 w-3.5" strokeWidth={2.2} />
+                      ) : i === 1 || i === 2 ? (
+                        <Medal className="h-3.5 w-3.5" strokeWidth={2.2} />
                       ) : (
                         POSITION_LABEL[i]
                       )}
