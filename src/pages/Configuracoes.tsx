@@ -1,28 +1,98 @@
 import { useEffect, useState } from "react";
 import { useAuth } from "@/hooks/useAuth";
+import { useStores } from "@/hooks/useStores";
 import { supabase } from "@/lib/supabase";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { useTheme } from "@/hooks/useTheme";
-import { Sun, Moon } from "lucide-react";
+import { toast } from "@/hooks/use-toast";
+import { Sun, Moon, Loader2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
+function translateRole(role?: string | null): string {
+  if (!role) return "—";
+  const map: Record<string, string> = {
+    owner: "Proprietário",
+    manager: "Gerente",
+    attendant: "Atendente",
+  };
+  return map[role.toLowerCase()] ?? role;
+}
+
 export default function Configuracoes() {
-  const { profile, user } = useAuth();
-  const [companyName, setCompanyName] = useState("");
+  const { user } = useAuth();
+  const { currentStoreId } = useStores();
   const { theme, setTheme } = useTheme();
 
+  const [fullName, setFullName] = useState("");
+  const [initialName, setInitialName] = useState("");
+  const [role, setRole] = useState<string | null>(null);
+  const [storeName, setStoreName] = useState("");
+  const [saving, setSaving] = useState(false);
+
+  // Carrega profile (full_name)
   useEffect(() => {
-    if (!profile?.company_id) return;
+    if (!user?.id) return;
     supabase
-      .from("companies")
-      .select("name")
-      .eq("id", profile.company_id)
+      .from("profiles")
+      .select("full_name")
+      .eq("id", user.id)
       .maybeSingle()
-      .then(({ data }) => setCompanyName(data?.name ?? ""));
-  }, [profile?.company_id]);
+      .then(({ data }) => {
+        const n = data?.full_name ?? "";
+        setFullName(n);
+        setInitialName(n);
+      });
+  }, [user?.id]);
+
+  // Carrega função na loja atual
+  useEffect(() => {
+    if (!user?.id || !currentStoreId) return;
+    supabase
+      .from("store_members")
+      .select("role")
+      .eq("store_id", currentStoreId)
+      .eq("user_id", user.id)
+      .maybeSingle()
+      .then(({ data }) => setRole(data?.role ?? null));
+  }, [user?.id, currentStoreId]);
+
+  // Carrega nome da loja
+  useEffect(() => {
+    if (!currentStoreId) return;
+    supabase
+      .from("stores")
+      .select("name")
+      .eq("id", currentStoreId)
+      .maybeSingle()
+      .then(({ data }) => setStoreName(data?.name ?? ""));
+  }, [currentStoreId]);
+
+  async function handleSave() {
+    if (!user?.id) return;
+    const trimmed = fullName.trim();
+    if (!trimmed) {
+      toast({ title: "Informe seu nome", variant: "destructive" });
+      return;
+    }
+    setSaving(true);
+    const { error } = await supabase
+      .from("profiles")
+      .update({ full_name: trimmed })
+      .eq("id", user.id);
+    setSaving(false);
+    if (error) {
+      toast({ title: "Erro ao salvar", description: error.message, variant: "destructive" });
+      return;
+    }
+    setInitialName(trimmed);
+    toast({ title: "Alterações salvas com sucesso." });
+  }
+
+  const dirty = fullName.trim() !== initialName.trim();
 
   return (
     <div className="p-6 space-y-6 max-w-2xl">
@@ -84,8 +154,13 @@ export default function Configuracoes() {
         <CardHeader><CardTitle className="text-base">Perfil</CardTitle></CardHeader>
         <CardContent className="space-y-4">
           <div className="space-y-2">
-            <Label>Nome</Label>
-            <Input value={profile?.name ?? ""} readOnly />
+            <Label htmlFor="profile-name">Nome</Label>
+            <Input
+              id="profile-name"
+              value={fullName}
+              onChange={(e) => setFullName(e.target.value)}
+              placeholder="Seu nome"
+            />
           </div>
           <div className="space-y-2">
             <Label>Email</Label>
@@ -93,7 +168,13 @@ export default function Configuracoes() {
           </div>
           <div className="space-y-2">
             <Label>Função</Label>
-            <Input value={profile?.role ?? "—"} readOnly />
+            <Input value={translateRole(role)} readOnly />
+          </div>
+          <div className="flex justify-end">
+            <Button onClick={handleSave} disabled={!dirty || saving}>
+              {saving && <Loader2 className="h-4 w-4 animate-spin" />}
+              Salvar alterações
+            </Button>
           </div>
         </CardContent>
       </Card>
@@ -103,11 +184,11 @@ export default function Configuracoes() {
         <CardContent className="space-y-4">
           <div className="space-y-2">
             <Label>Nome da empresa</Label>
-            <Input value={companyName} readOnly />
+            <Input value={storeName} readOnly />
           </div>
           <div className="space-y-2">
             <Label>ID da empresa</Label>
-            <Input value={profile?.company_id ?? ""} readOnly className="font-mono text-xs" />
+            <Input value={currentStoreId ?? ""} readOnly className="font-mono text-xs" />
           </div>
         </CardContent>
       </Card>
