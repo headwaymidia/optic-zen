@@ -142,7 +142,7 @@ export default function Funil() {
                   <FuTabTrigger
                     key={n}
                     value={String(n)}
-                    label={`FU 0${n}`}
+                    label={`Follow-up ${n}`}
                     count={fuCounts[n]}
                   />
                 ))}
