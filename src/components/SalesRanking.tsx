@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { Card } from "@/components/ui/card";
 import { Lead, supabase } from "@/lib/supabase";
-import { Trophy } from "lucide-react";
+import { Trophy, Medal } from "lucide-react";
 
 interface RankItem {
   name: string;
