@@ -51,7 +51,7 @@ const items = [
 
 const secondaryItems = [
   { title: "Configurações", url: "/configuracoes", icon: Settings },
-  { title: "Planos", url: "/planos", icon: Crown },
+  { title: "Meu plano", url: "/planos", icon: Crown },
   { title: "Ajuda", url: "/ajuda", icon: HelpCircle, external: true },
   { title: "Seja um parceiro", url: "/parceiro", icon: Handshake, external: true },
 ];
