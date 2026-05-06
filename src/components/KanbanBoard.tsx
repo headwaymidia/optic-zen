@@ -184,6 +184,14 @@ function LeadCardContent({ lead, onEdit, dragging, selected, cadenceHighlight }:
                 <span className="truncate">{lead.assigned_to}</span>
               </p>
             )}
+            {lead.exam_date && (
+              <p className="flex items-center gap-1 text-[10px] text-purple-600 dark:text-purple-300 font-medium truncate mt-0.5">
+                <Calendar className="h-2.5 w-2.5 shrink-0" />
+                <span className="truncate">
+                  Exame: {new Date(lead.exam_date).toLocaleString("pt-BR", { day: "2-digit", month: "2-digit", hour: "2-digit", minute: "2-digit" })}
+                </span>
+              </p>
+            )}
           </div>
           <div className="flex items-center gap-1 shrink-0">
             {lead.priority && (
