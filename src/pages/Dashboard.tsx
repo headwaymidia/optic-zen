@@ -10,6 +10,7 @@ import { ResponseSpeedCard } from "@/components/ResponseSpeedCard";
 import { ObjectionRadar } from "@/components/ObjectionRadar";
 import { VerticalNeonFunnel } from "@/components/VerticalNeonFunnel";
 import { RevenueEvolutionChart } from "@/components/RevenueEvolutionChart";
+import { UpcomingReturnsCard } from "@/components/UpcomingReturnsCard";
 import { exportMonthlyReport } from "@/lib/exportReport";
 import { isWithinInterval, parseISO, format } from "date-fns";
 import { ptBR } from "date-fns/locale";
@@ -97,6 +98,9 @@ export default function Dashboard() {
             </div>
             <PeriodKPIRow leads={storeLeads} range={range} inline />
           </div>
+
+          {/* Retornos previstos para os próximos 30 dias */}
+          <UpcomingReturnsCard leads={storeLeads} />
 
           {/* 4. Velocidade & Ranking — mobile: empilha 100% / desktop: 50-50 */}
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6 pt-2 items-stretch">
