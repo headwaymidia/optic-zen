@@ -14,7 +14,7 @@ import { UpcomingReturnsCard } from "@/components/UpcomingReturnsCard";
 import { exportMonthlyReport } from "@/lib/exportReport";
 import { isWithinInterval, parseISO, format } from "date-fns";
 import { ptBR } from "date-fns/locale";
-import { FileDown } from "lucide-react";
+import { FileDown, Tv } from "lucide-react";
 
 export default function Dashboard() {
   const { leads, loading } = useLeads();
