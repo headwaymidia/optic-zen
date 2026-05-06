@@ -7,7 +7,7 @@ import { supabase } from "@/lib/supabase";
 import { useStores } from "@/hooks/useStores";
 import { useLeads } from "@/hooks/useLeads";
 import { toast } from "@/hooks/use-toast";
-import { maskCPF } from "@/lib/masks";
+import { maskCPF, maskCEP } from "@/lib/masks";
 import { MapPin, IdCard, Cake, Eye } from "lucide-react";
 
 export function NewLeadDialog({
