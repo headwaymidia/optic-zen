@@ -1,31 +1,56 @@
 import { useMemo, useState } from "react";
-import { Lead } from "@/lib/supabase";
+import { Lead, LEAD_SOURCES, INTEREST_TAGS, SALESPEOPLE } from "@/lib/supabase";
 import { useLeads } from "@/hooks/useLeads";
 import { Card } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { LeadDialog } from "@/components/LeadDialog";
 import { Plus, MessageCircle, ChevronLeft, ChevronRight } from "lucide-react";
 
 const PAGE_SIZE = 10;
+const ALL = "__all__";
+
+function formatRelative(dateStr: string): string {
+  const date = new Date(dateStr);
+  const diffMs = Date.now() - date.getTime();
+  const sec = Math.floor(diffMs / 1000);
+  if (sec < 60) return "agora";
+  const min = Math.floor(sec / 60);
+  if (min < 60) return `há ${min} ${min === 1 ? "minuto" : "minutos"}`;
+  const hr = Math.floor(min / 60);
+  if (hr < 24) return `há ${hr} ${hr === 1 ? "hora" : "horas"}`;
+  const day = Math.floor(hr / 24);
+  if (day < 30) return `há ${day} ${day === 1 ? "dia" : "dias"}`;
+  const mo = Math.floor(day / 30);
+  if (mo < 12) return `há ${mo} ${mo === 1 ? "mês" : "meses"}`;
+  const yr = Math.floor(mo / 12);
+  return `há ${yr} ${yr === 1 ? "ano" : "anos"}`;
+}
 
 export default function Contatos() {
   const { leads, loading, refetch } = useLeads();
   const [search, setSearch] = useState("");
+  const [sourceFilter, setSourceFilter] = useState<string>(ALL);
+  const [tagFilter, setTagFilter] = useState<string>(ALL);
+  const [salesFilter, setSalesFilter] = useState<string>(ALL);
   const [page, setPage] = useState(1);
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editingLead, setEditingLead] = useState<Lead | null>(null);
 
   const filtered = useMemo(
     () =>
-      leads.filter(
-        (l) =>
-          l.name.toLowerCase().includes(search.toLowerCase()) ||
-          (l.phone ?? "").includes(search)
-      ),
-    [leads, search]
+      leads.filter((l) => {
+        const term = search.toLowerCase();
+        if (term && !(l.name.toLowerCase().includes(term) || (l.phone ?? "").includes(search))) return false;
+        if (sourceFilter !== ALL && (l.lead_source ?? "") !== sourceFilter) return false;
+        if (tagFilter !== ALL && (l.interest_tag ?? "") !== tagFilter) return false;
+        if (salesFilter !== ALL && (l.assigned_to ?? "") !== salesFilter) return false;
+        return true;
+      }),
+    [leads, search, sourceFilter, tagFilter, salesFilter]
   );
 
   const totalPages = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE));
@@ -36,6 +61,10 @@ export default function Contatos() {
     if (!phone) return;
     const clean = phone.replace(/\D/g, "");
     window.open(`https://wa.me/${clean}`, "_blank");
+  }
+
+  function resetPage<T>(setter: (v: T) => void) {
+    return (v: T) => { setter(v); setPage(1); };
   }
 
   return (
@@ -50,12 +79,35 @@ export default function Contatos() {
         </Button>
       </div>
 
-      <Input
-        placeholder="Buscar por nome ou telefone..."
-        value={search}
-        onChange={(e) => { setSearch(e.target.value); setPage(1); }}
-        className="max-w-sm"
-      />
+      <div className="flex flex-wrap gap-2 items-center">
+        <Input
+          placeholder="Buscar por nome ou telefone..."
+          value={search}
+          onChange={(e) => { setSearch(e.target.value); setPage(1); }}
+          className="max-w-sm"
+        />
+        <Select value={sourceFilter} onValueChange={resetPage(setSourceFilter)}>
+          <SelectTrigger className="w-44"><SelectValue placeholder="Origem" /></SelectTrigger>
+          <SelectContent>
+            <SelectItem value={ALL}>Todas as origens</SelectItem>
+            {LEAD_SOURCES.map((s) => (<SelectItem key={s} value={s}>{s}</SelectItem>))}
+          </SelectContent>
+        </Select>
+        <Select value={tagFilter} onValueChange={resetPage(setTagFilter)}>
+          <SelectTrigger className="w-44"><SelectValue placeholder="Tag" /></SelectTrigger>
+          <SelectContent>
+            <SelectItem value={ALL}>Todas as tags</SelectItem>
+            {INTEREST_TAGS.map((t) => (<SelectItem key={t} value={t}>{t}</SelectItem>))}
+          </SelectContent>
+        </Select>
+        <Select value={salesFilter} onValueChange={resetPage(setSalesFilter)}>
+          <SelectTrigger className="w-44"><SelectValue placeholder="Vendedora" /></SelectTrigger>
+          <SelectContent>
+            <SelectItem value={ALL}>Todas as vendedoras</SelectItem>
+            {SALESPEOPLE.map((s) => (<SelectItem key={s} value={s}>{s}</SelectItem>))}
+          </SelectContent>
+        </Select>
+      </div>
 
       <Card>
         <Table>
@@ -65,15 +117,19 @@ export default function Contatos() {
               <TableHead>Telefone</TableHead>
               <TableHead>Status</TableHead>
               <TableHead>Prioridade</TableHead>
+              <TableHead>Origem</TableHead>
+              <TableHead>Tag</TableHead>
+              <TableHead>Vendedora</TableHead>
+              <TableHead>Última atividade</TableHead>
               <TableHead>Criado em</TableHead>
               <TableHead className="text-right">Ações</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
             {loading ? (
-              <TableRow><TableCell colSpan={6} className="text-center text-muted-foreground py-8">Carregando...</TableCell></TableRow>
+              <TableRow><TableCell colSpan={10} className="text-center text-muted-foreground py-8">Carregando...</TableCell></TableRow>
             ) : paginated.length === 0 ? (
-              <TableRow><TableCell colSpan={6} className="text-center text-muted-foreground py-8">Nenhum contato encontrado</TableCell></TableRow>
+              <TableRow><TableCell colSpan={10} className="text-center text-muted-foreground py-8">Nenhum contato encontrado</TableCell></TableRow>
             ) : (
               paginated.map((l) => (
                 <TableRow key={l.id} className="cursor-pointer" onClick={() => { setEditingLead(l); setDialogOpen(true); }}>
@@ -81,6 +137,10 @@ export default function Contatos() {
                   <TableCell>{l.phone || "—"}</TableCell>
                   <TableCell><Badge variant="outline">{l.status}</Badge></TableCell>
                   <TableCell>{l.priority || "—"}</TableCell>
+                  <TableCell>{(l.lead_source as string) || "—"}</TableCell>
+                  <TableCell>{(l.interest_tag as string) || "—"}</TableCell>
+                  <TableCell>{l.assigned_to || "—"}</TableCell>
+                  <TableCell className="text-muted-foreground text-sm">{formatRelative(l.updated_at)}</TableCell>
                   <TableCell className="text-muted-foreground text-sm">
                     {new Date(l.created_at).toLocaleDateString("pt-BR")}
                   </TableCell>
@@ -122,4 +182,3 @@ export default function Contatos() {
     </div>
   );
 }
-
