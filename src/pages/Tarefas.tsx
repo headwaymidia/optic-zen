@@ -80,12 +80,14 @@ export default function Tarefas() {
   const navigate = useNavigate();
   const today = todayISO();
 
-  // Bloco "Quentes": exames agendados para hoje (ou em atraso)
+  // Bloco "Quentes": exames agendados para hoje (ou em atraso) — usa exam_date primariamente
   const quentes = useMemo(
     () =>
-      leads.filter(
-        (l) => l.status === "Agendou Exame" && isSameOrBefore(l.follow_up_date, today)
-      ),
+      leads.filter((l) => {
+        if (l.status !== "Agendou Exame") return false;
+        const ref = l.exam_date ?? l.follow_up_date;
+        return isSameOrBefore(ref, today);
+      }),
     [leads, today]
   );
 
