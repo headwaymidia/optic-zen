@@ -138,6 +138,62 @@ export type Database = {
           },
         ]
       }
+      prescriptions: {
+        Row: {
+          adicao: string | null
+          created_at: string
+          created_by: string | null
+          dnp: string | null
+          id: string
+          lead_id: string
+          od_cilindrico: string | null
+          od_eixo: string | null
+          od_esferico: string | null
+          oe_cilindrico: string | null
+          oe_eixo: string | null
+          oe_esferico: string | null
+          store_id: string
+        }
+        Insert: {
+          adicao?: string | null
+          created_at?: string
+          created_by?: string | null
+          dnp?: string | null
+          id?: string
+          lead_id: string
+          od_cilindrico?: string | null
+          od_eixo?: string | null
+          od_esferico?: string | null
+          oe_cilindrico?: string | null
+          oe_eixo?: string | null
+          oe_esferico?: string | null
+          store_id: string
+        }
+        Update: {
+          adicao?: string | null
+          created_at?: string
+          created_by?: string | null
+          dnp?: string | null
+          id?: string
+          lead_id?: string
+          od_cilindrico?: string | null
+          od_eixo?: string | null
+          od_esferico?: string | null
+          oe_cilindrico?: string | null
+          oe_eixo?: string | null
+          oe_esferico?: string | null
+          store_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "prescriptions_store_id_fkey"
+            columns: ["store_id"]
+            isOneToOne: false
+            referencedRelation: "stores"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       profiles: {
         Row: {
           created_at: string
