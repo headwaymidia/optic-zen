@@ -250,6 +250,31 @@ function LeadCardContent({ lead, onEdit, dragging, selected, cadenceHighlight }:
               Urgência de Atendimento
             </Badge>
           )}
+          {(() => {
+            if (!lead.next_return_date) return null;
+            const today = new Date(); today.setHours(0, 0, 0, 0);
+            const ret = new Date(lead.next_return_date + "T00:00:00");
+            const diffDays = Math.round((ret.getTime() - today.getTime()) / 86400000);
+            if (diffDays > 30) return null;
+            if (diffDays < 0) {
+              return (
+                <Badge className="bg-red-100 hover:bg-red-200 text-red-700 dark:bg-red-900/40 dark:text-red-200 text-[10px] px-2 py-0.5 gap-1 rounded-full border-0 font-semibold">
+                  <BellRing className="h-3 w-3" /> Retorno vencido
+                </Badge>
+              );
+            }
+            const isRed = diffDays < 14;
+            return (
+              <Badge className={cn(
+                "text-[10px] px-2 py-0.5 gap-1 rounded-full border-0 font-semibold",
+                isRed
+                  ? "bg-red-100 hover:bg-red-200 text-red-700 dark:bg-red-900/40 dark:text-red-200"
+                  : "bg-yellow-100 hover:bg-yellow-200 text-yellow-800 dark:bg-yellow-900/40 dark:text-yellow-200"
+              )}>
+                <BellRing className="h-3 w-3" /> Retorno em {diffDays} {diffDays === 1 ? "dia" : "dias"}
+              </Badge>
+            );
+          })()}
           {lead.status === "Repescagem" && (
             <Badge className="bg-indigo-50 hover:bg-indigo-100 text-indigo-600 text-[10px] px-2 py-0.5 rounded-full border-0 font-semibold">
               Repescagem
