@@ -30,6 +30,7 @@ export default function OnboardingPage() {
   const { session, loading: authLoading } = useAuth();
   const { stores, loading: storesLoading, addStore } = useStores();
   const navigate = useNavigate();
+  const [ownerName, setOwnerName] = useState("");
   const [name, setName] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const [checkingSession, setCheckingSession] = useState(true);
@@ -89,7 +90,8 @@ export default function OnboardingPage() {
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     const trimmed = name.trim();
-    if (!trimmed || submitting) return;
+    const trimmedOwner = ownerName.trim();
+    if (!trimmed || !trimmedOwner || submitting) return;
     setSubmitting(true);
 
     try {
@@ -106,6 +108,14 @@ export default function OnboardingPage() {
         return;
       }
       console.log("[Onboarding] Sessão ativa:", activeSession.user);
+
+      // Salva o nome do dono no profile
+      await supabase
+        .from("profiles")
+        .upsert(
+          { id: activeSession.user.id, full_name: trimmedOwner, email: activeSession.user.email },
+          { onConflict: "id" }
+        );
 
       const created = await addStore({ name: trimmed, throwOnError: true });
 
@@ -184,6 +194,24 @@ export default function OnboardingPage() {
           <form id="onboarding-form" onSubmit={handleSubmit} className="space-y-5">
             <div className="space-y-2">
               <Label
+                htmlFor="owner-name"
+                className="text-xs font-semibold text-zinc-700 uppercase tracking-wider"
+              >
+                Seu nome
+              </Label>
+              <Input
+                id="owner-name"
+                autoFocus
+                value={ownerName}
+                onChange={(e) => setOwnerName(e.target.value)}
+                placeholder="Ex: João da Silva"
+                required
+                className="h-14 rounded-xl border border-zinc-200 bg-white text-base text-zinc-900 placeholder:text-zinc-400 px-4 shadow-sm focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-0 focus-visible:border-primary transition-all"
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label
                 htmlFor="store-name"
                 className="text-xs font-semibold text-zinc-700 uppercase tracking-wider"
               >
@@ -191,7 +219,6 @@ export default function OnboardingPage() {
               </Label>
               <Input
                 id="store-name"
-                autoFocus
                 value={name}
                 onChange={(e) => setName(e.target.value)}
                 placeholder="Ex: Loja Centro ou Nome da Franquia"
@@ -202,10 +229,10 @@ export default function OnboardingPage() {
 
             <Button
               type="submit"
-              disabled={submitting || !name.trim()}
+              disabled={submitting || !name.trim() || !ownerName.trim()}
               className={cn(
                 "w-full h-14 rounded-xl text-base font-semibold shadow-sm gap-2 group transition-colors",
-                name.trim()
+                name.trim() && ownerName.trim()
                   ? "bg-emerald-500 hover:bg-emerald-600 text-white"
                   : "bg-zinc-200 text-zinc-400 hover:bg-zinc-200 cursor-not-allowed disabled:opacity-100"
               )}
