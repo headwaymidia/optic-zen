@@ -70,7 +70,7 @@ export function StageGateDialog({ open, lead, targetStatus, onCancel, onConfirm 
         await onConfirm({
           status: "Compareceu e Comprou",
           sale_value: parsedSale,
-          lab_status: needsLab ? "Enviado ao Lab" : null,
+          lab_status: needsLab ? "Pedido feito" : null,
         });
       }
     } finally {

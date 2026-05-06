@@ -105,10 +105,11 @@ export const INTEREST_TAGS = [
 export type InterestTag = (typeof INTEREST_TAGS)[number];
 
 export const LAB_STATUSES = [
-  "Enviado ao Lab",
-  "Em Produção",
-  "Pronto para Retirada",
-  "Entregue",
+  "Pedido feito",
+  "Em produção",
+  "Pronto no laboratório",
+  "Retirado pela loja",
+  "Entregue ao cliente",
 ] as const;
 export type LabStatus = (typeof LAB_STATUSES)[number];
 
@@ -140,6 +141,8 @@ export interface Lead {
   assigned_to: string | null;
   delivery_prediction: string | null;
   lab_status: LabStatus | string | null;
+  lab_name: string | null;
+  lab_order_number: string | null;
   bairro: string | null;
   cpf: string | null;
   data_nascimento: string | null;

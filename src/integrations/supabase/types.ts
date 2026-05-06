@@ -66,6 +66,9 @@ export type Database = {
           follow_up_date: string | null
           id: string
           interest_tag: string | null
+          lab_name: string | null
+          lab_order_number: string | null
+          lab_status: string | null
           last_follow_up_at: string | null
           last_inbound_at: string | null
           last_interaction: string | null
@@ -92,6 +95,9 @@ export type Database = {
           follow_up_date?: string | null
           id?: string
           interest_tag?: string | null
+          lab_name?: string | null
+          lab_order_number?: string | null
+          lab_status?: string | null
           last_follow_up_at?: string | null
           last_inbound_at?: string | null
           last_interaction?: string | null
@@ -118,6 +124,9 @@ export type Database = {
           follow_up_date?: string | null
           id?: string
           interest_tag?: string | null
+          lab_name?: string | null
+          lab_order_number?: string | null
+          lab_status?: string | null
           last_follow_up_at?: string | null
           last_inbound_at?: string | null
           last_interaction?: string | null
