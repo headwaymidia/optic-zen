@@ -153,6 +153,42 @@ export type Database = {
           },
         ]
       }
+      partner_requests: {
+        Row: {
+          created_at: string
+          email: string
+          how: string
+          id: string
+          name: string
+          status: string
+          store_id: string | null
+          user_id: string
+          whatsapp: string
+        }
+        Insert: {
+          created_at?: string
+          email: string
+          how: string
+          id?: string
+          name: string
+          status?: string
+          store_id?: string | null
+          user_id?: string
+          whatsapp: string
+        }
+        Update: {
+          created_at?: string
+          email?: string
+          how?: string
+          id?: string
+          name?: string
+          status?: string
+          store_id?: string | null
+          user_id?: string
+          whatsapp?: string
+        }
+        Relationships: []
+      }
       prescriptions: {
         Row: {
           adicao: string | null
