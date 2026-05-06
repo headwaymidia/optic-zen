@@ -1,4 +1,4 @@
-import { Navigate, Outlet, useLocation } from "react-router-dom";
+import { Navigate, Outlet } from "react-router-dom";
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { AppSidebar } from "./AppSidebar";
 import { BottomNav } from "./BottomNav";
@@ -9,13 +9,12 @@ import { LeadsProvider } from "@/hooks/useLeads";
 import { useStores } from "@/hooks/useStores";
 import { SubscriptionProvider, useSubscription } from "@/hooks/useSubscription";
 
+import { TrialExpiredScreen } from "./TrialExpiredScreen";
+
 function TrialGuard({ children }: { children: React.ReactNode }) {
   const { isTrialExpired, loading } = useSubscription();
-  const location = useLocation();
   if (loading) return <>{children}</>;
-  if (isTrialExpired && location.pathname !== "/planos") {
-    return <Navigate to="/planos" replace />;
-  }
+  if (isTrialExpired) return <TrialExpiredScreen />;
   return <>{children}</>;
 }
 
