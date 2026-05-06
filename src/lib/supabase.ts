@@ -149,6 +149,7 @@ export interface Lead {
   last_follow_up_at: string | null;
   last_inbound_at: string | null;
   next_return_date: string | null;
+  exam_date: string | null;
   created_at: string;
   updated_at: string;
 }
