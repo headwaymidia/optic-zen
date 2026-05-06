@@ -21,7 +21,10 @@ export function NewLeadDialog({
   const { refetch } = useLeads();
   const [name, setName] = useState("");
   const [phone, setPhone] = useState("");
+  const [cep, setCep] = useState("");
+  const [rua, setRua] = useState("");
   const [bairro, setBairro] = useState("");
+  const [cidade, setCidade] = useState("");
   const [cpf, setCpf] = useState("");
   const [dataNascimento, setDataNascimento] = useState("");
   const [dataUltimoExame, setDataUltimoExame] = useState("");
