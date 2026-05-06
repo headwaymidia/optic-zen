@@ -33,7 +33,10 @@ export function NewLeadDialog({
   const reset = () => {
     setName("");
     setPhone("");
+    setCep("");
+    setRua("");
     setBairro("");
+    setCidade("");
     setCpf("");
     setDataNascimento("");
     setDataUltimoExame("");
