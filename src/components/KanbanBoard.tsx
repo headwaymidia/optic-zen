@@ -176,7 +176,15 @@ function LeadCardContent({ lead, onEdit, dragging, selected, cadenceHighlight }:
     >
       <div className="space-y-1.5">
         <div className="flex items-start justify-between gap-2">
-          <p className="text-sm font-medium text-slate-900 dark:text-white truncate flex-1 leading-tight">{lead.name}</p>
+          <div className="flex-1 min-w-0">
+            <p className="text-sm font-medium text-slate-900 dark:text-white truncate leading-tight">{lead.name}</p>
+            {lead.assigned_to && (
+              <p className="flex items-center gap-1 text-[10px] text-primary font-medium truncate mt-0.5">
+                <User className="h-2.5 w-2.5 shrink-0" />
+                <span className="truncate">{lead.assigned_to}</span>
+              </p>
+            )}
+          </div>
           <div className="flex items-center gap-1 shrink-0">
             {lead.priority && (
               <Badge
