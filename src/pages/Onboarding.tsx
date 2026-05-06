@@ -90,7 +90,8 @@ export default function OnboardingPage() {
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     const trimmed = name.trim();
-    if (!trimmed || submitting) return;
+    const trimmedOwner = ownerName.trim();
+    if (!trimmed || !trimmedOwner || submitting) return;
     setSubmitting(true);
 
     try {
