@@ -105,10 +105,11 @@ export const INTEREST_TAGS = [
 export type InterestTag = (typeof INTEREST_TAGS)[number];
 
 export const LAB_STATUSES = [
-  "Enviado ao Lab",
-  "Em Produção",
-  "Pronto para Retirada",
-  "Entregue",
+  "Pedido feito",
+  "Em produção",
+  "Pronto no laboratório",
+  "Retirado pela loja",
+  "Entregue ao cliente",
 ] as const;
 export type LabStatus = (typeof LAB_STATUSES)[number];
 
