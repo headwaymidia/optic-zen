@@ -99,6 +99,9 @@ export default function Dashboard() {
             <PeriodKPIRow leads={storeLeads} range={range} inline />
           </div>
 
+          {/* Retornos previstos para os próximos 30 dias */}
+          <UpcomingReturnsCard leads={storeLeads} />
+
           {/* 4. Velocidade & Ranking — mobile: empilha 100% / desktop: 50-50 */}
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6 pt-2 items-stretch">
             <ResponseSpeedCard leads={filtered} />
