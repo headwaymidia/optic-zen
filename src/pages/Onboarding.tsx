@@ -109,6 +109,14 @@ export default function OnboardingPage() {
       }
       console.log("[Onboarding] Sessão ativa:", activeSession.user);
 
+      // Salva o nome do dono no profile
+      await supabase
+        .from("profiles")
+        .upsert(
+          { id: activeSession.user.id, full_name: trimmedOwner, email: activeSession.user.email },
+          { onConflict: "id" }
+        );
+
       const created = await addStore({ name: trimmed, throwOnError: true });
 
       if (!created) {
