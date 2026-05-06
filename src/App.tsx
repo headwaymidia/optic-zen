@@ -18,6 +18,8 @@ import AuthPage from "./pages/Auth.tsx";
 import OnboardingPage from "./pages/Onboarding.tsx";
 import AceitarConvitePage from "./pages/AceitarConvite.tsx";
 import NotFound from "./pages/NotFound.tsx";
+import Ranking from "./pages/Ranking.tsx";
+import { LeadsProvider } from "@/hooks/useLeads";
 
 const queryClient = new QueryClient();
 
