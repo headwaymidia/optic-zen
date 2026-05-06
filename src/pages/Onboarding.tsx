@@ -144,8 +144,20 @@ export default function OnboardingPage() {
   }
 
   return (
-    <div className="min-h-screen w-full bg-zinc-50 flex flex-col items-center justify-center px-6 py-12">
+    <div className="min-h-screen w-full bg-zinc-50 flex flex-col items-center justify-center px-6 py-12 relative">
+      <button
+        type="button"
+        onClick={async () => {
+          await supabase.auth.signOut();
+          navigate("/auth", { replace: true });
+        }}
+        className="absolute top-6 left-6 inline-flex items-center gap-2 text-sm font-medium text-zinc-500 hover:text-zinc-900 transition-colors"
+      >
+        <ArrowLeft className="h-4 w-4" />
+        Voltar para login
+      </button>
       <div className="w-full max-w-md">
+
         {/* Brand header (mesmo do Auth) */}
         <div className="flex items-center justify-center gap-3 mb-8">
           <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-emerald-500 text-white shadow-sm">
