@@ -10,6 +10,7 @@ import { ResponseSpeedCard } from "@/components/ResponseSpeedCard";
 import { ObjectionRadar } from "@/components/ObjectionRadar";
 import { VerticalNeonFunnel } from "@/components/VerticalNeonFunnel";
 import { RevenueEvolutionChart } from "@/components/RevenueEvolutionChart";
+import { UpcomingReturnsCard } from "@/components/UpcomingReturnsCard";
 import { exportMonthlyReport } from "@/lib/exportReport";
 import { isWithinInterval, parseISO, format } from "date-fns";
 import { ptBR } from "date-fns/locale";
