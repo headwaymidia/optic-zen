@@ -61,6 +61,7 @@ export type Database = {
           cep: string | null
           cidade: string | null
           created_at: string
+          exam_date: string | null
           follow_up_count: number
           follow_up_date: string | null
           id: string
@@ -86,6 +87,7 @@ export type Database = {
           cep?: string | null
           cidade?: string | null
           created_at?: string
+          exam_date?: string | null
           follow_up_count?: number
           follow_up_date?: string | null
           id?: string
@@ -111,6 +113,7 @@ export type Database = {
           cep?: string | null
           cidade?: string | null
           created_at?: string
+          exam_date?: string | null
           follow_up_count?: number
           follow_up_date?: string | null
           id?: string
