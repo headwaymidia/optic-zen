@@ -1,22 +1,23 @@
-import { useNavigate } from "react-router-dom";
-import { AlertTriangle, Sparkles } from "lucide-react";
+import { ExternalLink, AlertTriangle, Sparkles } from "lucide-react";
 import { useSubscription } from "@/hooks/useSubscription";
 import { cn } from "@/lib/utils";
 
 export function TrialBanner() {
   const { subscription, trialDaysLeft } = useSubscription();
-  const navigate = useNavigate();
 
-  if (!subscription || subscription.status !== "trial" || trialDaysLeft === null) return null;
+  if (!subscription) return null;
+  if (subscription.status === "active") return null;
+  if (subscription.status !== "trial" || trialDaysLeft === null) return null;
   if (trialDaysLeft > 14 || trialDaysLeft <= 0) return null;
 
   const urgent = trialDaysLeft <= 7;
   const Icon = urgent ? AlertTriangle : Sparkles;
 
   return (
-    <button
-      type="button"
-      onClick={() => navigate("/planos")}
+    <a
+      href="https://oticadominante.com.br"
+      target="_blank"
+      rel="noopener noreferrer"
       className={cn(
         "w-full flex items-center justify-center gap-2 px-4 py-2 text-sm font-medium transition-colors",
         urgent
@@ -30,6 +31,7 @@ export function TrialBanner() {
         <strong>{trialDaysLeft} {trialDaysLeft === 1 ? "dia" : "dias"} restantes</strong>
         . Assinar agora →
       </span>
-    </button>
+      <ExternalLink className="h-3.5 w-3.5 opacity-70" />
+    </a>
   );
 }
