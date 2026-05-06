@@ -30,6 +30,7 @@ export default function OnboardingPage() {
   const { session, loading: authLoading } = useAuth();
   const { stores, loading: storesLoading, addStore } = useStores();
   const navigate = useNavigate();
+  const [ownerName, setOwnerName] = useState("");
   const [name, setName] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const [checkingSession, setCheckingSession] = useState(true);
