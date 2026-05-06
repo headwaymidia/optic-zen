@@ -1,0 +1,66 @@
+import { useEffect, useMemo, useState } from "react";
+import { Lead, supabase } from "@/lib/supabase";
+
+export interface RankItem {
+  id: string;
+  name: string;
+  revenue: number;
+  count: number;
+}
+
+export function useSalesRanking(leads: Lead[], limit = 3): RankItem[] {
+  const [nameMap, setNameMap] = useState<Record<string, string>>({});
+
+  useEffect(() => {
+    const ids = Array.from(
+      new Set(
+        leads
+          .filter((l) => l.status === "Compareceu e Comprou" && l.assigned_to)
+          .map((l) => String(l.assigned_to))
+      )
+    );
+    if (ids.length === 0) {
+      setNameMap({});
+      return;
+    }
+    const looksLikeUuid = ids.every((v) => /^[0-9a-f-]{36}$/i.test(v));
+    if (!looksLikeUuid) {
+      setNameMap({});
+      return;
+    }
+    let cancelled = false;
+    (async () => {
+      const { data } = await supabase
+        .from("profiles")
+        .select("id, full_name, email")
+        .in("id", ids);
+      if (cancelled) return;
+      const map: Record<string, string> = {};
+      (data ?? []).forEach((p: any) => {
+        const fn = (p.full_name ?? "").trim();
+        map[p.id] = fn || p.email || p.id;
+      });
+      setNameMap(map);
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [leads]);
+
+  return useMemo<RankItem[]>(() => {
+    const counts = new Map<string, { count: number; revenue: number }>();
+    leads
+      .filter((l) => l.status === "Compareceu e Comprou" && l.assigned_to)
+      .forEach((l) => {
+        const key = l.assigned_to as string;
+        const cur = counts.get(key) ?? { count: 0, revenue: 0 };
+        cur.count += 1;
+        cur.revenue += Number(l.sale_value ?? 0);
+        counts.set(key, cur);
+      });
+    return Array.from(counts.entries())
+      .map(([id, v]) => ({ id, name: nameMap[id] ?? id, ...v }))
+      .sort((a, b) => b.revenue - a.revenue || b.count - a.count)
+      .slice(0, limit);
+  }, [leads, nameMap, limit]);
+}

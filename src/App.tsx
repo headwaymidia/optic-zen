@@ -18,6 +18,8 @@ import AuthPage from "./pages/Auth.tsx";
 import OnboardingPage from "./pages/Onboarding.tsx";
 import AceitarConvitePage from "./pages/AceitarConvite.tsx";
 import NotFound from "./pages/NotFound.tsx";
+import Ranking from "./pages/Ranking.tsx";
+import { LeadsProvider } from "@/hooks/useLeads";
 
 const queryClient = new QueryClient();
 
@@ -43,6 +45,14 @@ const App = () => (
                   <Route path="/configuracoes" element={<Configuracoes />} />
                   <Route path="/configuracoes-loja" element={<ConfiguracoesLoja />} />
                 </Route>
+                <Route
+                  path="/ranking"
+                  element={
+                    <LeadsProvider>
+                      <Ranking />
+                    </LeadsProvider>
+                  }
+                />
                 <Route path="*" element={<NotFound />} />
               </Routes>
             </StoresProvider>

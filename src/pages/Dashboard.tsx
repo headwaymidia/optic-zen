@@ -14,7 +14,7 @@ import { UpcomingReturnsCard } from "@/components/UpcomingReturnsCard";
 import { exportMonthlyReport } from "@/lib/exportReport";
 import { isWithinInterval, parseISO, format } from "date-fns";
 import { ptBR } from "date-fns/locale";
-import { FileDown } from "lucide-react";
+import { FileDown, Tv } from "lucide-react";
 
 export default function Dashboard() {
   const { leads, loading } = useLeads();
@@ -105,7 +105,20 @@ export default function Dashboard() {
           {/* 4. Velocidade & Ranking — mobile: empilha 100% / desktop: 50-50 */}
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6 pt-2 items-stretch">
             <ResponseSpeedCard leads={filtered} />
-            <SalesRanking leads={filtered} />
+            <div className="flex flex-col gap-2">
+              <div className="flex justify-end">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => window.open("/ranking", "_blank")}
+                  className="h-8 gap-1.5 text-xs"
+                >
+                  <Tv className="h-3.5 w-3.5" />
+                  Entrar em modo TV
+                </Button>
+              </div>
+              <SalesRanking leads={filtered} />
+            </div>
           </div>
 
           {/* 5. Funil Vertical */}
