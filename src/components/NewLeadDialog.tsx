@@ -7,7 +7,7 @@ import { supabase } from "@/lib/supabase";
 import { useStores } from "@/hooks/useStores";
 import { useLeads } from "@/hooks/useLeads";
 import { toast } from "@/hooks/use-toast";
-import { maskCPF } from "@/lib/masks";
+import { maskCPF, maskCEP } from "@/lib/masks";
 import { MapPin, IdCard, Cake, Eye } from "lucide-react";
 
 export function NewLeadDialog({
@@ -21,7 +21,10 @@ export function NewLeadDialog({
   const { refetch } = useLeads();
   const [name, setName] = useState("");
   const [phone, setPhone] = useState("");
+  const [cep, setCep] = useState("");
+  const [rua, setRua] = useState("");
   const [bairro, setBairro] = useState("");
+  const [cidade, setCidade] = useState("");
   const [cpf, setCpf] = useState("");
   const [dataNascimento, setDataNascimento] = useState("");
   const [dataUltimoExame, setDataUltimoExame] = useState("");
@@ -30,7 +33,10 @@ export function NewLeadDialog({
   const reset = () => {
     setName("");
     setPhone("");
+    setCep("");
+    setRua("");
     setBairro("");
+    setCidade("");
     setCpf("");
     setDataNascimento("");
     setDataUltimoExame("");
@@ -50,7 +56,10 @@ export function NewLeadDialog({
       store_id: currentStoreId,
       name: name.trim(),
       phone: phone.trim() || null,
+      cep: cep.trim() || null,
+      rua: rua.trim() || null,
       bairro: bairro.trim() || null,
+      cidade: cidade.trim() || null,
       cpf: cpf.trim() || null,
       data_nascimento: dataNascimento || null,
       data_ultimo_exame: dataUltimoExame || null,
@@ -115,6 +124,30 @@ export function NewLeadDialog({
             </p>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <div className="space-y-1.5">
+                <Label htmlFor="new-lead-cep" className="text-xs flex items-center gap-1.5">
+                  <MapPin className="h-3 w-3 text-muted-foreground" /> CEP
+                </Label>
+                <Input
+                  id="new-lead-cep"
+                  value={cep}
+                  onChange={(e) => setCep(maskCEP(e.target.value))}
+                  placeholder="00000-000"
+                  inputMode="numeric"
+                  maxLength={9}
+                />
+              </div>
+              <div className="space-y-1.5 sm:col-span-1">
+                <Label htmlFor="new-lead-rua" className="text-xs flex items-center gap-1.5">
+                  <MapPin className="h-3 w-3 text-muted-foreground" /> Rua
+                </Label>
+                <Input
+                  id="new-lead-rua"
+                  value={rua}
+                  onChange={(e) => setRua(e.target.value)}
+                  placeholder="Ex: Av. Brasil, 123"
+                />
+              </div>
+              <div className="space-y-1.5">
                 <Label htmlFor="new-lead-bairro" className="text-xs flex items-center gap-1.5">
                   <MapPin className="h-3 w-3 text-muted-foreground" /> Bairro
                 </Label>
@@ -123,6 +156,17 @@ export function NewLeadDialog({
                   value={bairro}
                   onChange={(e) => setBairro(e.target.value)}
                   placeholder="Ex: Centro"
+                />
+              </div>
+              <div className="space-y-1.5">
+                <Label htmlFor="new-lead-cidade" className="text-xs flex items-center gap-1.5">
+                  <MapPin className="h-3 w-3 text-muted-foreground" /> Cidade
+                </Label>
+                <Input
+                  id="new-lead-cidade"
+                  value={cidade}
+                  onChange={(e) => setCidade(e.target.value)}
+                  placeholder="Ex: São Paulo"
                 />
               </div>
               <div className="space-y-1.5">

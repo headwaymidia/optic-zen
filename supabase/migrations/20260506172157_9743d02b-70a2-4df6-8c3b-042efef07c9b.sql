@@ -1,0 +1,4 @@
+ALTER TABLE public.leads
+  ADD COLUMN IF NOT EXISTS cep text,
+  ADD COLUMN IF NOT EXISTS rua text,
+  ADD COLUMN IF NOT EXISTS cidade text;

@@ -57,6 +57,8 @@ export type Database = {
       }
       leads: {
         Row: {
+          cep: string | null
+          cidade: string | null
           created_at: string
           follow_up_count: number
           follow_up_date: string | null
@@ -71,12 +73,15 @@ export type Database = {
           phone: string | null
           priority: string | null
           responsible_id: string | null
+          rua: string | null
           sale_value: number | null
           status: string
           store_id: string
           updated_at: string
         }
         Insert: {
+          cep?: string | null
+          cidade?: string | null
           created_at?: string
           follow_up_count?: number
           follow_up_date?: string | null
@@ -91,12 +96,15 @@ export type Database = {
           phone?: string | null
           priority?: string | null
           responsible_id?: string | null
+          rua?: string | null
           sale_value?: number | null
           status?: string
           store_id: string
           updated_at?: string
         }
         Update: {
+          cep?: string | null
+          cidade?: string | null
           created_at?: string
           follow_up_count?: number
           follow_up_date?: string | null
@@ -111,6 +119,7 @@ export type Database = {
           phone?: string | null
           priority?: string | null
           responsible_id?: string | null
+          rua?: string | null
           sale_value?: number | null
           status?: string
           store_id?: string
