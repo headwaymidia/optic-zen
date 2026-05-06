@@ -70,6 +70,7 @@ export type Database = {
           last_interaction: string | null
           lead_source: string | null
           name: string
+          next_return_date: string | null
           notes: string | null
           phone: string | null
           priority: string | null
@@ -94,6 +95,7 @@ export type Database = {
           last_interaction?: string | null
           lead_source?: string | null
           name: string
+          next_return_date?: string | null
           notes?: string | null
           phone?: string | null
           priority?: string | null
@@ -118,6 +120,7 @@ export type Database = {
           last_interaction?: string | null
           lead_source?: string | null
           name?: string
+          next_return_date?: string | null
           notes?: string | null
           phone?: string | null
           priority?: string | null
@@ -377,6 +380,7 @@ export type Database = {
     }
     Functions: {
       accept_store_invite: { Args: { _token: string }; Returns: string }
+      auto_move_due_returns: { Args: never; Returns: number }
       get_invite_by_token: {
         Args: { _token: string }
         Returns: {
@@ -396,6 +400,10 @@ export type Database = {
       is_store_member: {
         Args: { _store_id: string; _user_id: string }
         Returns: boolean
+      }
+      recalc_lead_next_return: {
+        Args: { _lead_id: string }
+        Returns: undefined
       }
     }
     Enums: {
