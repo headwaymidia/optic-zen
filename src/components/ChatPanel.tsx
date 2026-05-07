@@ -247,7 +247,7 @@ export function ChatPanel({
             "border-red-500 text-red-600 bg-red-50 hover:bg-red-50 focus:ring-red-500 dark:bg-red-950/30 dark:text-red-300";
           const sourceOk = !!lead.lead_source;
           const interestOk = !!lead.interest_tag;
-          const assignedOk = !!lead.assigned_to;
+          const assignedOk = !!lead.responsible_id;
           return (
             <div className="flex items-center gap-2">
               <Select
@@ -283,9 +283,9 @@ export function ChatPanel({
                 </SelectContent>
               </Select>
               <Select
-                value={lead.assigned_to || "__none__"}
+                value={lead.responsible_id || "__none__"}
                 onValueChange={(v) =>
-                  updateLead(lead.id, { assigned_to: v === "__none__" ? null : v })
+                  updateLead(lead.id, { responsible_id: v === "__none__" ? null : v })
                 }
               >
                 <SelectTrigger className={cn(baseTrigger, assignedOk ? okTrigger : pendingTrigger)}>
@@ -293,8 +293,8 @@ export function ChatPanel({
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="__none__" className="text-xs">— Sem vendedora —</SelectItem>
-                  {SALESPEOPLE.map((s) => (
-                    <SelectItem key={s} value={s} className="text-xs">{s}</SelectItem>
+                  {salespeople.map((seller) => (
+                    <SelectItem key={seller.id} value={seller.id} className="text-xs">{seller.name}</SelectItem>
                   ))}
                 </SelectContent>
               </Select>
