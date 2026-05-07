@@ -52,7 +52,7 @@ const items = [
 const secondaryItems = [
   { title: "Configurações", url: "/configuracoes", icon: Settings },
   { title: "Meu plano", url: "/planos", icon: Crown },
-  { title: "Ajuda", url: "/ajuda", icon: HelpCircle, external: true },
+  { title: "Ajuda", url: "/ajuda", icon: HelpCircle },
   { title: "Seja um parceiro", url: "/parceiro", icon: Handshake },
 ];
 
@@ -194,17 +194,7 @@ export function AppSidebar() {
                 collapsed && "justify-center px-0"
               );
 
-              const node = item.external ? (
-                <button
-                  key={item.title}
-                  type="button"
-                  onClick={() => {}}
-                  className={className}
-                  aria-label={item.title}
-                >
-                  {content}
-                </button>
-              ) : (
+              const node = (
                 <NavLink key={item.title} to={item.url} end className={className} aria-label={item.title}>
                   {content}
                 </NavLink>
