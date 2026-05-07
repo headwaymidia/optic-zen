@@ -1,0 +1,7 @@
+ALTER TABLE public.leads ADD COLUMN IF NOT EXISTS cep TEXT;
+ALTER TABLE public.leads ADD COLUMN IF NOT EXISTS rua TEXT;
+ALTER TABLE public.leads ADD COLUMN IF NOT EXISTS cidade TEXT;
+ALTER TABLE public.leads ADD COLUMN IF NOT EXISTS bairro TEXT;
+ALTER TABLE public.leads ADD COLUMN IF NOT EXISTS cpf TEXT;
+ALTER TABLE public.leads ADD COLUMN IF NOT EXISTS data_nascimento DATE;
+NOTIFY pgrst, 'reload schema';

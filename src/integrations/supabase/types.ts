@@ -58,9 +58,12 @@ export type Database = {
       leads: {
         Row: {
           assigned_to: string | null
+          bairro: string | null
           cep: string | null
           cidade: string | null
+          cpf: string | null
           created_at: string
+          data_nascimento: string | null
           exam_date: string | null
           follow_up_count: number
           follow_up_date: string | null
@@ -88,9 +91,12 @@ export type Database = {
         }
         Insert: {
           assigned_to?: string | null
+          bairro?: string | null
           cep?: string | null
           cidade?: string | null
+          cpf?: string | null
           created_at?: string
+          data_nascimento?: string | null
           exam_date?: string | null
           follow_up_count?: number
           follow_up_date?: string | null
@@ -118,9 +124,12 @@ export type Database = {
         }
         Update: {
           assigned_to?: string | null
+          bairro?: string | null
           cep?: string | null
           cidade?: string | null
+          cpf?: string | null
           created_at?: string
+          data_nascimento?: string | null
           exam_date?: string | null
           follow_up_count?: number
           follow_up_date?: string | null
