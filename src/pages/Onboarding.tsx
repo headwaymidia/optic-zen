@@ -254,7 +254,7 @@ export default function OnboardingPage() {
                 onChange={(e) => setOwnerName(e.target.value)}
                 placeholder="Ex: João da Silva"
                 required
-                className="h-14 rounded-xl border-zinc-200 bg-white text-base px-4 shadow-sm"
+                className="h-14 rounded-xl border-input bg-background text-foreground placeholder:text-muted-foreground text-base px-4 shadow-sm"
               />
             </div>
 
@@ -267,7 +267,7 @@ export default function OnboardingPage() {
                 onChange={(e) => setWhatsapp(maskPhone(e.target.value))}
                 placeholder="(11) 91234-5678"
                 required
-                className="h-14 rounded-xl border-zinc-200 bg-white text-base px-4 shadow-sm"
+                className="h-14 rounded-xl border-input bg-background text-foreground placeholder:text-muted-foreground text-base px-4 shadow-sm"
               />
             </div>
 
@@ -276,7 +276,7 @@ export default function OnboardingPage() {
                 Qual é o seu papel?
               </Label>
               <Select value={role} onValueChange={setRole}>
-                <SelectTrigger className="h-14 rounded-xl border-zinc-200 bg-white text-base px-4 shadow-sm">
+                <SelectTrigger className="h-14 rounded-xl border-input bg-background text-foreground placeholder:text-muted-foreground text-base px-4 shadow-sm">
                   <SelectValue placeholder="Selecione" />
                 </SelectTrigger>
                 <SelectContent>
@@ -326,7 +326,7 @@ export default function OnboardingPage() {
                 onChange={(e) => setStoreName(e.target.value)}
                 placeholder="Ex: Ótica Centro"
                 required
-                className="h-14 rounded-xl border-zinc-200 bg-white text-base px-4 shadow-sm"
+                className="h-14 rounded-xl border-input bg-background text-foreground placeholder:text-muted-foreground text-base px-4 shadow-sm"
               />
             </div>
 
@@ -340,7 +340,7 @@ export default function OnboardingPage() {
                   onChange={(e) => setCity(e.target.value)}
                   placeholder="Ex: São Paulo"
                   required
-                  className="h-14 rounded-xl border-zinc-200 bg-white text-base px-4 shadow-sm"
+                  className="h-14 rounded-xl border-input bg-background text-foreground placeholder:text-muted-foreground text-base px-4 shadow-sm"
                 />
               </div>
               <div className="space-y-2">
@@ -348,7 +348,7 @@ export default function OnboardingPage() {
                   Estado
                 </Label>
                 <Select value={stateUf} onValueChange={setStateUf}>
-                  <SelectTrigger className="h-14 rounded-xl border-zinc-200 bg-white text-base px-3 shadow-sm">
+                  <SelectTrigger className="h-14 rounded-xl border-input bg-background text-foreground text-base px-3 shadow-sm">
                     <SelectValue placeholder="UF" />
                   </SelectTrigger>
                   <SelectContent className="max-h-72">
@@ -365,7 +365,7 @@ export default function OnboardingPage() {
                 Quantos vendedores tem sua equipe?
               </Label>
               <Select value={teamSize} onValueChange={setTeamSize}>
-                <SelectTrigger className="h-14 rounded-xl border-zinc-200 bg-white text-base px-4 shadow-sm">
+                <SelectTrigger className="h-14 rounded-xl border-input bg-background text-foreground placeholder:text-muted-foreground text-base px-4 shadow-sm">
                   <SelectValue placeholder="Selecione" />
                 </SelectTrigger>
                 <SelectContent>
