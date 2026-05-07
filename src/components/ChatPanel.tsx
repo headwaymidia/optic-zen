@@ -1,8 +1,9 @@
 import { useEffect, useRef, useState } from "react";
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from "@/hooks/use-toast";
-import { INTEREST_TAGS, LEAD_SOURCES, Lead, LEAD_STATUSES, LeadStatus, SALESPEOPLE } from "@/lib/supabase";
+import { INTEREST_TAGS, LEAD_SOURCES, Lead, LEAD_STATUSES, LeadStatus, supabase } from "@/lib/supabase";
 import { useLeads } from "@/hooks/useLeads";
+import { useStores } from "@/hooks/useStores";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
@@ -43,11 +44,60 @@ export function ChatPanel({
   onClose?: () => void;
 }) {
   const { updateStatus, updateLead } = useLeads();
+  const { currentStoreId } = useStores();
   const [message, setMessage] = useState("");
   const [scriptsOpen, setScriptsOpen] = useState(false);
   const [gateStatus, setGateStatus] = useState<StageGate | null>(null);
   const [isTyping, setIsTyping] = useState(false);
   const [sentMessages, setSentMessages] = useState<{ from: "us"; text: string; time: string }[]>([]);
+  const [salespeople, setSalespeople] = useState<{ id: string; name: string }[]>([]);
+
+  useEffect(() => {
+    if (!currentStoreId) {
+      setSalespeople([]);
+      return;
+    }
+
+    let cancelled = false;
+    (async () => {
+      const { data: members, error } = await supabase
+        .from("store_members")
+        .select("user_id, role")
+        .eq("store_id", currentStoreId);
+
+      if (cancelled) return;
+      if (error) {
+        toast({ title: "Erro ao carregar vendedoras", description: error.message, variant: "destructive" });
+        setSalespeople([]);
+        return;
+      }
+
+      const userIds = Array.from(new Set((members ?? []).map((m: any) => m.user_id).filter(Boolean)));
+      if (userIds.length === 0) {
+        setSalespeople([]);
+        return;
+      }
+
+      const { data: profiles } = await supabase
+        .from("profiles")
+        .select("id, full_name, email")
+        .in("id", userIds);
+
+      if (cancelled) return;
+      const profileById = new Map((profiles ?? []).map((p: any) => [p.id, p]));
+      setSalespeople(
+        userIds.map((id) => {
+          const profile: any = profileById.get(id);
+          const name = String(profile?.full_name ?? profile?.email ?? id).trim();
+          return { id, name: name || id };
+        })
+      );
+    })();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [currentStoreId]);
 
   // Reseta mensagens locais quando troca de lead
   useEffect(() => {
@@ -197,7 +247,7 @@ export function ChatPanel({
             "border-red-500 text-red-600 bg-red-50 hover:bg-red-50 focus:ring-red-500 dark:bg-red-950/30 dark:text-red-300";
           const sourceOk = !!lead.lead_source;
           const interestOk = !!lead.interest_tag;
-          const assignedOk = !!lead.assigned_to;
+          const assignedOk = !!lead.responsible_id;
           return (
             <div className="flex items-center gap-2">
               <Select
@@ -233,9 +283,9 @@ export function ChatPanel({
                 </SelectContent>
               </Select>
               <Select
-                value={lead.assigned_to || "__none__"}
+                value={lead.responsible_id || "__none__"}
                 onValueChange={(v) =>
-                  updateLead(lead.id, { assigned_to: v === "__none__" ? null : v })
+                  updateLead(lead.id, { responsible_id: v === "__none__" ? null : v })
                 }
               >
                 <SelectTrigger className={cn(baseTrigger, assignedOk ? okTrigger : pendingTrigger)}>
@@ -243,8 +293,8 @@ export function ChatPanel({
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="__none__" className="text-xs">— Sem vendedora —</SelectItem>
-                  {SALESPEOPLE.map((s) => (
-                    <SelectItem key={s} value={s} className="text-xs">{s}</SelectItem>
+                  {salespeople.map((seller) => (
+                    <SelectItem key={seller.id} value={seller.id} className="text-xs">{seller.name}</SelectItem>
                   ))}
                 </SelectContent>
               </Select>
