@@ -348,7 +348,7 @@ export default function OnboardingPage() {
                   Estado
                 </Label>
                 <Select value={stateUf} onValueChange={setStateUf}>
-                  <SelectTrigger className="h-14 rounded-xl border-zinc-200 bg-white text-base px-3 shadow-sm">
+                  <SelectTrigger className="h-14 rounded-xl border-input bg-background text-foreground text-base px-3 shadow-sm">
                     <SelectValue placeholder="UF" />
                   </SelectTrigger>
                   <SelectContent className="max-h-72">
