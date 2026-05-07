@@ -67,7 +67,7 @@ Deno.serve(async (req) => {
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        from: "Ótica Dominante <contato@oticadominante.com.br>",
+        from: "Ótica Dominante <onboarding@resend.dev>",
         to: [email],
         subject: "Bem-vindo ao CRM Ótica Dominante 👁️",
         html,
