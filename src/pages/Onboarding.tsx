@@ -153,6 +153,15 @@ export default function OnboardingPage() {
 
       try { localStorage.setItem(ONBOARDING_KEY, "1"); } catch {}
 
+      // Disparar email de boas-vindas (não bloquear o fluxo se falhar)
+      supabase.functions.invoke("send-welcome-email", {
+        body: {
+          user_id: activeSession.user.id,
+          email: activeSession.user.email,
+          name: ownerName.trim(),
+        },
+      }).catch((err) => console.warn("welcome email failed:", err));
+
       setStep(3);
     } catch (err: any) {
       console.error("[Onboarding] erro:", err);
