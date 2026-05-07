@@ -55,7 +55,7 @@ export function LeadDialog({ open, onOpenChange, lead, defaultStatus, onSaved }:
       setBairro((lead as any)?.bairro ?? "");
       setCpf((lead as any)?.cpf ?? "");
       setDataNascimento((lead as any)?.data_nascimento ?? "");
-      setDataUltimoExame((lead as any)?.data_ultimo_exame ?? "");
+      setDataUltimoExame((lead as any)?.last_exam_date ?? "");
     }
   }, [open, lead, defaultStatus]);
 
