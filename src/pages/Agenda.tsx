@@ -396,7 +396,8 @@ function AgendaInner() {
                       onClick={() => openEvent(ev)}
                       className={cn(
                         "text-left rounded border px-3 py-2 hover:opacity-90",
-                        TYPE_STYLES[ev.type].bg
+                        TYPE_STYLES[ev.type].bg,
+                        ev.isPast && "opacity-50 hover:opacity-60"
                       )}
                     >
                       <div className="font-medium">{ev.lead.name}</div>
