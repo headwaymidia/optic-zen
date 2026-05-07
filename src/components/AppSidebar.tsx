@@ -194,17 +194,7 @@ export function AppSidebar() {
                 collapsed && "justify-center px-0"
               );
 
-              const node = item.external ? (
-                <button
-                  key={item.title}
-                  type="button"
-                  onClick={() => {}}
-                  className={className}
-                  aria-label={item.title}
-                >
-                  {content}
-                </button>
-              ) : (
+              const node = (
                 <NavLink key={item.title} to={item.url} end className={className} aria-label={item.title}>
                   {content}
                 </NavLink>
