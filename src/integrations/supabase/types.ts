@@ -251,21 +251,27 @@ export type Database = {
           email: string | null
           full_name: string | null
           id: string
+          role: string | null
           updated_at: string
+          whatsapp: string | null
         }
         Insert: {
           created_at?: string
           email?: string | null
           full_name?: string | null
           id: string
+          role?: string | null
           updated_at?: string
+          whatsapp?: string | null
         }
         Update: {
           created_at?: string
           email?: string | null
           full_name?: string | null
           id?: string
+          role?: string | null
           updated_at?: string
+          whatsapp?: string | null
         }
         Relationships: []
       }
@@ -353,24 +359,33 @@ export type Database = {
       }
       stores: {
         Row: {
+          city: string | null
           created_at: string
           id: string
           name: string
           owner_id: string
+          state: string | null
+          team_size: string | null
           updated_at: string
         }
         Insert: {
+          city?: string | null
           created_at?: string
           id?: string
           name: string
           owner_id: string
+          state?: string | null
+          team_size?: string | null
           updated_at?: string
         }
         Update: {
+          city?: string | null
           created_at?: string
           id?: string
           name?: string
           owner_id?: string
+          state?: string | null
+          team_size?: string | null
           updated_at?: string
         }
         Relationships: []
