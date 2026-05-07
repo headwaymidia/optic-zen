@@ -1,8 +1,9 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from "@/hooks/use-toast";
-import { INTEREST_TAGS, LEAD_SOURCES, Lead, LEAD_STATUSES, LeadStatus, SALESPEOPLE } from "@/lib/supabase";
+import { INTEREST_TAGS, LEAD_SOURCES, Lead, LEAD_STATUSES, LeadStatus, supabase } from "@/lib/supabase";
 import { useLeads } from "@/hooks/useLeads";
+import { useStores } from "@/hooks/useStores";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
@@ -43,11 +44,60 @@ export function ChatPanel({
   onClose?: () => void;
 }) {
   const { updateStatus, updateLead } = useLeads();
+  const { currentStoreId } = useStores();
   const [message, setMessage] = useState("");
   const [scriptsOpen, setScriptsOpen] = useState(false);
   const [gateStatus, setGateStatus] = useState<StageGate | null>(null);
   const [isTyping, setIsTyping] = useState(false);
   const [sentMessages, setSentMessages] = useState<{ from: "us"; text: string; time: string }[]>([]);
+  const [salespeople, setSalespeople] = useState<{ id: string; name: string }[]>([]);
+
+  useEffect(() => {
+    if (!currentStoreId) {
+      setSalespeople([]);
+      return;
+    }
+
+    let cancelled = false;
+    (async () => {
+      const { data: members, error } = await supabase
+        .from("store_members")
+        .select("user_id, role")
+        .eq("store_id", currentStoreId);
+
+      if (cancelled) return;
+      if (error) {
+        toast({ title: "Erro ao carregar vendedoras", description: error.message, variant: "destructive" });
+        setSalespeople([]);
+        return;
+      }
+
+      const userIds = Array.from(new Set((members ?? []).map((m: any) => m.user_id).filter(Boolean)));
+      if (userIds.length === 0) {
+        setSalespeople([]);
+        return;
+      }
+
+      const { data: profiles } = await supabase
+        .from("profiles")
+        .select("id, full_name, email")
+        .in("id", userIds);
+
+      if (cancelled) return;
+      const profileById = new Map((profiles ?? []).map((p: any) => [p.id, p]));
+      setSalespeople(
+        userIds.map((id) => {
+          const profile: any = profileById.get(id);
+          const name = String(profile?.full_name ?? profile?.email ?? id).trim();
+          return { id, name: name || id };
+        })
+      );
+    })();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [currentStoreId]);
 
   // Reseta mensagens locais quando troca de lead
   useEffect(() => {
