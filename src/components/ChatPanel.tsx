@@ -317,6 +317,7 @@ export function ChatPanel({
           </Accordion>
         );
       })()}
+      <LeadNotesSection lead={lead} updateLead={updateLead} />
       <ERPTransferCard lead={lead} />
       <div className="flex-1 overflow-y-auto bg-muted/40 px-3 py-4 space-y-2">
         {messages.map((m, i) => (
