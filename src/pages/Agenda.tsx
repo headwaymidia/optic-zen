@@ -283,7 +283,8 @@ function AgendaInner() {
                         onClick={() => openEvent(ev)}
                         className={cn(
                           "text-[11px] px-1.5 py-0.5 rounded border truncate text-left",
-                          TYPE_STYLES[ev.type].bg
+                          TYPE_STYLES[ev.type].bg,
+                          ev.isPast && "opacity-50"
                         )}
                         title={`${ev.label} — ${TYPE_STYLES[ev.type].label}`}
                       >
