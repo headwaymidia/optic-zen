@@ -575,3 +575,69 @@ function ExamScheduler({ lead }: { lead: Lead }) {
     </div>
   );
 }
+
+function LeadNotesSection({
+  lead,
+  updateLead,
+}: {
+  lead: Lead;
+  updateLead: (leadId: string, patch: Partial<Lead>) => Promise<void>;
+}) {
+  const [value, setValue] = useState(lead.notes ?? "");
+  const [savedAt, setSavedAt] = useState<number | null>(null);
+  const lastSavedRef = useRef<string>(lead.notes ?? "");
+  const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  useEffect(() => {
+    setValue(lead.notes ?? "");
+    lastSavedRef.current = lead.notes ?? "";
+  }, [lead.id]);
+
+  useEffect(() => {
+    if (value === lastSavedRef.current) return;
+    if (timerRef.current) clearTimeout(timerRef.current);
+    timerRef.current = setTimeout(async () => {
+      try {
+        await updateLead(lead.id, { notes: value });
+        lastSavedRef.current = value;
+        setSavedAt(Date.now());
+      } catch (e) {
+        // ignore; toast handled upstream
+      }
+    }, 1000);
+    return () => {
+      if (timerRef.current) clearTimeout(timerRef.current);
+    };
+  }, [value, lead.id, updateLead]);
+
+  const showSaved = savedAt && Date.now() - savedAt < 2500;
+  useEffect(() => {
+    if (!savedAt) return;
+    const t = setTimeout(() => setSavedAt(null), 2500);
+    return () => clearTimeout(t);
+  }, [savedAt]);
+
+  return (
+    <div className="border-b bg-card px-3 py-2.5">
+      <div className="flex items-center gap-2 mb-1.5">
+        <NotebookPen className="h-3.5 w-3.5 text-primary" />
+        <span className="text-xs font-medium">Observações</span>
+      </div>
+      <Textarea
+        value={value}
+        onChange={(e) => setValue(e.target.value)}
+        placeholder="Anote qualquer informação relevante sobre este lead... (preferências, restrições, histórico, etc.)"
+        rows={3}
+        className="min-h-[72px] text-sm resize-y"
+      />
+      <p
+        className={cn(
+          "text-[11px] text-muted-foreground mt-1 transition-opacity duration-300",
+          showSaved ? "opacity-100" : "opacity-0"
+        )}
+      >
+        Salvo automaticamente
+      </p>
+    </div>
+  );
+}
