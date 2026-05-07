@@ -62,7 +62,7 @@ export function NewLeadDialog({
       cidade: cidade.trim() || null,
       cpf: cpf.trim() || null,
       data_nascimento: dataNascimento || null,
-      data_ultimo_exame: dataUltimoExame || null,
+      last_exam_date: dataUltimoExame || null,
       status: "Novo Lead",
     });
     setSaving(false);

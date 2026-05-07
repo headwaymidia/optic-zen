@@ -55,7 +55,7 @@ export function LeadDialog({ open, onOpenChange, lead, defaultStatus, onSaved }:
       setBairro((lead as any)?.bairro ?? "");
       setCpf((lead as any)?.cpf ?? "");
       setDataNascimento((lead as any)?.data_nascimento ?? "");
-      setDataUltimoExame((lead as any)?.data_ultimo_exame ?? "");
+      setDataUltimoExame((lead as any)?.last_exam_date ?? "");
     }
   }, [open, lead, defaultStatus]);
 
@@ -83,7 +83,7 @@ export function LeadDialog({ open, onOpenChange, lead, defaultStatus, onSaved }:
       bairro: bairro.trim() || null,
       cpf: cpf.trim() || null,
       data_nascimento: dataNascimento || null,
-      data_ultimo_exame: dataUltimoExame || null,
+      last_exam_date: dataUltimoExame || null,
       last_interaction: new Date().toISOString(),
     };
     const { error } = lead

@@ -146,7 +146,7 @@ export interface Lead {
   bairro: string | null;
   cpf: string | null;
   data_nascimento: string | null;
-  data_ultimo_exame: string | null;
+  last_exam_date: string | null;
   follow_up_date: string | null;
   follow_up_count: number;
   last_follow_up_at: string | null;

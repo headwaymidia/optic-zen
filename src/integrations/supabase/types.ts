@@ -69,6 +69,7 @@ export type Database = {
           lab_name: string | null
           lab_order_number: string | null
           lab_status: string | null
+          last_exam_date: string | null
           last_follow_up_at: string | null
           last_inbound_at: string | null
           last_interaction: string | null
@@ -98,6 +99,7 @@ export type Database = {
           lab_name?: string | null
           lab_order_number?: string | null
           lab_status?: string | null
+          last_exam_date?: string | null
           last_follow_up_at?: string | null
           last_inbound_at?: string | null
           last_interaction?: string | null
@@ -127,6 +129,7 @@ export type Database = {
           lab_name?: string | null
           lab_order_number?: string | null
           lab_status?: string | null
+          last_exam_date?: string | null
           last_follow_up_at?: string | null
           last_inbound_at?: string | null
           last_interaction?: string | null
