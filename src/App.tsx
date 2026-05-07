@@ -22,6 +22,7 @@ import Ranking from "./pages/Ranking.tsx";
 import Planos from "./pages/Planos.tsx";
 import Parceiro from "./pages/Parceiro.tsx";
 import Ajuda from "./pages/Ajuda.tsx";
+import Agenda from "./pages/Agenda.tsx";
 import { LeadsProvider } from "@/hooks/useLeads";
 
 const queryClient = new QueryClient();
@@ -44,6 +45,7 @@ const App = () => (
                   <Route path="/whatsapp" element={<WhatsAppPage />} />
                   <Route path="/funil" element={<Funil />} />
                   <Route path="/tarefas" element={<Tarefas />} />
+                  <Route path="/agenda" element={<Agenda />} />
                   <Route path="/contatos" element={<Contatos />} />
                   <Route path="/configuracoes" element={<Configuracoes />} />
                   <Route path="/configuracoes-loja" element={<ConfiguracoesLoja />} />
