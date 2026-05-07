@@ -29,6 +29,26 @@ function toLocalInputValue(iso?: string | null): string {
   return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
 }
 
+function startOfToday(): Date {
+  const d = new Date();
+  d.setHours(0, 0, 0, 0);
+  return d;
+}
+
+function tomorrowDefaultValue(): string {
+  const d = new Date();
+  d.setDate(d.getDate() + 1);
+  d.setHours(9, 0, 0, 0);
+  const pad = (n: number) => String(n).padStart(2, "0");
+  return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
+}
+
+function todayMinAttr(): string {
+  const d = startOfToday();
+  const pad = (n: number) => String(n).padStart(2, "0");
+  return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T00:00`;
+}
+
 export function StageGateDialog({ open, lead, targetStatus, onCancel, onConfirm }: StageGateDialogProps) {
   // Agendou Exame
   const [examAt, setExamAt] = useState("");
@@ -40,7 +60,13 @@ export function StageGateDialog({ open, lead, targetStatus, onCancel, onConfirm 
   useEffect(() => {
     if (!open) return;
     if (targetStatus === "Agendou Exame") {
-      setExamAt(toLocalInputValue(lead?.follow_up_date));
+      const existing = toLocalInputValue(lead?.follow_up_date);
+      // Use existing only if it's today or future, else default to tomorrow 09:00
+      if (existing && new Date(existing) >= startOfToday()) {
+        setExamAt(existing);
+      } else {
+        setExamAt(tomorrowDefaultValue());
+      }
     }
     if (targetStatus === "Compareceu e Comprou") {
       setSaleValue(lead?.sale_value ? String(lead.sale_value) : "");
@@ -51,9 +77,13 @@ export function StageGateDialog({ open, lead, targetStatus, onCancel, onConfirm 
   const parsedSale = Number((saleValue || "").toString().replace(",", "."));
   const validSale = !isNaN(parsedSale) && parsedSale > 0;
 
+  const examDateObj = examAt ? new Date(examAt) : null;
+  const examIsPast = !!examDateObj && examDateObj < startOfToday();
+  const validExam = !!examAt && !!examDateObj && !isNaN(examDateObj.getTime()) && !examIsPast;
+
   const canSubmit =
     targetStatus === "Agendou Exame"
-      ? !!examAt
+      ? validExam
       : targetStatus === "Compareceu e Comprou"
       ? validSale
       : false;
