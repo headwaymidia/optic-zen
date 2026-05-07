@@ -49,6 +49,11 @@ export function ChatPanel({
   const [isTyping, setIsTyping] = useState(false);
   const [sentMessages, setSentMessages] = useState<{ from: "us"; text: string; time: string }[]>([]);
 
+  // Reseta mensagens locais quando troca de lead
+  useEffect(() => {
+    setSentMessages([]);
+  }, [lead.id]);
+
   const handleStatusChange = (next: LeadStatus) => {
     if (next === lead.status) return;
     if (isGatedStatus(next)) {
