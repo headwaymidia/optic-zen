@@ -13,6 +13,7 @@ import {
   LogOut,
   Eye,
   Crown,
+  Calendar as CalendarIcon,
 } from "lucide-react";
 import {
   Sidebar,
@@ -46,6 +47,7 @@ const items = [
   { title: "Atendimentos", url: "/whatsapp", icon: MessageCircle },
   { title: "Funil de vendas", url: "/funil", icon: KanbanSquare },
   { title: "Tarefas", url: "/tarefas", icon: ListChecks },
+  { title: "Agenda", url: "/agenda", icon: CalendarIcon },
   { title: "Contatos", url: "/contatos", icon: Users },
 ];
 
