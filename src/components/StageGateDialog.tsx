@@ -136,10 +136,14 @@ export function StageGateDialog({ open, lead, targetStatus, onCancel, onConfirm 
               <Input
                 id="exam-at"
                 type="datetime-local"
+                min={todayMinAttr()}
                 value={examAt}
                 onChange={(e) => setExamAt(e.target.value)}
                 autoFocus
               />
+              {examAt && examIsPast && (
+                <p className="text-xs text-destructive">Selecione uma data a partir de hoje.</p>
+              )}
             </div>
           </>
         )}
