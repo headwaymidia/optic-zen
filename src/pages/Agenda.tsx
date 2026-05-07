@@ -82,36 +82,53 @@ const TYPE_STYLES: Record<EventType, { bg: string; dot: string; label: string }>
   },
 };
 
+// Parse a date string from the DB. Date-only strings ("YYYY-MM-DD") are
+// interpreted in the local (Brazil) timezone to avoid UTC offset shifting
+// today's events to the previous day on the calendar grid.
+function parseLeadDate(s: string): Date {
+  if (/^\d{4}-\d{2}-\d{2}$/.test(s)) {
+    const [y, m, d] = s.split("-").map(Number);
+    return new Date(y, m - 1, d, 0, 0, 0, 0);
+  }
+  return parseISO(s);
+}
+
+function startOfTodayLocal(): Date {
+  const n = new Date();
+  return new Date(n.getFullYear(), n.getMonth(), n.getDate(), 0, 0, 0, 0);
+}
+
 function buildEvents(leads: Lead[]): AgendaEvent[] {
   const out: AgendaEvent[] = [];
-  const now = new Date();
-  const in30 = addDays(now, 30);
+  const todayStart = startOfTodayLocal();
+  const in30 = addDays(todayStart, 30);
   for (const l of leads) {
     if (l.exam_date) {
-      const d = parseISO(l.exam_date);
+      const d = parseLeadDate(l.exam_date);
       out.push({
         id: `${l.id}-exam`,
         date: d,
         type: "exam",
         lead: l,
         label: l.name,
-        isPast: d < now,
+        // Today counts as "not past" — events from 00:00 today onward render normally.
+        isPast: d < todayStart,
       });
     }
     if (l.lab_status === "Pronto no laboratório") {
-      const d = parseISO(l.updated_at);
+      const d = parseLeadDate(l.updated_at);
       out.push({
         id: `${l.id}-lab`,
         date: d,
         type: "lab_ready",
         lead: l,
         label: l.name,
-        isPast: d < now,
+        isPast: d < todayStart,
       });
     }
     if (l.next_return_date) {
-      const d = parseISO(l.next_return_date);
-      if (d < now) {
+      const d = parseLeadDate(l.next_return_date);
+      if (d < todayStart) {
         out.push({ id: `${l.id}-ret-o`, date: d, type: "return_overdue", lead: l, label: l.name, isPast: true });
       } else if (d <= in30) {
         out.push({ id: `${l.id}-ret-s`, date: d, type: "return_soon", lead: l, label: l.name, isPast: false });
