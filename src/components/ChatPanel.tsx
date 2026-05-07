@@ -141,13 +141,7 @@ export function ChatPanel({
     setScriptsOpen(false);
   };
 
-  const messages = [
-    { from: "lead", text: "Olá, gostaria de agendar um exame de vista.", time: "10:30" },
-    { from: "us", text: `Olá ${lead.name.split(" ")[0]}! Claro, temos horários disponíveis amanhã. 😊`, time: "10:32" },
-    { from: "lead", text: "Tem horário pela manhã?", time: "10:34" },
-    { from: "us", text: "Sim! Posso agendar às 9h ou 10h30. Qual prefere?", time: "10:35" },
-    { from: "lead", text: "10h30 está ótimo. Pode me passar o endereço?", time: "10:45" },
-  ];
+  const messages: { from: "lead" | "us"; text: string; time: string }[] = [];
 
   return (
     <div className="flex flex-col h-full bg-background min-w-0 animate-in slide-in-from-right fade-in duration-300 ease-out">
