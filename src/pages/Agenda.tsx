@@ -56,6 +56,7 @@ interface AgendaEvent {
   type: EventType;
   lead: Lead;
   label: string;
+  isPast: boolean;
 }
 
 const TYPE_STYLES: Record<EventType, { bg: string; dot: string; label: string }> = {
@@ -87,29 +88,33 @@ function buildEvents(leads: Lead[]): AgendaEvent[] {
   const in30 = addDays(now, 30);
   for (const l of leads) {
     if (l.exam_date) {
+      const d = parseISO(l.exam_date);
       out.push({
         id: `${l.id}-exam`,
-        date: parseISO(l.exam_date),
+        date: d,
         type: "exam",
         lead: l,
         label: l.name,
+        isPast: d < now,
       });
     }
     if (l.lab_status === "Pronto no laboratório") {
+      const d = parseISO(l.updated_at);
       out.push({
         id: `${l.id}-lab`,
-        date: parseISO(l.updated_at),
+        date: d,
         type: "lab_ready",
         lead: l,
         label: l.name,
+        isPast: d < now,
       });
     }
     if (l.next_return_date) {
       const d = parseISO(l.next_return_date);
       if (d < now) {
-        out.push({ id: `${l.id}-ret-o`, date: d, type: "return_overdue", lead: l, label: l.name });
+        out.push({ id: `${l.id}-ret-o`, date: d, type: "return_overdue", lead: l, label: l.name, isPast: true });
       } else if (d <= in30) {
-        out.push({ id: `${l.id}-ret-s`, date: d, type: "return_soon", lead: l, label: l.name });
+        out.push({ id: `${l.id}-ret-s`, date: d, type: "return_soon", lead: l, label: l.name, isPast: false });
       }
     }
   }
@@ -278,7 +283,8 @@ function AgendaInner() {
                         onClick={() => openEvent(ev)}
                         className={cn(
                           "text-[11px] px-1.5 py-0.5 rounded border truncate text-left",
-                          TYPE_STYLES[ev.type].bg
+                          TYPE_STYLES[ev.type].bg,
+                          ev.isPast && "opacity-50"
                         )}
                         title={`${ev.label} — ${TYPE_STYLES[ev.type].label}`}
                       >
@@ -352,7 +358,8 @@ function AgendaInner() {
                           key={ev.id}
                           className={cn(
                             "block text-[11px] px-1.5 py-0.5 rounded border truncate",
-                            TYPE_STYLES[ev.type].bg
+                            TYPE_STYLES[ev.type].bg,
+                            ev.isPast && "opacity-50"
                           )}
                         >
                           {ev.label}
@@ -389,7 +396,8 @@ function AgendaInner() {
                       onClick={() => openEvent(ev)}
                       className={cn(
                         "text-left rounded border px-3 py-2 hover:opacity-90",
-                        TYPE_STYLES[ev.type].bg
+                        TYPE_STYLES[ev.type].bg,
+                        ev.isPast && "opacity-50 hover:opacity-60"
                       )}
                     >
                       <div className="font-medium">{ev.lead.name}</div>
