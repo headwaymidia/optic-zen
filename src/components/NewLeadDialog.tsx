@@ -7,7 +7,7 @@ import { supabase } from "@/lib/supabase";
 import { useStores } from "@/hooks/useStores";
 import { useLeads } from "@/hooks/useLeads";
 import { toast } from "@/hooks/use-toast";
-import { maskCPF, maskCEP } from "@/lib/masks";
+import { maskCPF, maskCEP, maskPhone } from "@/lib/masks";
 import { MapPin, IdCard, Cake, Eye } from "lucide-react";
 
 export function NewLeadDialog({
@@ -110,9 +110,11 @@ export function NewLeadDialog({
               <Input
                 id="new-lead-phone"
                 value={phone}
-                onChange={(e) => setPhone(e.target.value)}
+                onChange={(e) => setPhone(maskPhone(e.target.value))}
                 placeholder="(11) 91234-5678"
                 type="tel"
+                inputMode="numeric"
+                maxLength={15}
               />
             </div>
           </div>
