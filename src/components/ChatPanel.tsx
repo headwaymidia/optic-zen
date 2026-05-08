@@ -43,7 +43,7 @@ export function ChatPanel({
   onBack?: () => void;
   onClose?: () => void;
 }) {
-  const { updateStatus, updateLead } = useLeads();
+  const { updateStatus, updateLead, refetch } = useLeads();
   const { currentStoreId } = useStores();
   const [message, setMessage] = useState("");
   const [scriptsOpen, setScriptsOpen] = useState(false);
@@ -51,6 +51,52 @@ export function ChatPanel({
   const [isTyping, setIsTyping] = useState(false);
   const [sentMessages, setSentMessages] = useState<{ from: "us"; text: string; time: string }[]>([]);
   const [salespeople, setSalespeople] = useState<{ id: string; name: string }[]>([]);
+  const [leadFields, setLeadFields] = useState({
+    lead_source: lead.lead_source as string | null,
+    interest_tag: lead.interest_tag as string | null,
+    responsible_id: lead.responsible_id,
+  });
+
+  useEffect(() => {
+    setLeadFields({
+      lead_source: lead.lead_source as string | null,
+      interest_tag: lead.interest_tag as string | null,
+      responsible_id: lead.responsible_id,
+    });
+  }, [lead.id, lead.lead_source, lead.interest_tag, lead.responsible_id]);
+
+  const saveLeadDropdownField = async (
+    field: "lead_source" | "interest_tag" | "responsible_id",
+    value: string | null
+  ) => {
+    if (!currentStoreId) return;
+    const previous = leadFields;
+    const patch = { [field]: value } as Pick<Lead, typeof field>;
+
+    setLeadFields((prev) => ({ ...prev, [field]: value }));
+
+    const { data, error } = await supabase
+      .from("leads")
+      .update(patch)
+      .eq("id", lead.id)
+      .eq("store_id", currentStoreId)
+      .select("lead_source, interest_tag, responsible_id")
+      .single();
+
+    if (error) {
+      setLeadFields(previous);
+      toast({ title: "Erro ao atualizar lead", description: error.message, variant: "destructive" });
+      await refetch();
+      return;
+    }
+
+    setLeadFields({
+      lead_source: (data?.lead_source as string | null) ?? null,
+      interest_tag: (data?.interest_tag as string | null) ?? null,
+      responsible_id: (data?.responsible_id as string | null) ?? null,
+    });
+    await refetch();
+  };
 
   useEffect(() => {
     if (!currentStoreId) {
