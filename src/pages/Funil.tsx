@@ -2,7 +2,7 @@ import { useMemo, useState } from "react";
 import { KanbanBoard, CadenceFilter, countLeadsByPendingFu } from "@/components/KanbanBoard";
 import { ChatPanel } from "@/components/ChatPanel";
 import { useLeads } from "@/hooks/useLeads";
-import { Lead, LEAD_STATUSES, LeadStatus, SALESPEOPLE } from "@/lib/supabase";
+import { LEAD_STATUSES, LeadStatus, SALESPEOPLE } from "@/lib/supabase";
 import { Sheet, SheetContent } from "@/components/ui/sheet";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { cn } from "@/lib/utils";
@@ -27,12 +27,13 @@ const ALL_SALES = "__all__";
 
 export default function Funil() {
   const { leads, loading } = useLeads();
-  const [selected, setSelected] = useState<Lead | null>(null);
+  const [selectedId, setSelectedId] = useState<string | null>(null);
   const isMobile = useIsMobile();
 
   const [search, setSearch] = useState("");
   const [salesFilter, setSalesFilter] = useState<string>(ALL_SALES);
   const [cadence, setCadence] = useState<CadenceFilter>("all");
+  const selected = leads.find((lead) => lead.id === selectedId) ?? null;
 
   const hasFilters = search.trim().length > 0 || salesFilter !== ALL_SALES || cadence !== "all";
 
@@ -152,8 +153,8 @@ export default function Funil() {
 
           <div className="flex-1 min-h-0 -mx-4 sm:-mx-6">
             <KanbanBoard
-              onSelectLead={setSelected}
-              selectedLeadId={selected?.id ?? null}
+              onSelectLead={(lead) => setSelectedId(lead.id)}
+              selectedLeadId={selectedId}
               search={search}
               salesFilter={salesFilter === ALL_SALES ? null : salesFilter}
               cadenceFilter={cadence}
@@ -168,19 +169,19 @@ export default function Funil() {
           className="hidden lg:flex shrink-0 border-l border-slate-100 dark:border-slate-700 bg-white dark:bg-slate-900 flex-col min-h-0 overflow-hidden shadow-[-4px_0_24px_rgba(0,0,0,0.02)] dark:shadow-none w-[380px] xl:w-[420px] animate-slide-in-right"
         >
           <div className="flex-1 min-h-0 flex flex-col">
-            <ChatPanel lead={selected} onClose={() => setSelected(null)} />
+            <ChatPanel lead={selected} onClose={() => setSelectedId(null)} />
           </div>
         </aside>
       )}
 
       {/* Mobile: drawer */}
       {isMobile && (
-        <Sheet open={!!selected} onOpenChange={(o) => !o && setSelected(null)}>
+        <Sheet open={!!selected} onOpenChange={(o) => !o && setSelectedId(null)}>
           <SheetContent
             side="right"
             className="p-0 w-screen max-w-full sm:max-w-full border-0"
           >
-            {selected && <ChatPanel lead={selected} onBack={() => setSelected(null)} />}
+            {selected && <ChatPanel lead={selected} onBack={() => setSelectedId(null)} />}
           </SheetContent>
         </Sheet>
       )}

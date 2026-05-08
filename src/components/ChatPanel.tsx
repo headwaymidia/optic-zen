@@ -43,7 +43,7 @@ export function ChatPanel({
   onBack?: () => void;
   onClose?: () => void;
 }) {
-  const { updateStatus, updateLead } = useLeads();
+  const { updateStatus, updateLead, refetch } = useLeads();
   const { currentStoreId } = useStores();
   const [message, setMessage] = useState("");
   const [scriptsOpen, setScriptsOpen] = useState(false);
@@ -51,6 +51,52 @@ export function ChatPanel({
   const [isTyping, setIsTyping] = useState(false);
   const [sentMessages, setSentMessages] = useState<{ from: "us"; text: string; time: string }[]>([]);
   const [salespeople, setSalespeople] = useState<{ id: string; name: string }[]>([]);
+  const [leadFields, setLeadFields] = useState({
+    lead_source: lead.lead_source as string | null,
+    interest_tag: lead.interest_tag as string | null,
+    responsible_id: lead.responsible_id,
+  });
+
+  useEffect(() => {
+    setLeadFields({
+      lead_source: lead.lead_source as string | null,
+      interest_tag: lead.interest_tag as string | null,
+      responsible_id: lead.responsible_id,
+    });
+  }, [lead.id, lead.lead_source, lead.interest_tag, lead.responsible_id]);
+
+  const saveLeadDropdownField = async (
+    field: "lead_source" | "interest_tag" | "responsible_id",
+    value: string | null
+  ) => {
+    if (!currentStoreId) return;
+    const previous = leadFields;
+    const patch = { [field]: value } as Pick<Lead, typeof field>;
+
+    setLeadFields((prev) => ({ ...prev, [field]: value }));
+
+    const { data, error } = await supabase
+      .from("leads")
+      .update(patch)
+      .eq("id", lead.id)
+      .eq("store_id", currentStoreId)
+      .select("lead_source, interest_tag, responsible_id")
+      .single();
+
+    if (error) {
+      setLeadFields(previous);
+      toast({ title: "Erro ao atualizar lead", description: error.message, variant: "destructive" });
+      await refetch();
+      return;
+    }
+
+    setLeadFields({
+      lead_source: (data?.lead_source as string | null) ?? null,
+      interest_tag: (data?.interest_tag as string | null) ?? null,
+      responsible_id: (data?.responsible_id as string | null) ?? null,
+    });
+    await refetch();
+  };
 
   useEffect(() => {
     if (!currentStoreId) {
@@ -245,15 +291,15 @@ export function ChatPanel({
             "border-emerald-500 text-emerald-700 bg-emerald-50 hover:bg-emerald-50 focus:ring-emerald-500 dark:bg-emerald-950/30 dark:text-emerald-200";
           const pendingTrigger =
             "border-red-500 text-red-600 bg-red-50 hover:bg-red-50 focus:ring-red-500 dark:bg-red-950/30 dark:text-red-300";
-          const sourceOk = !!lead.lead_source;
-          const interestOk = !!lead.interest_tag;
-          const assignedOk = !!lead.responsible_id;
+          const sourceOk = !!leadFields.lead_source;
+          const interestOk = !!leadFields.interest_tag;
+          const assignedOk = !!leadFields.responsible_id;
           return (
             <div className="flex items-center gap-2">
               <Select
-                value={(lead.lead_source as string) || "__none__"}
+                value={leadFields.lead_source || "__none__"}
                 onValueChange={(v) =>
-                  updateLead(lead.id, { lead_source: v === "__none__" ? null : v })
+                  saveLeadDropdownField("lead_source", v === "__none__" ? null : v)
                 }
               >
                 <SelectTrigger className={cn(baseTrigger, sourceOk ? okTrigger : pendingTrigger)}>
@@ -267,9 +313,9 @@ export function ChatPanel({
                 </SelectContent>
               </Select>
               <Select
-                value={(lead.interest_tag as string) || "__none__"}
+                value={leadFields.interest_tag || "__none__"}
                 onValueChange={(v) =>
-                  updateLead(lead.id, { interest_tag: v === "__none__" ? null : v })
+                  saveLeadDropdownField("interest_tag", v === "__none__" ? null : v)
                 }
               >
                 <SelectTrigger className={cn(baseTrigger, interestOk ? okTrigger : pendingTrigger)}>
@@ -283,9 +329,9 @@ export function ChatPanel({
                 </SelectContent>
               </Select>
               <Select
-                value={lead.responsible_id || "__none__"}
+                value={leadFields.responsible_id || "__none__"}
                 onValueChange={(v) =>
-                  updateLead(lead.id, { responsible_id: v === "__none__" ? null : v })
+                  saveLeadDropdownField("responsible_id", v === "__none__" ? null : v)
                 }
               >
                 <SelectTrigger className={cn(baseTrigger, assignedOk ? okTrigger : pendingTrigger)}>
