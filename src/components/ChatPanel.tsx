@@ -291,15 +291,15 @@ export function ChatPanel({
             "border-emerald-500 text-emerald-700 bg-emerald-50 hover:bg-emerald-50 focus:ring-emerald-500 dark:bg-emerald-950/30 dark:text-emerald-200";
           const pendingTrigger =
             "border-red-500 text-red-600 bg-red-50 hover:bg-red-50 focus:ring-red-500 dark:bg-red-950/30 dark:text-red-300";
-          const sourceOk = !!lead.lead_source;
-          const interestOk = !!lead.interest_tag;
-          const assignedOk = !!lead.responsible_id;
+          const sourceOk = !!leadFields.lead_source;
+          const interestOk = !!leadFields.interest_tag;
+          const assignedOk = !!leadFields.responsible_id;
           return (
             <div className="flex items-center gap-2">
               <Select
-                value={(lead.lead_source as string) || "__none__"}
+                value={leadFields.lead_source || "__none__"}
                 onValueChange={(v) =>
-                  updateLead(lead.id, { lead_source: v === "__none__" ? null : v })
+                  saveLeadDropdownField("lead_source", v === "__none__" ? null : v)
                 }
               >
                 <SelectTrigger className={cn(baseTrigger, sourceOk ? okTrigger : pendingTrigger)}>
@@ -313,9 +313,9 @@ export function ChatPanel({
                 </SelectContent>
               </Select>
               <Select
-                value={(lead.interest_tag as string) || "__none__"}
+                value={leadFields.interest_tag || "__none__"}
                 onValueChange={(v) =>
-                  updateLead(lead.id, { interest_tag: v === "__none__" ? null : v })
+                  saveLeadDropdownField("interest_tag", v === "__none__" ? null : v)
                 }
               >
                 <SelectTrigger className={cn(baseTrigger, interestOk ? okTrigger : pendingTrigger)}>
@@ -329,9 +329,9 @@ export function ChatPanel({
                 </SelectContent>
               </Select>
               <Select
-                value={lead.responsible_id || "__none__"}
+                value={leadFields.responsible_id || "__none__"}
                 onValueChange={(v) =>
-                  updateLead(lead.id, { responsible_id: v === "__none__" ? null : v })
+                  saveLeadDropdownField("responsible_id", v === "__none__" ? null : v)
                 }
               >
                 <SelectTrigger className={cn(baseTrigger, assignedOk ? okTrigger : pendingTrigger)}>
