@@ -1,5 +1,6 @@
 import { useState } from "react";
-import { LEAD_STATUSES, Lead, LeadStatus, SALESPEOPLE } from "@/lib/supabase";
+import { LEAD_STATUSES, Lead, LeadStatus } from "@/lib/supabase";
+import { useStoreMembers } from "@/hooks/useStoreMembers";
 import { useLeads } from "@/hooks/useLeads";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
