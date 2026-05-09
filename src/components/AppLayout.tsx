@@ -20,8 +20,8 @@ function TrialGuard({ children }: { children: React.ReactNode }) {
 }
 
 export default function AppLayout() {
-  const { session, profile, loading } = useAuth();
-  const { stores, loading: storesLoading } = useStores();
+  const { session, profile, user, loading } = useAuth();
+  const { stores, currentStore, loading: storesLoading } = useStores();
 
   if (loading || storesLoading) {
     return <div className="flex min-h-screen items-center justify-center text-muted-foreground">Carregando...</div>;
