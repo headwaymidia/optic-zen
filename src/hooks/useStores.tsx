@@ -204,8 +204,6 @@ export function StoresProvider({ children }: { children: ReactNode }) {
       } = await supabase.auth.getSession();
       const user = activeSession?.user ?? null;
 
-      console.log("Usuário autenticado:", user);
-
       if (!user) {
         const authError = new Error("Sessão não encontrada.");
         if (input.throwOnError) throw authError;
