@@ -216,7 +216,8 @@ export default function Configuracoes() {
           </div>
           <div className="space-y-2">
             <Label>Função</Label>
-            <Input value={translateRole(role)} readOnly />
+            <Input value={translateRole(role) || "—"} readOnly />
+            <p className="text-[11px] text-muted-foreground">Definido pelo dono da loja.</p>
           </div>
           <div className="flex justify-end">
             <Button onClick={handleSave} disabled={!dirty || saving}>
