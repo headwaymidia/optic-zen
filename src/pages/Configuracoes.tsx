@@ -67,23 +67,34 @@ export default function Configuracoes() {
   // Carrega dados da loja
   useEffect(() => {
     if (!currentStoreId) return;
-    supabase
-      .from("stores")
-      .select("name, city, state, team_size")
-      .eq("id", currentStoreId)
-      .maybeSingle()
-      .then(({ data }) => {
-        const name = data?.name ?? "";
-        const city = (data as { city?: string | null } | null)?.city ?? "";
-        const state = (data as { state?: string | null } | null)?.state ?? "";
-        const team_size = (data as { team_size?: string | null } | null)?.team_size ?? "";
-        setStoreName(name);
-        setStoreCity(city);
-        setStoreState(state);
-        setStoreTeamSize(team_size);
-        setInitialStore({ name, city, state, team_size });
-      });
-  }, [currentStoreId]);
+    let cancelled = false;
+    (async () => {
+      const { data, error } = await supabase
+        .from("stores")
+        .select("name, city, state, team_size")
+        .eq("id", currentStoreId)
+        .maybeSingle();
+      if (cancelled) return;
+      if (error) {
+        console.error("[Configuracoes] erro ao carregar loja:", error);
+        toast({ title: "Erro ao carregar loja", description: error.message, variant: "destructive" });
+        return;
+      }
+      const row = (data ?? {}) as { name?: string | null; city?: string | null; state?: string | null; team_size?: string | null };
+      const name = row.name ?? currentStore?.name ?? "";
+      const city = row.city ?? "";
+      const state = row.state ?? "";
+      const team_size = row.team_size ?? "";
+      setStoreName(name);
+      setStoreCity(city);
+      setStoreState(state);
+      setStoreTeamSize(team_size);
+      setInitialStore({ name, city, state, team_size });
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [currentStoreId, currentStore?.name]);
 
   async function handleSaveStore() {
     if (!currentStoreId) return;
@@ -95,14 +106,22 @@ export default function Configuracoes() {
     setSavingStore(true);
     const { error } = await supabase
       .from("stores")
-      .update({ name: trimmed, city: storeCity.trim() || null, state: storeState.trim() || null, team_size: storeTeamSize || null })
+      .update({
+        name: trimmed,
+        city: storeCity.trim() || null,
+        state: storeState.trim() || null,
+        team_size: storeTeamSize || null,
+      })
       .eq("id", currentStoreId);
     setSavingStore(false);
     if (error) {
+      console.error("[Configuracoes] erro ao salvar loja:", error);
       toast({ title: "Erro ao salvar loja", description: error.message, variant: "destructive" });
       return;
     }
     setInitialStore({ name: trimmed, city: storeCity.trim(), state: storeState.trim(), team_size: storeTeamSize });
+    // Atualiza imediatamente o nome da loja no seletor do sidebar
+    await refetchStores();
     toast({ title: "Configurações da loja salvas." });
   }
 
