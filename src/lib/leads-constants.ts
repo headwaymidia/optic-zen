@@ -80,6 +80,12 @@ export interface Lead {
   last_interaction: string | null;
   lead_source: LeadSource | string | null;
   interest_tag: InterestTag | string | null;
+  /** @deprecated usar responsible_id */
+  assigned_to?: string | null;
+  /** @deprecated mover para tabela prescriptions */
+  prescription?: Prescription | null;
+  /** @deprecated campo legado */
+  delivery_prediction?: string | null;
   lab_status: LabStatus | string | null;
   lab_name: string | null;
   lab_order_number: string | null;
@@ -105,6 +111,8 @@ export interface Profile {
   role: string | null;
   created_at: string;
   updated_at: string;
+  /** @deprecated usar full_name */
+  name?: string | null;
 }
 
 const REMEMBER_KEY = "od.auth.remember";
