@@ -97,13 +97,11 @@ function SwitcherMenuContent({
   currentId,
   onSelect,
   onCreate,
-  onSettings,
 }: {
   stores: { id: string; name: string; role: string; initial?: string }[];
   currentId: string;
   onSelect: (id: string) => void;
   onCreate: () => void;
-  onSettings: () => void;
 }) {
   return (
     <DropdownMenuContent
@@ -139,15 +137,6 @@ function SwitcherMenuContent({
         );
       })}
       <DropdownMenuSeparator />
-      <DropdownMenuItem
-        onSelect={onSettings}
-        className="cursor-pointer gap-2 rounded-md px-2 py-2 text-sm font-medium focus:bg-accent"
-      >
-        <span className="flex h-6 w-6 items-center justify-center rounded-md border border-zinc-200 dark:border-zinc-700">
-          <Settings className="h-3.5 w-3.5" />
-        </span>
-        Configurações da loja
-      </DropdownMenuItem>
       <DropdownMenuItem
         onSelect={onCreate}
         className="cursor-pointer gap-2 rounded-md px-2 py-2 text-sm font-medium focus:bg-accent"
