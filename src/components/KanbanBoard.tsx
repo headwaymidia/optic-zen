@@ -202,14 +202,6 @@ function LeadCardContent({ lead, onEdit, dragging, selected, cadenceHighlight }:
                 {lead.priority}
               </Badge>
             )}
-            {lead.lead_source && (
-              <span
-                className="inline-flex items-center gap-0.5 text-[10px] text-muted-foreground"
-                title={`Origem: ${lead.lead_source}`}
-              >
-                <span aria-hidden>{SOURCE_EMOJI[lead.lead_source as string] ?? "🔗"}</span>
-              </span>
-            )}
             {lead.assigned_to && (
               <span
                 className="inline-flex items-center gap-0.5 rounded-full bg-primary/10 text-primary text-[10px] font-medium px-1.5 py-0.5"
@@ -238,6 +230,15 @@ function LeadCardContent({ lead, onEdit, dragging, selected, cadenceHighlight }:
             >
               <Tag className="h-2.5 w-2.5" />
               {lead.interest_tag}
+            </span>
+          )}
+          {lead.lead_source && (
+            <span
+              className="inline-flex items-center gap-1 rounded-full bg-muted text-foreground/80 px-2.5 py-0.5 text-[10px] font-semibold tracking-wide"
+              title={`Origem: ${lead.lead_source}`}
+            >
+              <span aria-hidden>{SOURCE_EMOJI[lead.lead_source as string] ?? "🔗"}</span>
+              {lead.lead_source}
             </span>
           )}
           {cooling && (
