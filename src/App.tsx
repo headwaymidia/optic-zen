@@ -68,9 +68,9 @@ const App = () => (
                 <Route
                   path="/ranking"
                   element={
-                    <LeadsProvider>
+                    <FullscreenAuthGate>
                       <Ranking />
-                    </LeadsProvider>
+                    </FullscreenAuthGate>
                   }
                 />
                 <Route path="*" element={<NotFound />} />
