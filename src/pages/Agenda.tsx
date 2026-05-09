@@ -24,7 +24,8 @@ import {
   Search,
 } from "lucide-react";
 import { LeadsProvider, useLeads } from "@/hooks/useLeads";
-import { Lead, SALESPEOPLE } from "@/lib/supabase";
+import { Lead } from "@/lib/supabase";
+import { useStoreMembers } from "@/hooks/useStoreMembers";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -141,6 +142,7 @@ function buildEvents(leads: Lead[]): AgendaEvent[] {
 function AgendaInner() {
   const navigate = useNavigate();
   const { leads, updateLead } = useLeads();
+  const { members, nameById } = useStoreMembers();
   const [cursor, setCursor] = useState<Date>(new Date());
   const [view, setView] = useState<ViewMode>("month");
   const [filterSeller, setFilterSeller] = useState<string>("all");
@@ -154,7 +156,7 @@ function AgendaInner() {
     () =>
       filterSeller === "all"
         ? allEvents
-        : allEvents.filter((e) => e.lead.assigned_to === filterSeller),
+        : allEvents.filter((e) => e.lead.responsible_id === filterSeller),
     [allEvents, filterSeller]
   );
 
@@ -223,9 +225,9 @@ function AgendaInner() {
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="all">Todas as vendedoras</SelectItem>
-              {SALESPEOPLE.map((s) => (
-                <SelectItem key={s} value={s}>
-                  {s}
+              {members.map((m) => (
+                <SelectItem key={m.id} value={m.id}>
+                  {m.full_name}
                 </SelectItem>
               ))}
             </SelectContent>
@@ -421,7 +423,7 @@ function AgendaInner() {
                       <div className="text-xs opacity-80 flex flex-wrap gap-x-3">
                         {ev.lead.phone && <span>{ev.lead.phone}</span>}
                         <span>{TYPE_STYLES[ev.type].label}</span>
-                        {ev.lead.assigned_to && <span>• {ev.lead.assigned_to}</span>}
+                        {ev.lead.responsible_id && <span>• {nameById.get(ev.lead.responsible_id) ?? "Vendedora"}</span>}
                       </div>
                     </button>
                   ))}
@@ -457,9 +459,9 @@ function AgendaInner() {
                     <Phone className="h-4 w-4" /> {selectedEvent.lead.phone}
                   </a>
                 )}
-                {selectedEvent.lead.assigned_to && (
+                {selectedEvent.lead.responsible_id && (
                   <div className="text-muted-foreground">
-                    Vendedora: <span className="text-foreground">{selectedEvent.lead.assigned_to}</span>
+                    Vendedora: <span className="text-foreground">{nameById.get(selectedEvent.lead.responsible_id) ?? "—"}</span>
                   </div>
                 )}
               </div>

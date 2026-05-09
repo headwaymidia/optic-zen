@@ -28,6 +28,7 @@ const ALL_SALES = "__all__";
 
 export default function Funil() {
   const { leads, loading } = useLeads();
+  const { members } = useStoreMembers();
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const isMobile = useIsMobile();
 

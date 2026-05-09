@@ -145,8 +145,8 @@ export function TeamPerformancePanel({ leads }: Props) {
     const sellerData = [...loadMap.entries()]
       .sort((a, b) => b[1] - a[1])
       .slice(0, 8)
-      .map(([name, value], i) => ({
-        name,
+      .map(([id, value], i) => ({
+        name: resolveName(id),
         value,
         color: SELLER_PALETTE[i % SELLER_PALETTE.length],
       }));
