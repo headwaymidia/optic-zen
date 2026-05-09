@@ -60,7 +60,7 @@ export function StageGateDialog({ open, lead, targetStatus, onCancel, onConfirm 
   useEffect(() => {
     if (!open) return;
     if (targetStatus === "Agendou Exame") {
-      const existing = toLocalInputValue(lead?.follow_up_date);
+      const existing = toLocalInputValue(lead?.exam_date ?? lead?.follow_up_date);
       // Use existing only if it's today or future, else default to tomorrow 09:00
       if (existing && new Date(existing) >= startOfToday()) {
         setExamAt(existing);
