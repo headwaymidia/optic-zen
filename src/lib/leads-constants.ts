@@ -107,12 +107,14 @@ export interface Profile {
   id: string;
   full_name: string | null;
   email: string | null;
-  whatsapp: string | null;
-  role: string | null;
+  whatsapp?: string | null;
+  role?: string | null;
   created_at: string;
   updated_at: string;
   /** @deprecated usar full_name */
   name?: string | null;
+  /** @deprecated coluna inexistente, mantida apenas para compat */
+  company_id?: string | null;
 }
 
 const REMEMBER_KEY = "od.auth.remember";

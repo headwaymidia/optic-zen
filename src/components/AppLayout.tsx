@@ -51,7 +51,7 @@ export default function AppLayout() {
                     <SidebarTrigger className="hidden md:inline-flex hover:bg-muted" />
                     <div className="min-w-0">
                       <p className="text-sm font-semibold text-foreground truncate">
-                        {profile?.name || profile?.email || "Usuário"}
+                        {profile?.full_name || profile?.email || "Usuário"}
                       </p>
                     </div>
                   </div>
