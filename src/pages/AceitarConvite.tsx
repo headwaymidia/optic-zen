@@ -82,7 +82,6 @@ export default function AceitarConvitePage() {
 
     const acceptedStoreId =
       typeof data === "string" && data ? data : invite.store_id;
-    console.log("[AceitarConvite] convite aceito, store_id:", acceptedStoreId);
 
     // Busca nome real da loja para o toast
     let storeName = invite.store_name;
