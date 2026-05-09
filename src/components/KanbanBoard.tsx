@@ -232,6 +232,15 @@ function LeadCardContent({ lead, onEdit, dragging, selected, cadenceHighlight }:
               {lead.interest_tag}
             </span>
           )}
+          {lead.lead_source && (
+            <span
+              className="inline-flex items-center gap-1 rounded-full bg-muted text-foreground/80 px-2.5 py-0.5 text-[10px] font-semibold tracking-wide"
+              title={`Origem: ${lead.lead_source}`}
+            >
+              <span aria-hidden>{SOURCE_EMOJI[lead.lead_source as string] ?? "🔗"}</span>
+              {lead.lead_source}
+            </span>
+          )}
           {cooling && (
             <Badge className="bg-red-50 hover:bg-red-100 text-red-600 text-[10px] px-2 py-0.5 gap-1 rounded-full border-0 font-semibold">
               <Flame className="h-3 w-3" />
