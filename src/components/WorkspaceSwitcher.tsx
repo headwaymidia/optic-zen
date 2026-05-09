@@ -82,7 +82,6 @@ export function WorkspaceSwitcher({ collapsed = false }: Props) {
         </DropdownMenuTrigger>
         <SwitcherMenuContent
           onCreate={() => setCreateOpen(true)}
-          onSettings={goToSettings}
           stores={stores}
           currentId={currentStore.id}
           onSelect={setCurrentStoreId}
