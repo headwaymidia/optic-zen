@@ -8,6 +8,7 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useTheme } from "@/hooks/useTheme";
 import { toast } from "@/hooks/use-toast";
 import { Sun, Moon, Loader2, Upload, X } from "lucide-react";
@@ -25,7 +26,12 @@ export default function Configuracoes() {
   const [initialAvatar, setInitialAvatar] = useState<string | null>(null);
   const [role, setRole] = useState<string | null>(null);
   const [storeName, setStoreName] = useState("");
+  const [storeCity, setStoreCity] = useState("");
+  const [storeState, setStoreState] = useState("");
+  const [storeTeamSize, setStoreTeamSize] = useState("");
+  const [initialStore, setInitialStore] = useState({ name: "", city: "", state: "", team_size: "" });
   const [saving, setSaving] = useState(false);
+  const [savingStore, setSavingStore] = useState(false);
   const fileRef = useRef<HTMLInputElement>(null);
 
   // Carrega profile (full_name + avatar_url)
@@ -58,16 +64,47 @@ export default function Configuracoes() {
       .then(({ data }) => setRole(data?.role ?? null));
   }, [user?.id, currentStoreId]);
 
-  // Carrega nome da loja
+  // Carrega dados da loja
   useEffect(() => {
     if (!currentStoreId) return;
     supabase
       .from("stores")
-      .select("name")
+      .select("name, city, state, team_size")
       .eq("id", currentStoreId)
       .maybeSingle()
-      .then(({ data }) => setStoreName(data?.name ?? ""));
+      .then(({ data }) => {
+        const name = data?.name ?? "";
+        const city = (data as { city?: string | null } | null)?.city ?? "";
+        const state = (data as { state?: string | null } | null)?.state ?? "";
+        const team_size = (data as { team_size?: string | null } | null)?.team_size ?? "";
+        setStoreName(name);
+        setStoreCity(city);
+        setStoreState(state);
+        setStoreTeamSize(team_size);
+        setInitialStore({ name, city, state, team_size });
+      });
   }, [currentStoreId]);
+
+  async function handleSaveStore() {
+    if (!currentStoreId) return;
+    const trimmed = storeName.trim();
+    if (!trimmed) {
+      toast({ title: "Informe o nome da loja", variant: "destructive" });
+      return;
+    }
+    setSavingStore(true);
+    const { error } = await supabase
+      .from("stores")
+      .update({ name: trimmed, city: storeCity.trim() || null, state: storeState.trim() || null, team_size: storeTeamSize || null })
+      .eq("id", currentStoreId);
+    setSavingStore(false);
+    if (error) {
+      toast({ title: "Erro ao salvar loja", description: error.message, variant: "destructive" });
+      return;
+    }
+    setInitialStore({ name: trimmed, city: storeCity.trim(), state: storeState.trim(), team_size: storeTeamSize });
+    toast({ title: "Configurações da loja salvas." });
+  }
 
   function handlePickFile(file?: File | null) {
     if (!file) return;
@@ -110,7 +147,13 @@ export default function Configuracoes() {
 
   const dirty = fullName.trim() !== initialName.trim() || avatarUrl !== initialAvatar;
   const initials = getUserInitials(fullName, user?.email);
-
+  const normalizedRole = (role ?? "").toLowerCase();
+  const canEditStore = ["dono", "owner", "proprietário", "proprietario", "gerente", "manager"].includes(normalizedRole);
+  const storeDirty =
+    storeName.trim() !== initialStore.name.trim() ||
+    storeCity.trim() !== (initialStore.city ?? "").trim() ||
+    storeState.trim() !== (initialStore.state ?? "").trim() ||
+    (storeTeamSize ?? "") !== (initialStore.team_size ?? "");
 
   return (
     <div className="p-6 space-y-6 max-w-2xl">
@@ -241,6 +284,63 @@ export default function Configuracoes() {
           </div>
         </CardContent>
       </Card>
+
+      {canEditStore && (
+        <Card>
+          <CardHeader><CardTitle className="text-base">Configurações da Loja</CardTitle></CardHeader>
+          <CardContent className="space-y-4">
+            <div className="space-y-2">
+              <Label htmlFor="store-name">Nome da loja</Label>
+              <Input
+                id="store-name"
+                value={storeName}
+                onChange={(e) => setStoreName(e.target.value)}
+                placeholder="Nome da loja"
+              />
+            </div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <div className="space-y-2">
+                <Label htmlFor="store-city">Cidade</Label>
+                <Input
+                  id="store-city"
+                  value={storeCity}
+                  onChange={(e) => setStoreCity(e.target.value)}
+                  placeholder="Cidade"
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="store-state">Estado</Label>
+                <Input
+                  id="store-state"
+                  value={storeState}
+                  onChange={(e) => setStoreState(e.target.value)}
+                  placeholder="UF"
+                />
+              </div>
+            </div>
+            <div className="space-y-2">
+              <Label>Tamanho da equipe</Label>
+              <Select value={storeTeamSize || undefined} onValueChange={setStoreTeamSize}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Selecione" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="1">1</SelectItem>
+                  <SelectItem value="2 a 5">2 a 5</SelectItem>
+                  <SelectItem value="6 a 10">6 a 10</SelectItem>
+                  <SelectItem value="Mais de 10">Mais de 10</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="flex justify-end">
+              <Button onClick={handleSaveStore} disabled={!storeDirty || savingStore}>
+                {savingStore && <Loader2 className="h-4 w-4 animate-spin" />}
+                Salvar configurações da loja
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
+      )}
     </div>
   );
 }

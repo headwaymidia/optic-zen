@@ -1,5 +1,4 @@
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -9,7 +8,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
-import { Check, ChevronsUpDown, Plus, Settings, Store as StoreIcon } from "lucide-react";
+import { Check, ChevronsUpDown, Plus, Store as StoreIcon } from "lucide-react";
 import { useStores } from "@/hooks/useStores";
 import { CreateStoreDialog } from "@/components/CreateStoreDialog";
 import { cn } from "@/lib/utils";
@@ -21,8 +20,7 @@ interface Props {
 export function WorkspaceSwitcher({ collapsed = false }: Props) {
   const { stores, currentStore, setCurrentStoreId } = useStores();
   const [createOpen, setCreateOpen] = useState(false);
-  const navigate = useNavigate();
-  const goToSettings = () => navigate("/configuracoes-loja?tab=integracoes");
+
 
   if (!currentStore) return null;
 
@@ -46,7 +44,6 @@ export function WorkspaceSwitcher({ collapsed = false }: Props) {
           </Tooltip>
           <SwitcherMenuContent
             onCreate={() => setCreateOpen(true)}
-            onSettings={goToSettings}
             stores={stores}
             currentId={currentStore.id}
             onSelect={setCurrentStoreId}
@@ -85,7 +82,6 @@ export function WorkspaceSwitcher({ collapsed = false }: Props) {
         </DropdownMenuTrigger>
         <SwitcherMenuContent
           onCreate={() => setCreateOpen(true)}
-          onSettings={goToSettings}
           stores={stores}
           currentId={currentStore.id}
           onSelect={setCurrentStoreId}
@@ -101,13 +97,11 @@ function SwitcherMenuContent({
   currentId,
   onSelect,
   onCreate,
-  onSettings,
 }: {
   stores: { id: string; name: string; role: string; initial?: string }[];
   currentId: string;
   onSelect: (id: string) => void;
   onCreate: () => void;
-  onSettings: () => void;
 }) {
   return (
     <DropdownMenuContent
@@ -143,15 +137,6 @@ function SwitcherMenuContent({
         );
       })}
       <DropdownMenuSeparator />
-      <DropdownMenuItem
-        onSelect={onSettings}
-        className="cursor-pointer gap-2 rounded-md px-2 py-2 text-sm font-medium focus:bg-accent"
-      >
-        <span className="flex h-6 w-6 items-center justify-center rounded-md border border-zinc-200 dark:border-zinc-700">
-          <Settings className="h-3.5 w-3.5" />
-        </span>
-        Configurações da loja
-      </DropdownMenuItem>
       <DropdownMenuItem
         onSelect={onCreate}
         className="cursor-pointer gap-2 rounded-md px-2 py-2 text-sm font-medium focus:bg-accent"
