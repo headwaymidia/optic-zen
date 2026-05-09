@@ -1,6 +1,7 @@
 import { useMemo } from "react";
 import { Card } from "@/components/ui/card";
 import { Lead } from "@/lib/supabase";
+import { useStoreMembers } from "@/hooks/useStoreMembers";
 import {
   ResponsiveContainer,
   PieChart,
