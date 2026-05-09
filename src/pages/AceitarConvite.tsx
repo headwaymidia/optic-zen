@@ -70,7 +70,7 @@ export default function AceitarConvitePage() {
     });
 
     if (rpcErr) {
-      console.error("[AceitarConvite] RPC accept_store_invite falhou:", rpcErr);
+      
       toast({
         title: "Erro ao aceitar convite",
         description: rpcErr.message,
