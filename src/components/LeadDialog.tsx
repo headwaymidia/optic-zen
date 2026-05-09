@@ -36,7 +36,7 @@ export function LeadDialog({ open, onOpenChange, lead, defaultStatus, onSaved }:
   const [saleValue, setSaleValue] = useState<string>("");
   const [leadSource, setLeadSource] = useState<string>("");
   const [interestTag, setInterestTag] = useState<string>("");
-  const [assignedTo, setAssignedTo] = useState<string>("");
+  const [responsibleId, setResponsibleId] = useState<string>("");
   const [bairro, setBairro] = useState("");
   const [cpf, setCpf] = useState("");
   const [dataNascimento, setDataNascimento] = useState("");
