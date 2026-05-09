@@ -579,6 +579,8 @@ export function KanbanBoard({
                       onSelect={onSelectLead}
                       selected={selectedLeadId === lead.id}
                       cadenceHighlight={cadenceActive && getPendingFu(lead) !== null}
+                      members={members}
+                      nameById={nameById}
                     />
                   </div>
                 ))}
