@@ -209,7 +209,7 @@ function buildInviteLink(token: string) {
   return `${window.location.origin}/aceitar-convite/${token}`;
 }
 
-function TeamPanel({ storeId, storesCount }: { storeId: string; storesCount: number }) {
+export function TeamPanel({ storeId, storesCount }: { storeId: string; storesCount: number }) {
   const [inviteOpen, setInviteOpen] = useState(false);
   const [members, setMembers] = useState<TeamMember[]>([]);
   const [invites, setInvites] = useState<PendingInvite[]>([]);
