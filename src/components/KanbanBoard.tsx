@@ -404,7 +404,7 @@ function LeadCardContent({ lead, onEdit, dragging, selected, cadenceHighlight, m
   );
 }
 
-function DraggableLeadCard({ lead, onEdit, onSelect, selected, cadenceHighlight }: { lead: Lead; onEdit: (l: Lead) => void; onSelect?: (l: Lead) => void; selected?: boolean; cadenceHighlight?: boolean }) {
+function DraggableLeadCard({ lead, onEdit, onSelect, selected, cadenceHighlight, members, nameById }: { lead: Lead; onEdit: (l: Lead) => void; onSelect?: (l: Lead) => void; selected?: boolean; cadenceHighlight?: boolean; members?: { id: string; full_name: string }[]; nameById?: Map<string, string> }) {
   const { attributes, listeners, setNodeRef, isDragging } = useDraggable({ id: lead.id });
   return (
     <div
@@ -414,7 +414,7 @@ function DraggableLeadCard({ lead, onEdit, onSelect, selected, cadenceHighlight 
       onClick={() => onSelect?.(lead)}
       className={cn("touch-none cursor-pointer active:cursor-grabbing", isDragging && "opacity-40")}
     >
-      <LeadCardContent lead={lead} onEdit={onEdit} selected={selected} cadenceHighlight={cadenceHighlight} />
+      <LeadCardContent lead={lead} onEdit={onEdit} selected={selected} cadenceHighlight={cadenceHighlight} members={members} nameById={nameById} />
     </div>
   );
 }
