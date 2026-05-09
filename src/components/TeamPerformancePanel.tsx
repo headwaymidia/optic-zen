@@ -80,7 +80,9 @@ interface Props {
  *  4) Alertas automáticos de funil
  */
 export function TeamPerformancePanel({ leads }: Props) {
+  const { nameById } = useStoreMembers();
   const stats = useMemo(() => {
+    const resolveName = (id: string) => nameById.get(id) ?? "Vendedora";
     const now = new Date();
     const dayOfMonth = getDate(now);
     const totalDays = getDaysInMonth(now);
