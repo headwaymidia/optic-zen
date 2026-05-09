@@ -69,7 +69,8 @@ export function LeadsProvider({ children }: { children: ReactNode }) {
 
   const updateLead = useCallback(async (leadId: string, patch: Partial<Lead>) => {
     setLeads((prev) => prev.map((l) => (l.id === leadId ? { ...l, ...patch } : l)));
-    const { error } = await supabase.from("leads").update(patch).eq("id", leadId);
+    const { prescription: _p, delivery_prediction: _d, ...dbPatch } = patch as any;
+    const { error } = await supabase.from("leads").update(dbPatch).eq("id", leadId);
     if (error) {
       toast({ title: "Erro ao atualizar lead", description: error.message, variant: "destructive" });
       refetch();
