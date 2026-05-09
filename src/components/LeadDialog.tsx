@@ -53,7 +53,7 @@ export function LeadDialog({ open, onOpenChange, lead, defaultStatus, onSaved }:
       setSaleValue(lead?.sale_value != null ? String(lead.sale_value) : "");
       setLeadSource((lead?.lead_source as string) ?? "");
       setInterestTag((lead?.interest_tag as string) ?? "");
-      setAssignedTo(lead?.assigned_to ?? "");
+      setResponsibleId(lead?.responsible_id ?? "");
       setBairro((lead as any)?.bairro ?? "");
       setCpf((lead as any)?.cpf ?? "");
       setDataNascimento((lead as any)?.data_nascimento ?? "");
