@@ -147,7 +147,13 @@ export default function Configuracoes() {
 
   const dirty = fullName.trim() !== initialName.trim() || avatarUrl !== initialAvatar;
   const initials = getUserInitials(fullName, user?.email);
-
+  const normalizedRole = (role ?? "").toLowerCase();
+  const canEditStore = ["dono", "owner", "proprietário", "proprietario", "gerente", "manager"].includes(normalizedRole);
+  const storeDirty =
+    storeName.trim() !== initialStore.name.trim() ||
+    storeCity.trim() !== (initialStore.city ?? "").trim() ||
+    storeState.trim() !== (initialStore.state ?? "").trim() ||
+    (storeTeamSize ?? "") !== (initialStore.team_size ?? "");
 
   return (
     <div className="p-6 space-y-6 max-w-2xl">
