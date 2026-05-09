@@ -34,9 +34,6 @@ export const LEAD_SOURCES = [
 ] as const;
 export type LeadSource = (typeof LEAD_SOURCES)[number];
 
-export const SALESPEOPLE = ["Maria", "Juliana", "Ana"] as const;
-export type Salesperson = (typeof SALESPEOPLE)[number];
-
 export const INTEREST_TAGS = [
   "Exame",
   "Multifocal",
