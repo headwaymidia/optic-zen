@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useAuth } from "@/hooks/useAuth";
 import { useStores } from "@/hooks/useStores";
 import { supabase } from "@/lib/supabase";
@@ -6,21 +6,13 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { useTheme } from "@/hooks/useTheme";
 import { toast } from "@/hooks/use-toast";
-import { Sun, Moon, Loader2 } from "lucide-react";
+import { Sun, Moon, Loader2, Upload, X } from "lucide-react";
 import { cn } from "@/lib/utils";
-
-function translateRole(role?: string | null): string {
-  if (!role) return "—";
-  const map: Record<string, string> = {
-    owner: "Proprietário",
-    manager: "Gerente",
-    attendant: "Atendente",
-  };
-  return map[role.toLowerCase()] ?? role;
-}
+import { getUserInitials, translateRole } from "@/lib/profile-helpers";
 
 export default function Configuracoes() {
   const { user } = useAuth();
