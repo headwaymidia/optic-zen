@@ -27,6 +27,7 @@ const PRIORITIES: LeadPriority[] = ["Baixa", "Média", "Alta"];
 export function LeadDialog({ open, onOpenChange, lead, defaultStatus, onSaved }: Props) {
   const { user } = useAuth();
   const { currentStoreId } = useStores();
+  const { members } = useStoreMembers(currentStoreId);
   const [name, setName] = useState("");
   const [phone, setPhone] = useState("");
   const [status, setStatus] = useState<LeadStatus>("Novo Lead");
