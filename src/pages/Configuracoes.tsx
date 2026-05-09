@@ -64,16 +64,47 @@ export default function Configuracoes() {
       .then(({ data }) => setRole(data?.role ?? null));
   }, [user?.id, currentStoreId]);
 
-  // Carrega nome da loja
+  // Carrega dados da loja
   useEffect(() => {
     if (!currentStoreId) return;
     supabase
       .from("stores")
-      .select("name")
+      .select("name, city, state, team_size")
       .eq("id", currentStoreId)
       .maybeSingle()
-      .then(({ data }) => setStoreName(data?.name ?? ""));
+      .then(({ data }) => {
+        const name = data?.name ?? "";
+        const city = (data as { city?: string | null } | null)?.city ?? "";
+        const state = (data as { state?: string | null } | null)?.state ?? "";
+        const team_size = (data as { team_size?: string | null } | null)?.team_size ?? "";
+        setStoreName(name);
+        setStoreCity(city);
+        setStoreState(state);
+        setStoreTeamSize(team_size);
+        setInitialStore({ name, city, state, team_size });
+      });
   }, [currentStoreId]);
+
+  async function handleSaveStore() {
+    if (!currentStoreId) return;
+    const trimmed = storeName.trim();
+    if (!trimmed) {
+      toast({ title: "Informe o nome da loja", variant: "destructive" });
+      return;
+    }
+    setSavingStore(true);
+    const { error } = await supabase
+      .from("stores")
+      .update({ name: trimmed, city: storeCity.trim() || null, state: storeState.trim() || null, team_size: storeTeamSize || null })
+      .eq("id", currentStoreId);
+    setSavingStore(false);
+    if (error) {
+      toast({ title: "Erro ao salvar loja", description: error.message, variant: "destructive" });
+      return;
+    }
+    setInitialStore({ name: trimmed, city: storeCity.trim(), state: storeState.trim(), team_size: storeTeamSize });
+    toast({ title: "Configurações da loja salvas." });
+  }
 
   function handlePickFile(file?: File | null) {
     if (!file) return;
