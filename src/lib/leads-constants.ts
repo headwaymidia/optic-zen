@@ -77,8 +77,6 @@ export interface Lead {
   last_interaction: string | null;
   lead_source: LeadSource | string | null;
   interest_tag: InterestTag | string | null;
-  /** @deprecated usar responsible_id */
-  assigned_to?: string | null;
   /** @deprecated mover para tabela prescriptions */
   prescription?: Prescription | null;
   /** @deprecated campo legado */
