@@ -1,11 +1,11 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Route, Routes } from "react-router-dom";
+import { BrowserRouter, Navigate, Route, Routes } from "react-router-dom";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
-import { AuthProvider } from "@/hooks/useAuth";
+import { AuthProvider, useAuth } from "@/hooks/useAuth";
 import { ThemeProvider } from "@/hooks/useTheme";
-import { StoresProvider } from "@/hooks/useStores";
+import { StoresProvider, useStores } from "@/hooks/useStores";
 import AppLayout from "@/components/AppLayout";
 import Dashboard from "./pages/Dashboard";
 import Funil from "./pages/Funil";
@@ -26,6 +26,18 @@ import Agenda from "./pages/Agenda.tsx";
 import { LeadsProvider } from "@/hooks/useLeads";
 
 const queryClient = new QueryClient();
+
+function FullscreenAuthGate({ children }: { children: React.ReactNode }) {
+  const { session, loading } = useAuth();
+  const { stores, loading: storesLoading } = useStores();
+  if (loading || storesLoading) {
+    return <div className="flex min-h-screen items-center justify-center text-muted-foreground">Carregando...</div>;
+  }
+  if (!session) return <Navigate to="/auth" replace />;
+  if (stores.length === 0) return <Navigate to="/onboarding" replace />;
+  return <LeadsProvider>{children}</LeadsProvider>;
+}
+
 
 const App = () => (
   <QueryClientProvider client={queryClient}>
@@ -56,9 +68,9 @@ const App = () => (
                 <Route
                   path="/ranking"
                   element={
-                    <LeadsProvider>
+                    <FullscreenAuthGate>
                       <Ranking />
-                    </LeadsProvider>
+                    </FullscreenAuthGate>
                   }
                 />
                 <Route path="*" element={<NotFound />} />
