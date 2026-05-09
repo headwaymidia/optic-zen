@@ -1,38 +1,120 @@
-# Restaurar verde esmeralda + Logo de 300px na tela de login
+## Migration corrigida — anexar triggers no projeto `fxcgvlukzjmwzpzuvzcp`
 
-## O que muda
+Cole o SQL abaixo no **SQL Editor** do projeto **crm-optico (fxcgvlukzjmwzpzuvzcp)** e execute. É idempotente — pode rodar várias vezes sem erro.
 
-Apenas `src/pages/Auth.tsx`. Sem mudanças em design tokens globais — os ajustes de cor e tamanho são locais à tela de login.
+### O que essa migration faz
 
-### 1. Logo (lado claro — esquerda)
-- Remover `maxHeight: 110` e `maxWidth: 320` do container e da imagem.
-- Forçar `width: 300px` e `height: auto` no `<img>`.
-- Manter `object-contain` para preservar proporção e o texto "Powered by".
-- Margem inferior de **60px** entre logo e o título "Acesse seu painel".
+- Garante constraint `UNIQUE(store_id)` em `subscriptions` (necessária para o `ON CONFLICT` do trigger de trial)
+- Cria trigger em `auth.users` → cria profile (e loja só se `store_name` veio no metadata)
+- Cria trigger em `stores` → cria subscription trial de 14 dias
+- Cria triggers `BEFORE UPDATE` para manter `updated_at` em `leads`, `stores`, `profiles`, `subscriptions`
+- Cria trigger em `leads` → recalcula `next_return_date` quando `last_exam_date` muda
+- Cria trigger em `prescriptions` → atualiza `leads.last_exam_date` com a data mais recente e recalcula retorno
+- Recarrega o schema do PostgREST
 
-### 2. Logo (lado escuro — direita)
-- Mesma regra: `width: 300px`, `height: auto`, sem `max-height`.
-- Usa o SVG branco (`logo-otica-dominante-white.svg`) sobre o fundo escuro.
+### SQL
 
-### 3. Botão "Entrar na Plataforma" (componente `SubmitButton`)
-- Voltar para verde esmeralda vivo: `bg-emerald-500 hover:bg-emerald-600`.
-- Texto em **branco**.
-- Cantos arredondados: `border-radius: 8px`.
-- Remover o estilo inline ciano `#00E5FF`.
+```sql
+-- =========================================================
+-- 1) Garantir UNIQUE(store_id) em subscriptions (idempotente)
+-- =========================================================
+DO $$
+BEGIN
+  IF NOT EXISTS (
+    SELECT 1 FROM pg_constraint WHERE conname = 'subscriptions_store_id_key'
+  ) THEN
+    ALTER TABLE public.subscriptions
+      ADD CONSTRAINT subscriptions_store_id_key UNIQUE (store_id);
+  END IF;
+END $$;
 
-### 4. Ícones de destaque (componente `CheckDot` — bullets do painel direito)
-- Voltar para verde esmeralda: fundo `bg-emerald-400/20`, borda `border-emerald-400/40`, ponto central `bg-emerald-400`.
-- Remover os estilos inline ciano.
+-- =========================================================
+-- 2) Trigger em auth.users → handle_new_user
+-- =========================================================
+DROP TRIGGER IF EXISTS on_auth_user_created ON auth.users;
+CREATE TRIGGER on_auth_user_created
+  AFTER INSERT ON auth.users
+  FOR EACH ROW
+  EXECUTE FUNCTION public.handle_new_user();
 
-## O que NÃO muda
+-- =========================================================
+-- 3) Trigger em stores → cria subscription trial
+-- =========================================================
+DROP TRIGGER IF EXISTS tg_stores_create_trial ON public.stores;
+CREATE TRIGGER tg_stores_create_trial
+  AFTER INSERT ON public.stores
+  FOR EACH ROW
+  EXECUTE FUNCTION public.tg_create_trial_subscription();
 
-- Estrutura do grid 50/50, padding vertical (80px) da coluna esquerda, tipografia do título (32px / extra-bold) e subtítulo (16px cinza).
-- Copy do painel direito (selo, headline, bullets).
-- Rodapé "© 2026 Ótica Dominante · Powered by Headway Mídia".
-- Sidebar e Onboarding (logo já está bem dimensionada lá).
+-- =========================================================
+-- 4) Triggers BEFORE UPDATE → atualizar updated_at
+-- =========================================================
+DROP TRIGGER IF EXISTS tg_leads_set_updated_at ON public.leads;
+CREATE TRIGGER tg_leads_set_updated_at
+  BEFORE UPDATE ON public.leads
+  FOR EACH ROW
+  EXECUTE FUNCTION public.tg_set_updated_at();
 
-## Resultado esperado
+DROP TRIGGER IF EXISTS tg_stores_set_updated_at ON public.stores;
+CREATE TRIGGER tg_stores_set_updated_at
+  BEFORE UPDATE ON public.stores
+  FOR EACH ROW
+  EXECUTE FUNCTION public.tg_set_updated_at();
 
-- Logo horizontal imponente (300px de largura) em ambos os lados, com "ÓTICA DOMINANTE" e a assinatura "Powered by" totalmente legíveis.
-- CTA verde esmeralda vibrante com texto branco e cantos suaves de 8px.
-- Bullets do painel direito com check verde, mantendo coerência visual com o botão.
+DROP TRIGGER IF EXISTS tg_profiles_set_updated_at ON public.profiles;
+CREATE TRIGGER tg_profiles_set_updated_at
+  BEFORE UPDATE ON public.profiles
+  FOR EACH ROW
+  EXECUTE FUNCTION public.tg_set_updated_at();
+
+DROP TRIGGER IF EXISTS tg_subscriptions_set_updated_at ON public.subscriptions;
+CREATE TRIGGER tg_subscriptions_set_updated_at
+  BEFORE UPDATE ON public.subscriptions
+  FOR EACH ROW
+  EXECUTE FUNCTION public.tg_set_updated_at();
+
+-- =========================================================
+-- 5) Trigger em leads → recalcula next_return_date
+-- =========================================================
+DROP TRIGGER IF EXISTS tg_leads_recalc_return ON public.leads;
+CREATE TRIGGER tg_leads_recalc_return
+  BEFORE UPDATE ON public.leads
+  FOR EACH ROW
+  EXECUTE FUNCTION public.tg_leads_recalc_return();
+
+-- =========================================================
+-- 6) Trigger em prescriptions → atualiza last_exam_date do lead
+-- =========================================================
+DROP TRIGGER IF EXISTS tg_prescriptions_update_lead_return ON public.prescriptions;
+CREATE TRIGGER tg_prescriptions_update_lead_return
+  AFTER INSERT OR UPDATE OR DELETE ON public.prescriptions
+  FOR EACH ROW
+  EXECUTE FUNCTION public.tg_prescriptions_update_lead_return();
+
+-- =========================================================
+-- 7) Recarregar schema do PostgREST
+-- =========================================================
+NOTIFY pgrst, 'reload schema';
+```
+
+### Verificação após executar
+
+Rode esta query para confirmar que os 8 triggers foram criados:
+
+```sql
+SELECT event_object_schema, event_object_table, trigger_name
+FROM information_schema.triggers
+WHERE trigger_name IN (
+  'on_auth_user_created',
+  'tg_stores_create_trial',
+  'tg_leads_set_updated_at',
+  'tg_stores_set_updated_at',
+  'tg_profiles_set_updated_at',
+  'tg_subscriptions_set_updated_at',
+  'tg_leads_recalc_return',
+  'tg_prescriptions_update_lead_return'
+)
+ORDER BY event_object_table, trigger_name;
+```
+
+Deve retornar 8 linhas. Se faltar algum, me avise qual.
