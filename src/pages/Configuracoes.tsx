@@ -171,8 +171,38 @@ export default function Configuracoes() {
       <Card>
         <CardHeader><CardTitle className="text-base">Perfil</CardTitle></CardHeader>
         <CardContent className="space-y-4">
+          <div className="flex items-center gap-4">
+            <Avatar className="h-16 w-16">
+              {avatarUrl && <AvatarImage src={avatarUrl} alt={fullName || "Avatar"} />}
+              <AvatarFallback className="bg-primary text-primary-foreground text-base font-semibold">
+                {initials}
+              </AvatarFallback>
+            </Avatar>
+            <div className="flex flex-col gap-2">
+              <input
+                ref={fileRef}
+                type="file"
+                accept="image/*"
+                className="hidden"
+                onChange={(e) => handlePickFile(e.target.files?.[0])}
+              />
+              <div className="flex gap-2">
+                <Button type="button" variant="outline" size="sm" onClick={() => fileRef.current?.click()}>
+                  <Upload className="h-3.5 w-3.5" />
+                  Trocar foto
+                </Button>
+                {avatarUrl && (
+                  <Button type="button" variant="ghost" size="sm" onClick={() => setAvatarUrl(null)}>
+                    <X className="h-3.5 w-3.5" />
+                    Remover
+                  </Button>
+                )}
+              </div>
+              <p className="text-[11px] text-muted-foreground">PNG ou JPG, até 1MB.</p>
+            </div>
+          </div>
           <div className="space-y-2">
-            <Label htmlFor="profile-name">Nome</Label>
+            <Label htmlFor="profile-name">Nome completo</Label>
             <Input
               id="profile-name"
               value={fullName}
