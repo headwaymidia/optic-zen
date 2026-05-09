@@ -158,12 +158,15 @@ interface LeadCardProps {
   dragging?: boolean;
   selected?: boolean;
   cadenceHighlight?: boolean;
+  members?: { id: string; full_name: string }[];
+  nameById?: Map<string, string>;
 }
 
-function LeadCardContent({ lead, onEdit, dragging, selected, cadenceHighlight }: LeadCardProps) {
+function LeadCardContent({ lead, onEdit, dragging, selected, cadenceHighlight, members = [], nameById }: LeadCardProps) {
   const { updateLead, updateStatus } = useLeads();
   const cooling = isCooling(lead);
   const awaitingReply = isAwaitingReply(lead);
+  const assignedName = lead.responsible_id ? nameById?.get(lead.responsible_id) : null;
   return (
     <Card
       className={cn(
