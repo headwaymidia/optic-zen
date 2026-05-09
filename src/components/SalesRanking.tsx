@@ -26,22 +26,16 @@ const BAR_STYLE = [
 export function SalesRanking({ leads }: { leads: Lead[] }) {
   const [nameMap, setNameMap] = useState<Record<string, string>>({});
 
-  // Resolve assigned_to (UUID) → nome/email a partir de profiles
+  // Resolve responsible_id (UUID) → nome via profiles
   useEffect(() => {
     const ids = Array.from(
       new Set(
         leads
-          .filter((l) => l.status === "Compareceu e Comprou" && l.assigned_to)
-          .map((l) => String(l.assigned_to))
+          .filter((l) => l.status === "Compareceu e Comprou" && l.responsible_id)
+          .map((l) => String(l.responsible_id))
       )
     );
     if (ids.length === 0) {
-      setNameMap({});
-      return;
-    }
-    // Se não forem UUIDs (ex: nome direto), pula a busca
-    const looksLikeUuid = ids.every((v) => /^[0-9a-f-]{36}$/i.test(v));
-    if (!looksLikeUuid) {
       setNameMap({});
       return;
     }
@@ -67,16 +61,16 @@ export function SalesRanking({ leads }: { leads: Lead[] }) {
   const ranking = useMemo<RankItem[]>(() => {
     const counts = new Map<string, { count: number; revenue: number }>();
     leads
-      .filter((l) => l.status === "Compareceu e Comprou" && l.assigned_to)
+      .filter((l) => l.status === "Compareceu e Comprou" && l.responsible_id)
       .forEach((l) => {
-        const key = l.assigned_to as string;
+        const key = l.responsible_id as string;
         const cur = counts.get(key) ?? { count: 0, revenue: 0 };
         cur.count += 1;
         cur.revenue += Number(l.sale_value ?? 0);
         counts.set(key, cur);
       });
     return Array.from(counts.entries())
-      .map(([id, v]) => ({ name: nameMap[id] ?? id, ...v }))
+      .map(([id, v]) => ({ name: nameMap[id] ?? "Vendedora", ...v }))
       .sort((a, b) => b.revenue - a.revenue || b.count - a.count)
       .slice(0, 3);
   }, [leads, nameMap]);
