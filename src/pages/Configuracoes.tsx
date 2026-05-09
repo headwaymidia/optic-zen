@@ -14,6 +14,7 @@ import { toast } from "@/hooks/use-toast";
 import { Sun, Moon, Loader2, Upload, X } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { getUserInitials, translateRole } from "@/lib/profile-helpers";
+import { TeamPanel } from "@/pages/ConfiguracoesLoja";
 
 export default function Configuracoes() {
   const { user } = useAuth();
