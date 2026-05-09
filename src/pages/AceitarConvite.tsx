@@ -90,10 +90,8 @@ export default function AceitarConvitePage() {
       .select("name")
       .eq("id", acceptedStoreId)
       .maybeSingle();
-    if (storeErr) {
-      console.error("[AceitarConvite] erro ao buscar nome da loja:", storeErr);
-    }
     if (storeRow?.name) storeName = storeRow.name;
+    void storeErr;
 
     toast({
       title: "Bem-vindo à equipe!",
