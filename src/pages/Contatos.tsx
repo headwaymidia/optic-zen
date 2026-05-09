@@ -33,6 +33,7 @@ function formatRelative(dateStr: string): string {
 
 export default function Contatos() {
   const { leads, loading, refetch } = useLeads();
+  const { members, nameById } = useStoreMembers();
   const [search, setSearch] = useState("");
   const [sourceFilter, setSourceFilter] = useState<string>(ALL);
   const [tagFilter, setTagFilter] = useState<string>(ALL);
@@ -48,7 +49,7 @@ export default function Contatos() {
         if (term && !(l.name.toLowerCase().includes(term) || (l.phone ?? "").includes(search))) return false;
         if (sourceFilter !== ALL && (l.lead_source ?? "") !== sourceFilter) return false;
         if (tagFilter !== ALL && (l.interest_tag ?? "") !== tagFilter) return false;
-        if (salesFilter !== ALL && (l.assigned_to ?? "") !== salesFilter) return false;
+        if (salesFilter !== ALL && (l.responsible_id ?? "") !== salesFilter) return false;
         return true;
       }),
     [leads, search, sourceFilter, tagFilter, salesFilter]
@@ -105,7 +106,7 @@ export default function Contatos() {
           <SelectTrigger className="w-44"><SelectValue placeholder="Vendedora" /></SelectTrigger>
           <SelectContent>
             <SelectItem value={ALL}>Todas as vendedoras</SelectItem>
-            {SALESPEOPLE.map((s) => (<SelectItem key={s} value={s}>{s}</SelectItem>))}
+            {members.map((m) => (<SelectItem key={m.id} value={m.id}>{m.full_name}</SelectItem>))}
           </SelectContent>
         </Select>
       </div>
@@ -140,7 +141,7 @@ export default function Contatos() {
                   <TableCell>{l.priority || "—"}</TableCell>
                   <TableCell>{(l.lead_source as string) || "—"}</TableCell>
                   <TableCell>{(l.interest_tag as string) || "—"}</TableCell>
-                  <TableCell>{l.assigned_to || "—"}</TableCell>
+                  <TableCell>{l.responsible_id ? (nameById.get(l.responsible_id) ?? "—") : "—"}</TableCell>
                   <TableCell className="text-muted-foreground text-sm">{formatRelative(l.updated_at)}</TableCell>
                   <TableCell className="text-muted-foreground text-sm">
                     {new Date(l.created_at).toLocaleDateString("pt-BR")}

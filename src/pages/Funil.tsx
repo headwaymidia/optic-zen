@@ -2,7 +2,8 @@ import { useMemo, useState } from "react";
 import { KanbanBoard, CadenceFilter, countLeadsByPendingFu } from "@/components/KanbanBoard";
 import { ChatPanel } from "@/components/ChatPanel";
 import { useLeads } from "@/hooks/useLeads";
-import { LEAD_STATUSES, LeadStatus, SALESPEOPLE } from "@/lib/supabase";
+import { LEAD_STATUSES, LeadStatus } from "@/lib/supabase";
+import { useStoreMembers } from "@/hooks/useStoreMembers";
 import { Sheet, SheetContent } from "@/components/ui/sheet";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { cn } from "@/lib/utils";
@@ -52,7 +53,7 @@ export default function Funil() {
     const term = search.trim().toLowerCase();
     const onlyDigits = term.replace(/\D/g, "");
     const filtered = leads.filter((l) => {
-      if (salesFilter !== ALL_SALES && (l.assigned_to ?? "") !== salesFilter) return false;
+      if (salesFilter !== ALL_SALES && (l.responsible_id ?? "") !== salesFilter) return false;
       if (term) {
         const nameMatch = l.name?.toLowerCase().includes(term);
         const phoneDigits = (l.phone ?? "").replace(/\D/g, "");
@@ -115,8 +116,8 @@ export default function Funil() {
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value={ALL_SALES}>Todas as Vendedoras</SelectItem>
-                {SALESPEOPLE.map((s) => (
-                  <SelectItem key={s} value={s}>{s}</SelectItem>
+                {members.map((m) => (
+                  <SelectItem key={m.id} value={m.id}>{m.full_name}</SelectItem>
                 ))}
               </SelectContent>
             </Select>
