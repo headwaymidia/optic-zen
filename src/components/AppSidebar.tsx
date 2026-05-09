@@ -61,6 +61,10 @@ const secondaryItems = [
 function getInitials(nameOrEmail: string) {
   const base = nameOrEmail.trim();
   if (!base) return "U";
+  const words = base.split(/\s+/).filter(Boolean);
+  if (words.length >= 2) {
+    return (words[0][0] + words[1][0]).toUpperCase();
+  }
   const parts = base.split(/[\s@.]+/).filter(Boolean);
   const first = parts[0]?.[0] ?? "";
   const second = parts[1]?.[0] ?? "";
@@ -74,9 +78,9 @@ export function AppSidebar() {
   const [newLeadOpen, setNewLeadOpen] = useState(false);
   const { profile, user, signOut } = useAuth();
 
-  const displayName = profile?.name || user?.email?.split("@")[0] || "Admin";
+  const displayName = profile?.full_name || user?.email?.split("@")[0] || "Admin";
   const displayEmail = profile?.email || user?.email || "admin@otica.com";
-  const initials = getInitials(profile?.name || displayEmail);
+  const initials = getInitials(profile?.full_name || displayEmail);
 
   return (
     <Sidebar collapsible="icon" className="border-r border-sidebar-border bg-sidebar transition-all duration-300 ease-in-out">
