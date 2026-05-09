@@ -164,7 +164,7 @@ export default function OnboardingPage() {
 
       setStep(3);
     } catch (err: any) {
-      console.error("[Onboarding] erro:", err);
+      
       toast({
         title: "Erro ao criar loja",
         description: err?.message ?? "Erro desconhecido.",
