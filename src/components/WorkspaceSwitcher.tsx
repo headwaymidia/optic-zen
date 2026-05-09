@@ -44,7 +44,6 @@ export function WorkspaceSwitcher({ collapsed = false }: Props) {
           </Tooltip>
           <SwitcherMenuContent
             onCreate={() => setCreateOpen(true)}
-            onSettings={goToSettings}
             stores={stores}
             currentId={currentStore.id}
             onSelect={setCurrentStoreId}
