@@ -1,5 +1,6 @@
 import { useMemo, useState } from "react";
-import { Lead, LEAD_SOURCES, INTEREST_TAGS, SALESPEOPLE } from "@/lib/supabase";
+import { Lead, LEAD_SOURCES, INTEREST_TAGS } from "@/lib/supabase";
+import { useStoreMembers } from "@/hooks/useStoreMembers";
 import { useLeads } from "@/hooks/useLeads";
 import { Card } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
