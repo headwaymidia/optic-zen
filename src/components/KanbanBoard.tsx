@@ -1,5 +1,6 @@
 import { useState } from "react";
-import { LEAD_STATUSES, Lead, LeadStatus, SALESPEOPLE } from "@/lib/supabase";
+import { LEAD_STATUSES, Lead, LeadStatus } from "@/lib/supabase";
+import { useStoreMembers } from "@/hooks/useStoreMembers";
 import { useLeads } from "@/hooks/useLeads";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -157,12 +158,15 @@ interface LeadCardProps {
   dragging?: boolean;
   selected?: boolean;
   cadenceHighlight?: boolean;
+  members?: { id: string; full_name: string }[];
+  nameById?: Map<string, string>;
 }
 
-function LeadCardContent({ lead, onEdit, dragging, selected, cadenceHighlight }: LeadCardProps) {
+function LeadCardContent({ lead, onEdit, dragging, selected, cadenceHighlight, members = [], nameById }: LeadCardProps) {
   const { updateLead, updateStatus } = useLeads();
   const cooling = isCooling(lead);
   const awaitingReply = isAwaitingReply(lead);
+  const assignedName = lead.responsible_id ? nameById?.get(lead.responsible_id) : null;
   return (
     <Card
       className={cn(
@@ -178,10 +182,10 @@ function LeadCardContent({ lead, onEdit, dragging, selected, cadenceHighlight }:
         <div className="flex items-start justify-between gap-2">
           <div className="flex-1 min-w-0">
             <p className="text-sm font-medium text-slate-900 dark:text-white truncate leading-tight">{lead.name}</p>
-            {lead.assigned_to && (
+            {assignedName && (
               <p className="flex items-center gap-1 text-[10px] text-primary font-medium truncate mt-0.5">
                 <User className="h-2.5 w-2.5 shrink-0" />
-                <span className="truncate">{lead.assigned_to}</span>
+                <span className="truncate">{assignedName}</span>
               </p>
             )}
             {lead.exam_date && (
@@ -202,13 +206,13 @@ function LeadCardContent({ lead, onEdit, dragging, selected, cadenceHighlight }:
                 {lead.priority}
               </Badge>
             )}
-            {lead.assigned_to && (
+            {assignedName && (
               <span
                 className="inline-flex items-center gap-0.5 rounded-full bg-primary/10 text-primary text-[10px] font-medium px-1.5 py-0.5"
-                title={`Vendedora: ${lead.assigned_to}`}
+                title={`Vendedora: ${assignedName}`}
               >
                 <User className="h-2.5 w-2.5" />
-                {lead.assigned_to}
+                {assignedName}
               </span>
             )}
           </div>
@@ -310,9 +314,9 @@ function LeadCardContent({ lead, onEdit, dragging, selected, cadenceHighlight }:
           onClick={(e) => e.stopPropagation()}
         >
           <Select
-            value={lead.assigned_to || "__none__"}
+            value={lead.responsible_id || "__none__"}
             onValueChange={(v) =>
-              updateLead(lead.id, { assigned_to: v === "__none__" ? null : v })
+              updateLead(lead.id, { responsible_id: v === "__none__" ? null : v })
             }
           >
             <SelectTrigger className="h-7 w-full text-xs">
@@ -320,8 +324,8 @@ function LeadCardContent({ lead, onEdit, dragging, selected, cadenceHighlight }:
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="__none__" className="text-xs">— Sem vendedora —</SelectItem>
-              {SALESPEOPLE.map((s) => (
-                <SelectItem key={s} value={s} className="text-xs">{s}</SelectItem>
+              {members.map((m) => (
+                <SelectItem key={m.id} value={m.id} className="text-xs">{m.full_name}</SelectItem>
               ))}
             </SelectContent>
           </Select>
@@ -400,7 +404,7 @@ function LeadCardContent({ lead, onEdit, dragging, selected, cadenceHighlight }:
   );
 }
 
-function DraggableLeadCard({ lead, onEdit, onSelect, selected, cadenceHighlight }: { lead: Lead; onEdit: (l: Lead) => void; onSelect?: (l: Lead) => void; selected?: boolean; cadenceHighlight?: boolean }) {
+function DraggableLeadCard({ lead, onEdit, onSelect, selected, cadenceHighlight, members, nameById }: { lead: Lead; onEdit: (l: Lead) => void; onSelect?: (l: Lead) => void; selected?: boolean; cadenceHighlight?: boolean; members?: { id: string; full_name: string }[]; nameById?: Map<string, string> }) {
   const { attributes, listeners, setNodeRef, isDragging } = useDraggable({ id: lead.id });
   return (
     <div
@@ -410,7 +414,7 @@ function DraggableLeadCard({ lead, onEdit, onSelect, selected, cadenceHighlight 
       onClick={() => onSelect?.(lead)}
       className={cn("touch-none cursor-pointer active:cursor-grabbing", isDragging && "opacity-40")}
     >
-      <LeadCardContent lead={lead} onEdit={onEdit} selected={selected} cadenceHighlight={cadenceHighlight} />
+      <LeadCardContent lead={lead} onEdit={onEdit} selected={selected} cadenceHighlight={cadenceHighlight} members={members} nameById={nameById} />
     </div>
   );
 }
@@ -466,6 +470,7 @@ export function KanbanBoard({
   cadenceFilter?: CadenceFilter;
 } = {}) {
   const { leads, loading, refetch, updateStatus, updateLead } = useLeads();
+  const { members, nameById } = useStoreMembers();
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editingLead, setEditingLead] = useState<Lead | null>(null);
   const [defaultStatus, setDefaultStatus] = useState<LeadStatus>("Novo Lead");
@@ -520,7 +525,7 @@ export function KanbanBoard({
   const cadenceActive = cadenceFilter !== "all";
   const hasFilters = term.length > 0 || !!salesFilter || cadenceActive;
   const filteredLeads = leads.filter((l) => {
-    if (salesFilter && (l.assigned_to ?? "") !== salesFilter) return false;
+    if (salesFilter && (l.responsible_id ?? "") !== salesFilter) return false;
     if (term) {
       const nameMatch = l.name?.toLowerCase().includes(term);
       const phoneDigits = (l.phone ?? "").replace(/\D/g, "");
@@ -574,6 +579,8 @@ export function KanbanBoard({
                       onSelect={onSelectLead}
                       selected={selectedLeadId === lead.id}
                       cadenceHighlight={cadenceActive && getPendingFu(lead) !== null}
+                      members={members}
+                      nameById={nameById}
                     />
                   </div>
                 ))}

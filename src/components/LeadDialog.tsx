@@ -6,7 +6,8 @@ import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { INTEREST_TAGS, LEAD_SOURCES, LEAD_STATUSES, Lead, LeadPriority, LeadStatus, SALESPEOPLE, supabase } from "@/lib/supabase";
+import { INTEREST_TAGS, LEAD_SOURCES, LEAD_STATUSES, Lead, LeadPriority, LeadStatus, supabase } from "@/lib/supabase";
+import { useStoreMembers } from "@/hooks/useStoreMembers";
 import { useAuth } from "@/hooks/useAuth";
 import { useStores } from "@/hooks/useStores";
 import { toast } from "@/hooks/use-toast";
@@ -26,6 +27,7 @@ const PRIORITIES: LeadPriority[] = ["Baixa", "Média", "Alta"];
 export function LeadDialog({ open, onOpenChange, lead, defaultStatus, onSaved }: Props) {
   const { user } = useAuth();
   const { currentStoreId } = useStores();
+  const { members } = useStoreMembers(currentStoreId);
   const [name, setName] = useState("");
   const [phone, setPhone] = useState("");
   const [status, setStatus] = useState<LeadStatus>("Novo Lead");
@@ -34,7 +36,7 @@ export function LeadDialog({ open, onOpenChange, lead, defaultStatus, onSaved }:
   const [saleValue, setSaleValue] = useState<string>("");
   const [leadSource, setLeadSource] = useState<string>("");
   const [interestTag, setInterestTag] = useState<string>("");
-  const [assignedTo, setAssignedTo] = useState<string>("");
+  const [responsibleId, setResponsibleId] = useState<string>("");
   const [bairro, setBairro] = useState("");
   const [cpf, setCpf] = useState("");
   const [dataNascimento, setDataNascimento] = useState("");
@@ -51,7 +53,7 @@ export function LeadDialog({ open, onOpenChange, lead, defaultStatus, onSaved }:
       setSaleValue(lead?.sale_value != null ? String(lead.sale_value) : "");
       setLeadSource((lead?.lead_source as string) ?? "");
       setInterestTag((lead?.interest_tag as string) ?? "");
-      setAssignedTo(lead?.assigned_to ?? "");
+      setResponsibleId(lead?.responsible_id ?? "");
       setBairro((lead as any)?.bairro ?? "");
       setCpf((lead as any)?.cpf ?? "");
       setDataNascimento((lead as any)?.data_nascimento ?? "");
@@ -75,11 +77,10 @@ export function LeadDialog({ open, onOpenChange, lead, defaultStatus, onSaved }:
       priority,
       notes: notes || null,
       store_id: currentStoreId,
-      responsible_id: lead?.responsible_id ?? user.id,
+      responsible_id: responsibleId || lead?.responsible_id || user.id,
       sale_value: showSaleValue && saleValue ? Number(saleValue) : null,
       lead_source: leadSource || null,
       interest_tag: interestTag || null,
-      assigned_to: assignedTo || null,
       bairro: bairro.trim() || null,
       cpf: cpf.trim() || null,
       data_nascimento: dataNascimento || null,
@@ -201,12 +202,12 @@ export function LeadDialog({ open, onOpenChange, lead, defaultStatus, onSaved }:
 
               <div className="space-y-2">
                 <Label>Vendedora Responsável</Label>
-                <Select value={assignedTo || "__none__"} onValueChange={(v) => setAssignedTo(v === "__none__" ? "" : v)}>
+                <Select value={responsibleId || "__none__"} onValueChange={(v) => setResponsibleId(v === "__none__" ? "" : v)}>
                   <SelectTrigger><SelectValue placeholder="Selecione" /></SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="__none__">— Nenhuma —</SelectItem>
-                    {SALESPEOPLE.map((s) => (
-                      <SelectItem key={s} value={s}>{s}</SelectItem>
+                    <SelectItem value="__none__">— Sem vendedora —</SelectItem>
+                    {members.map((m) => (
+                      <SelectItem key={m.id} value={m.id}>{m.full_name}</SelectItem>
                     ))}
                   </SelectContent>
                 </Select>

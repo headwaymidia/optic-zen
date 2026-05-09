@@ -34,9 +34,6 @@ export const LEAD_SOURCES = [
 ] as const;
 export type LeadSource = (typeof LEAD_SOURCES)[number];
 
-export const SALESPEOPLE = ["Maria", "Juliana", "Ana"] as const;
-export type Salesperson = (typeof SALESPEOPLE)[number];
-
 export const INTEREST_TAGS = [
   "Exame",
   "Multifocal",
@@ -80,8 +77,6 @@ export interface Lead {
   last_interaction: string | null;
   lead_source: LeadSource | string | null;
   interest_tag: InterestTag | string | null;
-  /** @deprecated usar responsible_id */
-  assigned_to?: string | null;
   /** @deprecated mover para tabela prescriptions */
   prescription?: Prescription | null;
   /** @deprecated campo legado */
