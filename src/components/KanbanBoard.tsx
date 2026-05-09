@@ -470,6 +470,7 @@ export function KanbanBoard({
   cadenceFilter?: CadenceFilter;
 } = {}) {
   const { leads, loading, refetch, updateStatus, updateLead } = useLeads();
+  const { members, nameById } = useStoreMembers();
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editingLead, setEditingLead] = useState<Lead | null>(null);
   const [defaultStatus, setDefaultStatus] = useState<LeadStatus>("Novo Lead");
