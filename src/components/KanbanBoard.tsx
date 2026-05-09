@@ -206,13 +206,13 @@ function LeadCardContent({ lead, onEdit, dragging, selected, cadenceHighlight, m
                 {lead.priority}
               </Badge>
             )}
-            {lead.assigned_to && (
+            {assignedName && (
               <span
                 className="inline-flex items-center gap-0.5 rounded-full bg-primary/10 text-primary text-[10px] font-medium px-1.5 py-0.5"
-                title={`Vendedora: ${lead.assigned_to}`}
+                title={`Vendedora: ${assignedName}`}
               >
                 <User className="h-2.5 w-2.5" />
-                {lead.assigned_to}
+                {assignedName}
               </span>
             )}
           </div>
