@@ -21,22 +21,28 @@ export default function Configuracoes() {
 
   const [fullName, setFullName] = useState("");
   const [initialName, setInitialName] = useState("");
+  const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
+  const [initialAvatar, setInitialAvatar] = useState<string | null>(null);
   const [role, setRole] = useState<string | null>(null);
   const [storeName, setStoreName] = useState("");
   const [saving, setSaving] = useState(false);
+  const fileRef = useRef<HTMLInputElement>(null);
 
-  // Carrega profile (full_name)
+  // Carrega profile (full_name + avatar_url)
   useEffect(() => {
     if (!user?.id) return;
     supabase
       .from("profiles")
-      .select("full_name")
+      .select("full_name, avatar_url")
       .eq("id", user.id)
       .maybeSingle()
       .then(({ data }) => {
         const n = data?.full_name ?? "";
+        const a = (data as { avatar_url?: string | null } | null)?.avatar_url ?? null;
         setFullName(n);
         setInitialName(n);
+        setAvatarUrl(a);
+        setInitialAvatar(a);
       });
   }, [user?.id]);
 
@@ -63,6 +69,23 @@ export default function Configuracoes() {
       .then(({ data }) => setStoreName(data?.name ?? ""));
   }, [currentStoreId]);
 
+  function handlePickFile(file?: File | null) {
+    if (!file) return;
+    if (!file.type.startsWith("image/")) {
+      toast({ title: "Selecione uma imagem", variant: "destructive" });
+      return;
+    }
+    if (file.size > 1024 * 1024) {
+      toast({ title: "Imagem muito grande", description: "Máximo 1MB.", variant: "destructive" });
+      return;
+    }
+    const reader = new FileReader();
+    reader.onload = () => {
+      setAvatarUrl(typeof reader.result === "string" ? reader.result : null);
+    };
+    reader.readAsDataURL(file);
+  }
+
   async function handleSave() {
     if (!user?.id) return;
     const trimmed = fullName.trim();
@@ -73,7 +96,7 @@ export default function Configuracoes() {
     setSaving(true);
     const { error } = await supabase
       .from("profiles")
-      .update({ full_name: trimmed })
+      .update({ full_name: trimmed, avatar_url: avatarUrl })
       .eq("id", user.id);
     setSaving(false);
     if (error) {
@@ -81,10 +104,13 @@ export default function Configuracoes() {
       return;
     }
     setInitialName(trimmed);
+    setInitialAvatar(avatarUrl);
     toast({ title: "Alterações salvas com sucesso." });
   }
 
-  const dirty = fullName.trim() !== initialName.trim();
+  const dirty = fullName.trim() !== initialName.trim() || avatarUrl !== initialAvatar;
+  const initials = getUserInitials(fullName, user?.email);
+
 
   return (
     <div className="p-6 space-y-6 max-w-2xl">
