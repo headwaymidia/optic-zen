@@ -1,4 +1,4 @@
-import { Navigate, Outlet } from "react-router-dom";
+import { Navigate, Outlet, Link } from "react-router-dom";
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { AppSidebar } from "./AppSidebar";
 import { BottomNav } from "./BottomNav";
@@ -8,6 +8,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { LeadsProvider } from "@/hooks/useLeads";
 import { useStores } from "@/hooks/useStores";
 import { SubscriptionProvider, useSubscription } from "@/hooks/useSubscription";
+import { translateRole } from "@/lib/profile-helpers";
 
 import { TrialExpiredScreen } from "./TrialExpiredScreen";
 
