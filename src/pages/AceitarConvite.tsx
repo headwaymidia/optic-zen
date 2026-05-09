@@ -65,12 +65,6 @@ export default function AceitarConvitePage() {
   async function handleAccept() {
     if (!token || !invite) return;
     setAccepting(true);
-    console.log("[AceitarConvite] aceitando convite:", {
-      token,
-      store_id: invite.store_id,
-      role: invite.role,
-    });
-
     const { data, error: rpcErr } = await supabase.rpc("accept_store_invite", {
       _token: token,
     });
