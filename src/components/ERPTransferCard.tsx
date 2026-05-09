@@ -2,15 +2,16 @@ import { Lead } from "@/lib/supabase";
 import { Button } from "@/components/ui/button";
 import { Copy } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
+import { useStoreMembers } from "@/hooks/useStoreMembers";
 
 function formatCurrency(value: number | null) {
   if (value == null) return "—";
   return value.toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
 }
 
-function buildFicha(lead: Lead): string {
+function buildFicha(lead: Lead, sellerName: string): string {
   const p = lead.prescription ?? {};
-  const vendedora = lead.assigned_to ?? "—";
+  const vendedora = sellerName || "—";
 
   const lines: string[] = [];
   lines.push(`Nome: ${lead.name || "—"}`);
@@ -46,9 +47,11 @@ function buildFicha(lead: Lead): string {
 }
 
 export function ERPTransferCard({ lead }: { lead: Lead }) {
+  const { nameById } = useStoreMembers();
   if (lead.status !== "Compareceu e Comprou") return null;
 
-  const ficha = buildFicha(lead);
+  const sellerName = lead.responsible_id ? (nameById.get(lead.responsible_id) ?? "") : "";
+  const ficha = buildFicha(lead, sellerName);
 
   const handleCopy = async () => {
     try {

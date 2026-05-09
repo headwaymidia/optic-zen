@@ -1,6 +1,7 @@
 import { useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import { useLeads } from "@/hooks/useLeads";
+import { useStoreMembers } from "@/hooks/useStoreMembers";
 import { Lead } from "@/lib/supabase";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -279,16 +280,18 @@ function TaskRow({
   onSnooze: (l: Lead, days: number, label: string) => void;
   compact?: boolean;
 }) {
+  const { nameById } = useStoreMembers();
+  const sellerName = lead.responsible_id ? nameById.get(lead.responsible_id) : null;
   return (
     <div className="flex items-center justify-between gap-2 rounded-md border bg-card p-2.5 hover:bg-muted/40 transition-colors">
       <div className="min-w-0 flex-1">
         <p className="text-sm font-medium truncate">{lead.name}</p>
         <div className="flex items-center gap-2 text-[11px] text-muted-foreground mt-0.5">
           {lead.phone && <span className="truncate">{lead.phone}</span>}
-          {lead.assigned_to && (
+          {sellerName && (
             <span className="inline-flex items-center gap-0.5 text-primary">
               <User className="h-3 w-3" />
-              {lead.assigned_to}
+              {sellerName}
             </span>
           )}
         </div>

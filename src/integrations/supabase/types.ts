@@ -57,7 +57,6 @@ export type Database = {
       }
       leads: {
         Row: {
-          assigned_to: string | null
           bairro: string | null
           cep: string | null
           cidade: string | null
@@ -90,7 +89,6 @@ export type Database = {
           updated_at: string
         }
         Insert: {
-          assigned_to?: string | null
           bairro?: string | null
           cep?: string | null
           cidade?: string | null
@@ -123,7 +121,6 @@ export type Database = {
           updated_at?: string
         }
         Update: {
-          assigned_to?: string | null
           bairro?: string | null
           cep?: string | null
           cidade?: string | null
