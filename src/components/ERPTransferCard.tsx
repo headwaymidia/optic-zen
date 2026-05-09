@@ -47,9 +47,11 @@ function buildFicha(lead: Lead, sellerName: string): string {
 }
 
 export function ERPTransferCard({ lead }: { lead: Lead }) {
+  const { nameById } = useStoreMembers();
   if (lead.status !== "Compareceu e Comprou") return null;
 
-  const ficha = buildFicha(lead);
+  const sellerName = lead.responsible_id ? (nameById.get(lead.responsible_id) ?? "") : "";
+  const ficha = buildFicha(lead, sellerName);
 
   const handleCopy = async () => {
     try {
