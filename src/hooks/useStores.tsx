@@ -220,7 +220,6 @@ export function StoresProvider({ children }: { children: ReactNode }) {
         .single();
 
       if (error || !storeRow) {
-        console.log("Erro completo:", JSON.stringify(error, null, 2));
         // Log completo do erro para debug (RLS, network, etc.)
         console.error("[useStores.addStore] Falha no INSERT em stores:", {
           error,
