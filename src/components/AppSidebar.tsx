@@ -224,6 +224,7 @@ export function AppSidebar() {
                   <Tooltip>
                     <TooltipTrigger asChild>
                       <Avatar className="h-8 w-8 shrink-0">
+                        {profile?.avatar_url && <AvatarImage src={profile.avatar_url} alt={displayName} />}
                         <AvatarFallback className="bg-primary text-primary-foreground text-xs font-semibold">
                           {initials}
                         </AvatarFallback>
@@ -234,6 +235,7 @@ export function AppSidebar() {
                 ) : (
                   <>
                     <Avatar className="h-8 w-8 shrink-0">
+                      {profile?.avatar_url && <AvatarImage src={profile.avatar_url} alt={displayName} />}
                       <AvatarFallback className="bg-primary text-primary-foreground text-xs font-semibold">
                         {initials}
                       </AvatarFallback>
