@@ -160,11 +160,11 @@ export default function OnboardingPage() {
           email: activeSession.user.email,
           name: ownerName.trim(),
         },
-      }).catch((err) => console.warn("welcome email failed:", err));
+      }).catch(() => { /* welcome email é best-effort */ });
 
       setStep(3);
     } catch (err: any) {
-      console.error("[Onboarding] erro:", err);
+      
       toast({
         title: "Erro ao criar loja",
         description: err?.message ?? "Erro desconhecido.",

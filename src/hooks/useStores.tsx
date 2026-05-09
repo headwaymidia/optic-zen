@@ -204,8 +204,6 @@ export function StoresProvider({ children }: { children: ReactNode }) {
       } = await supabase.auth.getSession();
       const user = activeSession?.user ?? null;
 
-      console.log("Usuário autenticado:", user);
-
       if (!user) {
         const authError = new Error("Sessão não encontrada.");
         if (input.throwOnError) throw authError;
@@ -222,7 +220,6 @@ export function StoresProvider({ children }: { children: ReactNode }) {
         .single();
 
       if (error || !storeRow) {
-        console.log("Erro completo:", JSON.stringify(error, null, 2));
         // Log completo do erro para debug (RLS, network, etc.)
         console.error("[useStores.addStore] Falha no INSERT em stores:", {
           error,
