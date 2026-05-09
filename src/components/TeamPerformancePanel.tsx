@@ -136,8 +136,8 @@ export function TeamPerformancePanel({ leads }: Props) {
     );
     const loadMap = new Map<string, number>();
     activeLeads.forEach((l) => {
-      if (!l.assigned_to) return;
-      loadMap.set(l.assigned_to, (loadMap.get(l.assigned_to) ?? 0) + 1);
+      if (!l.responsible_id) return;
+      loadMap.set(l.responsible_id, (loadMap.get(l.responsible_id) ?? 0) + 1);
     });
     const sellerData = [...loadMap.entries()]
       .sort((a, b) => b[1] - a[1])
