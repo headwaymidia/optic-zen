@@ -525,7 +525,7 @@ export function KanbanBoard({
   const cadenceActive = cadenceFilter !== "all";
   const hasFilters = term.length > 0 || !!salesFilter || cadenceActive;
   const filteredLeads = leads.filter((l) => {
-    if (salesFilter && (l.assigned_to ?? "") !== salesFilter) return false;
+    if (salesFilter && (l.responsible_id ?? "") !== salesFilter) return false;
     if (term) {
       const nameMatch = l.name?.toLowerCase().includes(term);
       const phoneDigits = (l.phone ?? "").replace(/\D/g, "");
