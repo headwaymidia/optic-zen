@@ -50,10 +50,28 @@ export default function AppLayout() {
                 <header className="h-14 flex items-center justify-between border-b border-border bg-card px-4 gap-3 shadow-[0_1px_3px_rgba(0,0,0,0.02)]">
                   <div className="flex items-center gap-2 min-w-0">
                     <SidebarTrigger className="hidden md:inline-flex hover:bg-muted" />
-                    <div className="min-w-0">
-                      <p className="text-sm font-semibold text-foreground truncate">
-                        {profile?.full_name || profile?.email || "Usuário"}
-                      </p>
+                    <div className="min-w-0 leading-tight">
+                      {profile?.full_name ? (
+                        <>
+                          <p className="text-sm font-semibold text-foreground truncate">
+                            {profile.full_name}
+                          </p>
+                          {currentStore?.role && (
+                            <p className="text-[11px] text-muted-foreground truncate">
+                              {translateRole(currentStore.role)}
+                            </p>
+                          )}
+                        </>
+                      ) : (
+                        <Link to="/configuracoes" className="block">
+                          <p className="text-sm font-semibold text-foreground truncate">
+                            {profile?.email || user?.email || "Usuário"}
+                          </p>
+                          <p className="text-[11px] text-amber-600 dark:text-amber-400 truncate">
+                            Complete seu perfil
+                          </p>
+                        </Link>
+                      )}
                     </div>
                   </div>
                   <ThemeToggle />
