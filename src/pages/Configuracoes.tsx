@@ -17,7 +17,7 @@ import { getUserInitials, translateRole } from "@/lib/profile-helpers";
 
 export default function Configuracoes() {
   const { user } = useAuth();
-  const { currentStoreId } = useStores();
+  const { currentStoreId, currentStore, refetch: refetchStores } = useStores();
   const { theme, setTheme } = useTheme();
 
   const [fullName, setFullName] = useState("");
