@@ -60,7 +60,7 @@ export function StageGateDialog({ open, lead, targetStatus, onCancel, onConfirm 
   useEffect(() => {
     if (!open) return;
     if (targetStatus === "Agendou Exame") {
-      const existing = toLocalInputValue(lead?.follow_up_date);
+      const existing = toLocalInputValue(lead?.exam_date ?? lead?.follow_up_date);
       // Use existing only if it's today or future, else default to tomorrow 09:00
       if (existing && new Date(existing) >= startOfToday()) {
         setExamAt(existing);
@@ -93,9 +93,9 @@ export function StageGateDialog({ open, lead, targetStatus, onCancel, onConfirm 
     setSubmitting(true);
     try {
       if (targetStatus === "Agendou Exame") {
-        // Persist as ISO; reuse follow_up_date column for scheduled exam
+        // Persist scheduled exam in exam_date (timestamptz). Also keep follow_up_date in sync for legacy views.
         const iso = new Date(examAt).toISOString();
-        await onConfirm({ status: "Agendou Exame", follow_up_date: iso });
+        await onConfirm({ status: "Agendou Exame", exam_date: iso, follow_up_date: iso });
       } else if (targetStatus === "Compareceu e Comprou") {
         await onConfirm({
           status: "Compareceu e Comprou",
