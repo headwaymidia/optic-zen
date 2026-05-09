@@ -60,16 +60,7 @@ const secondaryItems = [
 ];
 
 function getInitials(nameOrEmail: string) {
-  const base = nameOrEmail.trim();
-  if (!base) return "U";
-  const words = base.split(/\s+/).filter(Boolean);
-  if (words.length >= 2) {
-    return (words[0][0] + words[1][0]).toUpperCase();
-  }
-  const parts = base.split(/[\s@.]+/).filter(Boolean);
-  const first = parts[0]?.[0] ?? "";
-  const second = parts[1]?.[0] ?? "";
-  return (first + second).toUpperCase() || base[0].toUpperCase();
+  return getUserInitials(nameOrEmail, nameOrEmail);
 }
 
 export function AppSidebar() {
