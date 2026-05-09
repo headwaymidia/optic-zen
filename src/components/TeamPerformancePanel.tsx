@@ -258,7 +258,7 @@ export function TeamPerformancePanel({ leads }: Props) {
       monthScheduledCount: monthScheduled.length,
       monthSalesCount: monthSales.length,
     };
-  }, [leads]);
+  }, [leads, nameById]);
 
   const responseColor =
     stats.avgResponse <= 5
