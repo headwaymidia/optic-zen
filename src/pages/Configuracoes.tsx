@@ -26,7 +26,12 @@ export default function Configuracoes() {
   const [initialAvatar, setInitialAvatar] = useState<string | null>(null);
   const [role, setRole] = useState<string | null>(null);
   const [storeName, setStoreName] = useState("");
+  const [storeCity, setStoreCity] = useState("");
+  const [storeState, setStoreState] = useState("");
+  const [storeTeamSize, setStoreTeamSize] = useState("");
+  const [initialStore, setInitialStore] = useState({ name: "", city: "", state: "", team_size: "" });
   const [saving, setSaving] = useState(false);
+  const [savingStore, setSavingStore] = useState(false);
   const fileRef = useRef<HTMLInputElement>(null);
 
   // Carrega profile (full_name + avatar_url)
