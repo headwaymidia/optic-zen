@@ -202,12 +202,12 @@ export function LeadDialog({ open, onOpenChange, lead, defaultStatus, onSaved }:
 
               <div className="space-y-2">
                 <Label>Vendedora Responsável</Label>
-                <Select value={assignedTo || "__none__"} onValueChange={(v) => setAssignedTo(v === "__none__" ? "" : v)}>
+                <Select value={responsibleId || "__none__"} onValueChange={(v) => setResponsibleId(v === "__none__" ? "" : v)}>
                   <SelectTrigger><SelectValue placeholder="Selecione" /></SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="__none__">— Nenhuma —</SelectItem>
-                    {SALESPEOPLE.map((s) => (
-                      <SelectItem key={s} value={s}>{s}</SelectItem>
+                    <SelectItem value="__none__">— Sem vendedora —</SelectItem>
+                    {members.map((m) => (
+                      <SelectItem key={m.id} value={m.id}>{m.full_name}</SelectItem>
                     ))}
                   </SelectContent>
                 </Select>
