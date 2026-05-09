@@ -361,6 +361,15 @@ export default function Configuracoes() {
           </CardContent>
         </Card>
       )}
+
+      {canEditStore && currentStoreId && (
+        <Card>
+          <CardHeader><CardTitle className="text-base">Equipe</CardTitle></CardHeader>
+          <CardContent>
+            <TeamPanel storeId={currentStoreId} storesCount={1} />
+          </CardContent>
+        </Card>
+      )}
     </div>
   );
 }
