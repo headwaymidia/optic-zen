@@ -314,9 +314,9 @@ function LeadCardContent({ lead, onEdit, dragging, selected, cadenceHighlight, m
           onClick={(e) => e.stopPropagation()}
         >
           <Select
-            value={lead.assigned_to || "__none__"}
+            value={lead.responsible_id || "__none__"}
             onValueChange={(v) =>
-              updateLead(lead.id, { assigned_to: v === "__none__" ? null : v })
+              updateLead(lead.id, { responsible_id: v === "__none__" ? null : v })
             }
           >
             <SelectTrigger className="h-7 w-full text-xs">
@@ -324,8 +324,8 @@ function LeadCardContent({ lead, onEdit, dragging, selected, cadenceHighlight, m
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="__none__" className="text-xs">— Sem vendedora —</SelectItem>
-              {SALESPEOPLE.map((s) => (
-                <SelectItem key={s} value={s} className="text-xs">{s}</SelectItem>
+              {members.map((m) => (
+                <SelectItem key={m.id} value={m.id} className="text-xs">{m.full_name}</SelectItem>
               ))}
             </SelectContent>
           </Select>
