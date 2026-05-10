@@ -14,6 +14,7 @@ import {
   Eye,
   Crown,
   Calendar as CalendarIcon,
+  Smartphone,
 } from "lucide-react";
 import {
   Sidebar,

@@ -16,6 +16,7 @@ import WhatsAppPage from "@/pages/WhatsApp";
 import Contatos from "@/pages/Contatos";
 import Configuracoes from "@/pages/Configuracoes";
 import ConfiguracoesLoja from "@/pages/ConfiguracoesLoja";
+import WhatsAppConfig from "@/pages/WhatsAppConfig";
 import Tarefas from "@/pages/Tarefas";
 import Agenda from "@/pages/Agenda";
 import Ranking from "@/pages/Ranking";
@@ -96,6 +97,7 @@ const App = () => (
                   <Route path="/contatos" element={<Contatos />} />
                   <Route path="/configuracoes" element={<Configuracoes />} />
                   <Route path="/configuracoes-loja" element={<ConfiguracoesLoja />} />
+                  <Route path="/whatsapp-config" element={<WhatsAppConfig />} />
                   <Route path="/planos" element={<Planos />} />
                   <Route path="/parceiro" element={<Parceiro />} />
                   <Route path="/ajuda" element={<Ajuda />} />
