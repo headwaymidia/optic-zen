@@ -1,4 +1,5 @@
 import { useMemo, useState } from "react";
+import { usePageTitle } from "@/hooks/usePageTitle";
 import { Lead, LEAD_SOURCES, INTEREST_TAGS } from "@/lib/supabase";
 import { useStoreMembers } from "@/hooks/useStoreMembers";
 import { useLeads } from "@/hooks/useLeads";
