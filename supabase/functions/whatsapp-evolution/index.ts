@@ -157,21 +157,37 @@ Deno.serve(async (req) => {
         );
       }
 
-      // 1) tenta criar instância (se já existir, segue)
-      const create = await evo(`/instance/create`, {
-        method: "POST",
-        body: JSON.stringify({
+      // 1) tenta criar instância (se já existir, segue).
+      // Algumas versões da Evolution rejeitam o campo "integration" ou exigem
+      // um valor específico. Tentamos sem o campo primeiro e depois variantes.
+      const integrationCandidates: (string | null)[] = [
+        null,
+        "WHATSAPP-BAILEYS",
+        "WHATSAPP-BUSINESS",
+      ];
+
+      let create: { status: number; data: any } | null = null;
+      for (const integ of integrationCandidates) {
+        const payload: Record<string, unknown> = {
           instanceName: instance,
           qrcode: true,
-          integration: "WHATSAPP-BAILEYS",
-        }),
-      });
+        };
+        if (integ) payload.integration = integ;
+        create = await evo(`/instance/create`, {
+          method: "POST",
+          body: JSON.stringify(payload),
+        });
+        // 201/200 = criado; 403/409 = já existe → segue
+        if (create.status < 400 || create.status === 403 || create.status === 409) break;
+        const msg = JSON.stringify(create.data ?? "");
+        if (!/integration/i.test(msg)) break; // erro não é por integration → para
+      }
 
       let qrBase64: string | null =
-        create.data?.qrcode?.base64 ?? create.data?.qrcode ?? null;
+        create?.data?.qrcode?.base64 ?? create?.data?.qrcode ?? null;
 
-      // 2) se já existia, pega QR via /instance/connect
-      if (!qrBase64 || create.status >= 400) {
+      // 2) se já existia ou veio sem QR, pega QR via /instance/connect
+      if (!qrBase64 || (create && create.status >= 400)) {
         const conn = await evo(`/instance/connect/${instance}`);
         qrBase64 =
           conn.data?.base64 ??
