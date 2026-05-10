@@ -40,11 +40,30 @@ export function WhatsAppPanel({ storeId, role }: Props) {
   const isConnecting = status === "connecting";
 
   async function callEvo(action: "status" | "connect" | "qr" | "disconnect") {
-    const { data, error } = await supabase.functions.invoke(
-      "whatsapp-evolution",
-      { body: { action, store_id: storeId } },
+    const { data: sess } = await supabase.auth.getSession();
+    const token = sess?.session?.access_token;
+    if (!token) throw new Error("Sessão expirada. Faça login novamente.");
+
+    const res = await fetch(
+      "https://fxcgvlukzjmwzpzuvzcp.supabase.co/functions/v1/whatsapp-evolution",
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+          apikey: "sb_publishable_BgnFYgwfBCXxZcqO2rQJWA_qDAjT4_R",
+        },
+        body: JSON.stringify({ action, store_id: storeId }),
+      },
     );
-    if (error) throw error;
+
+    let data: any = null;
+    const text = await res.text();
+    try { data = text ? JSON.parse(text) : null; } catch { data = { raw: text }; }
+
+    if (!res.ok) {
+      throw new Error(data?.error || data?.message || `Erro ${res.status} ao chamar whatsapp-evolution`);
+    }
     if (data?.error) throw new Error(data.error);
     return data;
   }
