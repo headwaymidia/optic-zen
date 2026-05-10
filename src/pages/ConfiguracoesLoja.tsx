@@ -761,7 +761,7 @@ function InviteMemberDialog({
             </Button>
             <Button
               type="submit"
-              disabled={submitting || !email.trim()}
+              disabled={submitting || !!emailError}
               className="h-11 gap-2 bg-emerald-500 hover:bg-emerald-500/90 text-white"
             >
               <UserPlus className="h-4 w-4" />
