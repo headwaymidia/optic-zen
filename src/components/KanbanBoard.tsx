@@ -220,10 +220,11 @@ function LeadCardContent({ lead, onEdit, dragging, selected, cadenceHighlight, m
           </div>
         </div>
         {lead.phone && (
-          <p className="flex items-center gap-1 text-[10px] text-muted-foreground">
-            <Phone className="h-3 w-3" />
-            {formatPhoneBR(lead.phone)}
-          </p>
+          <PhoneLink
+            phone={lead.phone}
+            className="text-[10px] text-muted-foreground"
+            iconClassName="h-3 w-3"
+          />
         )}
         <div className="flex flex-wrap gap-1.5">
           {lead.interest_tag && (
