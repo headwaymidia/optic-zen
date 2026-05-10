@@ -205,9 +205,9 @@ function LeadNotesSection({
       <Textarea
         value={value}
         onChange={(e) => setValue(e.target.value)}
-        placeholder="Anote qualquer informação relevante sobre este lead... (preferências, restrições, histórico, etc.)"
-        rows={3}
-        className="min-h-[72px] text-sm resize-y"
+        placeholder="Anote qualquer informação relevante sobre este lead..."
+        rows={2}
+        className="min-h-[44px] text-sm resize-y"
       />
       <p
         className={cn(

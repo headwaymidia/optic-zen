@@ -43,7 +43,15 @@ const COLORS: Record<string, string> = {
   note: "text-slate-600 bg-slate-100 dark:bg-slate-800",
 };
 
-export function LeadActivityTimeline({ leadId }: { leadId: string }) {
+export function LeadActivityTimeline({
+  leadId,
+  embedded = false,
+  limit = 10,
+}: {
+  leadId: string;
+  embedded?: boolean;
+  limit?: number;
+}) {
   const [items, setItems] = useState<ActivityRow[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -56,7 +64,7 @@ export function LeadActivityTimeline({ leadId }: { leadId: string }) {
         .select("id, lead_id, type, description, created_at")
         .eq("lead_id", leadId)
         .order("created_at", { ascending: false })
-        .limit(10);
+        .limit(limit);
       if (active && data) setItems(data as ActivityRow[]);
       if (active) setLoading(false);
     }
@@ -75,7 +83,42 @@ export function LeadActivityTimeline({ leadId }: { leadId: string }) {
       active = false;
       supabase.removeChannel(channel);
     };
-  }, [leadId]);
+  }, [leadId, limit]);
+
+  const body = loading ? (
+    <p className="text-[11px] text-muted-foreground">Carregando...</p>
+  ) : items.length === 0 ? (
+    <p className="text-[11px] text-muted-foreground">Nenhuma atividade registrada ainda.</p>
+  ) : (
+    <ol className="relative space-y-2.5 pl-3 before:absolute before:left-[7px] before:top-1.5 before:bottom-1.5 before:w-px before:bg-border">
+      {items.map((a) => {
+        const Icon = ICONS[a.type] ?? Activity;
+        return (
+          <li key={a.id} className="relative flex gap-2.5 items-start">
+            <span
+              className={cn(
+                "absolute -left-3 mt-0.5 h-4 w-4 rounded-full flex items-center justify-center ring-2 ring-card",
+                COLORS[a.type] ?? "text-muted-foreground bg-muted"
+              )}
+            >
+              <Icon className="h-2.5 w-2.5" />
+            </span>
+            <div className="ml-3 min-w-0">
+              <p className="text-xs leading-snug">{a.description}</p>
+              <p className="text-[10px] text-muted-foreground">
+                {formatDistanceToNow(new Date(a.created_at), {
+                  addSuffix: true,
+                  locale: ptBR,
+                })}
+              </p>
+            </div>
+          </li>
+        );
+      })}
+    </ol>
+  );
+
+  if (embedded) return body;
 
   return (
     <div className="border-b bg-card px-3 py-2.5">
@@ -83,38 +126,7 @@ export function LeadActivityTimeline({ leadId }: { leadId: string }) {
         <History className="h-3.5 w-3.5 text-primary" />
         <span className="text-xs font-medium">Histórico de atividades</span>
       </div>
-      {loading ? (
-        <p className="text-[11px] text-muted-foreground">Carregando...</p>
-      ) : items.length === 0 ? (
-        <p className="text-[11px] text-muted-foreground">Nenhuma atividade registrada ainda.</p>
-      ) : (
-        <ol className="relative space-y-2.5 pl-3 before:absolute before:left-[7px] before:top-1.5 before:bottom-1.5 before:w-px before:bg-border">
-          {items.map((a) => {
-            const Icon = ICONS[a.type] ?? Activity;
-            return (
-              <li key={a.id} className="relative flex gap-2.5 items-start">
-                <span
-                  className={cn(
-                    "absolute -left-3 mt-0.5 h-4 w-4 rounded-full flex items-center justify-center ring-2 ring-card",
-                    COLORS[a.type] ?? "text-muted-foreground bg-muted"
-                  )}
-                >
-                  <Icon className="h-2.5 w-2.5" />
-                </span>
-                <div className="ml-3 min-w-0">
-                  <p className="text-xs leading-snug">{a.description}</p>
-                  <p className="text-[10px] text-muted-foreground">
-                    {formatDistanceToNow(new Date(a.created_at), {
-                      addSuffix: true,
-                      locale: ptBR,
-                    })}
-                  </p>
-                </div>
-              </li>
-            );
-          })}
-        </ol>
-      )}
+      {body}
     </div>
   );
 }
