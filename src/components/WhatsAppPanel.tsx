@@ -90,7 +90,6 @@ export function WhatsAppPanel({ storeId, role }: Props) {
         window.clearInterval(pollRef.current);
         pollRef.current = null;
       }
-      if (!isConnecting) setQrCode(null);
       return;
     }
 
@@ -241,7 +240,7 @@ export function WhatsAppPanel({ storeId, role }: Props) {
         )}
 
         {/* Estado: conectando — exibe QR */}
-        {!isConnected && isConnecting && (
+        {!isConnected && (isConnecting || qrCode) && (
           <div className="space-y-3">
             <div className="mx-auto h-64 w-64 rounded-xl border-2 border-dashed border-border bg-white flex items-center justify-center overflow-hidden">
               {qrCode ? (
@@ -295,7 +294,7 @@ export function WhatsAppPanel({ storeId, role }: Props) {
         )}
 
         {/* Estado: desconectado */}
-        {!isConnected && !isConnecting && (
+        {!isConnected && !isConnecting && !qrCode && (
           <div className="space-y-3">
             <p className="text-xs text-muted-foreground">
               Clique em conectar para gerar o QR Code e vincular o WhatsApp da loja.
