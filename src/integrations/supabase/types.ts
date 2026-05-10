@@ -551,6 +551,57 @@ export type Database = {
           },
         ]
       }
+      whatsapp_connections: {
+        Row: {
+          connected_at: string | null
+          created_at: string
+          evolution_api_key: string | null
+          evolution_api_url: string | null
+          evolution_instance_name: string | null
+          id: string
+          meta_access_token: string | null
+          meta_phone_number_id: string | null
+          meta_webhook_verify_token: string | null
+          phone_number: string | null
+          provider: string
+          status: string
+          store_id: string
+          updated_at: string
+        }
+        Insert: {
+          connected_at?: string | null
+          created_at?: string
+          evolution_api_key?: string | null
+          evolution_api_url?: string | null
+          evolution_instance_name?: string | null
+          id?: string
+          meta_access_token?: string | null
+          meta_phone_number_id?: string | null
+          meta_webhook_verify_token?: string | null
+          phone_number?: string | null
+          provider?: string
+          status?: string
+          store_id: string
+          updated_at?: string
+        }
+        Update: {
+          connected_at?: string | null
+          created_at?: string
+          evolution_api_key?: string | null
+          evolution_api_url?: string | null
+          evolution_instance_name?: string | null
+          id?: string
+          meta_access_token?: string | null
+          meta_phone_number_id?: string | null
+          meta_webhook_verify_token?: string | null
+          phone_number?: string | null
+          provider?: string
+          status?: string
+          store_id?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
