@@ -20,6 +20,7 @@ import { getUserInitials, translateRole } from "@/lib/profile-helpers";
 import { TeamPanel } from "@/pages/ConfiguracoesLoja";
 
 export default function Configuracoes() {
+  usePageTitle("Configurações");
   const { user } = useAuth();
   const { currentStoreId, currentStore, refetch: refetchStores } = useStores();
   const { theme, setTheme } = useTheme();
