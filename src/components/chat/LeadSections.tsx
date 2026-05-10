@@ -10,6 +10,7 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import {
   AlertCircle,
+  CalendarCheck2,
   CalendarClock,
   CheckCircle2,
   Eye,
@@ -108,6 +109,12 @@ function ExamScheduler({ lead }: { lead: Lead }) {
   const { updateLead } = useLeads();
   const [value, setValue] = useState<string>(toLocalInputValue(lead.exam_date));
   const [saving, setSaving] = useState(false);
+  const [editing, setEditing] = useState(false);
+
+  useEffect(() => {
+    setValue(toLocalInputValue(lead.exam_date));
+    setEditing(false);
+  }, [lead.id, lead.exam_date]);
 
   async function handleConfirm() {
     if (!value) {
@@ -118,39 +125,60 @@ function ExamScheduler({ lead }: { lead: Lead }) {
     const iso = new Date(value).toISOString();
     await updateLead(lead.id, { exam_date: iso, status: "Agendou Exame" });
     setSaving(false);
+    setEditing(false);
     toast({ title: `Exame agendado para ${new Date(iso).toLocaleString("pt-BR")}!` });
   }
 
   async function handleClear() {
     setValue("");
+    setEditing(false);
     await updateLead(lead.id, { exam_date: null });
     toast({ title: "Agendamento removido" });
+  }
+
+  const showForm = editing || !lead.exam_date;
+
+  if (!showForm && lead.exam_date) {
+    const d = new Date(lead.exam_date);
+    const dataStr = d.toLocaleDateString("pt-BR", { day: "2-digit", month: "2-digit", year: "numeric" });
+    const horaStr = d.toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" });
+    return (
+      <div className="flex items-center gap-2 flex-wrap">
+        <div className="flex items-center gap-2 flex-1 min-w-0 rounded-md bg-emerald-50 dark:bg-emerald-900/20 border border-emerald-200 dark:border-emerald-800 px-2.5 py-2">
+          <CalendarCheck2 className="h-4 w-4 text-emerald-600 dark:text-emerald-400 shrink-0" />
+          <span className="text-xs font-medium text-emerald-900 dark:text-emerald-100 truncate">
+            Agendado para {dataStr} às {horaStr}
+          </span>
+        </div>
+        <Button size="sm" variant="outline" onClick={() => setEditing(true)} className="h-9">
+          Remarcar
+        </Button>
+        <Button size="sm" variant="ghost" onClick={handleClear} className="h-9">
+          Limpar
+        </Button>
+      </div>
+    );
   }
 
   return (
     <div className="space-y-2">
       <label className="text-[11px] text-muted-foreground">Data e hora do exame</label>
-      <div className="flex items-center gap-2">
+      <div className="flex items-center gap-2 flex-wrap">
         <Input
           type="datetime-local"
           value={value}
           onChange={(e) => setValue(e.target.value)}
-          className="h-9 text-xs"
+          className="h-9 text-xs flex-1 min-w-[180px]"
         />
         <Button size="sm" onClick={handleConfirm} disabled={saving} className="h-9">
           Confirmar
         </Button>
         {lead.exam_date && (
-          <Button size="sm" variant="ghost" onClick={handleClear} className="h-9">
-            Limpar
+          <Button size="sm" variant="ghost" onClick={() => setEditing(false)} className="h-9">
+            Cancelar
           </Button>
         )}
       </div>
-      {lead.exam_date && (
-        <p className="text-[11px] text-muted-foreground">
-          Agendado para {new Date(lead.exam_date).toLocaleString("pt-BR")}
-        </p>
-      )}
     </div>
   );
 }
