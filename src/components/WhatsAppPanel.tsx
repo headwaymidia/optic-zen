@@ -90,7 +90,6 @@ export function WhatsAppPanel({ storeId, role }: Props) {
         window.clearInterval(pollRef.current);
         pollRef.current = null;
       }
-      if (!isConnecting) setQrCode(null);
       return;
     }
 
