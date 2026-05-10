@@ -98,13 +98,6 @@ function ChecklistBadge({ ok, okLabel = "Ok" }: { ok: boolean; okLabel?: string 
     </span>
   );
 }
-  return (
-    <span className="ml-auto inline-flex items-center gap-1 rounded-full bg-amber-100 dark:bg-amber-900/40 text-amber-800 dark:text-amber-100 px-2 py-0.5 text-[10px] font-semibold">
-      <AlertCircle className="h-3 w-3" />
-      Pendente
-    </span>
-  );
-}
 
 function toLocalInputValue(iso: string | null) {
   if (!iso) return "";
