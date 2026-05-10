@@ -275,8 +275,18 @@ export default function Configuracoes() {
               id="profile-name"
               value={fullName}
               onChange={(e) => setFullName(e.target.value)}
+              onBlur={() => setNameTouched(true)}
               placeholder="Seu nome"
+              aria-invalid={nameTouched && !!nameError}
+              className={
+                nameTouched && nameError
+                  ? "border-destructive focus-visible:ring-destructive"
+                  : undefined
+              }
             />
+            {nameTouched && nameError && (
+              <p className="text-[11px] text-destructive">{nameError}</p>
+            )}
           </div>
           <div className="space-y-2">
             <Label>Email</Label>
