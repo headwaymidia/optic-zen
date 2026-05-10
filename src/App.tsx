@@ -59,6 +59,7 @@ const App = () => (
         <Toaster />
         <Sonner />
         <BrowserRouter>
+          <TopProgressBar />
           <AuthProvider>
             <StoresProvider>
               <Suspense fallback={<RouteFallback />}>
