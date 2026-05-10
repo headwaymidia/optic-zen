@@ -164,6 +164,50 @@ export default function Funil() {
                 ))}
               </SelectContent>
             </Select>
+            <Select
+              value={period}
+              onValueChange={(v) => {
+                const next = v as PeriodKey;
+                setPeriod(next);
+                if (next === "custom") setCustomOpen(true);
+              }}
+            >
+              <SelectTrigger className="h-9 w-full sm:w-40 bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 dark:text-white">
+                <SelectValue placeholder="Período" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">Todos</SelectItem>
+                <SelectItem value="today">Hoje</SelectItem>
+                <SelectItem value="7d">7 dias</SelectItem>
+                <SelectItem value="month">Este mês</SelectItem>
+                <SelectItem value="custom">Data personalizada</SelectItem>
+              </SelectContent>
+            </Select>
+            {period === "custom" && (
+              <Popover open={customOpen} onOpenChange={setCustomOpen}>
+                <PopoverTrigger asChild>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="h-9 gap-1.5 px-3 bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 dark:text-white font-normal"
+                  >
+                    <CalendarRange className="h-4 w-4" />
+                    {customLabel}
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-auto p-0" align="end">
+                  <Calendar
+                    mode="range"
+                    selected={customRange}
+                    onSelect={setCustomRange}
+                    numberOfMonths={2}
+                    locale={ptBR}
+                    initialFocus
+                    className={cn("p-3 pointer-events-auto")}
+                  />
+                </PopoverContent>
+              </Popover>
+            )}
             {hasFilters && (
               <Button
                 type="button"
