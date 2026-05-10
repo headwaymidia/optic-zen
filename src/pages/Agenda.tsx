@@ -444,6 +444,8 @@ function AgendaInner() {
           })}
         </div>
       )}
+      </>
+      )}
 
       {/* Event Modal */}
       <Dialog open={!!selectedEvent && !reschedOpen} onOpenChange={(o) => !o && setSelectedEvent(null)}>
