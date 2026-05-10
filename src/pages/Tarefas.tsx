@@ -7,6 +7,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Clock, MessageCircle, User } from "lucide-react";
+import { DataSkeleton } from "@/components/ui/DataSkeleton";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -146,6 +147,20 @@ export default function Tarefas() {
         </p>
       </div>
 
+      {loading && leads.length === 0 ? (
+        <div className="grid gap-4 lg:grid-cols-2">
+          {Array.from({ length: 2 }).map((_, i) => (
+            <div
+              key={i}
+              className="rounded-lg border bg-card p-4 space-y-3"
+            >
+              <DataSkeleton variant="row" className="[&>div]:h-5 [&>div]:w-1/2" />
+              <DataSkeleton variant="card" count={3} className="[&>div]:h-16" />
+            </div>
+          ))}
+        </div>
+      ) : (
+      <>
       {/* Quentes & Oportunidades */}
       <div className="grid gap-4 lg:grid-cols-2">
         <Card className="flex flex-col border-l-4 border-l-amber-500">
@@ -257,6 +272,8 @@ export default function Tarefas() {
           })}
         </div>
       </div>
+      </>
+      )}
     </div>
   );
 }

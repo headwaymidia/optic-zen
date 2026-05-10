@@ -15,6 +15,7 @@ import { exportMonthlyReport } from "@/lib/exportReport";
 import { isWithinInterval, parseISO, format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { FileDown, Tv } from "lucide-react";
+import { DataSkeleton } from "@/components/ui/DataSkeleton";
 
 export default function Dashboard() {
   const { leads, loading } = useLeads();
@@ -87,8 +88,20 @@ export default function Dashboard() {
         </p>
       </div>
 
-      {loading ? (
-        <p className="text-xs text-zinc-500">Carregando…</p>
+      {loading && leads.length === 0 ? (
+        <div className="space-y-4 pt-2">
+          <div className="grid grid-cols-1 lg:grid-cols-5 gap-3">
+            <DataSkeleton variant="card" className="lg:col-span-2 [&>div]:h-32" />
+            <div className="lg:col-span-3 grid grid-cols-2 gap-3">
+              <DataSkeleton variant="card" count={4} className="contents [&>div]:h-32" />
+            </div>
+          </div>
+          <DataSkeleton variant="card" className="[&>div]:h-40" />
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+            <DataSkeleton variant="card" className="[&>div]:h-64" />
+            <DataSkeleton variant="card" className="[&>div]:h-64" />
+          </div>
+        </div>
       ) : (
         <>
           {/* 2. Linha de Topo — mobile: Faturamento full-width + KPIs em 2 colunas */}

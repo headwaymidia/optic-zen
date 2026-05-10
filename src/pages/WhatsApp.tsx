@@ -4,7 +4,9 @@ import { useLeads } from "@/hooks/useLeads";
 import { Input } from "@/components/ui/input";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { ChatPanel } from "@/components/ChatPanel";
-import { Search, MessageSquarePlus } from "lucide-react";
+import { Search, MessageSquarePlus, MessageCircle } from "lucide-react";
+import { DataSkeleton } from "@/components/ui/DataSkeleton";
+import { EmptyState } from "@/components/ui/EmptyState";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
@@ -127,9 +129,17 @@ export default function WhatsAppPage() {
         </div>
 
         <div className="flex-1 overflow-y-auto">
-          {loading && <p className="p-4 text-sm text-muted-foreground">Carregando...</p>}
+          {loading && leads.length === 0 && (
+            <div className="p-4">
+              <DataSkeleton variant="row" count={6} className="[&>div]:h-14" />
+            </div>
+          )}
           {!loading && filtered.length === 0 && (
-            <p className="p-4 text-sm text-muted-foreground">Nenhum contato</p>
+            <EmptyState
+              icon={MessageCircle}
+              title="Nenhum atendimento ainda."
+              description="Crie um novo lead para começar."
+            />
           )}
           {filtered.map((lead) => {
             const lastMsgIso = lead.last_interaction ?? lead.last_inbound_at ?? null;

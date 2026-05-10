@@ -46,6 +46,7 @@ import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { cn } from "@/lib/utils";
 import { Badge } from "@/components/ui/badge";
+import { DataSkeleton } from "@/components/ui/DataSkeleton";
 
 type ViewMode = "month" | "week" | "day";
 
@@ -141,7 +142,7 @@ function buildEvents(leads: Lead[]): AgendaEvent[] {
 
 function AgendaInner() {
   const navigate = useNavigate();
-  const { leads, updateLead } = useLeads();
+  const { leads, loading, updateLead } = useLeads();
   const { members, nameById } = useStoreMembers();
   const [cursor, setCursor] = useState<Date>(new Date());
   const [view, setView] = useState<ViewMode>("month");
@@ -262,6 +263,16 @@ function AgendaInner() {
         ))}
       </div>
 
+      {loading && leads.length === 0 ? (
+        <div className="rounded-lg border border-border bg-card p-4">
+          <div className="grid grid-cols-7 gap-2">
+            {Array.from({ length: 35 }).map((_, i) => (
+              <div key={i} className="h-24 animate-pulse rounded bg-muted/70" />
+            ))}
+          </div>
+        </div>
+      ) : (
+      <>
       {/* MONTH VIEW */}
       {view === "month" && (
         <div className="rounded-lg border border-border overflow-hidden bg-card">
@@ -432,6 +443,8 @@ function AgendaInner() {
             );
           })}
         </div>
+      )}
+      </>
       )}
 
       {/* Event Modal */}

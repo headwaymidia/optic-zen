@@ -5,7 +5,9 @@ import { useLeads } from "@/hooks/useLeads";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Plus, Phone, MessageCircle, Pencil, Flame, Tag, User, CalendarClock, Calendar, Clock, Info, AlarmClock, BellRing } from "lucide-react";
+import { Plus, Phone, MessageCircle, Pencil, Flame, Tag, User, CalendarClock, Calendar, Clock, Info, AlarmClock, BellRing, Filter } from "lucide-react";
+import { DataSkeleton } from "@/components/ui/DataSkeleton";
+import { EmptyState } from "@/components/ui/EmptyState";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { LeadDialog } from "./LeadDialog";
 import { StageGateDialog, isGatedStatus, type StageGate } from "./StageGateDialog";
@@ -514,8 +516,25 @@ export function KanbanBoard({
     await updateStatus(leadId, newStatus);
   }
 
-  if (loading) {
-    return <div className="p-8 text-center text-muted-foreground">Carregando leads...</div>;
+  const initialLoading = loading && leads.length === 0;
+
+  if (initialLoading) {
+    return (
+      <div
+        className="flex h-full gap-3 overflow-x-auto overflow-y-hidden px-4 pb-6 kanban-scroll"
+        style={{ WebkitOverflowScrolling: "touch" }}
+      >
+        {LEAD_STATUSES.map((status) => (
+          <div
+            key={status}
+            className="shrink-0 w-[260px] rounded-xl border border-slate-100 dark:border-slate-700 bg-slate-50/50 dark:bg-slate-900/40 p-3"
+          >
+            <DataSkeleton variant="row" className="mb-3 [&>div]:h-5 [&>div]:w-2/3" />
+            <DataSkeleton variant="card" count={3} className="[&>div]:h-20" />
+          </div>
+        ))}
+      </div>
+    );
   }
 
   const activeLead = activeId ? leads.find((l) => l.id === activeId) : null;
@@ -585,9 +604,12 @@ export function KanbanBoard({
                   </div>
                 ))}
                 {colLeads.length === 0 && (
-                  <p className="px-2 py-6 text-center text-xs text-muted-foreground animate-in fade-in duration-200">
-                    {hasFilters ? "Nenhum lead encontrado com estes filtros." : "Nenhum lead"}
-                  </p>
+                  <EmptyState
+                    icon={Filter}
+                    title={hasFilters ? "Nenhum resultado" : "Nenhum lead aqui"}
+                    description={hasFilters ? "Ajuste os filtros para ver mais resultados." : undefined}
+                    className="py-6"
+                  />
                 )}
               </DroppableColumn>
             );

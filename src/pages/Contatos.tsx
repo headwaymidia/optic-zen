@@ -9,7 +9,9 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { LeadDialog } from "@/components/LeadDialog";
-import { Plus, MessageCircle, ChevronLeft, ChevronRight } from "lucide-react";
+import { Plus, MessageCircle, ChevronLeft, ChevronRight, Users } from "lucide-react";
+import { DataSkeleton } from "@/components/ui/DataSkeleton";
+import { EmptyState } from "@/components/ui/EmptyState";
 
 const PAGE_SIZE = 10;
 const ALL = "__all__";
@@ -128,10 +130,26 @@ export default function Contatos() {
             </TableRow>
           </TableHeader>
           <TableBody>
-            {loading ? (
-              <TableRow><TableCell colSpan={10} className="text-center text-muted-foreground py-8">Carregando...</TableCell></TableRow>
+            {loading && leads.length === 0 ? (
+              Array.from({ length: 6 }).map((_, i) => (
+                <TableRow key={`sk-${i}`}>
+                  <TableCell colSpan={10} className="py-2">
+                    <DataSkeleton variant="row" className="[&>div]:h-8" />
+                  </TableCell>
+                </TableRow>
+              ))
             ) : paginated.length === 0 ? (
-              <TableRow><TableCell colSpan={10} className="text-center text-muted-foreground py-8">Nenhum contato encontrado</TableCell></TableRow>
+              <TableRow>
+                <TableCell colSpan={10} className="py-2">
+                  <EmptyState
+                    icon={Users}
+                    title="Nenhum contato cadastrado ainda."
+                    description="Comece adicionando seu primeiro lead."
+                    actionLabel="Novo Lead"
+                    onAction={() => { setEditingLead(null); setDialogOpen(true); }}
+                  />
+                </TableCell>
+              </TableRow>
             ) : (
               paginated.map((l) => (
                 <TableRow key={l.id} className="cursor-pointer" onClick={() => { setEditingLead(l); setDialogOpen(true); }}>
