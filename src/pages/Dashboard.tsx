@@ -15,6 +15,7 @@ import { exportMonthlyReport } from "@/lib/exportReport";
 import { isWithinInterval, parseISO, format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { FileDown, Tv } from "lucide-react";
+import { DataSkeleton } from "@/components/ui/DataSkeleton";
 
 export default function Dashboard() {
   const { leads, loading } = useLeads();
