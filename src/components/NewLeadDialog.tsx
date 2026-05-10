@@ -284,7 +284,8 @@ export function NewLeadDialog({
           <Button variant="outline" onClick={() => onOpenChange(false)} disabled={saving}>
             Cancelar
           </Button>
-          <Button onClick={handleSave} disabled={saving || formInvalid}>
+          <Button onClick={handleSave} disabled={saving || formInvalid} className="gap-2">
+            {saving && <Loader2 className="h-4 w-4 animate-spin" />}
             {saving ? "Salvando..." : "Salvar Lead"}
           </Button>
         </DialogFooter>
