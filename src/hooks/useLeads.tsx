@@ -2,6 +2,7 @@ import { createContext, useCallback, useContext, useEffect, useState, ReactNode 
 import { Lead, LeadStatus, supabase } from "@/lib/supabase";
 import { useStores } from "@/hooks/useStores";
 import { toast } from "@/hooks/use-toast";
+import { humanizeError } from "@/lib/error-handler";
 
 interface LeadsContextValue {
   leads: Lead[];
