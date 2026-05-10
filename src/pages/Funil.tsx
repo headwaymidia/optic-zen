@@ -55,14 +55,24 @@ export default function Funil() {
   const [search, setSearch] = useState("");
   const [salesFilter, setSalesFilter] = useState<string>(ALL_SALES);
   const [cadence, setCadence] = useState<CadenceFilter>("all");
+  const [period, setPeriod] = useState<PeriodKey>("all");
+  const [customRange, setCustomRange] = useState<DateRange | undefined>(undefined);
+  const [customOpen, setCustomOpen] = useState(false);
   const selected = leads.find((lead) => lead.id === selectedId) ?? null;
 
-  const hasFilters = search.trim().length > 0 || salesFilter !== ALL_SALES || cadence !== "all";
+  const periodRange = useMemo(() => getPeriodRange(period, customRange), [period, customRange]);
+  const hasFilters =
+    search.trim().length > 0 ||
+    salesFilter !== ALL_SALES ||
+    cadence !== "all" ||
+    period !== "all";
 
   function clearFilters() {
     setSearch("");
     setSalesFilter(ALL_SALES);
     setCadence("all");
+    setPeriod("all");
+    setCustomRange(undefined);
   }
 
   // Contagem de pendentes por etapa de FU (independente de filtros — visão de gestão)
