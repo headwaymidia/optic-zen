@@ -114,13 +114,13 @@ export function LeadDialog({ open, onOpenChange, lead, defaultStatus, onSaved }:
 
   async function handleDelete() {
     if (!lead) return;
-    if (!confirm("Excluir este lead?")) return;
     const { error } = await supabase.from("leads").delete().eq("id", lead.id);
     if (error) {
       toast({ title: "Erro", description: humanizeError(error), variant: "destructive" });
       return;
     }
     toast({ title: "Lead excluído" });
+    setConfirmDelete(false);
     onSaved();
     onOpenChange(false);
   }
