@@ -68,7 +68,10 @@ export function TopProgressBar() {
 
   // Subscribe to Suspense fallbacks (lazy chunks).
   useEffect(() => {
-    return routeProgress.subscribe((active) => (active ? start() : done()));
+    const unsub = routeProgress.subscribe((active) => (active ? start() : done()));
+    return () => {
+      unsub;
+    };
   }, []);
 
   useEffect(() => () => clearTimers(), []);
