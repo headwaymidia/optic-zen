@@ -15,6 +15,8 @@ import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/
 import { PrescriptionForm } from "@/components/PrescriptionForm";
 import { LabOrderForm } from "@/components/LabOrderForm";
 import { ERPTransferCard } from "@/components/ERPTransferCard";
+import { PhoneLink } from "@/components/PhoneLink";
+import { LeadActivityTimeline } from "@/components/LeadActivityTimeline";
 import { StageGateDialog, isGatedStatus, type StageGate } from "@/components/StageGateDialog";
 import { ArrowLeft, Paperclip, Send, Smile, X, Zap, Eye, CalendarClock, Sparkles, CheckCircle2, AlertCircle, NotebookPen } from "lucide-react";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
@@ -268,7 +270,11 @@ export function ChatPanel({
                 </Badge>
               )}
             </div>
-            <p className="text-[11px] text-muted-foreground truncate">{lead.phone ?? "—"}</p>
+            {lead.phone ? (
+              <PhoneLink phone={lead.phone} className="text-[11px] text-muted-foreground" iconClassName="h-3 w-3" />
+            ) : (
+              <p className="text-[11px] text-muted-foreground truncate">—</p>
+            )}
           </div>
           <Select value={lead.status} onValueChange={(v) => handleStatusChange(v as LeadStatus)}>
             <SelectTrigger className="h-8 w-[110px] sm:w-[150px] text-xs shrink-0">
@@ -414,6 +420,7 @@ export function ChatPanel({
         );
       })()}
       <LeadNotesSection lead={lead} updateLead={updateLead} />
+      <LeadActivityTimeline leadId={lead.id} />
       <ERPTransferCard lead={lead} />
       <div className="flex-1 overflow-y-auto bg-muted/40 px-3 py-4 space-y-2">
         {messages.map((m, i) => (
