@@ -145,13 +145,15 @@ export default function Configuracoes() {
     reader.readAsDataURL(file);
   }
 
+  const nameError = validateName(fullName);
+
   async function handleSave() {
     if (!user?.id) return;
-    const trimmed = fullName.trim();
-    if (!trimmed) {
-      toast({ title: "Informe seu nome", variant: "destructive" });
+    if (nameError) {
+      setNameTouched(true);
       return;
     }
+    const trimmed = fullName.trim();
     setSaving(true);
     const { error } = await supabase
       .from("profiles")
