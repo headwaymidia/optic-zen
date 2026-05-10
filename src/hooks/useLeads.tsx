@@ -1,4 +1,5 @@
-import { createContext, useCallback, useContext, useEffect, useState, ReactNode } from "react";
+import { createContext, useCallback, useContext, useEffect, ReactNode } from "react";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Lead, LeadStatus, supabase } from "@/lib/supabase";
 import { useStores } from "@/hooks/useStores";
 import { toast } from "@/hooks/use-toast";
@@ -18,34 +19,31 @@ const LeadsContext = createContext<LeadsContextValue | undefined>(undefined);
 
 export function LeadsProvider({ children }: { children: ReactNode }) {
   const { currentStoreId } = useStores();
-  const [leads, setLeads] = useState<Lead[]>([]);
-  const [loading, setLoading] = useState(true);
+  const queryClient = useQueryClient();
+  const queryKey = ["leads", currentStoreId] as const;
+
+  const { data: leads = [], isLoading, refetch: rqRefetch } = useQuery({
+    queryKey,
+    enabled: !!currentStoreId,
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("leads")
+        .select("*")
+        .eq("store_id", currentStoreId!)
+        .order("created_at", { ascending: false });
+      if (error) {
+        toast({ title: "Erro ao carregar leads", description: humanizeError(error), variant: "destructive" });
+        throw error;
+      }
+      return (data ?? []) as unknown as Lead[];
+    },
+  });
 
   const refetch = useCallback(async () => {
-    if (!currentStoreId) {
-      setLeads([]);
-      setLoading(false);
-      return;
-    }
-    setLoading(true);
-    const { data, error } = await supabase
-      .from("leads")
-      .select("*")
-      .eq("store_id", currentStoreId)
-      .order("created_at", { ascending: false });
-    setLoading(false);
-    if (error) {
-      toast({ title: "Erro ao carregar leads", description: humanizeError(error), variant: "destructive" });
-      return;
-    }
-    setLeads((data ?? []) as unknown as Lead[]);
-  }, [currentStoreId]);
+    await rqRefetch();
+  }, [rqRefetch]);
 
-  useEffect(() => {
-    refetch();
-  }, [refetch]);
-
-  // Realtime subscription scoped to this store
+  // Realtime subscription scoped to this store -> invalidate query
   useEffect(() => {
     if (!currentStoreId) return;
     const channel = supabase
@@ -53,35 +51,79 @@ export function LeadsProvider({ children }: { children: ReactNode }) {
       .on(
         "postgres_changes",
         { event: "*", schema: "public", table: "leads", filter: `store_id=eq.${currentStoreId}` },
-        () => { refetch(); }
+        () => {
+          queryClient.invalidateQueries({ queryKey: ["leads", currentStoreId] });
+        }
       )
       .subscribe();
     return () => { supabase.removeChannel(channel); };
-  }, [currentStoreId, refetch]);
+  }, [currentStoreId, queryClient]);
 
-  const updateStatus = useCallback(async (leadId: string, status: LeadStatus) => {
-    setLeads((prev) => prev.map((l) => (l.id === leadId ? { ...l, status } : l)));
-    const { error } = await supabase.from("leads").update({ status }).eq("id", leadId);
-    if (error) {
+  const updateStatusMutation = useMutation({
+    mutationFn: async ({ leadId, status }: { leadId: string; status: LeadStatus }) => {
+      const { error } = await supabase.from("leads").update({ status }).eq("id", leadId);
+      if (error) throw error;
+    },
+    onMutate: async ({ leadId, status }) => {
+      await queryClient.cancelQueries({ queryKey });
+      const prev = queryClient.getQueryData<Lead[]>(queryKey);
+      queryClient.setQueryData<Lead[]>(queryKey, (old = []) =>
+        old.map((l) => (l.id === leadId ? { ...l, status } : l))
+      );
+      return { prev };
+    },
+    onError: (error, _vars, ctx) => {
+      if (ctx?.prev) queryClient.setQueryData(queryKey, ctx.prev);
       toast({ title: "Erro ao mover lead", description: humanizeError(error), variant: "destructive" });
-      refetch();
-    }
-  }, [refetch]);
+    },
+    onSettled: () => {
+      queryClient.invalidateQueries({ queryKey });
+    },
+  });
 
-  const updateLead = useCallback(async (leadId: string, patch: Partial<Lead>) => {
-    setLeads((prev) => prev.map((l) => (l.id === leadId ? { ...l, ...patch } : l)));
-    const { prescription: _p, delivery_prediction: _d, ...dbPatch } = patch as any;
-    const { error } = await supabase.from("leads").update(dbPatch).eq("id", leadId);
-    if (error) {
+  const updateLeadMutation = useMutation({
+    mutationFn: async ({ leadId, patch }: { leadId: string; patch: Partial<Lead> }) => {
+      const { prescription: _p, delivery_prediction: _d, ...dbPatch } = patch as any;
+      const { error } = await supabase.from("leads").update(dbPatch).eq("id", leadId);
+      if (error) throw error;
+    },
+    onMutate: async ({ leadId, patch }) => {
+      await queryClient.cancelQueries({ queryKey });
+      const prev = queryClient.getQueryData<Lead[]>(queryKey);
+      queryClient.setQueryData<Lead[]>(queryKey, (old = []) =>
+        old.map((l) => (l.id === leadId ? { ...l, ...patch } : l))
+      );
+      return { prev };
+    },
+    onError: (error, _vars, ctx) => {
+      if (ctx?.prev) queryClient.setQueryData(queryKey, ctx.prev);
       toast({ title: "Erro ao atualizar lead", description: humanizeError(error), variant: "destructive" });
-      refetch();
-    }
-  }, [refetch]);
+    },
+    onSettled: () => {
+      queryClient.invalidateQueries({ queryKey });
+    },
+  });
+
+  const updateStatus = useCallback(
+    async (leadId: string, status: LeadStatus) => {
+      await updateStatusMutation.mutateAsync({ leadId, status }).catch(() => {});
+    },
+    [updateStatusMutation]
+  );
+
+  const updateLead = useCallback(
+    async (leadId: string, patch: Partial<Lead>) => {
+      await updateLeadMutation.mutateAsync({ leadId, patch }).catch(() => {});
+    },
+    [updateLeadMutation]
+  );
 
   const countByStatus = useCallback(
     (status: LeadStatus) => leads.filter((l) => l.status === status).length,
     [leads]
   );
+
+  const loading = !!currentStoreId && isLoading;
 
   return (
     <LeadsContext.Provider value={{ leads, loading, refetch, updateStatus, updateLead, countByStatus, total: leads.length }}>

@@ -1,5 +1,6 @@
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { Bell, UserPlus, CalendarClock, Snowflake, PackageCheck, RotateCcw, CheckCheck } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
 import { ptBR } from "date-fns/locale";
@@ -46,57 +47,71 @@ const ICON_COLORS: Record<string, string> = {
 export function NotificationBell() {
   const { user } = useAuth();
   const navigate = useNavigate();
-  const [items, setItems] = useState<Notification[]>([]);
+  const queryClient = useQueryClient();
+  const userId = user?.id;
+  const queryKey = ["notifications", userId] as const;
   const [open, setOpen] = useState(false);
 
-  const load = useCallback(async () => {
-    if (!user) return;
-    const { data } = await supabase
-      .from("notifications")
-      .select("*")
-      .eq("user_id", user.id)
-      .order("created_at", { ascending: false })
-      .limit(20);
-    if (data) setItems(data as Notification[]);
-  }, [user]);
+  const { data: items = [] } = useQuery({
+    queryKey,
+    enabled: !!userId,
+    queryFn: async () => {
+      const { data } = await supabase
+        .from("notifications")
+        .select("*")
+        .eq("user_id", userId!)
+        .order("created_at", { ascending: false })
+        .limit(20);
+      return (data ?? []) as Notification[];
+    },
+  });
 
   useEffect(() => {
-    if (!user) return;
-    load();
+    if (!userId) return;
     // Generate cooling notifications occasionally
-    supabase.rpc("generate_cooling_notifications").then(() => load());
+    supabase.rpc("generate_cooling_notifications").then(() => {
+      queryClient.invalidateQueries({ queryKey: ["notifications", userId] });
+    });
 
     const channel = supabase
-      .channel(`notifications:${user.id}`)
+      .channel(`notifications:${userId}`)
       .on(
         "postgres_changes",
-        { event: "*", schema: "public", table: "notifications", filter: `user_id=eq.${user.id}` },
-        () => load()
+        { event: "*", schema: "public", table: "notifications", filter: `user_id=eq.${userId}` },
+        () => {
+          queryClient.invalidateQueries({ queryKey: ["notifications", userId] });
+        }
       )
       .subscribe();
 
     return () => {
       supabase.removeChannel(channel);
     };
-  }, [user, load]);
+  }, [userId, queryClient]);
 
   const unreadCount = items.filter((n) => !n.read).length;
 
   async function markAllRead() {
-    if (!user || unreadCount === 0) return;
-    setItems((prev) => prev.map((n) => ({ ...n, read: true })));
+    if (!userId || unreadCount === 0) return;
+    queryClient.setQueryData<Notification[]>(queryKey, (old = []) =>
+      old.map((n) => ({ ...n, read: true }))
+    );
     await supabase
       .from("notifications")
       .update({ read: true })
-      .eq("user_id", user.id)
+      .eq("user_id", userId)
       .eq("read", false);
+    queryClient.invalidateQueries({ queryKey });
   }
 
   async function handleClick(n: Notification) {
     setOpen(false);
     if (!n.read) {
-      setItems((prev) => prev.map((x) => (x.id === n.id ? { ...x, read: true } : x)));
+      queryClient.setQueryData<Notification[]>(queryKey, (old = []) =>
+        old.map((x) => (x.id === n.id ? { ...x, read: true } : x))
+      );
       await supabase.from("notifications").update({ read: true }).eq("id", n.id);
+      queryClient.invalidateQueries({ queryKey });
     }
     if (n.lead_id) {
       navigate(`/whatsapp?lead=${n.lead_id}`);

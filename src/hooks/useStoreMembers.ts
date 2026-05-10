@@ -1,4 +1,5 @@
-import { useEffect, useMemo, useState } from "react";
+import { useMemo } from "react";
+import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/lib/supabase";
 import { useStores } from "@/hooks/useStores";
 
@@ -17,36 +18,24 @@ export interface StoreMember {
 export function useStoreMembers(storeId?: string | null) {
   const { currentStoreId } = useStores();
   const sid = storeId ?? currentStoreId;
-  const [members, setMembers] = useState<StoreMember[]>([]);
-  const [loading, setLoading] = useState<boolean>(!!sid);
 
-  useEffect(() => {
-    let cancelled = false;
-    if (!sid) {
-      setMembers([]);
-      setLoading(false);
-      return;
-    }
-    setLoading(true);
-    (async () => {
+  const { data: members = [], isLoading } = useQuery({
+    queryKey: ["store-members", sid],
+    enabled: !!sid,
+    staleTime: 1000 * 60 * 5, // 5 minutos
+    queryFn: async (): Promise<StoreMember[]> => {
       const { data: rows, error } = await supabase
         .from("store_members")
         .select("user_id, role")
-        .eq("store_id", sid);
-      if (cancelled) return;
-      if (error || !rows || rows.length === 0) {
-        setMembers([]);
-        setLoading(false);
-        return;
-      }
+        .eq("store_id", sid!);
+      if (error || !rows || rows.length === 0) return [];
       const ids = Array.from(new Set(rows.map((r: any) => r.user_id)));
       const { data: profs } = await supabase
         .from("profiles")
         .select("id, full_name, email, avatar_url")
         .in("id", ids);
-      if (cancelled) return;
       const pMap = new Map<string, any>((profs ?? []).map((p: any) => [p.id, p]));
-      const list: StoreMember[] = rows.map((r: any) => {
+      return rows.map((r: any) => {
         const p = pMap.get(r.user_id);
         const nm = (p?.full_name ?? "").trim();
         return {
@@ -57,13 +46,8 @@ export function useStoreMembers(storeId?: string | null) {
           role: r.role,
         };
       });
-      setMembers(list);
-      setLoading(false);
-    })();
-    return () => {
-      cancelled = true;
-    };
-  }, [sid]);
+    },
+  });
 
   const nameById = useMemo(() => {
     const m = new Map<string, string>();
@@ -71,5 +55,5 @@ export function useStoreMembers(storeId?: string | null) {
     return m;
   }, [members]);
 
-  return { members, loading, nameById };
+  return { members, loading: !!sid && isLoading, nameById };
 }

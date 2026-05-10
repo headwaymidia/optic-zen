@@ -1,4 +1,5 @@
-import { createContext, useContext, useEffect, useState, ReactNode, useCallback } from "react";
+import { createContext, useCallback, useContext, ReactNode } from "react";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/lib/supabase";
 import { useStores } from "@/hooks/useStores";
 
@@ -27,28 +28,24 @@ const SubscriptionContext = createContext<Ctx | undefined>(undefined);
 
 export function SubscriptionProvider({ children }: { children: ReactNode }) {
   const { currentStoreId } = useStores();
-  const [subscription, setSubscription] = useState<Subscription | null>(null);
-  const [loading, setLoading] = useState(true);
+  const queryClient = useQueryClient();
 
-  const fetchSub = useCallback(async () => {
-    if (!currentStoreId) {
-      setSubscription(null);
-      setLoading(false);
-      return;
-    }
-    setLoading(true);
-    const { data } = await supabase
-      .from("subscriptions")
-      .select("*")
-      .eq("store_id", currentStoreId)
-      .maybeSingle();
-    setSubscription((data as Subscription | null) ?? null);
-    setLoading(false);
-  }, [currentStoreId]);
+  const { data: subscription = null, isLoading } = useQuery({
+    queryKey: ["subscription", currentStoreId],
+    enabled: !!currentStoreId,
+    queryFn: async () => {
+      const { data } = await supabase
+        .from("subscriptions")
+        .select("*")
+        .eq("store_id", currentStoreId!)
+        .maybeSingle();
+      return (data as Subscription | null) ?? null;
+    },
+  });
 
-  useEffect(() => {
-    fetchSub();
-  }, [fetchSub]);
+  const refetch = useCallback(async () => {
+    await queryClient.invalidateQueries({ queryKey: ["subscription", currentStoreId] });
+  }, [queryClient, currentStoreId]);
 
   let trialDaysLeft: number | null = null;
   if (subscription?.status === "trial" && subscription.trial_ends_at) {
@@ -65,7 +62,14 @@ export function SubscriptionProvider({ children }: { children: ReactNode }) {
 
   return (
     <SubscriptionContext.Provider
-      value={{ subscription, loading, trialDaysLeft, isTrialExpired, isActive, refetch: fetchSub }}
+      value={{
+        subscription,
+        loading: !!currentStoreId && isLoading,
+        trialDaysLeft,
+        isTrialExpired,
+        isActive,
+        refetch,
+      }}
     >
       {children}
     </SubscriptionContext.Provider>
