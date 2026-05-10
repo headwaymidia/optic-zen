@@ -12,7 +12,7 @@ export function getUserInitials(fullName?: string | null, fallback?: string | nu
     return words[0].slice(0, 2).toUpperCase();
   }
   const fb = (fallback ?? "").trim();
-  if (!fb) return "U";
+  if (!fb) return "??";
   const parts = fb.split(/[\s@.]+/).filter(Boolean);
   const first = parts[0]?.[0] ?? "";
   const second = parts[1]?.[0] ?? "";
