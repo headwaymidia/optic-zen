@@ -295,7 +295,7 @@ export function WhatsAppPanel({ storeId, role }: Props) {
         )}
 
         {/* Estado: desconectado */}
-        {!isConnected && !isConnecting && (
+        {!isConnected && !isConnecting && !qrCode && (
           <div className="space-y-3">
             <p className="text-xs text-muted-foreground">
               Clique em conectar para gerar o QR Code e vincular o WhatsApp da loja.
