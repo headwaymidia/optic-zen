@@ -46,6 +46,7 @@ import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { cn } from "@/lib/utils";
 import { Badge } from "@/components/ui/badge";
+import { DataSkeleton } from "@/components/ui/DataSkeleton";
 
 type ViewMode = "month" | "week" | "day";
 
