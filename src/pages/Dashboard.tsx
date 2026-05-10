@@ -19,6 +19,7 @@ import { FileDown, Tv } from "lucide-react";
 import { DataSkeleton } from "@/components/ui/DataSkeleton";
 
 export default function Dashboard() {
+  usePageTitle("Dashboard");
   const { leads, loading } = useLeads();
   const { currentStore, filterByCurrentStore } = useStores();
   const [period, setPeriod] = useState<PeriodKey>("month");
