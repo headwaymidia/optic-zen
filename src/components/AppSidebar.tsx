@@ -204,6 +204,7 @@ export function AppSidebar() {
           {/* Secondary links */}
           <nav className="flex flex-col gap-0.5">
             {secondaryItems.map((item) => {
+              if (item.requireRole && !item.requireRole.includes(currentStore?.role ?? "")) return null;
               const isActive = location.pathname === item.url;
               const content = (
                 <>
