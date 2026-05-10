@@ -132,7 +132,8 @@ export function WhatsAppPanel({ storeId, role }: Props) {
     setBusy("connect");
     try {
       const res = await callEvo("connect");
-      if (res?.qrcode) setQrCode(res.qrcode);
+      const qr = extractQr(res);
+      if (qr) setQrCode(qr);
       await refetch();
     } catch (e) {
       toast({
@@ -140,6 +141,20 @@ export function WhatsAppPanel({ storeId, role }: Props) {
         description: humanizeError(e),
         variant: "destructive",
       });
+    } finally {
+      setBusy(null);
+    }
+  }
+
+  async function handleRefreshQr() {
+    if (!canEdit) return;
+    setBusy("connect");
+    try {
+      const q = await callEvo("qr");
+      const qr = extractQr(q);
+      if (qr) setQrCode(qr);
+    } catch (e) {
+      toast({ title: "Erro ao atualizar QR", description: humanizeError(e), variant: "destructive" });
     } finally {
       setBusy(null);
     }
