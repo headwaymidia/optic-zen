@@ -55,6 +55,36 @@ export type Database = {
           },
         ]
       }
+      lead_activities: {
+        Row: {
+          created_at: string
+          description: string
+          id: string
+          lead_id: string
+          store_id: string
+          type: string
+          user_id: string | null
+        }
+        Insert: {
+          created_at?: string
+          description: string
+          id?: string
+          lead_id: string
+          store_id: string
+          type: string
+          user_id?: string | null
+        }
+        Update: {
+          created_at?: string
+          description?: string
+          id?: string
+          lead_id?: string
+          store_id?: string
+          type?: string
+          user_id?: string | null
+        }
+        Relationships: []
+      }
       leads: {
         Row: {
           bairro: string | null
@@ -526,6 +556,7 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      _actor_name: { Args: never; Returns: string }
       accept_store_invite: { Args: { _token: string }; Returns: string }
       auto_move_due_returns: { Args: never; Returns: number }
       generate_cooling_notifications: { Args: never; Returns: number }
