@@ -562,29 +562,41 @@ function InviteMemberDialog({
   open,
   onOpenChange,
   storeId,
+  existingEmails = [],
   onInvited,
 }: {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   storeId: string;
+  existingEmails?: string[];
   onInvited: () => void;
 }) {
   const [email, setEmail] = useState("");
   const [role, setRole] = useState<TeamRole>("Vendedor");
   const [submitting, setSubmitting] = useState(false);
   const [createdLink, setCreatedLink] = useState<string | null>(null);
+  const [emailTouched, setEmailTouched] = useState(false);
+
+  const trimmedEmail = email.trim().toLowerCase();
+  const formatError = validateEmail(email);
+  const alreadyMember =
+    !formatError && existingEmails.includes(trimmedEmail)
+      ? "Este e-mail já é membro desta loja."
+      : null;
+  const emailError = formatError ?? alreadyMember;
 
   function reset() {
     setEmail("");
     setRole("Vendedor");
     setSubmitting(false);
     setCreatedLink(null);
+    setEmailTouched(false);
   }
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
-    const trimmed = email.trim().toLowerCase();
-    if (!trimmed) return;
+    setEmailTouched(true);
+    if (emailError) return;
     setSubmitting(true);
 
     const {
