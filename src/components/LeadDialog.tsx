@@ -305,7 +305,7 @@ export function LeadDialog({ open, onOpenChange, lead, defaultStatus, onSaved }:
               </div>
               <DialogFooter className="gap-2 sm:gap-2">
                 {lead && (
-                  <Button type="button" variant="destructive" onClick={handleDelete}>
+                  <Button type="button" variant="destructive" onClick={() => setConfirmDelete(true)}>
                     Excluir
                   </Button>
                 )}
