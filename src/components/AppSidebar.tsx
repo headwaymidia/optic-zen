@@ -14,6 +14,7 @@ import {
   Eye,
   Crown,
   Calendar as CalendarIcon,
+  Smartphone,
 } from "lucide-react";
 import {
   Sidebar,
@@ -56,6 +57,7 @@ const items = [
 
 const secondaryItems = [
   { title: "Configurações", url: "/configuracoes", icon: Settings },
+  { title: "WhatsApp", url: "/whatsapp-config", icon: Smartphone, requireRole: ["Dono", "Gerente"] as string[] },
   { title: "Meu plano", url: "/planos", icon: Crown },
   { title: "Ajuda", url: "/ajuda", icon: HelpCircle },
   { title: "Seja um parceiro", url: "/parceiro", icon: Handshake },
@@ -71,6 +73,7 @@ export function AppSidebar() {
   const location = useLocation();
   const [newLeadOpen, setNewLeadOpen] = useState(false);
   const { profile, user, signOut } = useAuth();
+  const { currentStore } = useStores();
 
   // Global keyboard shortcut: "N" opens Novo Lead (ignored when typing in inputs)
   useEffect(() => {
@@ -202,6 +205,7 @@ export function AppSidebar() {
           {/* Secondary links */}
           <nav className="flex flex-col gap-0.5">
             {secondaryItems.map((item) => {
+              if (item.requireRole && !item.requireRole.includes(currentStore?.role ?? "")) return null;
               const isActive = location.pathname === item.url;
               const content = (
                 <>
@@ -313,7 +317,7 @@ function WhatsAppStatusBadge({ collapsed }: { collapsed: boolean }) {
         <Tooltip>
           <TooltipTrigger asChild>
             <NavLink
-              to="/configuracoes-loja?tab=whatsapp"
+              to="/whatsapp-config"
               aria-label={label}
               className="h-7 w-7 rounded-full bg-card border flex items-center justify-center"
             >
@@ -342,7 +346,7 @@ function WhatsAppStatusBadge({ collapsed }: { collapsed: boolean }) {
 
   if (connected) return content;
   return (
-    <NavLink to="/configuracoes-loja?tab=whatsapp" className="block">
+    <NavLink to="/whatsapp-config" className="block">
       {content}
     </NavLink>
   );
