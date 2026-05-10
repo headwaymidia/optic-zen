@@ -11,6 +11,7 @@ import { useStoreMembers } from "@/hooks/useStoreMembers";
 import { useAuth } from "@/hooks/useAuth";
 import { useStores } from "@/hooks/useStores";
 import { toast } from "@/hooks/use-toast";
+import { humanizeError } from "@/lib/error-handler";
 import { Copy, Sparkles, MapPin, IdCard, Cake, Eye } from "lucide-react";
 import { maskCPF } from "@/lib/masks";
 

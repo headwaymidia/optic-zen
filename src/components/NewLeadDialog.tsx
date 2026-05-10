@@ -7,6 +7,7 @@ import { supabase } from "@/lib/supabase";
 import { useStores } from "@/hooks/useStores";
 import { useLeads } from "@/hooks/useLeads";
 import { toast } from "@/hooks/use-toast";
+import { humanizeError } from "@/lib/error-handler";
 import { maskCPF, maskCEP, maskPhone } from "@/lib/masks";
 import { MapPin, IdCard, Cake, Eye } from "lucide-react";
 
