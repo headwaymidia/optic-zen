@@ -155,7 +155,7 @@ export default function Contatos() {
               paginated.map((l) => (
                 <TableRow key={l.id} className="cursor-pointer" onClick={() => { setEditingLead(l); setDialogOpen(true); }}>
                   <TableCell className="font-medium">{l.name}</TableCell>
-                  <TableCell>{l.phone || "—"}</TableCell>
+                  <TableCell onClick={(e) => e.stopPropagation()}>{l.phone ? <PhoneLink phone={l.phone} /> : "—"}</TableCell>
                   <TableCell><Badge variant="outline">{l.status}</Badge></TableCell>
                   <TableCell>{l.priority || "—"}</TableCell>
                   <TableCell>{(l.lead_source as string) || "—"}</TableCell>
