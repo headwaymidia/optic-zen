@@ -225,6 +225,7 @@ export function TeamPanel({ storeId, storesCount }: { storeId: string; storesCou
   const [members, setMembers] = useState<TeamMember[]>([]);
   const [invites, setInvites] = useState<PendingInvite[]>([]);
   const [loading, setLoading] = useState(true);
+  const [memberToRemove, setMemberToRemove] = useState<TeamMember | null>(null);
 
   async function loadAll() {
     setLoading(true);
