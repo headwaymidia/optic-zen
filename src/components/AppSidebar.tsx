@@ -73,6 +73,7 @@ export function AppSidebar() {
   const location = useLocation();
   const [newLeadOpen, setNewLeadOpen] = useState(false);
   const { profile, user, signOut } = useAuth();
+  const { currentStore } = useStores();
 
   // Global keyboard shortcut: "N" opens Novo Lead (ignored when typing in inputs)
   useEffect(() => {
