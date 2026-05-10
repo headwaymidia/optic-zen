@@ -122,6 +122,9 @@ export function AppSidebar() {
           <WorkspaceSwitcher collapsed={collapsed} />
         </div>
 
+        {/* WhatsApp connection status */}
+        <WhatsAppStatusBadge collapsed={collapsed} />
+
         {/* Global +Novo Lead CTA */}
         <div className={cn("pt-2", collapsed ? "px-2 flex justify-center" : "px-3")}>
           {collapsed ? (
