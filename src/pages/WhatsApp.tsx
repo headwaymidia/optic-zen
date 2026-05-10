@@ -5,7 +5,39 @@ import { useLeads } from "@/hooks/useLeads";
 import { Input } from "@/components/ui/input";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { ChatPanel } from "@/components/ChatPanel";
-import { Search, MessageSquarePlus, MessageCircle } from "lucide-react";
+import { Search, MessageSquarePlus, MessageCircle, CalendarRange } from "lucide-react";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Calendar } from "@/components/ui/calendar";
+import { format } from "date-fns";
+import { ptBR } from "date-fns/locale";
+import type { DateRange } from "react-day-picker";
+
+type PeriodKey = "all" | "today" | "7d" | "month" | "custom";
+
+function getPeriodRange(key: PeriodKey, custom?: DateRange): { from: Date; to: Date } | null {
+  const now = new Date();
+  const startOfDay = (d: Date) => new Date(d.getFullYear(), d.getMonth(), d.getDate(), 0, 0, 0, 0);
+  const endOfDay = (d: Date) => new Date(d.getFullYear(), d.getMonth(), d.getDate(), 23, 59, 59, 999);
+  if (key === "today") return { from: startOfDay(now), to: endOfDay(now) };
+  if (key === "7d") {
+    const from = startOfDay(new Date(now.getTime() - 6 * 24 * 60 * 60 * 1000));
+    return { from, to: endOfDay(now) };
+  }
+  if (key === "month") {
+    return { from: new Date(now.getFullYear(), now.getMonth(), 1), to: endOfDay(now) };
+  }
+  if (key === "custom" && custom?.from) {
+    return { from: startOfDay(custom.from), to: endOfDay(custom.to ?? custom.from) };
+  }
+  return null;
+}
 import { DataSkeleton } from "@/components/ui/DataSkeleton";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { cn } from "@/lib/utils";
@@ -74,6 +106,9 @@ export default function WhatsAppPage() {
   const [searchParams, setSearchParams] = useSearchParams();
   const [newChatOpen, setNewChatOpen] = useState(false);
   const [newChatSearch, setNewChatSearch] = useState("");
+  const [period, setPeriod] = useState<PeriodKey>("all");
+  const [customRange, setCustomRange] = useState<DateRange | undefined>(undefined);
+  const [customOpen, setCustomOpen] = useState(false);
 
   // Deep-link: open chat for leadId from query string (e.g. coming from Tarefas)
   useEffect(() => {
@@ -86,10 +121,23 @@ export default function WhatsAppPage() {
     }
   }, [leads, searchParams, setSearchParams]);
 
-  const filtered = useMemo(
-    () => leads.filter((l) => l.name.toLowerCase().includes(search.toLowerCase())),
-    [leads, search]
-  );
+  const filtered = useMemo(() => {
+    const range = getPeriodRange(period, customRange);
+    return leads.filter((l) => {
+      if (!l.name.toLowerCase().includes(search.toLowerCase())) return false;
+      if (range) {
+        const t = l.created_at ? new Date(l.created_at).getTime() : 0;
+        if (t < range.from.getTime() || t > range.to.getTime()) return false;
+      }
+      return true;
+    });
+  }, [leads, search, period, customRange]);
+
+  const customLabel = customRange?.from
+    ? customRange.to && customRange.to.getTime() !== customRange.from.getTime()
+      ? `${format(customRange.from, "dd/MM", { locale: ptBR })} – ${format(customRange.to, "dd/MM", { locale: ptBR })}`
+      : format(customRange.from, "dd/MM/yyyy", { locale: ptBR })
+    : "Selecionar datas";
 
   const selected = leads.find((l) => l.id === selectedId) ?? null;
 
@@ -127,6 +175,52 @@ export default function WhatsAppPage() {
               </TooltipTrigger>
               <TooltipContent>Nova Conversa</TooltipContent>
             </Tooltip>
+          </div>
+          <div className="flex items-center gap-2">
+            <Select
+              value={period}
+              onValueChange={(v) => {
+                const next = v as PeriodKey;
+                setPeriod(next);
+                if (next === "custom") setCustomOpen(true);
+              }}
+            >
+              <SelectTrigger className="h-8 text-xs bg-muted/50 border-0 flex-1">
+                <SelectValue placeholder="Período" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">Todos</SelectItem>
+                <SelectItem value="today">Hoje</SelectItem>
+                <SelectItem value="7d">7 dias</SelectItem>
+                <SelectItem value="month">Este mês</SelectItem>
+                <SelectItem value="custom">Data personalizada</SelectItem>
+              </SelectContent>
+            </Select>
+            {period === "custom" && (
+              <Popover open={customOpen} onOpenChange={setCustomOpen}>
+                <PopoverTrigger asChild>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="h-8 text-xs gap-1.5 px-2.5 bg-muted/50 border-0 font-normal"
+                  >
+                    <CalendarRange className="h-3.5 w-3.5" />
+                    {customLabel}
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-auto p-0" align="end">
+                  <Calendar
+                    mode="range"
+                    selected={customRange}
+                    onSelect={setCustomRange}
+                    numberOfMonths={1}
+                    locale={ptBR}
+                    initialFocus
+                    className={cn("p-3 pointer-events-auto")}
+                  />
+                </PopoverContent>
+              </Popover>
+            )}
           </div>
         </div>
 
