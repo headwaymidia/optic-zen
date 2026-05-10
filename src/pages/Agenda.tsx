@@ -263,6 +263,16 @@ function AgendaInner() {
         ))}
       </div>
 
+      {loading && leads.length === 0 ? (
+        <div className="rounded-lg border border-border bg-card p-4">
+          <div className="grid grid-cols-7 gap-2">
+            {Array.from({ length: 35 }).map((_, i) => (
+              <div key={i} className="h-24 animate-pulse rounded bg-muted/70" />
+            ))}
+          </div>
+        </div>
+      ) : (
+      <>
       {/* MONTH VIEW */}
       {view === "month" && (
         <div className="rounded-lg border border-border overflow-hidden bg-card">
