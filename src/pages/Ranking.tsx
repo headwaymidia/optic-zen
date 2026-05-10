@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
+import { usePageTitle } from "@/hooks/usePageTitle";
 import { useLeads } from "@/hooks/useLeads";
 import { useStores } from "@/hooks/useStores";
 import { useSalesRanking } from "@/hooks/useSalesRanking";
