@@ -165,10 +165,9 @@ export default function OnboardingPage() {
 
       setStep(3);
     } catch (err: any) {
-      
       toast({
         title: "Erro ao criar loja",
-        description: err?.message ?? "Erro desconhecido.",
+        description: humanizeError(err),
         variant: "destructive",
       });
     } finally {
