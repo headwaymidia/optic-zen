@@ -83,7 +83,7 @@ export default function Parceiro() {
     setSubmitting(false);
 
     if (error) {
-      toast.error("Erro ao enviar cadastro: " + error.message);
+      toast.error(humanizeError(error));
       return;
     }
     setDone(true);
