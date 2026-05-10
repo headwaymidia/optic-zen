@@ -9,7 +9,9 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { LeadDialog } from "@/components/LeadDialog";
-import { Plus, MessageCircle, ChevronLeft, ChevronRight } from "lucide-react";
+import { Plus, MessageCircle, ChevronLeft, ChevronRight, Users } from "lucide-react";
+import { DataSkeleton } from "@/components/ui/DataSkeleton";
+import { EmptyState } from "@/components/ui/EmptyState";
 
 const PAGE_SIZE = 10;
 const ALL = "__all__";
