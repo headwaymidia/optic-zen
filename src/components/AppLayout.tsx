@@ -1,6 +1,4 @@
-import { Suspense } from "react";
 import { Navigate, Outlet, Link } from "react-router-dom";
-import { RouteProgressFallback } from "./TopProgressBar";
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { AppSidebar } from "./AppSidebar";
 import { BottomNav } from "./BottomNav";
@@ -83,9 +81,7 @@ export default function AppLayout() {
                   </div>
                 </header>
                 <main className="flex-1 overflow-auto pb-20 md:pb-0">
-                  <Suspense fallback={<RouteProgressFallback />}>
-                    <Outlet />
-                  </Suspense>
+                  <Outlet />
                 </main>
               </div>
               <BottomNav />

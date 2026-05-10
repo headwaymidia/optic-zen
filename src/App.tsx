@@ -10,31 +10,29 @@ import { StoresProvider, useStores } from "@/hooks/useStores";
 import AppLayout from "@/components/AppLayout";
 import { LeadsProvider } from "@/hooks/useLeads";
 
-import Dashboard from "./pages/Dashboard";
-import Funil from "./pages/Funil";
-import WhatsAppPage from "./pages/WhatsApp";
-const Contatos = lazy(() => import("./pages/Contatos"));
-const Configuracoes = lazy(() => import("./pages/Configuracoes"));
-const ConfiguracoesLoja = lazy(() => import("./pages/ConfiguracoesLoja"));
-const Tarefas = lazy(() => import("./pages/Tarefas"));
+import Dashboard from "@/pages/Dashboard";
+import Funil from "@/pages/Funil";
+import WhatsAppPage from "@/pages/WhatsApp";
+import Contatos from "@/pages/Contatos";
+import Configuracoes from "@/pages/Configuracoes";
+import ConfiguracoesLoja from "@/pages/ConfiguracoesLoja";
+import Tarefas from "@/pages/Tarefas";
+import Agenda from "@/pages/Agenda";
+import Ranking from "@/pages/Ranking";
+import Planos from "@/pages/Planos";
+import Parceiro from "@/pages/Parceiro";
+import Ajuda from "@/pages/Ajuda";
+import NotFound from "@/pages/NotFound";
+
+// Auth-only pages: lazy (logged users never revisit them)
 const AuthPage = lazy(() => import("./pages/Auth"));
 const OnboardingPage = lazy(() => import("./pages/Onboarding"));
 const AceitarConvitePage = lazy(() => import("./pages/AceitarConvite"));
-const NotFound = lazy(() => import("./pages/NotFound"));
-const Ranking = lazy(() => import("./pages/Ranking"));
-const Planos = lazy(() => import("./pages/Planos"));
-const Parceiro = lazy(() => import("./pages/Parceiro"));
-const Ajuda = lazy(() => import("./pages/Ajuda"));
-const Agenda = lazy(() => import("./pages/Agenda"));
-
-import { RouteProgressFallback, TopProgressBar } from "@/components/TopProgressBar";
-
-const RouteFallback = () => <RouteProgressFallback />;
 
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
-      staleTime: 1000 * 60, // 1 minuto
+      staleTime: 1000 * 60,
       retry: 1,
     },
   },
@@ -51,6 +49,9 @@ function FullscreenAuthGate({ children }: { children: React.ReactNode }) {
   return <LeadsProvider>{children}</LeadsProvider>;
 }
 
+const AuthFallback = () => (
+  <div className="flex min-h-screen items-center justify-center text-muted-foreground">Carregando...</div>
+);
 
 const App = () => (
   <QueryClientProvider client={queryClient}>
@@ -59,38 +60,56 @@ const App = () => (
         <Toaster />
         <Sonner />
         <BrowserRouter>
-          <TopProgressBar />
           <AuthProvider>
             <StoresProvider>
-              <Suspense fallback={<RouteFallback />}>
-                <Routes>
-                  <Route path="/auth" element={<AuthPage />} />
-                  <Route path="/onboarding" element={<OnboardingPage />} />
-                  <Route path="/aceitar-convite/:token" element={<AceitarConvitePage />} />
-                  <Route element={<AppLayout />}>
-                    <Route path="/" element={<Dashboard />} />
-                    <Route path="/whatsapp" element={<WhatsAppPage />} />
-                    <Route path="/funil" element={<Funil />} />
-                    <Route path="/tarefas" element={<Tarefas />} />
-                    <Route path="/agenda" element={<Agenda />} />
-                    <Route path="/contatos" element={<Contatos />} />
-                    <Route path="/configuracoes" element={<Configuracoes />} />
-                    <Route path="/configuracoes-loja" element={<ConfiguracoesLoja />} />
-                    <Route path="/planos" element={<Planos />} />
-                    <Route path="/parceiro" element={<Parceiro />} />
-                    <Route path="/ajuda" element={<Ajuda />} />
-                  </Route>
-                  <Route
-                    path="/ranking"
-                    element={
-                      <FullscreenAuthGate>
-                        <Ranking />
-                      </FullscreenAuthGate>
-                    }
-                  />
-                  <Route path="*" element={<NotFound />} />
-                </Routes>
-              </Suspense>
+              <Routes>
+                <Route
+                  path="/auth"
+                  element={
+                    <Suspense fallback={<AuthFallback />}>
+                      <AuthPage />
+                    </Suspense>
+                  }
+                />
+                <Route
+                  path="/onboarding"
+                  element={
+                    <Suspense fallback={<AuthFallback />}>
+                      <OnboardingPage />
+                    </Suspense>
+                  }
+                />
+                <Route
+                  path="/aceitar-convite/:token"
+                  element={
+                    <Suspense fallback={<AuthFallback />}>
+                      <AceitarConvitePage />
+                    </Suspense>
+                  }
+                />
+                <Route element={<AppLayout />}>
+                  <Route path="/" element={<Dashboard />} />
+                  <Route path="/whatsapp" element={<WhatsAppPage />} />
+                  <Route path="/funil" element={<Funil />} />
+                  <Route path="/tarefas" element={<Tarefas />} />
+                  <Route path="/agenda" element={<Agenda />} />
+                  <Route path="/contatos" element={<Contatos />} />
+                  <Route path="/configuracoes" element={<Configuracoes />} />
+                  <Route path="/configuracoes-loja" element={<ConfiguracoesLoja />} />
+                  <Route path="/planos" element={<Planos />} />
+                  <Route path="/parceiro" element={<Parceiro />} />
+                  <Route path="/ajuda" element={<Ajuda />} />
+                </Route>
+                <Route
+                  path="/ranking"
+                  element={
+                    <FullscreenAuthGate>
+                      <Ranking />
+                    </FullscreenAuthGate>
+                  }
+                />
+                <Route path="*" element={<NotFound />} />
+              </Routes>
             </StoresProvider>
           </AuthProvider>
         </BrowserRouter>
