@@ -466,12 +466,16 @@ export function KanbanBoard({
   search = "",
   salesFilter = null,
   cadenceFilter = "all",
+  createdFrom = null,
+  createdTo = null,
 }: {
   onSelectLead?: (l: Lead) => void;
   selectedLeadId?: string | null;
   search?: string;
   salesFilter?: string | null;
   cadenceFilter?: CadenceFilter;
+  createdFrom?: Date | null;
+  createdTo?: Date | null;
 } = {}) {
   const { leads, loading, refetch, updateStatus, updateLead } = useLeads();
   const { members, nameById } = useStoreMembers();
@@ -544,9 +548,16 @@ export function KanbanBoard({
   const term = search.trim().toLowerCase();
   const onlyDigits = term.replace(/\D/g, "");
   const cadenceActive = cadenceFilter !== "all";
-  const hasFilters = term.length > 0 || !!salesFilter || cadenceActive;
+  const fromMs = createdFrom ? createdFrom.getTime() : null;
+  const toMs = createdTo ? createdTo.getTime() : null;
+  const hasFilters = term.length > 0 || !!salesFilter || cadenceActive || fromMs !== null;
   const filteredLeads = leads.filter((l) => {
     if (salesFilter && (l.responsible_id ?? "") !== salesFilter) return false;
+    if (fromMs !== null) {
+      const t = l.created_at ? new Date(l.created_at).getTime() : 0;
+      if (t < fromMs) return false;
+      if (toMs !== null && t > toMs) return false;
+    }
     if (term) {
       const nameMatch = l.name?.toLowerCase().includes(term);
       const phoneDigits = (l.phone ?? "").replace(/\D/g, "");

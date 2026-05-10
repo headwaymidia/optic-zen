@@ -12,7 +12,25 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Search, X } from "lucide-react";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Calendar } from "@/components/ui/calendar";
+import { format } from "date-fns";
+import { ptBR } from "date-fns/locale";
+import type { DateRange } from "react-day-picker";
+import { Search, X, CalendarRange } from "lucide-react";
+
+type PeriodKey = "all" | "today" | "7d" | "month" | "custom";
+
+function getPeriodRange(key: PeriodKey, custom?: DateRange): { from: Date; to: Date } | null {
+  const now = new Date();
+  const startOfDay = (d: Date) => new Date(d.getFullYear(), d.getMonth(), d.getDate(), 0, 0, 0, 0);
+  const endOfDay = (d: Date) => new Date(d.getFullYear(), d.getMonth(), d.getDate(), 23, 59, 59, 999);
+  if (key === "today") return { from: startOfDay(now), to: endOfDay(now) };
+  if (key === "7d") return { from: startOfDay(new Date(now.getTime() - 6 * 86400000)), to: endOfDay(now) };
+  if (key === "month") return { from: new Date(now.getFullYear(), now.getMonth(), 1), to: endOfDay(now) };
+  if (key === "custom" && custom?.from) return { from: startOfDay(custom.from), to: endOfDay(custom.to ?? custom.from) };
+  return null;
+}
 
 const STATUS_DOT_COLORS: Record<LeadStatus, string> = {
   "Novo Lead": "bg-blue-500",
@@ -37,14 +55,24 @@ export default function Funil() {
   const [search, setSearch] = useState("");
   const [salesFilter, setSalesFilter] = useState<string>(ALL_SALES);
   const [cadence, setCadence] = useState<CadenceFilter>("all");
+  const [period, setPeriod] = useState<PeriodKey>("all");
+  const [customRange, setCustomRange] = useState<DateRange | undefined>(undefined);
+  const [customOpen, setCustomOpen] = useState(false);
   const selected = leads.find((lead) => lead.id === selectedId) ?? null;
 
-  const hasFilters = search.trim().length > 0 || salesFilter !== ALL_SALES || cadence !== "all";
+  const periodRange = useMemo(() => getPeriodRange(period, customRange), [period, customRange]);
+  const hasFilters =
+    search.trim().length > 0 ||
+    salesFilter !== ALL_SALES ||
+    cadence !== "all" ||
+    period !== "all";
 
   function clearFilters() {
     setSearch("");
     setSalesFilter(ALL_SALES);
     setCadence("all");
+    setPeriod("all");
+    setCustomRange(undefined);
   }
 
   // Contagem de pendentes por etapa de FU (independente de filtros — visão de gestão)
@@ -55,8 +83,14 @@ export default function Funil() {
   const counts = useMemo(() => {
     const term = search.trim().toLowerCase();
     const onlyDigits = term.replace(/\D/g, "");
+    const fromMs = periodRange?.from.getTime() ?? null;
+    const toMs = periodRange?.to.getTime() ?? null;
     const filtered = leads.filter((l) => {
       if (salesFilter !== ALL_SALES && (l.responsible_id ?? "") !== salesFilter) return false;
+      if (fromMs !== null) {
+        const t = l.created_at ? new Date(l.created_at).getTime() : 0;
+        if (t < fromMs || (toMs !== null && t > toMs)) return false;
+      }
       if (term) {
         const nameMatch = l.name?.toLowerCase().includes(term);
         const phoneDigits = (l.phone ?? "").replace(/\D/g, "");
@@ -70,7 +104,13 @@ export default function Funil() {
       map[s] = filtered.filter((l) => l.status === s).length;
     });
     return map;
-  }, [leads, search, salesFilter]);
+  }, [leads, search, salesFilter, periodRange]);
+
+  const customLabel = customRange?.from
+    ? customRange.to && customRange.to.getTime() !== customRange.from.getTime()
+      ? `${format(customRange.from, "dd/MM", { locale: ptBR })} – ${format(customRange.to, "dd/MM", { locale: ptBR })}`
+      : format(customRange.from, "dd/MM/yyyy", { locale: ptBR })
+    : "Selecionar datas";
 
   return (
     <div className="h-full flex flex-col lg:flex-row min-h-0">
@@ -124,6 +164,50 @@ export default function Funil() {
                 ))}
               </SelectContent>
             </Select>
+            <Select
+              value={period}
+              onValueChange={(v) => {
+                const next = v as PeriodKey;
+                setPeriod(next);
+                if (next === "custom") setCustomOpen(true);
+              }}
+            >
+              <SelectTrigger className="h-9 w-full sm:w-40 bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 dark:text-white">
+                <SelectValue placeholder="Período" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">Todos</SelectItem>
+                <SelectItem value="today">Hoje</SelectItem>
+                <SelectItem value="7d">7 dias</SelectItem>
+                <SelectItem value="month">Este mês</SelectItem>
+                <SelectItem value="custom">Data personalizada</SelectItem>
+              </SelectContent>
+            </Select>
+            {period === "custom" && (
+              <Popover open={customOpen} onOpenChange={setCustomOpen}>
+                <PopoverTrigger asChild>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="h-9 gap-1.5 px-3 bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 dark:text-white font-normal"
+                  >
+                    <CalendarRange className="h-4 w-4" />
+                    {customLabel}
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-auto p-0" align="end">
+                  <Calendar
+                    mode="range"
+                    selected={customRange}
+                    onSelect={setCustomRange}
+                    numberOfMonths={2}
+                    locale={ptBR}
+                    initialFocus
+                    className={cn("p-3 pointer-events-auto")}
+                  />
+                </PopoverContent>
+              </Popover>
+            )}
             {hasFilters && (
               <Button
                 type="button"
@@ -162,6 +246,8 @@ export default function Funil() {
               search={search}
               salesFilter={salesFilter === ALL_SALES ? null : salesFilter}
               cadenceFilter={cadence}
+              createdFrom={periodRange?.from ?? null}
+              createdTo={periodRange?.to ?? null}
             />
           </div>
         </div>
