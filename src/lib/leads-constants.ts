@@ -62,6 +62,21 @@ export interface Prescription {
   eixo_oe?: string | null;
   adicao?: string | null;
   dnp?: string | null;
+  od_dnp?: string | null;
+  oe_dnp?: string | null;
+  od_altura?: string | null;
+  oe_altura?: string | null;
+  od_prisma?: string | null;
+  od_base?: string | null;
+  oe_prisma?: string | null;
+  oe_base?: string | null;
+  av_od?: string | null;
+  av_oe?: string | null;
+  medico_nome?: string | null;
+  medico_crm?: string | null;
+  data_receita?: string | null;
+  tipo_lente?: string | null;
+  observacoes_medico?: string | null;
 }
 
 export interface Lead {

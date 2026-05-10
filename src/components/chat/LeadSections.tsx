@@ -30,13 +30,10 @@ interface Props {
 export function LeadSections({ lead, onApplyLabScript }: Props) {
   const { updateLead } = useLeads();
   const p = lead.prescription ?? {};
+  const has = (v: unknown) => typeof v === "string" ? v.trim() !== "" : v != null;
   const prescriptionOk = Boolean(
-    (p.esferico_od && p.esferico_od.toString().trim()) ||
-      (p.esferico_oe && p.esferico_oe.toString().trim()) ||
-      (p.cilindrico_od && p.cilindrico_od.toString().trim()) ||
-      (p.cilindrico_oe && p.cilindrico_oe.toString().trim()) ||
-      (p.adicao && p.adicao.toString().trim()) ||
-      (p.dnp && p.dnp.toString().trim())
+    has(p.esferico_od) && has(p.cilindrico_od) && has(p.eixo_od) &&
+    has(p.esferico_oe) && has(p.cilindrico_oe) && has(p.eixo_oe)
   );
   const labOk = Boolean(lead.delivery_prediction || lead.lab_status);
 
@@ -48,7 +45,7 @@ export function LeadSections({ lead, onApplyLabScript }: Props) {
             <span className="flex items-center gap-2 flex-1 text-left">
               <Eye className="h-3.5 w-3.5 text-primary" />
               <span>Receita Oftalmológica</span>
-              <ChecklistBadge ok={prescriptionOk} />
+              <ChecklistBadge ok={prescriptionOk} okLabel="Preenchida" />
             </span>
           </AccordionTrigger>
           <AccordionContent className="px-3 pb-3 pt-0">
@@ -85,12 +82,12 @@ export function LeadSections({ lead, onApplyLabScript }: Props) {
   );
 }
 
-function ChecklistBadge({ ok }: { ok: boolean }) {
+function ChecklistBadge({ ok, okLabel = "Ok" }: { ok: boolean; okLabel?: string }) {
   if (ok) {
     return (
       <span className="ml-auto inline-flex items-center gap-1 rounded-full bg-emerald-100 dark:bg-emerald-900/40 text-emerald-700 dark:text-emerald-200 px-2 py-0.5 text-[10px] font-semibold">
         <CheckCircle2 className="h-3 w-3" />
-        Ok
+        {okLabel}
       </span>
     );
   }

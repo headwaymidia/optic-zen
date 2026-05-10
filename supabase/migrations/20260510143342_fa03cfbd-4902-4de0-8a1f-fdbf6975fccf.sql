@@ -1,0 +1,16 @@
+ALTER TABLE public.prescriptions
+  ADD COLUMN IF NOT EXISTS od_dnp numeric,
+  ADD COLUMN IF NOT EXISTS oe_dnp numeric,
+  ADD COLUMN IF NOT EXISTS od_altura numeric,
+  ADD COLUMN IF NOT EXISTS oe_altura numeric,
+  ADD COLUMN IF NOT EXISTS od_prisma numeric,
+  ADD COLUMN IF NOT EXISTS od_base text,
+  ADD COLUMN IF NOT EXISTS oe_prisma numeric,
+  ADD COLUMN IF NOT EXISTS oe_base text,
+  ADD COLUMN IF NOT EXISTS av_od text,
+  ADD COLUMN IF NOT EXISTS av_oe text,
+  ADD COLUMN IF NOT EXISTS medico_nome text,
+  ADD COLUMN IF NOT EXISTS medico_crm text,
+  ADD COLUMN IF NOT EXISTS data_receita date,
+  ADD COLUMN IF NOT EXISTS tipo_lente text,
+  ADD COLUMN IF NOT EXISTS observacoes_medico text;

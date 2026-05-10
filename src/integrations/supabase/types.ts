@@ -267,48 +267,93 @@ export type Database = {
       prescriptions: {
         Row: {
           adicao: string | null
+          av_od: string | null
+          av_oe: string | null
           created_at: string
           created_by: string | null
+          data_receita: string | null
           dnp: string | null
           id: string
           lead_id: string
+          medico_crm: string | null
+          medico_nome: string | null
+          observacoes_medico: string | null
+          od_altura: number | null
+          od_base: string | null
           od_cilindrico: string | null
+          od_dnp: number | null
           od_eixo: string | null
           od_esferico: string | null
+          od_prisma: number | null
+          oe_altura: number | null
+          oe_base: string | null
           oe_cilindrico: string | null
+          oe_dnp: number | null
           oe_eixo: string | null
           oe_esferico: string | null
+          oe_prisma: number | null
           store_id: string
+          tipo_lente: string | null
         }
         Insert: {
           adicao?: string | null
+          av_od?: string | null
+          av_oe?: string | null
           created_at?: string
           created_by?: string | null
+          data_receita?: string | null
           dnp?: string | null
           id?: string
           lead_id: string
+          medico_crm?: string | null
+          medico_nome?: string | null
+          observacoes_medico?: string | null
+          od_altura?: number | null
+          od_base?: string | null
           od_cilindrico?: string | null
+          od_dnp?: number | null
           od_eixo?: string | null
           od_esferico?: string | null
+          od_prisma?: number | null
+          oe_altura?: number | null
+          oe_base?: string | null
           oe_cilindrico?: string | null
+          oe_dnp?: number | null
           oe_eixo?: string | null
           oe_esferico?: string | null
+          oe_prisma?: number | null
           store_id: string
+          tipo_lente?: string | null
         }
         Update: {
           adicao?: string | null
+          av_od?: string | null
+          av_oe?: string | null
           created_at?: string
           created_by?: string | null
+          data_receita?: string | null
           dnp?: string | null
           id?: string
           lead_id?: string
+          medico_crm?: string | null
+          medico_nome?: string | null
+          observacoes_medico?: string | null
+          od_altura?: number | null
+          od_base?: string | null
           od_cilindrico?: string | null
+          od_dnp?: number | null
           od_eixo?: string | null
           od_esferico?: string | null
+          od_prisma?: number | null
+          oe_altura?: number | null
+          oe_base?: string | null
           oe_cilindrico?: string | null
+          oe_dnp?: number | null
           oe_eixo?: string | null
           oe_esferico?: string | null
+          oe_prisma?: number | null
           store_id?: string
+          tipo_lente?: string | null
         }
         Relationships: [
           {
