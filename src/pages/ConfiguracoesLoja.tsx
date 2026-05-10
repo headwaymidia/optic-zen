@@ -60,6 +60,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
+import { validateEmail } from "@/lib/validators";
 
 type TabKey = "geral" | "equipe" | "integracoes";
 
