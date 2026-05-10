@@ -293,7 +293,12 @@ export function TeamPanel({ storeId, storesCount }: { storeId: string; storesCou
       toast({ title: "Não é possível remover o Dono.", variant: "destructive" });
       return;
     }
-    if (!confirm("Remover este membro da loja? Ele perderá acesso imediatamente.")) return;
+    setMemberToRemove(member);
+  }
+
+  async function confirmRemoveMember() {
+    const member = memberToRemove;
+    if (!member) return;
     const { error } = await supabase
       .from("store_members")
       .delete()
@@ -303,6 +308,7 @@ export function TeamPanel({ storeId, storesCount }: { storeId: string; storesCou
       return;
     }
     toast({ title: "Membro removido." });
+    setMemberToRemove(null);
     loadAll();
   }
 
