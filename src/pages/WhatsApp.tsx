@@ -106,6 +106,9 @@ export default function WhatsAppPage() {
   const [searchParams, setSearchParams] = useSearchParams();
   const [newChatOpen, setNewChatOpen] = useState(false);
   const [newChatSearch, setNewChatSearch] = useState("");
+  const [period, setPeriod] = useState<PeriodKey>("all");
+  const [customRange, setCustomRange] = useState<DateRange | undefined>(undefined);
+  const [customOpen, setCustomOpen] = useState(false);
 
   // Deep-link: open chat for leadId from query string (e.g. coming from Tarefas)
   useEffect(() => {
@@ -118,10 +121,23 @@ export default function WhatsAppPage() {
     }
   }, [leads, searchParams, setSearchParams]);
 
-  const filtered = useMemo(
-    () => leads.filter((l) => l.name.toLowerCase().includes(search.toLowerCase())),
-    [leads, search]
-  );
+  const filtered = useMemo(() => {
+    const range = getPeriodRange(period, customRange);
+    return leads.filter((l) => {
+      if (!l.name.toLowerCase().includes(search.toLowerCase())) return false;
+      if (range) {
+        const t = l.created_at ? new Date(l.created_at).getTime() : 0;
+        if (t < range.from.getTime() || t > range.to.getTime()) return false;
+      }
+      return true;
+    });
+  }, [leads, search, period, customRange]);
+
+  const customLabel = customRange?.from
+    ? customRange.to && customRange.to.getTime() !== customRange.from.getTime()
+      ? `${format(customRange.from, "dd/MM", { locale: ptBR })} – ${format(customRange.to, "dd/MM", { locale: ptBR })}`
+      : format(customRange.from, "dd/MM/yyyy", { locale: ptBR })
+    : "Selecionar datas";
 
   const selected = leads.find((l) => l.id === selectedId) ?? null;
 
