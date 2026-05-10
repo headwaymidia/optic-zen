@@ -45,7 +45,7 @@ export function LeadSections({ lead, onApplyLabScript }: Props) {
             <span className="flex items-center gap-2 flex-1 text-left">
               <Eye className="h-3.5 w-3.5 text-primary" />
               <span>Receita Oftalmológica</span>
-              <ChecklistBadge ok={prescriptionOk} />
+              <ChecklistBadge ok={prescriptionOk} okLabel="Preenchida" />
             </span>
           </AccordionTrigger>
           <AccordionContent className="px-3 pb-3 pt-0">
