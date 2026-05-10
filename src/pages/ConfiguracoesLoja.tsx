@@ -573,7 +573,7 @@ function InviteMemberDialog({
     if (error) {
       const msg = error.message.includes("uniq_pending_invite")
         ? "Já existe um convite pendente para este e-mail."
-        : error.message;
+        : humanizeError(error);
       toast({ title: "Erro ao criar convite", description: msg, variant: "destructive" });
       return;
     }
