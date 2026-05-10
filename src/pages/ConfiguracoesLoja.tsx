@@ -24,8 +24,10 @@ import {
   QrCode,
   RefreshCw,
   Smartphone,
+  MessageCircle,
   Loader2,
 } from "lucide-react";
+import { WhatsAppPanel } from "@/components/WhatsAppPanel";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
   DropdownMenu,
