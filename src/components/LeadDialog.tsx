@@ -53,6 +53,7 @@ export function LeadDialog({ open, onOpenChange, lead, defaultStatus, onSaved }:
   const [dataNascimento, setDataNascimento] = useState("");
   const [dataUltimoExame, setDataUltimoExame] = useState("");
   const [saving, setSaving] = useState(false);
+  const [confirmDelete, setConfirmDelete] = useState(false);
 
   useEffect(() => {
     if (open) {
