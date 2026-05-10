@@ -5,7 +5,39 @@ import { useLeads } from "@/hooks/useLeads";
 import { Input } from "@/components/ui/input";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { ChatPanel } from "@/components/ChatPanel";
-import { Search, MessageSquarePlus, MessageCircle } from "lucide-react";
+import { Search, MessageSquarePlus, MessageCircle, CalendarRange } from "lucide-react";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Calendar } from "@/components/ui/calendar";
+import { format } from "date-fns";
+import { ptBR } from "date-fns/locale";
+import type { DateRange } from "react-day-picker";
+
+type PeriodKey = "all" | "today" | "7d" | "month" | "custom";
+
+function getPeriodRange(key: PeriodKey, custom?: DateRange): { from: Date; to: Date } | null {
+  const now = new Date();
+  const startOfDay = (d: Date) => new Date(d.getFullYear(), d.getMonth(), d.getDate(), 0, 0, 0, 0);
+  const endOfDay = (d: Date) => new Date(d.getFullYear(), d.getMonth(), d.getDate(), 23, 59, 59, 999);
+  if (key === "today") return { from: startOfDay(now), to: endOfDay(now) };
+  if (key === "7d") {
+    const from = startOfDay(new Date(now.getTime() - 6 * 24 * 60 * 60 * 1000));
+    return { from, to: endOfDay(now) };
+  }
+  if (key === "month") {
+    return { from: new Date(now.getFullYear(), now.getMonth(), 1), to: endOfDay(now) };
+  }
+  if (key === "custom" && custom?.from) {
+    return { from: startOfDay(custom.from), to: endOfDay(custom.to ?? custom.from) };
+  }
+  return null;
+}
 import { DataSkeleton } from "@/components/ui/DataSkeleton";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { cn } from "@/lib/utils";
