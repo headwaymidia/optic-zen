@@ -144,9 +144,9 @@ function ExamScheduler({ lead }: { lead: Lead }) {
     const horaStr = d.toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" });
     return (
       <div className="flex items-center gap-2 flex-wrap">
-        <div className="flex items-center gap-2 flex-1 min-w-0 rounded-md bg-emerald-50 dark:bg-emerald-900/20 border border-emerald-200 dark:border-emerald-800 px-2.5 py-2">
+        <div className="flex items-center gap-2 w-full sm:w-auto sm:flex-1 min-w-0 rounded-md bg-emerald-50 dark:bg-emerald-900/20 border border-emerald-200 dark:border-emerald-800 px-2.5 py-2">
           <CalendarCheck2 className="h-4 w-4 text-emerald-600 dark:text-emerald-400 shrink-0" />
-          <span className="text-xs font-medium text-emerald-900 dark:text-emerald-100 truncate">
+          <span className="text-xs font-medium text-emerald-900 dark:text-emerald-100 whitespace-nowrap">
             Agendado para {dataStr} às {horaStr}
           </span>
         </div>
