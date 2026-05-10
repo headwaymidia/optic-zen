@@ -71,10 +71,9 @@ export default function AceitarConvitePage() {
     });
 
     if (rpcErr) {
-      
       toast({
         title: "Erro ao aceitar convite",
-        description: rpcErr.message,
+        description: humanizeError(rpcErr),
         variant: "destructive",
       });
       setAccepting(false);
