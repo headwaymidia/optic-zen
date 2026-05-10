@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -9,7 +9,20 @@ import { useLeads } from "@/hooks/useLeads";
 import { toast } from "@/hooks/use-toast";
 import { humanizeError } from "@/lib/error-handler";
 import { maskCPF, maskCEP, maskPhone } from "@/lib/masks";
-import { MapPin, IdCard, Cake, Eye } from "lucide-react";
+import {
+  validateName,
+  validatePhoneBR,
+  validateCPF,
+  validateCEP,
+  fetchAddressByCep,
+} from "@/lib/validators";
+import { cn } from "@/lib/utils";
+import { MapPin, IdCard, Cake, Eye, Loader2 } from "lucide-react";
+
+function FieldError({ message }: { message: string | null }) {
+  if (!message) return null;
+  return <p className="text-[11px] text-destructive">{message}</p>;
+}
 
 export function NewLeadDialog({
   open,
@@ -30,6 +43,42 @@ export function NewLeadDialog({
   const [dataNascimento, setDataNascimento] = useState("");
   const [dataUltimoExame, setDataUltimoExame] = useState("");
   const [saving, setSaving] = useState(false);
+  const [touched, setTouched] = useState<Record<string, boolean>>({});
+  const [cepLoading, setCepLoading] = useState(false);
+
+  // Validação reativa
+  const errors = useMemo(
+    () => ({
+      name: validateName(name),
+      phone: validatePhoneBR(phone, true),
+      cpf: validateCPF(cpf),
+      cep: validateCEP(cep),
+    }),
+    [name, phone, cpf, cep]
+  );
+
+  const formInvalid = !!(errors.name || errors.phone || errors.cpf || errors.cep);
+
+  // Auto-busca de endereço via ViaCEP quando CEP fica válido
+  useEffect(() => {
+    const digits = cep.replace(/\D/g, "");
+    if (digits.length !== 8) return;
+    let cancelled = false;
+    setCepLoading(true);
+    fetchAddressByCep(digits)
+      .then((data) => {
+        if (cancelled || !data) return;
+        if (data.logradouro) setRua(data.logradouro);
+        if (data.bairro) setBairro(data.bairro);
+        if (data.localidade) setCidade(data.localidade);
+      })
+      .finally(() => {
+        if (!cancelled) setCepLoading(false);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [cep]);
 
   const reset = () => {
     setName("");
@@ -41,13 +90,14 @@ export function NewLeadDialog({
     setCpf("");
     setDataNascimento("");
     setDataUltimoExame("");
+    setTouched({});
   };
 
+  const showError = (field: string) => touched[field] && !!errors[field as keyof typeof errors];
+
   const handleSave = async () => {
-    if (!name.trim()) {
-      toast({ title: "Nome obrigatório", variant: "destructive" });
-      return;
-    }
+    setTouched({ name: true, phone: true, cpf: true, cep: true });
+    if (formInvalid) return;
     if (!currentStoreId) {
       toast({ title: "Selecione uma loja antes de criar o lead", variant: "destructive" });
       return;
@@ -77,6 +127,8 @@ export function NewLeadDialog({
     refetch();
   };
 
+  const errorInputClass = "border-destructive focus-visible:ring-destructive";
+
   return (
     <Dialog
       open={open}
@@ -102,21 +154,29 @@ export function NewLeadDialog({
                 id="new-lead-name"
                 value={name}
                 onChange={(e) => setName(e.target.value)}
+                onBlur={() => setTouched((t) => ({ ...t, name: true }))}
                 placeholder="Ex: Maria Silva"
                 autoFocus
+                className={cn(showError("name") && errorInputClass)}
+                aria-invalid={showError("name")}
               />
+              {showError("name") && <FieldError message={errors.name} />}
             </div>
             <div className="space-y-1.5">
-              <Label htmlFor="new-lead-phone" className="text-xs">Telefone</Label>
+              <Label htmlFor="new-lead-phone" className="text-xs">Telefone *</Label>
               <Input
                 id="new-lead-phone"
                 value={phone}
                 onChange={(e) => setPhone(maskPhone(e.target.value))}
+                onBlur={() => setTouched((t) => ({ ...t, phone: true }))}
                 placeholder="(11) 91234-5678"
                 type="tel"
                 inputMode="numeric"
                 maxLength={15}
+                className={cn(showError("phone") && errorInputClass)}
+                aria-invalid={showError("phone")}
               />
+              {showError("phone") && <FieldError message={errors.phone} />}
             </div>
           </div>
 
@@ -129,15 +189,20 @@ export function NewLeadDialog({
               <div className="space-y-1.5">
                 <Label htmlFor="new-lead-cep" className="text-xs flex items-center gap-1.5">
                   <MapPin className="h-3 w-3 text-muted-foreground" /> CEP
+                  {cepLoading && <Loader2 className="h-3 w-3 animate-spin text-muted-foreground" />}
                 </Label>
                 <Input
                   id="new-lead-cep"
                   value={cep}
                   onChange={(e) => setCep(maskCEP(e.target.value))}
+                  onBlur={() => setTouched((t) => ({ ...t, cep: true }))}
                   placeholder="00000-000"
                   inputMode="numeric"
                   maxLength={9}
+                  className={cn(showError("cep") && errorInputClass)}
+                  aria-invalid={showError("cep")}
                 />
+                {showError("cep") && <FieldError message={errors.cep} />}
               </div>
               <div className="space-y-1.5 sm:col-span-1">
                 <Label htmlFor="new-lead-rua" className="text-xs flex items-center gap-1.5">
@@ -180,10 +245,14 @@ export function NewLeadDialog({
                   id="new-lead-cpf"
                   value={cpf}
                   onChange={(e) => setCpf(maskCPF(e.target.value))}
+                  onBlur={() => setTouched((t) => ({ ...t, cpf: true }))}
                   placeholder="000.000.000-00"
                   inputMode="numeric"
                   maxLength={14}
+                  className={cn(showError("cpf") && errorInputClass)}
+                  aria-invalid={showError("cpf")}
                 />
+                {showError("cpf") && <FieldError message={errors.cpf} />}
               </div>
               <div className="space-y-1.5">
                 <Label htmlFor="new-lead-nasc" className="text-xs flex items-center gap-1.5">
@@ -215,7 +284,7 @@ export function NewLeadDialog({
           <Button variant="outline" onClick={() => onOpenChange(false)} disabled={saving}>
             Cancelar
           </Button>
-          <Button onClick={handleSave} disabled={saving || !name.trim()}>
+          <Button onClick={handleSave} disabled={saving || formInvalid}>
             {saving ? "Salvando..." : "Salvar Lead"}
           </Button>
         </DialogFooter>
