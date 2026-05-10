@@ -234,7 +234,7 @@ export function TeamPanel({ storeId, storesCount }: { storeId: string; storesCou
 
     if (mErr) {
       setLoading(false);
-      toast({ title: "Erro ao carregar equipe", description: mErr.message, variant: "destructive" });
+      toast({ title: "Erro ao carregar equipe", description: humanizeError(mErr), variant: "destructive" });
     } else {
       const userIds = Array.from(new Set((m ?? []).map((r: any) => r.user_id)));
       let profileMap = new Map<string, { full_name: string | null; email: string | null }>();
@@ -266,7 +266,7 @@ export function TeamPanel({ storeId, storesCount }: { storeId: string; storesCou
     }
     setLoading(false);
     if (iErr) {
-      toast({ title: "Erro ao carregar convites", description: iErr.message, variant: "destructive" });
+      toast({ title: "Erro ao carregar convites", description: humanizeError(iErr), variant: "destructive" });
     } else {
       setInvites((i ?? []) as PendingInvite[]);
     }

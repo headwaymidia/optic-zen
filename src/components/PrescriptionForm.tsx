@@ -93,7 +93,7 @@ export function PrescriptionForm({ lead }: { lead: Lead }) {
       toast({ title: "Receita salva", description: "Nova receita adicionada ao histórico." });
       await loadHistory();
     } catch (e: any) {
-      toast({ title: "Erro ao salvar receita", description: e.message, variant: "destructive" });
+      toast({ title: "Erro ao salvar receita", description: humanizeError(e), variant: "destructive" });
     } finally {
       setSaving(false);
     }

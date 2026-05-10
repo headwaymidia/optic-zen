@@ -69,7 +69,7 @@ export default function AuthPage() {
       .limit(1);
 
     if (storesError) {
-      toast({ title: "Erro ao verificar loja", description: storesError.message, variant: "destructive" });
+      toast({ title: "Erro ao verificar loja", description: humanizeError(storesError), variant: "destructive" });
       return;
     }
 

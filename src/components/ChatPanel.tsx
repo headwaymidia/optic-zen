@@ -226,7 +226,7 @@ export function ChatPanel({
     } catch (err: any) {
       toast({
         title: "Falha ao registrar follow-up",
-        description: err?.message ?? "Tente novamente.",
+        description: humanizeError(err),
         variant: "destructive",
       });
     }
