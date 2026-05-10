@@ -176,6 +176,52 @@ export default function WhatsAppPage() {
               <TooltipContent>Nova Conversa</TooltipContent>
             </Tooltip>
           </div>
+          <div className="flex items-center gap-2">
+            <Select
+              value={period}
+              onValueChange={(v) => {
+                const next = v as PeriodKey;
+                setPeriod(next);
+                if (next === "custom") setCustomOpen(true);
+              }}
+            >
+              <SelectTrigger className="h-8 text-xs bg-muted/50 border-0 flex-1">
+                <SelectValue placeholder="Período" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">Todos</SelectItem>
+                <SelectItem value="today">Hoje</SelectItem>
+                <SelectItem value="7d">7 dias</SelectItem>
+                <SelectItem value="month">Este mês</SelectItem>
+                <SelectItem value="custom">Data personalizada</SelectItem>
+              </SelectContent>
+            </Select>
+            {period === "custom" && (
+              <Popover open={customOpen} onOpenChange={setCustomOpen}>
+                <PopoverTrigger asChild>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="h-8 text-xs gap-1.5 px-2.5 bg-muted/50 border-0 font-normal"
+                  >
+                    <CalendarRange className="h-3.5 w-3.5" />
+                    {customLabel}
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-auto p-0" align="end">
+                  <Calendar
+                    mode="range"
+                    selected={customRange}
+                    onSelect={setCustomRange}
+                    numberOfMonths={1}
+                    locale={ptBR}
+                    initialFocus
+                    className={cn("p-3 pointer-events-auto")}
+                  />
+                </PopoverContent>
+              </Popover>
+            )}
+          </div>
         </div>
 
         <div className="flex-1 overflow-y-auto">
