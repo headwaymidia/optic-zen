@@ -63,11 +63,12 @@ import {
 } from "@/components/ui/alert-dialog";
 import { validateEmail } from "@/lib/validators";
 
-type TabKey = "geral" | "equipe" | "integracoes";
+type TabKey = "geral" | "equipe" | "whatsapp" | "integracoes";
 
 const TABS: { key: TabKey; label: string; icon: typeof Settings }[] = [
   { key: "geral", label: "Geral", icon: Settings },
   { key: "equipe", label: "Equipe", icon: Users },
+  { key: "whatsapp", label: "WhatsApp", icon: MessageCircle },
   { key: "integracoes", label: "Integrações", icon: Plug },
 ];
 
