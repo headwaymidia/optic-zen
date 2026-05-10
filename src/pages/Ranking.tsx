@@ -17,6 +17,7 @@ const MEDAL_COLORS = [
 const POSITION = ["1º Lugar", "2º Lugar", "3º Lugar"];
 
 export default function Ranking() {
+  usePageTitle("Ranking de Vendas");
   const { leads, refetch } = useLeads();
   const { filterByCurrentStore } = useStores();
   const [tick, setTick] = useState(0);
