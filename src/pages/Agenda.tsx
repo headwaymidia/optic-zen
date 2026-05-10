@@ -143,6 +143,7 @@ function buildEvents(leads: Lead[]): AgendaEvent[] {
 }
 
 function AgendaInner() {
+  usePageTitle("Agenda");
   const navigate = useNavigate();
   const { leads, loading, updateLead } = useLeads();
   const { members, nameById } = useStoreMembers();
