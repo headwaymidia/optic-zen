@@ -722,8 +722,16 @@ function InviteMemberDialog({
               placeholder="exemplo@otica.com"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              className="h-11"
+              onBlur={() => setEmailTouched(true)}
+              aria-invalid={emailTouched && !!emailError}
+              className={cn(
+                "h-11",
+                emailTouched && emailError && "border-destructive focus-visible:ring-destructive"
+              )}
             />
+            {emailTouched && emailError && (
+              <p className="text-[11px] text-destructive">{emailError}</p>
+            )}
           </div>
 
           <div className="space-y-2">
