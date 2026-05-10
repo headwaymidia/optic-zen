@@ -3,6 +3,7 @@ import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { AppSidebar } from "./AppSidebar";
 import { BottomNav } from "./BottomNav";
 import { ThemeToggle } from "./ThemeToggle";
+import { NotificationBell } from "./NotificationBell";
 import { TrialBanner } from "./TrialBanner";
 import { useAuth } from "@/hooks/useAuth";
 import { LeadsProvider } from "@/hooks/useLeads";
