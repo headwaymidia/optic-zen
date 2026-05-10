@@ -6,7 +6,7 @@ export const MAX_FOLLOW_UPS = 5;
 
 export type FollowUpLevel = 1 | 2 | 3 | 4 | 5;
 
-interface FollowUpDef {
+export interface FollowUpDef {
   level: FollowUpLevel;
   label: string;
   hint: string;
