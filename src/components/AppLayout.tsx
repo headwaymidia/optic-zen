@@ -83,7 +83,9 @@ export default function AppLayout() {
                   </div>
                 </header>
                 <main className="flex-1 overflow-auto pb-20 md:pb-0">
-                  <Outlet />
+                  <Suspense fallback={<RouteProgressFallback />}>
+                    <Outlet />
+                  </Suspense>
                 </main>
               </div>
               <BottomNav />
