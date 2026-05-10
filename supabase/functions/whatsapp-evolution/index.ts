@@ -1,0 +1,245 @@
+// Evolution API proxy for multi-tenant WhatsApp QR Code integration.
+// Each loja has its own isolated instance named loja-{store_id}.
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.0";
+
+const corsHeaders = {
+  "Access-Control-Allow-Origin": "*",
+  "Access-Control-Allow-Headers":
+    "authorization, x-client-info, apikey, content-type",
+  "Access-Control-Allow-Methods": "POST, OPTIONS",
+};
+
+const EVO_URL = (Deno.env.get("EVOLUTION_API_URL") ?? "").replace(/\/+$/, "");
+const EVO_KEY = Deno.env.get("EVOLUTION_API_KEY") ?? "";
+const SUPABASE_URL = Deno.env.get("SUPABASE_URL")!;
+const SUPABASE_ANON = Deno.env.get("SUPABASE_ANON_KEY")!;
+const SERVICE_ROLE = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
+
+function instanceNameFor(storeId: string) {
+  return `loja-${storeId}`;
+}
+
+async function evo(
+  path: string,
+  init: RequestInit = {},
+): Promise<{ status: number; data: any }> {
+  const res = await fetch(`${EVO_URL}${path}`, {
+    ...init,
+    headers: {
+      apikey: EVO_KEY,
+      "Content-Type": "application/json",
+      ...(init.headers ?? {}),
+    },
+  });
+  let data: any = null;
+  const text = await res.text();
+  try {
+    data = text ? JSON.parse(text) : null;
+  } catch {
+    data = { raw: text };
+  }
+  return { status: res.status, data };
+}
+
+function mapState(state?: string): "connected" | "connecting" | "disconnected" {
+  if (state === "open") return "connected";
+  if (state === "connecting") return "connecting";
+  return "disconnected";
+}
+
+Deno.serve(async (req) => {
+  if (req.method === "OPTIONS") {
+    return new Response(null, { headers: corsHeaders });
+  }
+
+  try {
+    if (!EVO_URL || !EVO_KEY) {
+      throw new Error("Evolution API não configurada (URL/KEY ausentes).");
+    }
+
+    const authHeader = req.headers.get("Authorization") ?? "";
+    const userClient = createClient(SUPABASE_URL, SUPABASE_ANON, {
+      global: { headers: { Authorization: authHeader } },
+    });
+    const admin = createClient(SUPABASE_URL, SERVICE_ROLE);
+
+    const { data: userData, error: userErr } = await userClient.auth.getUser();
+    if (userErr || !userData?.user) {
+      return new Response(JSON.stringify({ error: "Não autenticado" }), {
+        status: 401,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+    const userId = userData.user.id;
+
+    const body = await req.json().catch(() => ({}));
+    const action = String(body.action ?? "");
+    const storeId = String(body.store_id ?? "");
+
+    if (!storeId) throw new Error("store_id é obrigatório");
+
+    // Verifica permissão (Dono/Gerente)
+    const { data: roleRow } = await admin
+      .from("store_members")
+      .select("role")
+      .eq("store_id", storeId)
+      .eq("user_id", userId)
+      .maybeSingle();
+
+    const role = roleRow?.role;
+    const isAdmin = role === "Dono" || role === "Gerente";
+    const isMember = !!role;
+    if (!isMember) {
+      return new Response(JSON.stringify({ error: "Sem acesso à loja" }), {
+        status: 403,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
+    const instance = instanceNameFor(storeId);
+
+    async function upsertConn(patch: Record<string, unknown>) {
+      await admin
+        .from("whatsapp_connections")
+        .upsert(
+          {
+            store_id: storeId,
+            provider: "evolution",
+            evolution_instance_name: instance,
+            ...patch,
+          },
+          { onConflict: "store_id" },
+        );
+    }
+
+    if (action === "status") {
+      // Retorna status atual + tenta atualizar do servidor
+      const { status, data } = await evo(
+        `/instance/connectionState/${instance}`,
+      );
+      if (status === 404) {
+        await upsertConn({ status: "disconnected", phone_number: null });
+        return new Response(
+          JSON.stringify({ status: "disconnected", exists: false }),
+          { headers: { ...corsHeaders, "Content-Type": "application/json" } },
+        );
+      }
+      const state = data?.instance?.state ?? data?.state;
+      const mapped = mapState(state);
+
+      let phone: string | null = null;
+      if (mapped === "connected") {
+        const { data: info } = await evo(
+          `/instance/fetchInstances?instanceName=${encodeURIComponent(instance)}`,
+        );
+        const arr = Array.isArray(info) ? info : [info];
+        const inst = arr?.[0]?.instance ?? arr?.[0];
+        phone = inst?.owner?.split?.("@")?.[0] ?? inst?.number ?? inst?.wuid?.split?.("@")?.[0] ?? null;
+      }
+
+      await upsertConn({
+        status: mapped,
+        phone_number: phone,
+        connected_at: mapped === "connected" ? new Date().toISOString() : null,
+      });
+
+      return new Response(
+        JSON.stringify({ status: mapped, exists: true, phone_number: phone }),
+        { headers: { ...corsHeaders, "Content-Type": "application/json" } },
+      );
+    }
+
+    if (action === "connect") {
+      if (!isAdmin) {
+        return new Response(
+          JSON.stringify({ error: "Apenas Dono/Gerente pode conectar" }),
+          { status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" } },
+        );
+      }
+
+      // 1) tenta criar instância (se já existir, segue)
+      const create = await evo(`/instance/create`, {
+        method: "POST",
+        body: JSON.stringify({
+          instanceName: instance,
+          qrcode: true,
+          integration: "WHATSAPP-BAILEYS",
+        }),
+      });
+
+      let qrBase64: string | null =
+        create.data?.qrcode?.base64 ?? create.data?.qrcode ?? null;
+
+      // 2) se já existia, pega QR via /instance/connect
+      if (!qrBase64 || create.status >= 400) {
+        const conn = await evo(`/instance/connect/${instance}`);
+        qrBase64 =
+          conn.data?.base64 ??
+          conn.data?.qrcode?.base64 ??
+          conn.data?.code ??
+          null;
+      }
+
+      await upsertConn({ status: "connecting" });
+
+      return new Response(
+        JSON.stringify({ qrcode: qrBase64, status: "connecting" }),
+        { headers: { ...corsHeaders, "Content-Type": "application/json" } },
+      );
+    }
+
+    if (action === "qr") {
+      const conn = await evo(`/instance/connect/${instance}`);
+      const qrBase64 =
+        conn.data?.base64 ??
+        conn.data?.qrcode?.base64 ??
+        conn.data?.code ??
+        null;
+      return new Response(
+        JSON.stringify({ qrcode: qrBase64 }),
+        { headers: { ...corsHeaders, "Content-Type": "application/json" } },
+      );
+    }
+
+    if (action === "disconnect") {
+      if (!isAdmin) {
+        return new Response(
+          JSON.stringify({ error: "Apenas Dono/Gerente pode desconectar" }),
+          { status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" } },
+        );
+      }
+      await evo(`/instance/logout/${instance}`, { method: "DELETE" });
+      await upsertConn({ status: "disconnected", phone_number: null, connected_at: null });
+      return new Response(JSON.stringify({ ok: true }), {
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
+    if (action === "delete") {
+      if (!isAdmin) {
+        return new Response(
+          JSON.stringify({ error: "Apenas Dono/Gerente" }),
+          { status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" } },
+        );
+      }
+      await evo(`/instance/logout/${instance}`, { method: "DELETE" }).catch(() => {});
+      await evo(`/instance/delete/${instance}`, { method: "DELETE" }).catch(() => {});
+      await upsertConn({ status: "disconnected", phone_number: null, connected_at: null });
+      return new Response(JSON.stringify({ ok: true }), {
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
+    return new Response(JSON.stringify({ error: "Ação inválida" }), {
+      status: 400,
+      headers: { ...corsHeaders, "Content-Type": "application/json" },
+    });
+  } catch (err) {
+    const msg = err instanceof Error ? err.message : "Erro desconhecido";
+    console.error("[whatsapp-evolution]", msg);
+    return new Response(JSON.stringify({ error: msg }), {
+      status: 500,
+      headers: { ...corsHeaders, "Content-Type": "application/json" },
+    });
+  }
+});
