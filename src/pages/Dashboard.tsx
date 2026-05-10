@@ -1,4 +1,5 @@
 import { useMemo, useState } from "react";
+import { usePageTitle } from "@/hooks/usePageTitle";
 import { Button } from "@/components/ui/button";
 import { useLeads } from "@/hooks/useLeads";
 import { useStores } from "@/hooks/useStores";
@@ -18,6 +19,7 @@ import { FileDown, Tv } from "lucide-react";
 import { DataSkeleton } from "@/components/ui/DataSkeleton";
 
 export default function Dashboard() {
+  usePageTitle("Dashboard");
   const { leads, loading } = useLeads();
   const { currentStore, filterByCurrentStore } = useStores();
   const [period, setPeriod] = useState<PeriodKey>("month");

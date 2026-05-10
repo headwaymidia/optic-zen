@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { NavLink, useLocation } from "react-router-dom";
 import {
   LayoutDashboard,
@@ -70,6 +70,21 @@ export function AppSidebar() {
   const [newLeadOpen, setNewLeadOpen] = useState(false);
   const { profile, user, signOut } = useAuth();
 
+  // Global keyboard shortcut: "N" opens Novo Lead (ignored when typing in inputs)
+  useEffect(() => {
+    function onKey(e: KeyboardEvent) {
+      if (e.key !== "n" && e.key !== "N") return;
+      if (e.ctrlKey || e.metaKey || e.altKey) return;
+      const t = e.target as HTMLElement | null;
+      const tag = t?.tagName?.toLowerCase();
+      if (tag === "input" || tag === "textarea" || tag === "select" || t?.isContentEditable) return;
+      e.preventDefault();
+      setNewLeadOpen(true);
+    }
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, []);
+
   const displayName = profile?.full_name || user?.email?.split("@")[0] || "Admin";
   const displayEmail = profile?.email || user?.email || "admin@otica.com";
   const initials = getInitials(profile?.full_name || displayEmail);
@@ -129,7 +144,10 @@ export function AppSidebar() {
               className="w-full h-10 rounded-xl bg-white hover:bg-white hover:opacity-90 transition-opacity text-black font-semibold gap-2 shadow-sm"
             >
               <Plus className="h-4 w-4" />
-              Novo Lead
+              <span>Novo Lead</span>
+              <kbd className="ml-auto text-[10px] font-mono opacity-60 border border-black/10 rounded px-1 py-0.5 leading-none">
+                N
+              </kbd>
             </Button>
           )}
         </div>

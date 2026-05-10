@@ -1,4 +1,5 @@
 import { useMemo, useState } from "react";
+import { usePageTitle } from "@/hooks/usePageTitle";
 import { KanbanBoard, CadenceFilter, countLeadsByPendingFu } from "@/components/KanbanBoard";
 import { ChatPanel } from "@/components/ChatPanel";
 import { useLeads } from "@/hooks/useLeads";
@@ -27,6 +28,7 @@ const STATUS_DOT_COLORS: Record<LeadStatus, string> = {
 const ALL_SALES = "__all__";
 
 export default function Funil() {
+  usePageTitle("Funil de Vendas");
   const { leads, loading } = useLeads();
   const { members } = useStoreMembers();
   const [selectedId, setSelectedId] = useState<string | null>(null);

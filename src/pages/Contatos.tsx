@@ -1,4 +1,5 @@
 import { useMemo, useState } from "react";
+import { usePageTitle } from "@/hooks/usePageTitle";
 import { Lead, LEAD_SOURCES, INTEREST_TAGS } from "@/lib/supabase";
 import { useStoreMembers } from "@/hooks/useStoreMembers";
 import { useLeads } from "@/hooks/useLeads";
@@ -35,6 +36,7 @@ function formatRelative(dateStr: string): string {
 }
 
 export default function Contatos() {
+  usePageTitle("Contatos");
   const { leads, loading, refetch } = useLeads();
   const { members, nameById } = useStoreMembers();
   const [search, setSearch] = useState("");

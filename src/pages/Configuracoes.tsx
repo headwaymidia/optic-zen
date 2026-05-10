@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from "react";
+import { usePageTitle } from "@/hooks/usePageTitle";
 import { useAuth } from "@/hooks/useAuth";
 import { useStores } from "@/hooks/useStores";
 import { supabase } from "@/lib/supabase";
@@ -19,6 +20,7 @@ import { getUserInitials, translateRole } from "@/lib/profile-helpers";
 import { TeamPanel } from "@/pages/ConfiguracoesLoja";
 
 export default function Configuracoes() {
+  usePageTitle("Configurações");
   const { user } = useAuth();
   const { currentStoreId, currentStore, refetch: refetchStores } = useStores();
   const { theme, setTheme } = useTheme();
@@ -126,7 +128,7 @@ export default function Configuracoes() {
     setInitialStore({ name: trimmed, city: storeCity.trim(), state: storeState.trim(), team_size: storeTeamSize });
     // Atualiza imediatamente o nome da loja no seletor do sidebar
     await refetchStores();
-    toast({ title: "Configurações da loja salvas." });
+    toast({ title: "Configurações salvas!" });
   }
 
   function handlePickFile(file?: File | null) {
@@ -167,7 +169,7 @@ export default function Configuracoes() {
     }
     setInitialName(trimmed);
     setInitialAvatar(avatarUrl);
-    toast({ title: "Alterações salvas com sucesso." });
+    toast({ title: "Configurações salvas!" });
   }
 
   const dirty = fullName.trim() !== initialName.trim() || avatarUrl !== initialAvatar;

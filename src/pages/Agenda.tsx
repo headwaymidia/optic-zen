@@ -1,4 +1,5 @@
 import { useMemo, useState } from "react";
+import { usePageTitle } from "@/hooks/usePageTitle";
 import { useNavigate } from "react-router-dom";
 import {
   addDays,
@@ -142,6 +143,7 @@ function buildEvents(leads: Lead[]): AgendaEvent[] {
 }
 
 function AgendaInner() {
+  usePageTitle("Agenda");
   const navigate = useNavigate();
   const { leads, loading, updateLead } = useLeads();
   const { members, nameById } = useStoreMembers();

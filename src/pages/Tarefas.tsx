@@ -1,4 +1,5 @@
 import { useMemo } from "react";
+import { usePageTitle } from "@/hooks/usePageTitle";
 import { useNavigate } from "react-router-dom";
 import { useLeads } from "@/hooks/useLeads";
 import { useStoreMembers } from "@/hooks/useStoreMembers";
@@ -78,6 +79,7 @@ const FU_LEVEL_STYLE: Record<FollowUpLevel, { card: string; badge: string; emoji
 };
 
 export default function Tarefas() {
+  usePageTitle("Tarefas de Hoje");
   const { leads, loading, updateLead } = useLeads();
   const navigate = useNavigate();
   const today = todayISO();

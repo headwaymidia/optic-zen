@@ -4,7 +4,7 @@ import { useLeads } from "@/hooks/useLeads";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
-import { Eye, Save, Check, History, RotateCcw } from "lucide-react";
+import { Eye, Save, Check, History, RotateCcw, Loader2 } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 import { humanizeError } from "@/lib/error-handler";
 import { cn } from "@/lib/utils";
@@ -91,7 +91,7 @@ export function PrescriptionForm({ lead }: { lead: Lead }) {
 
       await updateLead(lead.id, { prescription: data });
       setSavedAt(Date.now());
-      toast({ title: "Receita salva", description: "Nova receita adicionada ao histórico." });
+      toast({ title: "Receita salva!", description: "Nova receita adicionada ao histórico." });
       await loadHistory();
     } catch (e: any) {
       toast({ title: "Erro ao salvar receita", description: humanizeError(e), variant: "destructive" });
@@ -188,8 +188,10 @@ export function PrescriptionForm({ lead }: { lead: Lead }) {
         >
           {justSaved ? (
             <><Check className="h-4 w-4" /> Salvo</>
+          ) : saving ? (
+            <><Loader2 className="h-4 w-4 animate-spin" /> Salvando...</>
           ) : (
-            <><Save className="h-4 w-4" /> {saving ? "Salvando..." : "Salvar Receita"}</>
+            <><Save className="h-4 w-4" /> Salvar Receita</>
           )}
         </Button>
 
