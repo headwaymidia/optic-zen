@@ -144,7 +144,10 @@ export function AppSidebar() {
               className="w-full h-10 rounded-xl bg-white hover:bg-white hover:opacity-90 transition-opacity text-black font-semibold gap-2 shadow-sm"
             >
               <Plus className="h-4 w-4" />
-              Novo Lead
+              <span>Novo Lead</span>
+              <kbd className="ml-auto text-[10px] font-mono opacity-60 border border-black/10 rounded px-1 py-0.5 leading-none">
+                N
+              </kbd>
             </Button>
           )}
         </div>
