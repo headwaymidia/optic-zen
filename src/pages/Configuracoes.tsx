@@ -13,6 +13,8 @@ import { useTheme } from "@/hooks/useTheme";
 import { toast } from "@/hooks/use-toast";
 import { humanizeError } from "@/lib/error-handler";
 import { Sun, Moon, Loader2, Upload, X } from "lucide-react";
+import { validateName } from "@/lib/validators";
+import { cn } from "@/lib/utils";
 import { cn } from "@/lib/utils";
 import { getUserInitials, translateRole } from "@/lib/profile-helpers";
 import { TeamPanel } from "@/pages/ConfiguracoesLoja";
