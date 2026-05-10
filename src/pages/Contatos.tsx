@@ -36,6 +36,7 @@ function formatRelative(dateStr: string): string {
 }
 
 export default function Contatos() {
+  usePageTitle("Contatos");
   const { leads, loading, refetch } = useLeads();
   const { members, nameById } = useStoreMembers();
   const [search, setSearch] = useState("");
