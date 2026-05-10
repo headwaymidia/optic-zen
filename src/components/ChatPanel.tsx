@@ -268,7 +268,11 @@ export function ChatPanel({
                 </Badge>
               )}
             </div>
-            <p className="text-[11px] text-muted-foreground truncate">{lead.phone ?? "—"}</p>
+            {lead.phone ? (
+              <PhoneLink phone={lead.phone} className="text-[11px] text-muted-foreground" iconClassName="h-3 w-3" />
+            ) : (
+              <p className="text-[11px] text-muted-foreground truncate">—</p>
+            )}
           </div>
           <Select value={lead.status} onValueChange={(v) => handleStatusChange(v as LeadStatus)}>
             <SelectTrigger className="h-8 w-[110px] sm:w-[150px] text-xs shrink-0">
