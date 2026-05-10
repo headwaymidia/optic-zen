@@ -31,10 +31,7 @@ export function LeadSections({ lead, onApplyLabScript }: Props) {
   const { updateLead } = useLeads();
   const p = lead.prescription ?? {};
   const has = (v: unknown) => typeof v === "string" ? v.trim() !== "" : v != null;
-  const prescriptionOk = Boolean(
-    has(p.esferico_od) && has(p.cilindrico_od) && has(p.eixo_od) &&
-    has(p.esferico_oe) && has(p.cilindrico_oe) && has(p.eixo_oe)
-  );
+  const prescriptionOk = Boolean(has(p.esferico_od) && has(p.esferico_oe));
   const labOk = Boolean(lead.delivery_prediction || lead.lab_status);
 
   return (
