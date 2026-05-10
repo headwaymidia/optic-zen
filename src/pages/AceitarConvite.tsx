@@ -43,7 +43,7 @@ export default function AceitarConvitePage() {
       });
       if (cancelled) return;
       if (rpcErr) {
-        setError(rpcErr.message);
+        setError(humanizeError(rpcErr));
       } else if (!data || (Array.isArray(data) && data.length === 0)) {
         setError("Convite não encontrado ou inválido.");
       } else {
