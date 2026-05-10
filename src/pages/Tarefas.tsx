@@ -1,4 +1,5 @@
 import { useMemo } from "react";
+import { usePageTitle } from "@/hooks/usePageTitle";
 import { useNavigate } from "react-router-dom";
 import { useLeads } from "@/hooks/useLeads";
 import { useStoreMembers } from "@/hooks/useStoreMembers";
