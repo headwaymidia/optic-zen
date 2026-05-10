@@ -10,9 +10,9 @@ import { StoresProvider, useStores } from "@/hooks/useStores";
 import AppLayout from "@/components/AppLayout";
 import { LeadsProvider } from "@/hooks/useLeads";
 
-const Dashboard = lazy(() => import("./pages/Dashboard"));
-const Funil = lazy(() => import("./pages/Funil"));
-const WhatsAppPage = lazy(() => import("./pages/WhatsApp"));
+import Dashboard from "./pages/Dashboard";
+import Funil from "./pages/Funil";
+import WhatsAppPage from "./pages/WhatsApp";
 const Contatos = lazy(() => import("./pages/Contatos"));
 const Configuracoes = lazy(() => import("./pages/Configuracoes"));
 const ConfiguracoesLoja = lazy(() => import("./pages/ConfiguracoesLoja"));
