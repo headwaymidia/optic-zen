@@ -1,4 +1,6 @@
+import { Suspense } from "react";
 import { Navigate, Outlet, Link } from "react-router-dom";
+import { RouteProgressFallback } from "./TopProgressBar";
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { AppSidebar } from "./AppSidebar";
 import { BottomNav } from "./BottomNav";
