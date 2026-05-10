@@ -466,12 +466,11 @@ function AgendaInner() {
                   </span>
                 </div>
                 {selectedEvent.lead.phone && (
-                  <a
-                    href={`tel:${selectedEvent.lead.phone}`}
-                    className="inline-flex items-center gap-1.5 text-primary hover:underline"
-                  >
-                    <Phone className="h-4 w-4" /> {selectedEvent.lead.phone}
-                  </a>
+                  <PhoneLink
+                    phone={selectedEvent.lead.phone}
+                    className="text-primary"
+                    iconClassName="h-4 w-4"
+                  />
                 )}
                 {selectedEvent.lead.responsible_id && (
                   <div className="text-muted-foreground">
