@@ -15,6 +15,8 @@ import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/
 import { PrescriptionForm } from "@/components/PrescriptionForm";
 import { LabOrderForm } from "@/components/LabOrderForm";
 import { ERPTransferCard } from "@/components/ERPTransferCard";
+import { PhoneLink } from "@/components/PhoneLink";
+import { LeadActivityTimeline } from "@/components/LeadActivityTimeline";
 import { StageGateDialog, isGatedStatus, type StageGate } from "@/components/StageGateDialog";
 import { ArrowLeft, Paperclip, Send, Smile, X, Zap, Eye, CalendarClock, Sparkles, CheckCircle2, AlertCircle, NotebookPen } from "lucide-react";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
