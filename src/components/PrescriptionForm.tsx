@@ -6,6 +6,7 @@ import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { Eye, Save, Check, History, RotateCcw } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
+import { humanizeError } from "@/lib/error-handler";
 import { cn } from "@/lib/utils";
 
 const EMPTY: Prescription = {
@@ -93,7 +94,7 @@ export function PrescriptionForm({ lead }: { lead: Lead }) {
       toast({ title: "Receita salva", description: "Nova receita adicionada ao histórico." });
       await loadHistory();
     } catch (e: any) {
-      toast({ title: "Erro ao salvar receita", description: e.message, variant: "destructive" });
+      toast({ title: "Erro ao salvar receita", description: humanizeError(e), variant: "destructive" });
     } finally {
       setSaving(false);
     }

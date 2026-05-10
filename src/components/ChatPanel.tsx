@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from "@/hooks/use-toast";
+import { humanizeError } from "@/lib/error-handler";
 import { INTEREST_TAGS, LEAD_SOURCES, Lead, LEAD_STATUSES, LeadStatus, supabase } from "@/lib/supabase";
 import { useLeads } from "@/hooks/useLeads";
 import { useStores } from "@/hooks/useStores";
@@ -85,7 +86,7 @@ export function ChatPanel({
 
     if (error) {
       setLeadFields(previous);
-      toast({ title: "Erro ao atualizar lead", description: error.message, variant: "destructive" });
+      toast({ title: "Erro ao atualizar lead", description: humanizeError(error), variant: "destructive" });
       await refetch();
       return;
     }
@@ -113,7 +114,7 @@ export function ChatPanel({
 
       if (cancelled) return;
       if (error) {
-        toast({ title: "Erro ao carregar vendedoras", description: error.message, variant: "destructive" });
+        toast({ title: "Erro ao carregar vendedoras", description: humanizeError(error), variant: "destructive" });
         setSalespeople([]);
         return;
       }
@@ -225,7 +226,7 @@ export function ChatPanel({
     } catch (err: any) {
       toast({
         title: "Falha ao registrar follow-up",
-        description: err?.message ?? "Tente novamente.",
+        description: humanizeError(err),
         variant: "destructive",
       });
     }

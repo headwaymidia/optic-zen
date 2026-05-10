@@ -49,6 +49,7 @@ import {
 } from "@/components/ui/select";
 import { cn } from "@/lib/utils";
 import { toast } from "@/hooks/use-toast";
+import { humanizeError } from "@/lib/error-handler";
 
 type TabKey = "geral" | "equipe" | "integracoes";
 
@@ -233,7 +234,7 @@ export function TeamPanel({ storeId, storesCount }: { storeId: string; storesCou
 
     if (mErr) {
       setLoading(false);
-      toast({ title: "Erro ao carregar equipe", description: mErr.message, variant: "destructive" });
+      toast({ title: "Erro ao carregar equipe", description: humanizeError(mErr), variant: "destructive" });
     } else {
       const userIds = Array.from(new Set((m ?? []).map((r: any) => r.user_id)));
       let profileMap = new Map<string, { full_name: string | null; email: string | null }>();
@@ -265,7 +266,7 @@ export function TeamPanel({ storeId, storesCount }: { storeId: string; storesCou
     }
     setLoading(false);
     if (iErr) {
-      toast({ title: "Erro ao carregar convites", description: iErr.message, variant: "destructive" });
+      toast({ title: "Erro ao carregar convites", description: humanizeError(iErr), variant: "destructive" });
     } else {
       setInvites((i ?? []) as PendingInvite[]);
     }
@@ -287,7 +288,7 @@ export function TeamPanel({ storeId, storesCount }: { storeId: string; storesCou
       .delete()
       .eq("id", member.id);
     if (error) {
-      toast({ title: "Erro ao remover membro", description: error.message, variant: "destructive" });
+      toast({ title: "Erro ao remover membro", description: humanizeError(error), variant: "destructive" });
       return;
     }
     toast({ title: "Membro removido." });
@@ -301,7 +302,7 @@ export function TeamPanel({ storeId, storesCount }: { storeId: string; storesCou
       .update({ status: "revogado" })
       .eq("id", invite.id);
     if (error) {
-      toast({ title: "Erro ao revogar convite", description: error.message, variant: "destructive" });
+      toast({ title: "Erro ao revogar convite", description: humanizeError(error), variant: "destructive" });
       return;
     }
     toast({ title: "Convite revogado." });
@@ -572,7 +573,7 @@ function InviteMemberDialog({
     if (error) {
       const msg = error.message.includes("uniq_pending_invite")
         ? "Já existe um convite pendente para este e-mail."
-        : error.message;
+        : humanizeError(error);
       toast({ title: "Erro ao criar convite", description: msg, variant: "destructive" });
       return;
     }

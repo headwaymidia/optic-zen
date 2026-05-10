@@ -2,6 +2,7 @@ import { createContext, useCallback, useContext, useEffect, useState, ReactNode 
 import { Lead, LeadStatus, supabase } from "@/lib/supabase";
 import { useStores } from "@/hooks/useStores";
 import { toast } from "@/hooks/use-toast";
+import { humanizeError } from "@/lib/error-handler";
 
 interface LeadsContextValue {
   leads: Lead[];
@@ -34,7 +35,7 @@ export function LeadsProvider({ children }: { children: ReactNode }) {
       .order("created_at", { ascending: false });
     setLoading(false);
     if (error) {
-      toast({ title: "Erro ao carregar leads", description: error.message, variant: "destructive" });
+      toast({ title: "Erro ao carregar leads", description: humanizeError(error), variant: "destructive" });
       return;
     }
     setLeads((data ?? []) as unknown as Lead[]);
@@ -62,7 +63,7 @@ export function LeadsProvider({ children }: { children: ReactNode }) {
     setLeads((prev) => prev.map((l) => (l.id === leadId ? { ...l, status } : l)));
     const { error } = await supabase.from("leads").update({ status }).eq("id", leadId);
     if (error) {
-      toast({ title: "Erro ao mover lead", description: error.message, variant: "destructive" });
+      toast({ title: "Erro ao mover lead", description: humanizeError(error), variant: "destructive" });
       refetch();
     }
   }, [refetch]);
@@ -72,7 +73,7 @@ export function LeadsProvider({ children }: { children: ReactNode }) {
     const { prescription: _p, delivery_prediction: _d, ...dbPatch } = patch as any;
     const { error } = await supabase.from("leads").update(dbPatch).eq("id", leadId);
     if (error) {
-      toast({ title: "Erro ao atualizar lead", description: error.message, variant: "destructive" });
+      toast({ title: "Erro ao atualizar lead", description: humanizeError(error), variant: "destructive" });
       refetch();
     }
   }, [refetch]);

@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { toast } from "@/hooks/use-toast";
+import { humanizeError } from "@/lib/error-handler";
 import { Eye, ArrowLeft, Loader2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -57,7 +58,7 @@ export default function AuthPage() {
     const { error } = await supabase.auth.signInWithPassword({ email, password });
     setSubmitting(false);
     if (error) {
-      toast({ title: "Erro ao entrar", description: error.message, variant: "destructive" });
+      toast({ title: "Erro ao entrar", description: humanizeError(error), variant: "destructive" });
       return;
     }
 
@@ -68,7 +69,7 @@ export default function AuthPage() {
       .limit(1);
 
     if (storesError) {
-      toast({ title: "Erro ao verificar loja", description: storesError.message, variant: "destructive" });
+      toast({ title: "Erro ao verificar loja", description: humanizeError(storesError), variant: "destructive" });
       return;
     }
 
@@ -98,7 +99,7 @@ export default function AuthPage() {
     });
     setSubmitting(false);
     if (error) {
-      toast({ title: "Erro ao criar conta", description: error.message, variant: "destructive" });
+      toast({ title: "Erro ao criar conta", description: humanizeError(error), variant: "destructive" });
       return;
     }
     toast({
@@ -116,7 +117,7 @@ export default function AuthPage() {
     });
     setSubmitting(false);
     if (error) {
-      toast({ title: "Erro", description: error.message, variant: "destructive" });
+      toast({ title: "Erro", description: humanizeError(error), variant: "destructive" });
       return;
     }
     toast({

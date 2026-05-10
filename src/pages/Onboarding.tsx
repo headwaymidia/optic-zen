@@ -14,6 +14,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { toast } from "@/hooks/use-toast";
+import { humanizeError } from "@/lib/error-handler";
 import { cn } from "@/lib/utils";
 import { supabase } from "@/lib/supabase";
 
@@ -164,10 +165,9 @@ export default function OnboardingPage() {
 
       setStep(3);
     } catch (err: any) {
-      
       toast({
         title: "Erro ao criar loja",
-        description: err?.message ?? "Erro desconhecido.",
+        description: humanizeError(err),
         variant: "destructive",
       });
     } finally {

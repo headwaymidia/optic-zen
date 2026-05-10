@@ -7,6 +7,7 @@ import { supabase } from "@/lib/supabase";
 import { useStores } from "@/hooks/useStores";
 import { useLeads } from "@/hooks/useLeads";
 import { toast } from "@/hooks/use-toast";
+import { humanizeError } from "@/lib/error-handler";
 import { maskCPF, maskCEP, maskPhone } from "@/lib/masks";
 import { MapPin, IdCard, Cake, Eye } from "lucide-react";
 
@@ -67,7 +68,7 @@ export function NewLeadDialog({
     });
     setSaving(false);
     if (error) {
-      toast({ title: "Erro ao criar lead", description: error.message, variant: "destructive" });
+      toast({ title: "Erro ao criar lead", description: humanizeError(error), variant: "destructive" });
       return;
     }
     toast({ title: "Lead criado!", description: `${name.trim()} foi adicionado em "Novo Lead".` });

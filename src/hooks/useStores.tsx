@@ -10,6 +10,7 @@ import {
 import { supabase } from "@/lib/supabase";
 import { useAuth } from "@/hooks/useAuth";
 import { toast } from "@/hooks/use-toast";
+import { humanizeError } from "@/lib/error-handler";
 
 export type StoreRole = "Dono" | "Gerente" | "Vendedor";
 
@@ -96,7 +97,7 @@ export function StoresProvider({ children }: { children: ReactNode }) {
     if (membersRes.error && ownedRes.error) {
       toast({
         title: "Erro ao carregar lojas",
-        description: membersRes.error.message,
+        description: humanizeError(membersRes.error),
         variant: "destructive",
       });
       setStores([]);
@@ -234,8 +235,7 @@ export function StoresProvider({ children }: { children: ReactNode }) {
         }
         toast({
           title: "Erro ao criar loja",
-          description:
-            error?.message ?? "INSERT em stores não retornou a loja criada.",
+          description: humanizeError(error),
           variant: "destructive",
         });
         return null;
@@ -253,7 +253,7 @@ export function StoresProvider({ children }: { children: ReactNode }) {
       if (memberErr) {
         toast({
           title: "Loja criada, mas falhou vincular usuário",
-          description: memberErr.message,
+          description: humanizeError(memberErr),
           variant: "destructive",
         });
       }

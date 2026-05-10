@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { z } from "zod";
 import { toast } from "sonner";
+import { humanizeError } from "@/lib/error-handler";
 import { Handshake, DollarSign, RefreshCw, BarChart3 } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -82,7 +83,7 @@ export default function Parceiro() {
     setSubmitting(false);
 
     if (error) {
-      toast.error("Erro ao enviar cadastro: " + error.message);
+      toast.error(humanizeError(error));
       return;
     }
     setDone(true);

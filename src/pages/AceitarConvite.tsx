@@ -6,6 +6,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { useStores } from "@/hooks/useStores";
 import { Button } from "@/components/ui/button";
 import { toast } from "@/hooks/use-toast";
+import { humanizeError } from "@/lib/error-handler";
 
 type InviteInfo = {
   id: string;
@@ -42,7 +43,7 @@ export default function AceitarConvitePage() {
       });
       if (cancelled) return;
       if (rpcErr) {
-        setError(rpcErr.message);
+        setError(humanizeError(rpcErr));
       } else if (!data || (Array.isArray(data) && data.length === 0)) {
         setError("Convite não encontrado ou inválido.");
       } else {
@@ -70,10 +71,9 @@ export default function AceitarConvitePage() {
     });
 
     if (rpcErr) {
-      
       toast({
         title: "Erro ao aceitar convite",
-        description: rpcErr.message,
+        description: humanizeError(rpcErr),
         variant: "destructive",
       });
       setAccepting(false);
