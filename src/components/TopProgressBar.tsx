@@ -70,7 +70,7 @@ export function TopProgressBar() {
   useEffect(() => {
     const unsub = routeProgress.subscribe((active) => (active ? start() : done()));
     return () => {
-      unsub;
+      unsub();
     };
   }, []);
 
