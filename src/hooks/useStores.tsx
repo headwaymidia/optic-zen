@@ -253,7 +253,7 @@ export function StoresProvider({ children }: { children: ReactNode }) {
       if (memberErr) {
         toast({
           title: "Loja criada, mas falhou vincular usuário",
-          description: memberErr.message,
+          description: humanizeError(memberErr),
           variant: "destructive",
         });
       }
