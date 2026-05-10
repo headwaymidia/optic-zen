@@ -169,7 +169,7 @@ export default function Configuracoes() {
     }
     setInitialName(trimmed);
     setInitialAvatar(avatarUrl);
-    toast({ title: "Alterações salvas com sucesso." });
+    toast({ title: "Configurações salvas!" });
   }
 
   const dirty = fullName.trim() !== initialName.trim() || avatarUrl !== initialAvatar;
