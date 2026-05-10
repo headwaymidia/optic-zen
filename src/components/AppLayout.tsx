@@ -75,7 +75,10 @@ export default function AppLayout() {
                       )}
                     </div>
                   </div>
-                  <ThemeToggle />
+                  <div className="flex items-center gap-1">
+                    <NotificationBell />
+                    <ThemeToggle />
+                  </div>
                 </header>
                 <main className="flex-1 overflow-auto pb-20 md:pb-0">
                   <Outlet />
