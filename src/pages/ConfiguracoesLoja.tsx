@@ -533,6 +533,26 @@ export function TeamPanel({ storeId, storesCount }: { storeId: string; storesCou
         com isolamento por <code className="font-mono">store_id</code>.
       </p>
     </section>
+    <AlertDialog open={!!memberToRemove} onOpenChange={(o) => !o && setMemberToRemove(null)}>
+      <AlertDialogContent>
+        <AlertDialogHeader>
+          <AlertDialogTitle>Remover membro?</AlertDialogTitle>
+          <AlertDialogDescription>
+            O usuário <strong>{memberToRemove?.full_name ?? memberToRemove?.email ?? ""}</strong> perderá acesso a esta loja imediatamente.
+          </AlertDialogDescription>
+        </AlertDialogHeader>
+        <AlertDialogFooter>
+          <AlertDialogCancel>Cancelar</AlertDialogCancel>
+          <AlertDialogAction
+            onClick={confirmRemoveMember}
+            className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+          >
+            Remover
+          </AlertDialogAction>
+        </AlertDialogFooter>
+      </AlertDialogContent>
+    </AlertDialog>
+    </>
   );
 }
 
