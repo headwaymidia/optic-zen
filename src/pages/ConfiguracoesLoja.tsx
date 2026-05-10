@@ -632,7 +632,7 @@ function InviteMemberDialog({
 
     const link = buildInviteLink(data.token);
     setCreatedLink(link);
-    toast({ title: "✅ Convite gerado!" });
+    toast({ title: "Convite enviado!" });
     onInvited();
   }
 
