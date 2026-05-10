@@ -298,7 +298,7 @@ export default function Configuracoes() {
             <p className="text-[11px] text-muted-foreground">Definido pelo dono da loja.</p>
           </div>
           <div className="flex justify-end">
-            <Button onClick={handleSave} disabled={!dirty || saving}>
+            <Button onClick={handleSave} disabled={!dirty || saving || !!nameError}>
               {saving && <Loader2 className="h-4 w-4 animate-spin" />}
               Salvar alterações
             </Button>
