@@ -56,33 +56,35 @@ const App = () => (
         <BrowserRouter>
           <AuthProvider>
             <StoresProvider>
-              <Routes>
-                <Route path="/auth" element={<AuthPage />} />
-                <Route path="/onboarding" element={<OnboardingPage />} />
-                <Route path="/aceitar-convite/:token" element={<AceitarConvitePage />} />
-                <Route element={<AppLayout />}>
-                  <Route path="/" element={<Dashboard />} />
-                  <Route path="/whatsapp" element={<WhatsAppPage />} />
-                  <Route path="/funil" element={<Funil />} />
-                  <Route path="/tarefas" element={<Tarefas />} />
-                  <Route path="/agenda" element={<Agenda />} />
-                  <Route path="/contatos" element={<Contatos />} />
-                  <Route path="/configuracoes" element={<Configuracoes />} />
-                  <Route path="/configuracoes-loja" element={<ConfiguracoesLoja />} />
-                  <Route path="/planos" element={<Planos />} />
-                  <Route path="/parceiro" element={<Parceiro />} />
-                  <Route path="/ajuda" element={<Ajuda />} />
-                </Route>
-                <Route
-                  path="/ranking"
-                  element={
-                    <FullscreenAuthGate>
-                      <Ranking />
-                    </FullscreenAuthGate>
-                  }
-                />
-                <Route path="*" element={<NotFound />} />
-              </Routes>
+              <Suspense fallback={<RouteFallback />}>
+                <Routes>
+                  <Route path="/auth" element={<AuthPage />} />
+                  <Route path="/onboarding" element={<OnboardingPage />} />
+                  <Route path="/aceitar-convite/:token" element={<AceitarConvitePage />} />
+                  <Route element={<AppLayout />}>
+                    <Route path="/" element={<Dashboard />} />
+                    <Route path="/whatsapp" element={<WhatsAppPage />} />
+                    <Route path="/funil" element={<Funil />} />
+                    <Route path="/tarefas" element={<Tarefas />} />
+                    <Route path="/agenda" element={<Agenda />} />
+                    <Route path="/contatos" element={<Contatos />} />
+                    <Route path="/configuracoes" element={<Configuracoes />} />
+                    <Route path="/configuracoes-loja" element={<ConfiguracoesLoja />} />
+                    <Route path="/planos" element={<Planos />} />
+                    <Route path="/parceiro" element={<Parceiro />} />
+                    <Route path="/ajuda" element={<Ajuda />} />
+                  </Route>
+                  <Route
+                    path="/ranking"
+                    element={
+                      <FullscreenAuthGate>
+                        <Ranking />
+                      </FullscreenAuthGate>
+                    }
+                  />
+                  <Route path="*" element={<NotFound />} />
+                </Routes>
+              </Suspense>
             </StoresProvider>
           </AuthProvider>
         </BrowserRouter>
