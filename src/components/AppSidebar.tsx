@@ -42,6 +42,8 @@ import { useAuth } from "@/hooks/useAuth";
 import { WorkspaceSwitcher } from "@/components/WorkspaceSwitcher";
 import { cn } from "@/lib/utils";
 import { getUserInitials } from "@/lib/profile-helpers";
+import { useStores } from "@/hooks/useStores";
+import { useWhatsAppConnection } from "@/hooks/useWhatsAppConnection";
 
 const items = [
   { title: "Dashboard", url: "/", icon: LayoutDashboard },
