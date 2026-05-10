@@ -104,7 +104,13 @@ export default function Funil() {
       map[s] = filtered.filter((l) => l.status === s).length;
     });
     return map;
-  }, [leads, search, salesFilter]);
+  }, [leads, search, salesFilter, periodRange]);
+
+  const customLabel = customRange?.from
+    ? customRange.to && customRange.to.getTime() !== customRange.from.getTime()
+      ? `${format(customRange.from, "dd/MM", { locale: ptBR })} – ${format(customRange.to, "dd/MM", { locale: ptBR })}`
+      : format(customRange.from, "dd/MM/yyyy", { locale: ptBR })
+    : "Selecionar datas";
 
   return (
     <div className="h-full flex flex-col lg:flex-row min-h-0">
