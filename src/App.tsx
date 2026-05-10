@@ -33,7 +33,14 @@ const RouteFallback = () => (
   </div>
 );
 
-const queryClient = new QueryClient();
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      staleTime: 1000 * 60, // 1 minuto
+      retry: 1,
+    },
+  },
+});
 
 function FullscreenAuthGate({ children }: { children: React.ReactNode }) {
   const { session, loading } = useAuth();
