@@ -50,6 +50,16 @@ import {
 import { cn } from "@/lib/utils";
 import { toast } from "@/hooks/use-toast";
 import { humanizeError } from "@/lib/error-handler";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 
 type TabKey = "geral" | "equipe" | "integracoes";
 
@@ -215,6 +225,7 @@ export function TeamPanel({ storeId, storesCount }: { storeId: string; storesCou
   const [members, setMembers] = useState<TeamMember[]>([]);
   const [invites, setInvites] = useState<PendingInvite[]>([]);
   const [loading, setLoading] = useState(true);
+  const [memberToRemove, setMemberToRemove] = useState<TeamMember | null>(null);
 
   async function loadAll() {
     setLoading(true);
@@ -282,7 +293,12 @@ export function TeamPanel({ storeId, storesCount }: { storeId: string; storesCou
       toast({ title: "Não é possível remover o Dono.", variant: "destructive" });
       return;
     }
-    if (!confirm("Remover este membro da loja? Ele perderá acesso imediatamente.")) return;
+    setMemberToRemove(member);
+  }
+
+  async function confirmRemoveMember() {
+    const member = memberToRemove;
+    if (!member) return;
     const { error } = await supabase
       .from("store_members")
       .delete()
@@ -292,6 +308,7 @@ export function TeamPanel({ storeId, storesCount }: { storeId: string; storesCou
       return;
     }
     toast({ title: "Membro removido." });
+    setMemberToRemove(null);
     loadAll();
   }
 
@@ -321,6 +338,7 @@ export function TeamPanel({ storeId, storesCount }: { storeId: string; storesCou
   const totalCount = members.length + invites.length;
 
   return (
+    <>
     <section className="rounded-2xl border border-border bg-card p-5 sm:p-6 shadow-[0_1px_2px_rgba(0,0,0,0.02)]">
       <header className="flex items-center justify-between gap-4 pb-5">
         <div className="min-w-0">
@@ -515,6 +533,26 @@ export function TeamPanel({ storeId, storesCount }: { storeId: string; storesCou
         com isolamento por <code className="font-mono">store_id</code>.
       </p>
     </section>
+    <AlertDialog open={!!memberToRemove} onOpenChange={(o) => !o && setMemberToRemove(null)}>
+      <AlertDialogContent>
+        <AlertDialogHeader>
+          <AlertDialogTitle>Remover membro?</AlertDialogTitle>
+          <AlertDialogDescription>
+            O usuário <strong>{memberToRemove?.full_name ?? memberToRemove?.email ?? ""}</strong> perderá acesso a esta loja imediatamente.
+          </AlertDialogDescription>
+        </AlertDialogHeader>
+        <AlertDialogFooter>
+          <AlertDialogCancel>Cancelar</AlertDialogCancel>
+          <AlertDialogAction
+            onClick={confirmRemoveMember}
+            className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+          >
+            Remover
+          </AlertDialogAction>
+        </AlertDialogFooter>
+      </AlertDialogContent>
+    </AlertDialog>
+    </>
   );
 }
 

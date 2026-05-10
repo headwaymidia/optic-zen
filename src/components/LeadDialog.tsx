@@ -1,5 +1,15 @@
 import { useEffect, useState } from "react";
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
@@ -43,6 +53,7 @@ export function LeadDialog({ open, onOpenChange, lead, defaultStatus, onSaved }:
   const [dataNascimento, setDataNascimento] = useState("");
   const [dataUltimoExame, setDataUltimoExame] = useState("");
   const [saving, setSaving] = useState(false);
+  const [confirmDelete, setConfirmDelete] = useState(false);
 
   useEffect(() => {
     if (open) {
@@ -103,13 +114,13 @@ export function LeadDialog({ open, onOpenChange, lead, defaultStatus, onSaved }:
 
   async function handleDelete() {
     if (!lead) return;
-    if (!confirm("Excluir este lead?")) return;
     const { error } = await supabase.from("leads").delete().eq("id", lead.id);
     if (error) {
       toast({ title: "Erro", description: humanizeError(error), variant: "destructive" });
       return;
     }
     toast({ title: "Lead excluído" });
+    setConfirmDelete(false);
     onSaved();
     onOpenChange(false);
   }
@@ -124,6 +135,7 @@ export function LeadDialog({ open, onOpenChange, lead, defaultStatus, onSaved }:
   }
 
   return (
+    <>
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-md max-h-[90vh] overflow-y-auto">
         <DialogHeader>
@@ -294,7 +306,7 @@ export function LeadDialog({ open, onOpenChange, lead, defaultStatus, onSaved }:
               </div>
               <DialogFooter className="gap-2 sm:gap-2">
                 {lead && (
-                  <Button type="button" variant="destructive" onClick={handleDelete}>
+                  <Button type="button" variant="destructive" onClick={() => setConfirmDelete(true)}>
                     Excluir
                   </Button>
                 )}
@@ -329,5 +341,25 @@ export function LeadDialog({ open, onOpenChange, lead, defaultStatus, onSaved }:
         </Tabs>
       </DialogContent>
     </Dialog>
+    <AlertDialog open={confirmDelete} onOpenChange={setConfirmDelete}>
+      <AlertDialogContent>
+        <AlertDialogHeader>
+          <AlertDialogTitle>Remover lead?</AlertDialogTitle>
+          <AlertDialogDescription>
+            Esta ação não pode ser desfeita. O lead {lead?.name ? <strong>{lead.name}</strong> : "selecionado"} e todo seu histórico serão removidos permanentemente.
+          </AlertDialogDescription>
+        </AlertDialogHeader>
+        <AlertDialogFooter>
+          <AlertDialogCancel>Cancelar</AlertDialogCancel>
+          <AlertDialogAction
+            onClick={handleDelete}
+            className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+          >
+            Remover
+          </AlertDialogAction>
+        </AlertDialogFooter>
+      </AlertDialogContent>
+    </AlertDialog>
+    </>
   );
 }
