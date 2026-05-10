@@ -4,7 +4,18 @@ import { useLeads } from "@/hooks/useLeads";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
-import { Save, Check, History, RotateCcw, Loader2, FileText } from "lucide-react";
+import { Save, Check, History, RotateCcw, Loader2, FileText, Trash2 } from "lucide-react";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 import { toast } from "@/hooks/use-toast";
 import { humanizeError } from "@/lib/error-handler";
 import { cn } from "@/lib/utils";
@@ -157,6 +168,16 @@ export function PrescriptionForm({ lead }: { lead: Lead }) {
     toast({ title: "Receita carregada", description: "Os valores foram copiados para o formulário." });
   }
 
+  async function handleDelete(rowId: string) {
+    const { error } = await (supabase as any).from("prescriptions").delete().eq("id", rowId);
+    if (error) {
+      toast({ title: "Erro ao remover receita", description: humanizeError(error), variant: "destructive" });
+      return;
+    }
+    setHistory((prev) => prev.filter((r) => r.id !== rowId));
+    toast({ title: "Receita removida do histórico" });
+  }
+
   const justSaved = savedAt && Date.now() - savedAt < 2500;
 
   const odTint = "bg-emerald-50 dark:bg-emerald-950/30 border-emerald-200 dark:border-emerald-900/50";
@@ -280,6 +301,35 @@ export function PrescriptionForm({ lead }: { lead: Lead }) {
                     <RotateCcw className="h-3 w-3" />
                     Usar
                   </Button>
+                  <AlertDialog>
+                    <AlertDialogTrigger asChild>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="h-7 w-7 p-0 shrink-0 text-destructive hover:text-destructive hover:bg-destructive/10"
+                        aria-label="Remover receita"
+                      >
+                        <Trash2 className="h-3.5 w-3.5" />
+                      </Button>
+                    </AlertDialogTrigger>
+                    <AlertDialogContent>
+                      <AlertDialogHeader>
+                        <AlertDialogTitle>Remover esta receita do histórico?</AlertDialogTitle>
+                        <AlertDialogDescription>
+                          Esta ação não pode ser desfeita.
+                        </AlertDialogDescription>
+                      </AlertDialogHeader>
+                      <AlertDialogFooter>
+                        <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                        <AlertDialogAction
+                          onClick={() => handleDelete(row.id)}
+                          className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                        >
+                          Remover
+                        </AlertDialogAction>
+                      </AlertDialogFooter>
+                    </AlertDialogContent>
+                  </AlertDialog>
                 </li>
               ))}
             </ol>
