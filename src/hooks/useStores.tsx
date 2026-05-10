@@ -235,8 +235,7 @@ export function StoresProvider({ children }: { children: ReactNode }) {
         }
         toast({
           title: "Erro ao criar loja",
-          description:
-            error?.message ?? "INSERT em stores não retornou a loja criada.",
+          description: humanizeError(error),
           variant: "destructive",
         });
         return null;
