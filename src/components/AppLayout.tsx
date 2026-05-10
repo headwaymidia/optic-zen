@@ -3,6 +3,7 @@ import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { AppSidebar } from "./AppSidebar";
 import { BottomNav } from "./BottomNav";
 import { ThemeToggle } from "./ThemeToggle";
+import { NotificationBell } from "./NotificationBell";
 import { TrialBanner } from "./TrialBanner";
 import { useAuth } from "@/hooks/useAuth";
 import { LeadsProvider } from "@/hooks/useLeads";
@@ -74,7 +75,10 @@ export default function AppLayout() {
                       )}
                     </div>
                   </div>
-                  <ThemeToggle />
+                  <div className="flex items-center gap-1">
+                    <NotificationBell />
+                    <ThemeToggle />
+                  </div>
                 </header>
                 <main className="flex-1 overflow-auto pb-20 md:pb-0">
                   <Outlet />
