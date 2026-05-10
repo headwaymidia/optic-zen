@@ -96,7 +96,7 @@ export function StoresProvider({ children }: { children: ReactNode }) {
     if (membersRes.error && ownedRes.error) {
       toast({
         title: "Erro ao carregar lojas",
-        description: membersRes.error.message,
+        description: humanizeError(membersRes.error),
         variant: "destructive",
       });
       setStores([]);
