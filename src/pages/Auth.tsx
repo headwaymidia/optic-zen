@@ -57,7 +57,7 @@ export default function AuthPage() {
     const { error } = await supabase.auth.signInWithPassword({ email, password });
     setSubmitting(false);
     if (error) {
-      toast({ title: "Erro ao entrar", description: error.message, variant: "destructive" });
+      toast({ title: "Erro ao entrar", description: humanizeError(error), variant: "destructive" });
       return;
     }
 
@@ -98,7 +98,7 @@ export default function AuthPage() {
     });
     setSubmitting(false);
     if (error) {
-      toast({ title: "Erro ao criar conta", description: error.message, variant: "destructive" });
+      toast({ title: "Erro ao criar conta", description: humanizeError(error), variant: "destructive" });
       return;
     }
     toast({
@@ -116,7 +116,7 @@ export default function AuthPage() {
     });
     setSubmitting(false);
     if (error) {
-      toast({ title: "Erro", description: error.message, variant: "destructive" });
+      toast({ title: "Erro", description: humanizeError(error), variant: "destructive" });
       return;
     }
     toast({

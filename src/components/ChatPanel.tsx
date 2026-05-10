@@ -85,7 +85,7 @@ export function ChatPanel({
 
     if (error) {
       setLeadFields(previous);
-      toast({ title: "Erro ao atualizar lead", description: error.message, variant: "destructive" });
+      toast({ title: "Erro ao atualizar lead", description: humanizeError(error), variant: "destructive" });
       await refetch();
       return;
     }
@@ -113,7 +113,7 @@ export function ChatPanel({
 
       if (cancelled) return;
       if (error) {
-        toast({ title: "Erro ao carregar vendedoras", description: error.message, variant: "destructive" });
+        toast({ title: "Erro ao carregar vendedoras", description: humanizeError(error), variant: "destructive" });
         setSalespeople([]);
         return;
       }

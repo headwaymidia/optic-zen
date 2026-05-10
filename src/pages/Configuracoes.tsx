@@ -78,7 +78,7 @@ export default function Configuracoes() {
       if (cancelled) return;
       if (error) {
         console.error("[Configuracoes] erro ao carregar loja:", error);
-        toast({ title: "Erro ao carregar loja", description: error.message, variant: "destructive" });
+        toast({ title: "Erro ao carregar loja", description: humanizeError(error), variant: "destructive" });
         return;
       }
       const row = (data ?? {}) as { name?: string | null; city?: string | null; state?: string | null; team_size?: string | null };
@@ -117,7 +117,7 @@ export default function Configuracoes() {
     setSavingStore(false);
     if (error) {
       console.error("[Configuracoes] erro ao salvar loja:", error);
-      toast({ title: "Erro ao salvar loja", description: error.message, variant: "destructive" });
+      toast({ title: "Erro ao salvar loja", description: humanizeError(error), variant: "destructive" });
       return;
     }
     setInitialStore({ name: trimmed, city: storeCity.trim(), state: storeState.trim(), team_size: storeTeamSize });
@@ -157,7 +157,7 @@ export default function Configuracoes() {
       .eq("id", user.id);
     setSaving(false);
     if (error) {
-      toast({ title: "Erro ao salvar", description: error.message, variant: "destructive" });
+      toast({ title: "Erro ao salvar", description: humanizeError(error), variant: "destructive" });
       return;
     }
     setInitialName(trimmed);

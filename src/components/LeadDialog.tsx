@@ -92,7 +92,7 @@ export function LeadDialog({ open, onOpenChange, lead, defaultStatus, onSaved }:
       : await supabase.from("leads").insert(payload);
     setSaving(false);
     if (error) {
-      toast({ title: "Erro ao salvar", description: error.message, variant: "destructive" });
+      toast({ title: "Erro ao salvar", description: humanizeError(error), variant: "destructive" });
       return;
     }
     toast({ title: lead ? "Lead atualizado" : "Lead criado" });
@@ -105,7 +105,7 @@ export function LeadDialog({ open, onOpenChange, lead, defaultStatus, onSaved }:
     if (!confirm("Excluir este lead?")) return;
     const { error } = await supabase.from("leads").delete().eq("id", lead.id);
     if (error) {
-      toast({ title: "Erro", description: error.message, variant: "destructive" });
+      toast({ title: "Erro", description: humanizeError(error), variant: "destructive" });
       return;
     }
     toast({ title: "Lead excluído" });

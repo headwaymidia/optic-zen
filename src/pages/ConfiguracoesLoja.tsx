@@ -287,7 +287,7 @@ export function TeamPanel({ storeId, storesCount }: { storeId: string; storesCou
       .delete()
       .eq("id", member.id);
     if (error) {
-      toast({ title: "Erro ao remover membro", description: error.message, variant: "destructive" });
+      toast({ title: "Erro ao remover membro", description: humanizeError(error), variant: "destructive" });
       return;
     }
     toast({ title: "Membro removido." });
@@ -301,7 +301,7 @@ export function TeamPanel({ storeId, storesCount }: { storeId: string; storesCou
       .update({ status: "revogado" })
       .eq("id", invite.id);
     if (error) {
-      toast({ title: "Erro ao revogar convite", description: error.message, variant: "destructive" });
+      toast({ title: "Erro ao revogar convite", description: humanizeError(error), variant: "destructive" });
       return;
     }
     toast({ title: "Convite revogado." });
