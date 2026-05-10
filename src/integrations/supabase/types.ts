@@ -162,6 +162,42 @@ export type Database = {
           },
         ]
       }
+      notifications: {
+        Row: {
+          body: string | null
+          created_at: string
+          id: string
+          lead_id: string | null
+          read: boolean
+          store_id: string
+          title: string
+          type: string
+          user_id: string
+        }
+        Insert: {
+          body?: string | null
+          created_at?: string
+          id?: string
+          lead_id?: string | null
+          read?: boolean
+          store_id: string
+          title: string
+          type: string
+          user_id: string
+        }
+        Update: {
+          body?: string | null
+          created_at?: string
+          id?: string
+          lead_id?: string | null
+          read?: boolean
+          store_id?: string
+          title?: string
+          type?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       partner_requests: {
         Row: {
           created_at: string
@@ -492,6 +528,7 @@ export type Database = {
     Functions: {
       accept_store_invite: { Args: { _token: string }; Returns: string }
       auto_move_due_returns: { Args: never; Returns: number }
+      generate_cooling_notifications: { Args: never; Returns: number }
       get_invite_by_token: {
         Args: { _token: string }
         Returns: {
