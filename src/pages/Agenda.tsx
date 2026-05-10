@@ -141,7 +141,7 @@ function buildEvents(leads: Lead[]): AgendaEvent[] {
 
 function AgendaInner() {
   const navigate = useNavigate();
-  const { leads, updateLead } = useLeads();
+  const { leads, loading, updateLead } = useLeads();
   const { members, nameById } = useStoreMembers();
   const [cursor, setCursor] = useState<Date>(new Date());
   const [view, setView] = useState<ViewMode>("month");
