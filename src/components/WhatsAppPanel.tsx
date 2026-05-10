@@ -271,14 +271,25 @@ export function WhatsAppPanel({ storeId, role }: Props) {
               <span>Aguardando leitura do QR Code…</span>
             </div>
             {canEdit && (
-              <Button
-                variant="outline"
-                onClick={handleDisconnect}
-                disabled={busy !== null}
-                className="w-full h-9 gap-2"
-              >
-                Cancelar
-              </Button>
+              <div className="flex gap-2">
+                <Button
+                  variant="outline"
+                  onClick={handleRefreshQr}
+                  disabled={busy !== null}
+                  className="flex-1 h-9 gap-2"
+                >
+                  <RefreshCw className="h-4 w-4" />
+                  Atualizar QR Code
+                </Button>
+                <Button
+                  variant="outline"
+                  onClick={handleDisconnect}
+                  disabled={busy !== null}
+                  className="flex-1 h-9 gap-2"
+                >
+                  Cancelar
+                </Button>
+              </div>
             )}
           </div>
         )}
