@@ -13,6 +13,7 @@ import { useTheme } from "@/hooks/useTheme";
 import { toast } from "@/hooks/use-toast";
 import { humanizeError } from "@/lib/error-handler";
 import { Sun, Moon, Loader2, Upload, X } from "lucide-react";
+import { validateName } from "@/lib/validators";
 import { cn } from "@/lib/utils";
 import { getUserInitials, translateRole } from "@/lib/profile-helpers";
 import { TeamPanel } from "@/pages/ConfiguracoesLoja";
@@ -23,6 +24,7 @@ export default function Configuracoes() {
   const { theme, setTheme } = useTheme();
 
   const [fullName, setFullName] = useState("");
+  const [nameTouched, setNameTouched] = useState(false);
   const [initialName, setInitialName] = useState("");
   const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
   const [initialAvatar, setInitialAvatar] = useState<string | null>(null);
@@ -144,13 +146,15 @@ export default function Configuracoes() {
     reader.readAsDataURL(file);
   }
 
+  const nameError = validateName(fullName);
+
   async function handleSave() {
     if (!user?.id) return;
-    const trimmed = fullName.trim();
-    if (!trimmed) {
-      toast({ title: "Informe seu nome", variant: "destructive" });
+    if (nameError) {
+      setNameTouched(true);
       return;
     }
+    const trimmed = fullName.trim();
     setSaving(true);
     const { error } = await supabase
       .from("profiles")
@@ -271,8 +275,18 @@ export default function Configuracoes() {
               id="profile-name"
               value={fullName}
               onChange={(e) => setFullName(e.target.value)}
+              onBlur={() => setNameTouched(true)}
               placeholder="Seu nome"
+              aria-invalid={nameTouched && !!nameError}
+              className={
+                nameTouched && nameError
+                  ? "border-destructive focus-visible:ring-destructive"
+                  : undefined
+              }
             />
+            {nameTouched && nameError && (
+              <p className="text-[11px] text-destructive">{nameError}</p>
+            )}
           </div>
           <div className="space-y-2">
             <Label>Email</Label>
@@ -284,7 +298,7 @@ export default function Configuracoes() {
             <p className="text-[11px] text-muted-foreground">Definido pelo dono da loja.</p>
           </div>
           <div className="flex justify-end">
-            <Button onClick={handleSave} disabled={!dirty || saving}>
+            <Button onClick={handleSave} disabled={!dirty || saving || !!nameError}>
               {saving && <Loader2 className="h-4 w-4 animate-spin" />}
               Salvar alterações
             </Button>

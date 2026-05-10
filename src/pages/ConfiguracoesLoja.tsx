@@ -60,6 +60,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
+import { validateEmail } from "@/lib/validators";
 
 type TabKey = "geral" | "equipe" | "integracoes";
 
@@ -365,6 +366,7 @@ export function TeamPanel({ storeId, storesCount }: { storeId: string; storesCou
         open={inviteOpen}
         onOpenChange={setInviteOpen}
         storeId={storeId}
+        existingEmails={members.map((m) => (m.email ?? "").toLowerCase()).filter(Boolean)}
         onInvited={loadAll}
       />
 
@@ -561,29 +563,41 @@ function InviteMemberDialog({
   open,
   onOpenChange,
   storeId,
+  existingEmails = [],
   onInvited,
 }: {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   storeId: string;
+  existingEmails?: string[];
   onInvited: () => void;
 }) {
   const [email, setEmail] = useState("");
   const [role, setRole] = useState<TeamRole>("Vendedor");
   const [submitting, setSubmitting] = useState(false);
   const [createdLink, setCreatedLink] = useState<string | null>(null);
+  const [emailTouched, setEmailTouched] = useState(false);
+
+  const trimmedEmail = email.trim().toLowerCase();
+  const formatError = validateEmail(email);
+  const alreadyMember =
+    !formatError && existingEmails.includes(trimmedEmail)
+      ? "Este e-mail já é membro desta loja."
+      : null;
+  const emailError = formatError ?? alreadyMember;
 
   function reset() {
     setEmail("");
     setRole("Vendedor");
     setSubmitting(false);
     setCreatedLink(null);
+    setEmailTouched(false);
   }
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
-    const trimmed = email.trim().toLowerCase();
-    if (!trimmed) return;
+    setEmailTouched(true);
+    if (emailError) return;
     setSubmitting(true);
 
     const {
@@ -599,7 +613,7 @@ function InviteMemberDialog({
       .from("store_invites")
       .insert({
         store_id: storeId,
-        email: trimmed,
+        email: trimmedEmail,
         role,
         invited_by: user.id,
       })
@@ -708,8 +722,16 @@ function InviteMemberDialog({
               placeholder="exemplo@otica.com"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              className="h-11"
+              onBlur={() => setEmailTouched(true)}
+              aria-invalid={emailTouched && !!emailError}
+              className={cn(
+                "h-11",
+                emailTouched && emailError && "border-destructive focus-visible:ring-destructive"
+              )}
             />
+            {emailTouched && emailError && (
+              <p className="text-[11px] text-destructive">{emailError}</p>
+            )}
           </div>
 
           <div className="space-y-2">
@@ -739,7 +761,7 @@ function InviteMemberDialog({
             </Button>
             <Button
               type="submit"
-              disabled={submitting || !email.trim()}
+              disabled={submitting || !!emailError}
               className="h-11 gap-2 bg-emerald-500 hover:bg-emerald-500/90 text-white"
             >
               <UserPlus className="h-4 w-4" />
