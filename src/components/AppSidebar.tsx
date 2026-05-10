@@ -70,6 +70,21 @@ export function AppSidebar() {
   const [newLeadOpen, setNewLeadOpen] = useState(false);
   const { profile, user, signOut } = useAuth();
 
+  // Global keyboard shortcut: "N" opens Novo Lead (ignored when typing in inputs)
+  useEffect(() => {
+    function onKey(e: KeyboardEvent) {
+      if (e.key !== "n" && e.key !== "N") return;
+      if (e.ctrlKey || e.metaKey || e.altKey) return;
+      const t = e.target as HTMLElement | null;
+      const tag = t?.tagName?.toLowerCase();
+      if (tag === "input" || tag === "textarea" || tag === "select" || t?.isContentEditable) return;
+      e.preventDefault();
+      setNewLeadOpen(true);
+    }
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, []);
+
   const displayName = profile?.full_name || user?.email?.split("@")[0] || "Admin";
   const displayEmail = profile?.email || user?.email || "admin@otica.com";
   const initials = getInitials(profile?.full_name || displayEmail);
