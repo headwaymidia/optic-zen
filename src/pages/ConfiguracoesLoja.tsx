@@ -612,7 +612,7 @@ function InviteMemberDialog({
       .from("store_invites")
       .insert({
         store_id: storeId,
-        email: trimmed,
+        email: trimmedEmail,
         role,
         invited_by: user.id,
       })
