@@ -83,8 +83,14 @@ export default function Funil() {
   const counts = useMemo(() => {
     const term = search.trim().toLowerCase();
     const onlyDigits = term.replace(/\D/g, "");
+    const fromMs = periodRange?.from.getTime() ?? null;
+    const toMs = periodRange?.to.getTime() ?? null;
     const filtered = leads.filter((l) => {
       if (salesFilter !== ALL_SALES && (l.responsible_id ?? "") !== salesFilter) return false;
+      if (fromMs !== null) {
+        const t = l.created_at ? new Date(l.created_at).getTime() : 0;
+        if (t < fromMs || (toMs !== null && t > toMs)) return false;
+      }
       if (term) {
         const nameMatch = l.name?.toLowerCase().includes(term);
         const phoneDigits = (l.phone ?? "").replace(/\D/g, "");
