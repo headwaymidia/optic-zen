@@ -642,7 +642,7 @@ function ExamScheduler({ lead }: { lead: Lead }) {
     const iso = new Date(value).toISOString();
     await updateLead(lead.id, { exam_date: iso, status: "Agendou Exame" });
     setSaving(false);
-    toast({ title: "Exame agendado", description: new Date(iso).toLocaleString("pt-BR") });
+    toast({ title: `Exame agendado para ${new Date(iso).toLocaleString("pt-BR")}!` });
   }
 
   async function handleClear() {
