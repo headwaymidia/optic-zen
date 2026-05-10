@@ -128,7 +128,7 @@ export default function Configuracoes() {
     setInitialStore({ name: trimmed, city: storeCity.trim(), state: storeState.trim(), team_size: storeTeamSize });
     // Atualiza imediatamente o nome da loja no seletor do sidebar
     await refetchStores();
-    toast({ title: "Configurações da loja salvas." });
+    toast({ title: "Configurações salvas!" });
   }
 
   function handlePickFile(file?: File | null) {
