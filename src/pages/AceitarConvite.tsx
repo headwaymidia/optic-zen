@@ -6,6 +6,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { useStores } from "@/hooks/useStores";
 import { Button } from "@/components/ui/button";
 import { toast } from "@/hooks/use-toast";
+import { humanizeError } from "@/lib/error-handler";
 
 type InviteInfo = {
   id: string;
