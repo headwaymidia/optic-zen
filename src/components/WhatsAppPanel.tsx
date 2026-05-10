@@ -68,6 +68,21 @@ export function WhatsAppPanel({ storeId, role }: Props) {
     return data;
   }
 
+  function extractQr(res: any): string | null {
+    return (
+      res?.base64 ??
+      res?.qrcode?.base64 ??
+      res?.qrcode ??
+      res?.code ??
+      null
+    );
+  }
+
+  function isConnectedResponse(res: any): boolean {
+    const state = res?.instance?.state ?? res?.state ?? res?.status;
+    return state === "open" || state === "connected";
+  }
+
   // Polling enquanto conectando: atualiza QR e status a cada 3s
   useEffect(() => {
     if (!isConnecting) {
@@ -82,14 +97,15 @@ export function WhatsAppPanel({ storeId, role }: Props) {
     const tick = async () => {
       try {
         const st = await callEvo("status");
-        if (st?.status === "connected") {
+        if (isConnectedResponse(st)) {
           setQrCode(null);
           await refetch();
           toast({ title: "WhatsApp conectado!", description: "Loja vinculada com sucesso." });
           return;
         }
         const q = await callEvo("qr");
-        if (q?.qrcode) setQrCode(q.qrcode);
+        const qr = extractQr(q);
+        if (qr) setQrCode(qr);
       } catch (e) {
         console.error("poll error", e);
       }
@@ -116,7 +132,8 @@ export function WhatsAppPanel({ storeId, role }: Props) {
     setBusy("connect");
     try {
       const res = await callEvo("connect");
-      if (res?.qrcode) setQrCode(res.qrcode);
+      const qr = extractQr(res);
+      if (qr) setQrCode(qr);
       await refetch();
     } catch (e) {
       toast({
@@ -124,6 +141,20 @@ export function WhatsAppPanel({ storeId, role }: Props) {
         description: humanizeError(e),
         variant: "destructive",
       });
+    } finally {
+      setBusy(null);
+    }
+  }
+
+  async function handleRefreshQr() {
+    if (!canEdit) return;
+    setBusy("connect");
+    try {
+      const q = await callEvo("qr");
+      const qr = extractQr(q);
+      if (qr) setQrCode(qr);
+    } catch (e) {
+      toast({ title: "Erro ao atualizar QR", description: humanizeError(e), variant: "destructive" });
     } finally {
       setBusy(null);
     }
@@ -240,14 +271,25 @@ export function WhatsAppPanel({ storeId, role }: Props) {
               <span>Aguardando leitura do QR Code…</span>
             </div>
             {canEdit && (
-              <Button
-                variant="outline"
-                onClick={handleDisconnect}
-                disabled={busy !== null}
-                className="w-full h-9 gap-2"
-              >
-                Cancelar
-              </Button>
+              <div className="flex gap-2">
+                <Button
+                  variant="outline"
+                  onClick={handleRefreshQr}
+                  disabled={busy !== null}
+                  className="flex-1 h-9 gap-2"
+                >
+                  <RefreshCw className="h-4 w-4" />
+                  Atualizar QR Code
+                </Button>
+                <Button
+                  variant="outline"
+                  onClick={handleDisconnect}
+                  disabled={busy !== null}
+                  className="flex-1 h-9 gap-2"
+                >
+                  Cancelar
+                </Button>
+              </div>
             )}
           </div>
         )}
