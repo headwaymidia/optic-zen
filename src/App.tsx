@@ -27,11 +27,9 @@ const Parceiro = lazy(() => import("./pages/Parceiro"));
 const Ajuda = lazy(() => import("./pages/Ajuda"));
 const Agenda = lazy(() => import("./pages/Agenda"));
 
-const RouteFallback = () => (
-  <div className="flex items-center justify-center h-screen">
-    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-green-600" />
-  </div>
-);
+import { RouteProgressFallback, TopProgressBar } from "@/components/TopProgressBar";
+
+const RouteFallback = () => <RouteProgressFallback />;
 
 const queryClient = new QueryClient({
   defaultOptions: {
