@@ -338,6 +338,7 @@ export function TeamPanel({ storeId, storesCount }: { storeId: string; storesCou
   const totalCount = members.length + invites.length;
 
   return (
+    <>
     <section className="rounded-2xl border border-border bg-card p-5 sm:p-6 shadow-[0_1px_2px_rgba(0,0,0,0.02)]">
       <header className="flex items-center justify-between gap-4 pb-5">
         <div className="min-w-0">
