@@ -4,7 +4,7 @@ import { useLeads } from "@/hooks/useLeads";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
-import { Eye, Save, Check, History, RotateCcw } from "lucide-react";
+import { Eye, Save, Check, History, RotateCcw, Loader2 } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 import { humanizeError } from "@/lib/error-handler";
 import { cn } from "@/lib/utils";
