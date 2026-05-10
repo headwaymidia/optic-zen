@@ -317,7 +317,7 @@ function WhatsAppStatusBadge({ collapsed }: { collapsed: boolean }) {
         <Tooltip>
           <TooltipTrigger asChild>
             <NavLink
-              to="/configuracoes-loja?tab=whatsapp"
+              to="/whatsapp-config"
               aria-label={label}
               className="h-7 w-7 rounded-full bg-card border flex items-center justify-center"
             >
@@ -346,7 +346,7 @@ function WhatsAppStatusBadge({ collapsed }: { collapsed: boolean }) {
 
   if (connected) return content;
   return (
-    <NavLink to="/configuracoes-loja?tab=whatsapp" className="block">
+    <NavLink to="/whatsapp-config" className="block">
       {content}
     </NavLink>
   );

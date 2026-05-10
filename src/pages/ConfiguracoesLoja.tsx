@@ -65,12 +65,11 @@ import {
 } from "@/components/ui/alert-dialog";
 import { validateEmail } from "@/lib/validators";
 
-type TabKey = "geral" | "equipe" | "whatsapp" | "integracoes";
+type TabKey = "geral" | "equipe" | "integracoes";
 
 const TABS: { key: TabKey; label: string; icon: typeof Settings }[] = [
   { key: "geral", label: "Geral", icon: Settings },
   { key: "equipe", label: "Equipe", icon: Users },
-  { key: "whatsapp", label: "WhatsApp", icon: MessageCircle },
   { key: "integracoes", label: "Integrações", icon: Plug },
 ];
 
@@ -166,7 +165,6 @@ export default function ConfiguracoesLoja() {
         <div className="min-w-0 space-y-4">
           {tab === "geral" && <GeneralPanel store={currentStore} />}
           {tab === "equipe" && <TeamPanel storeId={currentStore.id} storesCount={stores.length} />}
-          {tab === "whatsapp" && <WhatsAppPanel storeId={currentStore.id} role={currentStore.role} />}
           {tab === "integracoes" && <IntegrationsPanel storeId={currentStore.id} storeName={currentStore.name} />}
         </div>
       </div>
