@@ -361,4 +361,5 @@ export function LeadDialog({ open, onOpenChange, lead, defaultStatus, onSaved }:
       </AlertDialogContent>
     </AlertDialog>
     </>
+  );
 }
