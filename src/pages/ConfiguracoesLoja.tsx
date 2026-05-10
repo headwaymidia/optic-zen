@@ -365,6 +365,7 @@ export function TeamPanel({ storeId, storesCount }: { storeId: string; storesCou
         open={inviteOpen}
         onOpenChange={setInviteOpen}
         storeId={storeId}
+        existingEmails={members.map((m) => (m.email ?? "").toLowerCase()).filter(Boolean)}
         onInvited={loadAll}
       />
 
