@@ -166,6 +166,7 @@ export default function ConfiguracoesLoja() {
         <div className="min-w-0 space-y-4">
           {tab === "geral" && <GeneralPanel store={currentStore} />}
           {tab === "equipe" && <TeamPanel storeId={currentStore.id} storesCount={stores.length} />}
+          {tab === "whatsapp" && <WhatsAppPanel storeId={currentStore.id} role={currentStore.role} />}
           {tab === "integracoes" && <IntegrationsPanel storeId={currentStore.id} storeName={currentStore.name} />}
         </div>
       </div>
