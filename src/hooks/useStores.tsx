@@ -10,6 +10,7 @@ import {
 import { supabase } from "@/lib/supabase";
 import { useAuth } from "@/hooks/useAuth";
 import { toast } from "@/hooks/use-toast";
+import { humanizeError } from "@/lib/error-handler";
 
 export type StoreRole = "Dono" | "Gerente" | "Vendedor";
 
