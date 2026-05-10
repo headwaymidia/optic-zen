@@ -28,6 +28,7 @@ const STATUS_DOT_COLORS: Record<LeadStatus, string> = {
 const ALL_SALES = "__all__";
 
 export default function Funil() {
+  usePageTitle("Funil de Vendas");
   const { leads, loading } = useLeads();
   const { members } = useStoreMembers();
   const [selectedId, setSelectedId] = useState<string | null>(null);
