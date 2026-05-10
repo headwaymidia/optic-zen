@@ -168,6 +168,16 @@ export function PrescriptionForm({ lead }: { lead: Lead }) {
     toast({ title: "Receita carregada", description: "Os valores foram copiados para o formulário." });
   }
 
+  async function handleDelete(rowId: string) {
+    const { error } = await (supabase as any).from("prescriptions").delete().eq("id", rowId);
+    if (error) {
+      toast({ title: "Erro ao remover receita", description: humanizeError(error), variant: "destructive" });
+      return;
+    }
+    setHistory((prev) => prev.filter((r) => r.id !== rowId));
+    toast({ title: "Receita removida do histórico" });
+  }
+
   const justSaved = savedAt && Date.now() - savedAt < 2500;
 
   const odTint = "bg-emerald-50 dark:bg-emerald-950/30 border-emerald-200 dark:border-emerald-900/50";
