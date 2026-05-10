@@ -121,7 +121,7 @@ export function NewLeadDialog({
       toast({ title: "Erro ao criar lead", description: humanizeError(error), variant: "destructive" });
       return;
     }
-    toast({ title: "Lead criado!", description: `${name.trim()} foi adicionado em "Novo Lead".` });
+    toast({ title: "Lead criado com sucesso!", description: `${name.trim()} foi adicionado em "Novo Lead".` });
     reset();
     onOpenChange(false);
     refetch();
