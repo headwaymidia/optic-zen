@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
+import { usePageTitle } from "@/hooks/usePageTitle";
 import { useSearchParams } from "react-router-dom";
 import { useLeads } from "@/hooks/useLeads";
 import { Input } from "@/components/ui/input";
