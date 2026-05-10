@@ -24,6 +24,7 @@ export default function Configuracoes() {
   const { theme, setTheme } = useTheme();
 
   const [fullName, setFullName] = useState("");
+  const [nameTouched, setNameTouched] = useState(false);
   const [initialName, setInitialName] = useState("");
   const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
   const [initialAvatar, setInitialAvatar] = useState<string | null>(null);
