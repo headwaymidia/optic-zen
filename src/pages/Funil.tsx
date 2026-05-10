@@ -246,6 +246,8 @@ export default function Funil() {
               search={search}
               salesFilter={salesFilter === ALL_SALES ? null : salesFilter}
               cadenceFilter={cadence}
+              createdFrom={periodRange?.from ?? null}
+              createdTo={periodRange?.to ?? null}
             />
           </div>
         </div>
