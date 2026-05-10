@@ -604,9 +604,12 @@ export function KanbanBoard({
                   </div>
                 ))}
                 {colLeads.length === 0 && (
-                  <p className="px-2 py-6 text-center text-xs text-muted-foreground animate-in fade-in duration-200">
-                    {hasFilters ? "Nenhum lead encontrado com estes filtros." : "Nenhum lead"}
-                  </p>
+                  <EmptyState
+                    icon={Filter}
+                    title={hasFilters ? "Nenhum resultado" : "Nenhum lead aqui"}
+                    description={hasFilters ? "Ajuste os filtros para ver mais resultados." : undefined}
+                    className="py-6"
+                  />
                 )}
               </DroppableColumn>
             );
