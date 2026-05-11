@@ -59,6 +59,28 @@ export function LeadsProvider({ children }: { children: ReactNode }) {
     return () => { supabase.removeChannel(channel); };
   }, [currentStoreId, queryClient]);
 
+  // Realtime: novas mensagens de WhatsApp -> invalida lista de leads (preview/ordem)
+  useEffect(() => {
+    if (!currentStoreId) return;
+    const channel = supabase
+      .channel(`wa-msgs-leads-${currentStoreId}`)
+      .on(
+        "postgres_changes",
+        {
+          event: "*",
+          schema: "public",
+          table: "whatsapp_messages",
+          filter: `store_id=eq.${currentStoreId}`,
+        },
+        (payload) => {
+          console.log("[Realtime] whatsapp_messages -> invalidando leads", payload);
+          queryClient.invalidateQueries({ queryKey: ["leads", currentStoreId] });
+        }
+      )
+      .subscribe();
+    return () => { supabase.removeChannel(channel); };
+  }, [currentStoreId, queryClient]);
+
   const updateStatusMutation = useMutation({
     mutationFn: async ({ leadId, status }: { leadId: string; status: LeadStatus }) => {
       const { error } = await supabase.from("leads").update({ status }).eq("id", leadId);
