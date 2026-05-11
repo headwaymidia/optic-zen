@@ -33,11 +33,44 @@ export function WhatsAppPanel({ storeId, role }: Props) {
 
   const [qrCode, setQrCode] = useState<string | null>(null);
   const [busy, setBusy] = useState<"connect" | "disconnect" | null>(null);
+  const [localStatus, setLocalStatus] = useState<WhatsAppStatus | null>(null);
+  const [localPhone, setLocalPhone] = useState<string | null>(null);
   const pollRef = useRef<number | null>(null);
 
-  const status: WhatsAppStatus = connection?.status ?? "disconnected";
+  // Mescla estado local (otimista) com o do servidor — local tem prioridade
+  // para refletir mudanças imediatamente sem aguardar o refetch.
+  const serverStatus: WhatsAppStatus = connection?.status ?? "disconnected";
+  const status: WhatsAppStatus = localStatus ?? serverStatus;
   const isConnected = status === "connected";
   const isConnecting = status === "connecting";
+  const effectiveConnection: WhatsAppConnection | null = connection
+    ? { ...connection, status, phone_number: localPhone ?? connection.phone_number }
+    : (localStatus
+        ? ({
+            id: "",
+            store_id: storeId,
+            provider: "evolution",
+            status: localStatus,
+            phone_number: localPhone,
+            evolution_instance_name: `loja-${storeId}`,
+            evolution_api_url: null,
+            evolution_api_key: null,
+            meta_phone_number_id: null,
+            meta_access_token: null,
+            meta_webhook_verify_token: null,
+            connected_at: null,
+            created_at: "",
+            updated_at: "",
+          } as WhatsAppConnection)
+        : null);
+
+  // Quando o servidor confirmar o mesmo status, descarta o override local
+  useEffect(() => {
+    if (localStatus && connection?.status === localStatus) {
+      setLocalStatus(null);
+      setLocalPhone(null);
+    }
+  }, [connection?.status, localStatus]);
 
   async function callEvo(action: "status" | "connect" | "qr" | "disconnect") {
     const { data: sess } = await supabase.auth.getSession();
@@ -102,9 +135,15 @@ export function WhatsAppPanel({ storeId, role }: Props) {
       try {
         const st = await callEvo("status");
         if (isConnectedResponse(st)) {
+          // Atualiza UI imediatamente (otimista)
           setQrCode(null);
-          // Garante que o banco fique como 'connected' mesmo se o upsert
-          // do edge function não tiver propagado ainda.
+          setLocalPhone(st?.phone_number ?? null);
+          setLocalStatus("connected");
+          if (pollRef.current) {
+            window.clearInterval(pollRef.current);
+            pollRef.current = null;
+          }
+          // Persiste no banco
           try {
             await supabase
               .from("whatsapp_connections")
@@ -124,10 +163,6 @@ export function WhatsAppPanel({ storeId, role }: Props) {
           }
           await refetch();
           toast({ title: "WhatsApp conectado!", description: "Loja vinculada com sucesso." });
-          if (pollRef.current) {
-            window.clearInterval(pollRef.current);
-            pollRef.current = null;
-          }
           return;
         }
         // Se ainda não conectou e não temos QR, busca um
@@ -165,6 +200,10 @@ export function WhatsAppPanel({ storeId, role }: Props) {
       try {
         const st = await callEvo("status");
         if (isConnectedResponse(st)) {
+          // UI otimista — não esperar pelo refetch
+          setQrCode(null);
+          setLocalPhone(st?.phone_number ?? null);
+          setLocalStatus("connected");
           try {
             await supabase
               .from("whatsapp_connections")
@@ -182,7 +221,6 @@ export function WhatsAppPanel({ storeId, role }: Props) {
           } catch (e) {
             console.error("upsert connected error", e);
           }
-          setQrCode(null);
           await refetch();
           toast({ title: "WhatsApp já conectado", description: "Loja vinculada com sucesso." });
           return;
@@ -259,7 +297,7 @@ export function WhatsAppPanel({ storeId, role }: Props) {
 
   return (
     <div className="space-y-4">
-      <ConnectionStatusCard connection={connection} loading={loading} />
+      <ConnectionStatusCard connection={effectiveConnection} loading={loading} />
 
       <div className="rounded-xl border bg-card p-5 space-y-4">
         <div className="flex items-start justify-between gap-2">
@@ -293,9 +331,9 @@ export function WhatsAppPanel({ storeId, role }: Props) {
                 <p className="text-sm font-semibold text-emerald-900 dark:text-emerald-100">
                   WhatsApp conectado
                 </p>
-                {connection?.phone_number && (
+                {effectiveConnection?.phone_number && (
                   <p className="text-xs text-emerald-800 dark:text-emerald-200">
-                    Número: {formatPhone(connection.phone_number)}
+                    Número: {formatPhone(effectiveConnection.phone_number)}
                   </p>
                 )}
               </div>
