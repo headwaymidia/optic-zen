@@ -64,9 +64,11 @@ export function WhatsAppPanel({ storeId, role }: Props) {
           } as WhatsAppConnection)
         : null);
 
-  // Quando o servidor confirmar o mesmo status, descarta o override local
+  // Só descarta o override local quando o servidor confirmar "connected".
+  // Nunca descarta antes — isso evita que o refetch sobrescreva o estado
+  // otimista enquanto a UI ainda está em transição.
   useEffect(() => {
-    if (localStatus && connection?.status === localStatus) {
+    if (localStatus === "connected" && connection?.status === "connected") {
       setLocalStatus(null);
       setLocalPhone(null);
     }
