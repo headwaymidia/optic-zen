@@ -33,11 +33,44 @@ export function WhatsAppPanel({ storeId, role }: Props) {
 
   const [qrCode, setQrCode] = useState<string | null>(null);
   const [busy, setBusy] = useState<"connect" | "disconnect" | null>(null);
+  const [localStatus, setLocalStatus] = useState<WhatsAppStatus | null>(null);
+  const [localPhone, setLocalPhone] = useState<string | null>(null);
   const pollRef = useRef<number | null>(null);
 
-  const status: WhatsAppStatus = connection?.status ?? "disconnected";
+  // Mescla estado local (otimista) com o do servidor — local tem prioridade
+  // para refletir mudanças imediatamente sem aguardar o refetch.
+  const serverStatus: WhatsAppStatus = connection?.status ?? "disconnected";
+  const status: WhatsAppStatus = localStatus ?? serverStatus;
   const isConnected = status === "connected";
   const isConnecting = status === "connecting";
+  const effectiveConnection: WhatsAppConnection | null = connection
+    ? { ...connection, status, phone_number: localPhone ?? connection.phone_number }
+    : (localStatus
+        ? ({
+            id: "",
+            store_id: storeId,
+            provider: "evolution",
+            status: localStatus,
+            phone_number: localPhone,
+            evolution_instance_name: `loja-${storeId}`,
+            evolution_api_url: null,
+            evolution_api_key: null,
+            meta_phone_number_id: null,
+            meta_access_token: null,
+            meta_webhook_verify_token: null,
+            connected_at: null,
+            created_at: "",
+            updated_at: "",
+          } as WhatsAppConnection)
+        : null);
+
+  // Quando o servidor confirmar o mesmo status, descarta o override local
+  useEffect(() => {
+    if (localStatus && connection?.status === localStatus) {
+      setLocalStatus(null);
+      setLocalPhone(null);
+    }
+  }, [connection?.status, localStatus]);
 
   async function callEvo(action: "status" | "connect" | "qr" | "disconnect") {
     const { data: sess } = await supabase.auth.getSession();
