@@ -35,6 +35,7 @@ export function WhatsAppPanel({ storeId, role }: Props) {
   const [busy, setBusy] = useState<"connect" | "disconnect" | null>(null);
   const [localStatus, setLocalStatus] = useState<WhatsAppStatus | null>(null);
   const [localPhone, setLocalPhone] = useState<string | null>(null);
+  const [checking, setChecking] = useState(true);
   const pollRef = useRef<number | null>(null);
 
   // Mescla estado local (otimista) com o do servidor — local tem prioridade
