@@ -196,7 +196,41 @@ export function WhatsAppPanel({ storeId, role }: Props) {
   // Sync inicial de status com servidor
   useEffect(() => {
     if (!storeId) return;
-    callEvo("status").then(() => refetch()).catch(() => {});
+    (async () => {
+      try {
+        const st = await callEvo("status");
+        if (isConnectedResponse(st)) {
+          setQrCode(null);
+          setLocalPhone(st?.phone_number ?? null);
+          setLocalStatus("connected");
+          try {
+            const { error: upsertErr } = await supabase
+              .from("whatsapp_connections")
+              .upsert(
+                {
+                  store_id: storeId,
+                  provider: "evolution",
+                  evolution_instance_name: `loja-${storeId}`,
+                  status: "connected",
+                  phone_number: st?.phone_number ?? null,
+                  connected_at: new Date().toISOString(),
+                },
+                { onConflict: "store_id" },
+              );
+            if (upsertErr) {
+              console.error("[WhatsAppPanel] mount upsert connected RLS/error:", upsertErr);
+            } else {
+              console.log("[WhatsAppPanel] mount upsert connected OK");
+            }
+          } catch (e) {
+            console.error("[WhatsAppPanel] mount upsert connected threw:", e);
+          }
+        }
+        await refetch();
+      } catch {
+        /* noop */
+      }
+    })();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [storeId]);
 
