@@ -238,10 +238,11 @@ export default function WhatsAppPage() {
             />
           )}
           {filtered.map((lead) => {
-            const lastMsgIso = lead.last_interaction ?? lead.last_inbound_at ?? null;
-            const hasMessages = Boolean(lastMsgIso || (lead.notes && lead.notes.trim()));
+            const lastMsgIso = lead.last_message_at ?? lead.last_interaction ?? lead.last_inbound_at ?? null;
+            const previewText = lead.last_message_preview?.trim();
+            const hasMessages = Boolean(previewText);
             const preview = hasMessages
-              ? truncate(lead.notes?.trim() || "Mensagem recebida", 40)
+              ? truncate(previewText!, 40)
               : "Sem mensagens ainda";
             const timeLabel = hasMessages && lastMsgIso
               ? formatRelativeShort(lastMsgIso)
