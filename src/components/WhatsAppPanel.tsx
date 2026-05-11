@@ -200,6 +200,10 @@ export function WhatsAppPanel({ storeId, role }: Props) {
       try {
         const st = await callEvo("status");
         if (isConnectedResponse(st)) {
+          // UI otimista — não esperar pelo refetch
+          setQrCode(null);
+          setLocalPhone(st?.phone_number ?? null);
+          setLocalStatus("connected");
           try {
             await supabase
               .from("whatsapp_connections")
@@ -217,7 +221,6 @@ export function WhatsAppPanel({ storeId, role }: Props) {
           } catch (e) {
             console.error("upsert connected error", e);
           }
-          setQrCode(null);
           await refetch();
           toast({ title: "WhatsApp já conectado", description: "Loja vinculada com sucesso." });
           return;
