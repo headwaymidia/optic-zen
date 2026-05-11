@@ -35,6 +35,7 @@ export function WhatsAppPanel({ storeId, role }: Props) {
   const [busy, setBusy] = useState<"connect" | "disconnect" | null>(null);
   const [localStatus, setLocalStatus] = useState<WhatsAppStatus | null>(null);
   const [localPhone, setLocalPhone] = useState<string | null>(null);
+  const [checking, setChecking] = useState(true);
   const pollRef = useRef<number | null>(null);
 
   // Mescla estado local (otimista) com o do servidor — local tem prioridade
@@ -231,6 +232,8 @@ export function WhatsAppPanel({ storeId, role }: Props) {
         await refetch();
       } catch {
         /* noop */
+      } finally {
+        setChecking(false);
       }
     })();
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -354,7 +357,18 @@ export function WhatsAppPanel({ storeId, role }: Props) {
 
   return (
     <div className="space-y-4">
-      <ConnectionStatusCard connection={effectiveConnection} loading={loading} />
+      {checking ? (
+        <div className="rounded-xl border bg-card p-4 flex items-center gap-3">
+          <div className="h-10 w-10 rounded-full bg-muted animate-pulse shrink-0" />
+          <div className="flex-1 space-y-2">
+            <div className="h-3 w-24 bg-muted animate-pulse rounded" />
+            <div className="h-4 w-40 bg-muted animate-pulse rounded" />
+          </div>
+          <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
+        </div>
+      ) : (
+        <ConnectionStatusCard connection={effectiveConnection} loading={loading} />
+      )}
 
       <div className="rounded-xl border bg-card p-5 space-y-4">
         <div className="flex items-start justify-between gap-2">
@@ -468,7 +482,7 @@ export function WhatsAppPanel({ storeId, role }: Props) {
         )}
 
         {/* Estado: desconectado */}
-        {!isConnected && !isConnecting && !qrCode && (
+        {!isConnected && !isConnecting && !qrCode && !checking && (
           <div className="space-y-3">
             <p className="text-xs text-muted-foreground">
               Clique em conectar para gerar o QR Code e vincular o WhatsApp da loja.
