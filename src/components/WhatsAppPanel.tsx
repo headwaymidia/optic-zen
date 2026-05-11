@@ -87,8 +87,8 @@ export function WhatsAppPanel({ storeId, role }: Props) {
     return state === "open" || state === "connected";
   }
 
-  // Polling enquanto conectando OU enquanto há QR Code visível
-  const shouldPoll = isConnecting || !!qrCode;
+  // Polling enquanto conectando. Não para quando o QR some (race condition).
+  const shouldPoll = isConnecting;
   useEffect(() => {
     if (!shouldPoll || isConnected) {
       if (pollRef.current) {
