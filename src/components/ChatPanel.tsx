@@ -13,6 +13,7 @@ import { LeadSections } from "@/components/chat/LeadSections";
 import { MessageThread, type ChatMessage, type SentMessage } from "@/components/chat/MessageThread";
 import { MessageInput } from "@/components/chat/MessageInput";
 import { LeadActivities } from "@/components/chat/LeadActivities";
+import { useWhatsAppMessages } from "@/hooks/useWhatsAppMessages";
 import {
   getFollowUpDef,
   getPendingFollowUpLevel,
@@ -122,7 +123,15 @@ export function ChatPanel({
     setMessage(scripts[scriptType]);
   };
 
-  const messages: ChatMessage[] = [];
+  const { messages: waMessages } = useWhatsAppMessages(lead.id);
+  const messages: ChatMessage[] = waMessages.map((m) => ({
+    from: m.from_me ? "us" : "lead",
+    text: m.body ?? "",
+    time: new Date(m.timestamp).toLocaleTimeString("pt-BR", {
+      hour: "2-digit",
+      minute: "2-digit",
+    }),
+  }));
 
   return (
     <div className="flex flex-col h-full bg-background min-w-0 animate-in slide-in-from-right fade-in duration-300 ease-out">
