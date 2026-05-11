@@ -24,10 +24,12 @@ export function ChatPanel({
   lead,
   onBack,
   onClose,
+  chatOnly = false,
 }: {
   lead: Lead;
   onBack?: () => void;
   onClose?: () => void;
+  chatOnly?: boolean;
 }) {
   console.log("[ChatPanel] lead.id:", lead?.id);
   const { updateStatus, updateLead } = useLeads();
