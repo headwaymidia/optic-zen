@@ -105,6 +105,8 @@ export type Database = {
           last_follow_up_at: string | null
           last_inbound_at: string | null
           last_interaction: string | null
+          last_message_at: string | null
+          last_message_preview: string | null
           lead_source: string | null
           name: string
           next_return_date: string | null
@@ -137,6 +139,8 @@ export type Database = {
           last_follow_up_at?: string | null
           last_inbound_at?: string | null
           last_interaction?: string | null
+          last_message_at?: string | null
+          last_message_preview?: string | null
           lead_source?: string | null
           name: string
           next_return_date?: string | null
@@ -169,6 +173,8 @@ export type Database = {
           last_follow_up_at?: string | null
           last_inbound_at?: string | null
           last_interaction?: string | null
+          last_message_at?: string | null
+          last_message_preview?: string | null
           lead_source?: string | null
           name?: string
           next_return_date?: string | null
