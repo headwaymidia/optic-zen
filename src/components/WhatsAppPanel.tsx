@@ -331,9 +331,9 @@ export function WhatsAppPanel({ storeId, role }: Props) {
                 <p className="text-sm font-semibold text-emerald-900 dark:text-emerald-100">
                   WhatsApp conectado
                 </p>
-                {connection?.phone_number && (
+                {effectiveConnection?.phone_number && (
                   <p className="text-xs text-emerald-800 dark:text-emerald-200">
-                    Número: {formatPhone(connection.phone_number)}
+                    Número: {formatPhone(effectiveConnection.phone_number)}
                   </p>
                 )}
               </div>
