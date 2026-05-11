@@ -161,7 +161,37 @@ export function WhatsAppPanel({ storeId, role }: Props) {
     if (!canEdit) return;
     setBusy("connect");
     try {
-      // Marca como "connecting" para iniciar o polling imediatamente
+      // 1) Verifica se já está conectado na Evolution API
+      try {
+        const st = await callEvo("status");
+        if (isConnectedResponse(st)) {
+          try {
+            await supabase
+              .from("whatsapp_connections")
+              .upsert(
+                {
+                  store_id: storeId,
+                  provider: "evolution",
+                  evolution_instance_name: `loja-${storeId}`,
+                  status: "connected",
+                  phone_number: st?.phone_number ?? null,
+                  connected_at: new Date().toISOString(),
+                },
+                { onConflict: "store_id" },
+              );
+          } catch (e) {
+            console.error("upsert connected error", e);
+          }
+          setQrCode(null);
+          await refetch();
+          toast({ title: "WhatsApp já conectado", description: "Loja vinculada com sucesso." });
+          return;
+        }
+      } catch (e) {
+        console.warn("status check before connect failed", e);
+      }
+
+      // 2) Marca como "connecting" para iniciar o polling imediatamente
       try {
         await supabase
           .from("whatsapp_connections")
@@ -177,6 +207,8 @@ export function WhatsAppPanel({ storeId, role }: Props) {
       } catch (e) {
         console.error("upsert connecting error", e);
       }
+
+      // 3) Gera o QR Code
       const res = await callEvo("connect");
       const qr = extractQr(res);
       if (qr) setQrCode(qr);
