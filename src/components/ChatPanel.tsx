@@ -29,6 +29,7 @@ export function ChatPanel({
   onBack?: () => void;
   onClose?: () => void;
 }) {
+  console.log("[ChatPanel] lead.id:", lead?.id);
   const { updateStatus, updateLead } = useLeads();
   const [message, setMessage] = useState("");
   const [gateStatus, setGateStatus] = useState<StageGate | null>(null);
