@@ -24,10 +24,12 @@ export function ChatPanel({
   lead,
   onBack,
   onClose,
+  chatOnly = false,
 }: {
   lead: Lead;
   onBack?: () => void;
   onClose?: () => void;
+  chatOnly?: boolean;
 }) {
   console.log("[ChatPanel] lead.id:", lead?.id);
   const { updateStatus, updateLead } = useLeads();
@@ -152,9 +154,13 @@ export function ChatPanel({
         </div>
       )}
 
-      <LeadSections lead={lead} onApplyLabScript={(msg) => setMessage(msg)} />
-      <LeadActivities leadId={lead.id} />
-      <ERPTransferCard lead={lead} />
+      {!chatOnly && (
+        <>
+          <LeadSections lead={lead} onApplyLabScript={(msg) => setMessage(msg)} />
+          <LeadActivities leadId={lead.id} />
+          <ERPTransferCard lead={lead} />
+        </>
+      )}
 
       <MessageThread messages={messages} sentMessages={sentMessages} isTyping={isTyping} />
 
