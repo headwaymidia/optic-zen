@@ -213,7 +213,7 @@ export function WhatsAppPanel({ storeId, role }: Props) {
           setLocalPhone(st?.phone_number ?? null);
           setLocalStatus("connected");
           try {
-            await supabase
+            const { error: upsertErr } = await supabase
               .from("whatsapp_connections")
               .upsert(
                 {
@@ -226,8 +226,13 @@ export function WhatsAppPanel({ storeId, role }: Props) {
                 },
                 { onConflict: "store_id" },
               );
+            if (upsertErr) {
+              console.error("[WhatsAppPanel] handleConnect upsert connected RLS/error:", upsertErr);
+            } else {
+              console.log("[WhatsAppPanel] handleConnect upsert connected OK");
+            }
           } catch (e) {
-            console.error("upsert connected error", e);
+            console.error("[WhatsAppPanel] handleConnect upsert connected threw:", e);
           }
           await refetch();
           toast({ title: "WhatsApp já conectado", description: "Loja vinculada com sucesso." });
@@ -239,7 +244,7 @@ export function WhatsAppPanel({ storeId, role }: Props) {
 
       // 2) Marca como "connecting" para iniciar o polling imediatamente
       try {
-        await supabase
+        const { error: upsertErr } = await supabase
           .from("whatsapp_connections")
           .upsert(
             {
@@ -250,9 +255,17 @@ export function WhatsAppPanel({ storeId, role }: Props) {
             },
             { onConflict: "store_id" },
           );
+        if (upsertErr) {
+          console.error("[WhatsAppPanel] handleConnect upsert connecting RLS/error:", upsertErr);
+        } else {
+          console.log("[WhatsAppPanel] handleConnect upsert connecting OK");
+        }
       } catch (e) {
-        console.error("upsert connecting error", e);
+        console.error("[WhatsAppPanel] handleConnect upsert connecting threw:", e);
       }
+
+      // Override local imediato para o polling iniciar mesmo se o upsert falhar
+      setLocalStatus("connecting");
 
       // 3) Gera o QR Code
       const res = await callEvo("connect");
