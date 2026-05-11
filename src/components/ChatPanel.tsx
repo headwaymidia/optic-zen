@@ -123,7 +123,15 @@ export function ChatPanel({
     setMessage(scripts[scriptType]);
   };
 
-  const messages: ChatMessage[] = [];
+  const { messages: waMessages } = useWhatsAppMessages(lead.id);
+  const messages: ChatMessage[] = waMessages.map((m) => ({
+    from: m.from_me ? "us" : "lead",
+    text: m.body ?? "",
+    time: new Date(m.timestamp).toLocaleTimeString("pt-BR", {
+      hour: "2-digit",
+      minute: "2-digit",
+    }),
+  }));
 
   return (
     <div className="flex flex-col h-full bg-background min-w-0 animate-in slide-in-from-right fade-in duration-300 ease-out">
