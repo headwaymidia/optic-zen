@@ -154,9 +154,13 @@ export function ChatPanel({
         </div>
       )}
 
-      <LeadSections lead={lead} onApplyLabScript={(msg) => setMessage(msg)} />
-      <LeadActivities leadId={lead.id} />
-      <ERPTransferCard lead={lead} />
+      {!chatOnly && (
+        <>
+          <LeadSections lead={lead} onApplyLabScript={(msg) => setMessage(msg)} />
+          <LeadActivities leadId={lead.id} />
+          <ERPTransferCard lead={lead} />
+        </>
+      )}
 
       <MessageThread messages={messages} sentMessages={sentMessages} isTyping={isTyping} />
 
