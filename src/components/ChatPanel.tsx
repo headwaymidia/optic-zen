@@ -13,6 +13,7 @@ import { LeadSections } from "@/components/chat/LeadSections";
 import { MessageThread, type ChatMessage, type SentMessage } from "@/components/chat/MessageThread";
 import { MessageInput } from "@/components/chat/MessageInput";
 import { LeadActivities } from "@/components/chat/LeadActivities";
+import { useWhatsAppMessages } from "@/hooks/useWhatsAppMessages";
 import {
   getFollowUpDef,
   getPendingFollowUpLevel,
