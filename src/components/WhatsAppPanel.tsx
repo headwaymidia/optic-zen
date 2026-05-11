@@ -199,6 +199,8 @@ export function WhatsAppPanel({ storeId, role }: Props) {
     (async () => {
       try {
         const st = await callEvo("status");
+        console.log('[mount] status response:', st);
+        console.log('[mount] isConnected:', isConnectedResponse(st));
         if (isConnectedResponse(st)) {
           setQrCode(null);
           setLocalPhone(st?.phone_number ?? null);
