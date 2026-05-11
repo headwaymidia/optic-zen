@@ -32,12 +32,7 @@ export function useWhatsAppMessages(leadId: string | undefined) {
         .select("*")
         .eq("lead_id", leadId!)
         .order("timestamp", { ascending: true });
-      console.log("[useWhatsAppMessages] result:", {
-        leadId,
-        count: data?.length ?? 0,
-        error,
-        data,
-      });
+      console.log("[useWhatsAppMessages] leadId:", leadId, "result:", data, "error:", error);
       if (error) throw error;
       return (data ?? []) as WhatsAppMessageRow[];
     },
