@@ -145,9 +145,10 @@ export function WhatsAppPanel({ storeId, role }: Props) {
             window.clearInterval(pollRef.current);
             pollRef.current = null;
           }
-          // Persiste no banco
+          // Persiste no banco (a edge function também faz upsert server-side
+          // com service_role; este aqui é redundante mas útil como fallback).
           try {
-            await supabase
+            const { error: upsertErr } = await supabase
               .from("whatsapp_connections")
               .upsert(
                 {
@@ -160,8 +161,13 @@ export function WhatsAppPanel({ storeId, role }: Props) {
                 },
                 { onConflict: "store_id" },
               );
+            if (upsertErr) {
+              console.error("[WhatsAppPanel] poll upsert connected RLS/error:", upsertErr);
+            } else {
+              console.log("[WhatsAppPanel] poll upsert connected OK");
+            }
           } catch (e) {
-            console.error("upsert connection error", e);
+            console.error("[WhatsAppPanel] poll upsert connected threw:", e);
           }
           await refetch();
           toast({ title: "WhatsApp conectado!", description: "Loja vinculada com sucesso." });
