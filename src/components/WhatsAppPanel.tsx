@@ -27,31 +27,31 @@ interface Props {
   role: string; // "Dono" | "Gerente" | "Vendedor"
 }
 
+type LocalWhatsAppStatus = WhatsAppStatus | "checking";
+
 export function WhatsAppPanel({ storeId, role }: Props) {
   const canEdit = role === "Dono" || role === "Gerente";
   const { connection, loading, refetch } = useWhatsAppConnection(storeId);
 
   const [qrCode, setQrCode] = useState<string | null>(null);
   const [busy, setBusy] = useState<"connect" | "disconnect" | null>(null);
-  const [localStatus, setLocalStatus] = useState<WhatsAppStatus | null>(null);
+  const [localStatus, setLocalStatus] = useState<LocalWhatsAppStatus>("checking");
   const [localPhone, setLocalPhone] = useState<string | null>(null);
-  const [checking, setChecking] = useState(true);
   const pollRef = useRef<number | null>(null);
 
-  // Mescla estado local (otimista) com o do servidor — local tem prioridade
-  // para refletir mudanças imediatamente sem aguardar o refetch.
-  const serverStatus: WhatsAppStatus = connection?.status ?? "disconnected";
-  const status: WhatsAppStatus = localStatus ?? serverStatus;
+  // Fonte única de verdade para renderização: o JSX nunca lê status direto da query.
+  const isChecking = localStatus === "checking";
+  const status: WhatsAppStatus | null = isChecking ? null : localStatus;
   const isConnected = status === "connected";
   const isConnecting = status === "connecting";
   const effectiveConnection: WhatsAppConnection | null = connection
     ? { ...connection, status, phone_number: localPhone ?? connection.phone_number }
-    : (localStatus
+    : (!isChecking && status
         ? ({
             id: "",
             store_id: storeId,
             provider: "evolution",
-            status: localStatus,
+            status,
             phone_number: localPhone,
             evolution_instance_name: `loja-${storeId}`,
             evolution_api_url: null,
@@ -64,16 +64,6 @@ export function WhatsAppPanel({ storeId, role }: Props) {
             updated_at: "",
           } as WhatsAppConnection)
         : null);
-
-  // Só descarta o override local quando o servidor confirmar "connected".
-  // Nunca descarta antes — isso evita que o refetch sobrescreva o estado
-  // otimista enquanto a UI ainda está em transição.
-  useEffect(() => {
-    if (localStatus === "connected" && connection?.status === "connected") {
-      setLocalStatus(null);
-      setLocalPhone(null);
-    }
-  }, [connection?.status, localStatus]);
 
   async function callEvo(action: "status" | "connect" | "qr" | "disconnect") {
     const { data: sess } = await supabase.auth.getSession();
