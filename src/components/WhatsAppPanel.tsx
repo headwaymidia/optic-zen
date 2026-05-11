@@ -64,9 +64,11 @@ export function WhatsAppPanel({ storeId, role }: Props) {
           } as WhatsAppConnection)
         : null);
 
-  // Quando o servidor confirmar o mesmo status, descarta o override local
+  // Só descarta o override local quando o servidor confirmar "connected".
+  // Nunca descarta antes — isso evita que o refetch sobrescreva o estado
+  // otimista enquanto a UI ainda está em transição.
   useEffect(() => {
-    if (localStatus && connection?.status === localStatus) {
+    if (localStatus === "connected" && connection?.status === "connected") {
       setLocalStatus(null);
       setLocalPhone(null);
     }
@@ -143,9 +145,10 @@ export function WhatsAppPanel({ storeId, role }: Props) {
             window.clearInterval(pollRef.current);
             pollRef.current = null;
           }
-          // Persiste no banco
+          // Persiste no banco (a edge function também faz upsert server-side
+          // com service_role; este aqui é redundante mas útil como fallback).
           try {
-            await supabase
+            const { error: upsertErr } = await supabase
               .from("whatsapp_connections")
               .upsert(
                 {
@@ -158,8 +161,13 @@ export function WhatsAppPanel({ storeId, role }: Props) {
                 },
                 { onConflict: "store_id" },
               );
+            if (upsertErr) {
+              console.error("[WhatsAppPanel] poll upsert connected RLS/error:", upsertErr);
+            } else {
+              console.log("[WhatsAppPanel] poll upsert connected OK");
+            }
           } catch (e) {
-            console.error("upsert connection error", e);
+            console.error("[WhatsAppPanel] poll upsert connected threw:", e);
           }
           await refetch();
           toast({ title: "WhatsApp conectado!", description: "Loja vinculada com sucesso." });
@@ -205,7 +213,7 @@ export function WhatsAppPanel({ storeId, role }: Props) {
           setLocalPhone(st?.phone_number ?? null);
           setLocalStatus("connected");
           try {
-            await supabase
+            const { error: upsertErr } = await supabase
               .from("whatsapp_connections")
               .upsert(
                 {
@@ -218,8 +226,13 @@ export function WhatsAppPanel({ storeId, role }: Props) {
                 },
                 { onConflict: "store_id" },
               );
+            if (upsertErr) {
+              console.error("[WhatsAppPanel] handleConnect upsert connected RLS/error:", upsertErr);
+            } else {
+              console.log("[WhatsAppPanel] handleConnect upsert connected OK");
+            }
           } catch (e) {
-            console.error("upsert connected error", e);
+            console.error("[WhatsAppPanel] handleConnect upsert connected threw:", e);
           }
           await refetch();
           toast({ title: "WhatsApp já conectado", description: "Loja vinculada com sucesso." });
@@ -231,7 +244,7 @@ export function WhatsAppPanel({ storeId, role }: Props) {
 
       // 2) Marca como "connecting" para iniciar o polling imediatamente
       try {
-        await supabase
+        const { error: upsertErr } = await supabase
           .from("whatsapp_connections")
           .upsert(
             {
@@ -242,9 +255,17 @@ export function WhatsAppPanel({ storeId, role }: Props) {
             },
             { onConflict: "store_id" },
           );
+        if (upsertErr) {
+          console.error("[WhatsAppPanel] handleConnect upsert connecting RLS/error:", upsertErr);
+        } else {
+          console.log("[WhatsAppPanel] handleConnect upsert connecting OK");
+        }
       } catch (e) {
-        console.error("upsert connecting error", e);
+        console.error("[WhatsAppPanel] handleConnect upsert connecting threw:", e);
       }
+
+      // Override local imediato para o polling iniciar mesmo se o upsert falhar
+      setLocalStatus("connecting");
 
       // 3) Gera o QR Code
       const res = await callEvo("connect");
