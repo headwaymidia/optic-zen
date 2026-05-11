@@ -44,10 +44,10 @@ export function WhatsAppPanel({ storeId, role }: Props) {
   const status: WhatsAppStatus | null = isChecking ? null : localStatus;
   const isConnected = status === "connected";
   const isConnecting = status === "connecting";
-  const effectiveConnection: WhatsAppConnection | null = connection
-    ? { ...connection, status, phone_number: localPhone ?? connection.phone_number }
-    : (!isChecking && status
-        ? ({
+  const effectiveConnection: WhatsAppConnection | null = !isChecking && status
+    ? (connection
+        ? { ...connection, status, phone_number: localPhone ?? connection.phone_number }
+        : ({
             id: "",
             store_id: storeId,
             provider: "evolution",
@@ -63,7 +63,8 @@ export function WhatsAppPanel({ storeId, role }: Props) {
             created_at: "",
             updated_at: "",
           } as WhatsAppConnection)
-        : null);
+      )
+    : null;
 
   async function callEvo(action: "status" | "connect" | "qr" | "disconnect") {
     const { data: sess } = await supabase.auth.getSession();
