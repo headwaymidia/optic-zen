@@ -135,9 +135,15 @@ export function WhatsAppPanel({ storeId, role }: Props) {
       try {
         const st = await callEvo("status");
         if (isConnectedResponse(st)) {
+          // Atualiza UI imediatamente (otimista)
           setQrCode(null);
-          // Garante que o banco fique como 'connected' mesmo se o upsert
-          // do edge function não tiver propagado ainda.
+          setLocalPhone(st?.phone_number ?? null);
+          setLocalStatus("connected");
+          if (pollRef.current) {
+            window.clearInterval(pollRef.current);
+            pollRef.current = null;
+          }
+          // Persiste no banco
           try {
             await supabase
               .from("whatsapp_connections")
@@ -157,10 +163,6 @@ export function WhatsAppPanel({ storeId, role }: Props) {
           }
           await refetch();
           toast({ title: "WhatsApp conectado!", description: "Loja vinculada com sucesso." });
-          if (pollRef.current) {
-            window.clearInterval(pollRef.current);
-            pollRef.current = null;
-          }
           return;
         }
         // Se ainda não conectou e não temos QR, busca um
