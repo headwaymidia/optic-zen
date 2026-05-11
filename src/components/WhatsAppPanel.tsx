@@ -232,6 +232,8 @@ export function WhatsAppPanel({ storeId, role }: Props) {
         await refetch();
       } catch {
         /* noop */
+      } finally {
+        setChecking(false);
       }
     })();
     // eslint-disable-next-line react-hooks/exhaustive-deps
