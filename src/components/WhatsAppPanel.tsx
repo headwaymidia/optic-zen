@@ -79,13 +79,18 @@ export function WhatsAppPanel({ storeId, role }: Props) {
   }
 
   function isConnectedResponse(res: any): boolean {
-    const state = res?.instance?.state ?? res?.state ?? res?.status;
+    const state =
+      res?.instance?.state ??
+      res?.state ??
+      res?.instance?.status ??
+      res?.status;
     return state === "open" || state === "connected";
   }
 
-  // Polling enquanto conectando: atualiza QR e status a cada 3s
+  // Polling enquanto conectando OU enquanto há QR Code visível
+  const shouldPoll = isConnecting || !!qrCode;
   useEffect(() => {
-    if (!isConnecting) {
+    if (!shouldPoll || isConnected) {
       if (pollRef.current) {
         window.clearInterval(pollRef.current);
         pollRef.current = null;
@@ -98,13 +103,39 @@ export function WhatsAppPanel({ storeId, role }: Props) {
         const st = await callEvo("status");
         if (isConnectedResponse(st)) {
           setQrCode(null);
+          // Garante que o banco fique como 'connected' mesmo se o upsert
+          // do edge function não tiver propagado ainda.
+          try {
+            await supabase
+              .from("whatsapp_connections")
+              .upsert(
+                {
+                  store_id: storeId,
+                  provider: "evolution",
+                  evolution_instance_name: `loja-${storeId}`,
+                  status: "connected",
+                  phone_number: st?.phone_number ?? null,
+                  connected_at: new Date().toISOString(),
+                },
+                { onConflict: "store_id" },
+              );
+          } catch (e) {
+            console.error("upsert connection error", e);
+          }
           await refetch();
           toast({ title: "WhatsApp conectado!", description: "Loja vinculada com sucesso." });
+          if (pollRef.current) {
+            window.clearInterval(pollRef.current);
+            pollRef.current = null;
+          }
           return;
         }
-        const q = await callEvo("qr");
-        const qr = extractQr(q);
-        if (qr) setQrCode(qr);
+        // Se ainda não conectou e não temos QR, busca um
+        if (!qrCode) {
+          const q = await callEvo("qr");
+          const qr = extractQr(q);
+          if (qr) setQrCode(qr);
+        }
       } catch (e) {
         console.error("poll error", e);
       }
@@ -117,7 +148,7 @@ export function WhatsAppPanel({ storeId, role }: Props) {
       pollRef.current = null;
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isConnecting, storeId]);
+  }, [shouldPoll, isConnected, storeId]);
 
   // Sync inicial de status com servidor
   useEffect(() => {
