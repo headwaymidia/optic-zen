@@ -219,12 +219,16 @@ export function WhatsAppPanel({ storeId, role }: Props) {
           } catch (e) {
             console.error("[WhatsAppPanel] mount upsert connected threw:", e);
           }
+        } else {
+          setQrCode(null);
+          setLocalPhone(connection?.phone_number ?? null);
+          setLocalStatus(connection?.status ?? "disconnected");
         }
         await refetch();
       } catch {
         /* noop */
       } finally {
-        setChecking(false);
+        setLocalStatus((current) => current === "checking" ? "disconnected" : current);
       }
     })();
     // eslint-disable-next-line react-hooks/exhaustive-deps
