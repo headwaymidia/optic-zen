@@ -297,7 +297,7 @@ export function WhatsAppPanel({ storeId, role }: Props) {
 
   return (
     <div className="space-y-4">
-      <ConnectionStatusCard connection={connection} loading={loading} />
+      <ConnectionStatusCard connection={effectiveConnection} loading={loading} />
 
       <div className="rounded-xl border bg-card p-5 space-y-4">
         <div className="flex items-start justify-between gap-2">
