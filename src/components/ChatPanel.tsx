@@ -187,6 +187,73 @@ export function ChatPanel({
     }
   };
 
+  const handleSendMedia = async (file: File) => {
+    if (!currentStoreId) {
+      toast({ title: "Selecione uma loja antes de enviar", variant: "destructive" });
+      return;
+    }
+    if (!lead.phone) {
+      toast({ title: "Lead sem telefone", variant: "destructive" });
+      return;
+    }
+    const isImage = file.type.startsWith("image/");
+    const isVideo = file.type.startsWith("video/");
+    if (!isImage && !isVideo) {
+      toast({ title: "Formato não suportado", variant: "destructive" });
+      return;
+    }
+    promoteToInAttendance();
+
+    const optimisticId = crypto.randomUUID();
+    const now = new Date();
+    const localUrl = URL.createObjectURL(file);
+    setSentMessages((prev) => [
+      ...prev,
+      {
+        id: optimisticId,
+        from: "us",
+        text: "",
+        time: now.toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" }),
+        media_type: isImage ? "image" : "video",
+        media_url: localUrl,
+      },
+    ]);
+
+    try {
+      const safeName = file.name.replace(/[^a-zA-Z0-9._-]/g, "_");
+      const path = `${currentStoreId}/${Date.now()}-${safeName}`;
+      const { error: upErr } = await supabase.storage
+        .from("whatsapp-media")
+        .upload(path, file, { contentType: file.type, upsert: false });
+      if (upErr) throw upErr;
+      const { data: pub } = supabase.storage.from("whatsapp-media").getPublicUrl(path);
+      const publicUrl = pub.publicUrl;
+
+      const { data, error } = await supabase.functions.invoke("whatsapp-evolution", {
+        body: {
+          action: "sendMessage",
+          store_id: currentStoreId,
+          lead_id: lead.id,
+          phone: lead.phone,
+          mediaUrl: publicUrl,
+          mediaType: isImage ? "image" : "video",
+          caption: "",
+        },
+      });
+      if (error) throw error;
+      if (data?.error) throw new Error(data.error);
+      await refetchMessages();
+      setSentMessages((prev) => prev.filter((m) => m.id !== optimisticId));
+    } catch (err: any) {
+      setSentMessages((prev) => prev.filter((m) => m.id !== optimisticId));
+      toast({
+        title: isImage ? "Falha ao enviar imagem" : "Falha ao enviar vídeo",
+        description: humanizeError(err),
+        variant: "destructive",
+      });
+    }
+  };
+
   const handleApplyFollowUpScript = () => {
     if (!pendingDef) return;
     setMessage(pendingDef.buildScript(firstName));
@@ -316,6 +383,7 @@ export function ChatPanel({
         pendingDef={pendingDef}
         pendingLevel={pendingLevel}
         onSendAudio={handleSendAudio}
+        onSendMedia={handleSendMedia}
       />
 
       <StageGateDialog
