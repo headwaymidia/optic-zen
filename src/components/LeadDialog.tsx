@@ -66,10 +66,10 @@ export function LeadDialog({ open, onOpenChange, lead, defaultStatus, onSaved }:
       setLeadSource((lead?.lead_source as string) ?? "");
       setInterestTag((lead?.interest_tag as string) ?? "");
       setResponsibleId(lead?.responsible_id ?? "");
-      setBairro((lead as any)?.bairro ?? "");
-      setCpf((lead as any)?.cpf ?? "");
-      setDataNascimento((lead as any)?.data_nascimento ?? "");
-      setDataUltimoExame((lead as any)?.last_exam_date ?? "");
+      setBairro(lead?.bairro ?? "");
+      setCpf(lead?.cpf ?? "");
+      setDataNascimento(lead?.data_nascimento ?? "");
+      setDataUltimoExame(lead?.last_exam_date ?? "");
     }
   }, [open, lead, defaultStatus]);
 
