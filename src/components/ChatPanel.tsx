@@ -209,7 +209,7 @@ export function ChatPanel({
         </div>
       )}
 
-      <div className="flex-1 min-h-[300px] flex flex-col min-w-0">
+      <div className="flex-1 min-h-0 flex flex-col min-w-0">
         <MessageThread messages={messages} sentMessages={sentMessages} isTyping={isTyping} />
       </div>
       {pendingDef && (
