@@ -132,6 +132,7 @@ export function MessageInput({
         className="h-8 w-8"
         onClick={() => fileInputRef.current?.click()}
         aria-label="Anexar imagem ou vídeo"
+        title="Enviar mídia"
       >
         <Paperclip className="h-4 w-4 text-muted-foreground" />
       </Button>
