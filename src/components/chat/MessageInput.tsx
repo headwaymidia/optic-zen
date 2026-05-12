@@ -95,15 +95,28 @@ export function MessageInput({
 
   return (
     <footer className="shrink-0 border-t bg-card p-2 flex items-center gap-1">
-      <Popover>
-        <PopoverTrigger asChild>
-          <Button variant="ghost" size="icon" type="button" className="h-8 w-8" aria-label="Inserir emoji" title="Emojis">
-            <Smile className="h-4 w-4 text-muted-foreground" />
-          </Button>
-        </PopoverTrigger>
-        <PopoverContent side="top" align="start" className="p-0 border-0 w-auto">
+      <Popover open={emojiOpen} onOpenChange={setEmojiOpen}>
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <PopoverTrigger asChild>
+              <Button
+                variant="ghost"
+                size="icon"
+                type="button"
+                className="h-8 w-8"
+                aria-label="Inserir emoji"
+              >
+                <Smile className="h-4 w-4 text-muted-foreground" />
+              </Button>
+            </PopoverTrigger>
+          </TooltipTrigger>
+          <TooltipContent side="top">Emojis</TooltipContent>
+        </Tooltip>
+        <PopoverContent side="top" align="start" className="p-0 border-0 w-auto z-50">
           <EmojiPicker
-            onEmojiClick={(e) => onChange(value + e.emoji)}
+            onEmojiClick={(e) => {
+              onChange(value + e.emoji);
+            }}
             emojiStyle={EmojiStyle.NATIVE}
             theme={Theme.AUTO}
             width={320}
@@ -115,24 +128,31 @@ export function MessageInput({
         </PopoverContent>
       </Popover>
       <input
-        id="file-upload-input"
+        ref={fileInputRef}
         type="file"
         accept="image/*,video/*"
-        style={{ display: "none" }}
+        className="hidden"
         onChange={async (e) => {
           const file = e.target.files?.[0];
           e.target.value = "";
           if (file && onSendMedia) await onSendMedia(file);
         }}
       />
-      <label
-        htmlFor="file-upload-input"
-        title="Enviar mídia"
-        aria-label="Anexar imagem ou vídeo"
-        className="inline-flex h-8 w-8 items-center justify-center rounded-md hover:bg-accent hover:text-accent-foreground cursor-pointer"
-      >
-        <Paperclip className="h-4 w-4 text-muted-foreground" />
-      </label>
+      <Tooltip>
+        <TooltipTrigger asChild>
+          <Button
+            variant="ghost"
+            size="icon"
+            type="button"
+            className="h-8 w-8"
+            aria-label="Anexar imagem ou vídeo"
+            onClick={() => fileInputRef.current?.click()}
+          >
+            <Paperclip className="h-4 w-4 text-muted-foreground" />
+          </Button>
+        </TooltipTrigger>
+        <TooltipContent side="top">Enviar mídia</TooltipContent>
+      </Tooltip>
       <Tooltip>
         <TooltipTrigger asChild>
           <Button
