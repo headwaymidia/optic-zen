@@ -188,18 +188,27 @@ export function MessageInput({
           </div>
         </PopoverContent>
       </Popover>
-      <Input
-        value={value}
-        onChange={(e) => onChange(e.target.value)}
-        onKeyDown={(e) => {
-          if (e.key === "Enter" && !e.shiftKey) {
-            e.preventDefault();
-            onSend();
-          }
-        }}
-        placeholder="Digite sua mensagem..."
-        className="flex-1 bg-muted/50 border-0 h-9"
-      />
+      {isRecording ? (
+        <div className="flex-1 flex items-center gap-2 px-3 h-9 rounded-md bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800">
+          <span className="h-2 w-2 rounded-full bg-red-500 animate-pulse" />
+          <span className="text-xs font-medium text-red-700 dark:text-red-200">
+            Gravando… {fmt(elapsed)}
+          </span>
+        </div>
+      ) : (
+        <Input
+          value={value}
+          onChange={(e) => onChange(e.target.value)}
+          onKeyDown={(e) => {
+            if (e.key === "Enter" && !e.shiftKey) {
+              e.preventDefault();
+              onSend();
+            }
+          }}
+          placeholder="Digite sua mensagem..."
+          className="flex-1 bg-muted/50 border-0 h-9"
+        />
+      )}
       <Button
         size={pendingDef ? "default" : "icon"}
         type="button"
