@@ -1,10 +1,12 @@
 import { useEffect, useRef } from "react";
+import { Check, CheckCheck } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 export interface ChatMessage {
   from: "lead" | "us";
   text: string;
   time: string;
+  status?: string | null;
 }
 
 export interface SentMessage {
@@ -12,6 +14,13 @@ export interface SentMessage {
   from: "us";
   text: string;
   time: string;
+  status?: string | null;
+}
+
+function StatusTicks({ status }: { status?: string | null }) {
+  if (status === "read") return <CheckCheck className="h-3 w-3 text-sky-500" />;
+  if (status === "delivered") return <CheckCheck className="h-3 w-3 text-muted-foreground" />;
+  return <Check className="h-3 w-3 text-muted-foreground" />;
 }
 
 interface Props {
