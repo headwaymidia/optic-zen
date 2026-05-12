@@ -97,7 +97,25 @@ export function MessageInput({
       <Button variant="ghost" size="icon" type="button" className="h-8 w-8">
         <Smile className="h-4 w-4 text-muted-foreground" />
       </Button>
-      <Button variant="ghost" size="icon" type="button" className="h-8 w-8">
+      <input
+        ref={fileInputRef}
+        type="file"
+        accept="image/*,video/*"
+        className="hidden"
+        onChange={async (e) => {
+          const file = e.target.files?.[0];
+          e.target.value = "";
+          if (file && onSendMedia) await onSendMedia(file);
+        }}
+      />
+      <Button
+        variant="ghost"
+        size="icon"
+        type="button"
+        className="h-8 w-8"
+        onClick={() => fileInputRef.current?.click()}
+        aria-label="Anexar imagem ou vídeo"
+      >
         <Paperclip className="h-4 w-4 text-muted-foreground" />
       </Button>
       <Tooltip>
