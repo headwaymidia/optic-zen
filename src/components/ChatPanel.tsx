@@ -88,16 +88,12 @@ export function ChatPanel({
     promoteToInAttendance();
     setMessage("");
 
-    let phoneDigits = lead.phone.replace(/\D/g, "");
-    if (!phoneDigits.startsWith("55")) phoneDigits = `55${phoneDigits}`;
-    const remoteJid = `${phoneDigits}@s.whatsapp.net`;
-    const instanceName = `loja-${currentStoreId}`;
-
     try {
       const { data, error } = await supabase.functions.invoke("whatsapp-evolution", {
         body: {
           action: "sendMessage",
           store_id: currentStoreId,
+          lead_id: lead.id,
           phone: lead.phone,
           message: text,
         },
@@ -105,24 +101,6 @@ export function ChatPanel({
       if (error) throw error;
       if (data?.error) throw new Error(data.error);
 
-      const messageBody = text;
-      if (!messageBody) throw new Error("Mensagem vazia");
-
-      const insertPayload = {
-        from_me: true,
-        lead_id: lead.id,
-        store_id: currentStoreId,
-        body: messageBody,
-        timestamp: new Date().toISOString(),
-        remote_jid: remoteJid,
-        instance_name: instanceName,
-        message_id: crypto.randomUUID(),
-      };
-      console.log("[ChatPanel] inserting whatsapp_message:", insertPayload);
-      const { error: insertError } = await supabase
-        .from("whatsapp_messages")
-        .insert(insertPayload);
-      if (insertError) throw insertError;
     } catch (err: any) {
       toast({
         title: "Falha ao enviar mensagem",
