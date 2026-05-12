@@ -40,6 +40,8 @@ export function ChatPanel({
   const [gateStatus, setGateStatus] = useState<StageGate | null>(null);
   const [isTyping, setIsTyping] = useState(false);
   const [sentMessages, setSentMessages] = useState<SentMessage[]>([]);
+  const [searchOpen, setSearchOpen] = useState(false);
+  const [searchQuery, setSearchQuery] = useState("");
 
   // Reseta mensagens locais quando troca de lead
   useEffect(() => {
