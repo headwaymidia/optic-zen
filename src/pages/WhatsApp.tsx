@@ -306,17 +306,9 @@ export default function WhatsAppPage() {
             Selecione um contato para iniciar a conversa
           </div>
         ) : (
-          <ChatPanel lead={selected} onBack={() => setSelectedId(null)} chatOnly />
+          <ChatPanel lead={selected} onBack={() => setSelectedId(null)} />
         )}
       </section>
-
-      {selected && (
-        <aside className="hidden lg:flex w-80 xl:w-96 shrink-0 border-l bg-card flex-col min-h-0 overflow-y-auto">
-          <LeadSections lead={selected} onApplyLabScript={() => {}} />
-          <LeadActivities leadId={selected.id} />
-          <ERPTransferCard lead={selected} />
-        </aside>
-      )}
 
 
       <Dialog open={newChatOpen} onOpenChange={setNewChatOpen}>
