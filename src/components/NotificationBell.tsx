@@ -68,6 +68,10 @@ export function NotificationBell() {
 
   useEffect(() => {
     if (!userId) return;
+    // Generate cooling notifications occasionally
+    supabase.rpc("generate_cooling_notifications").then(() => {
+      queryClient.invalidateQueries({ queryKey: ["notifications", userId] });
+    });
 
     const channel = supabase
       .channel(`notifications:${userId}`)
