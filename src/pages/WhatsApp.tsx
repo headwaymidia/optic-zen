@@ -95,6 +95,12 @@ function truncate(text: string, max = 40) {
   return t.length > max ? `${t.slice(0, max - 1)}…` : t;
 }
 
+function formatBRPhone(raw: string) {
+  let d = raw.replace(/\D/g, "");
+  if (d.startsWith("55") && (d.length === 12 || d.length === 13)) d = d.slice(2);
+  return maskPhone(d);
+}
+
 function initials(name: string) {
   return name.split(" ").map((p) => p[0]).slice(0, 2).join("").toUpperCase();
 }
@@ -283,7 +289,7 @@ export default function WhatsAppPage() {
                     )}
                   </div>
                   {lead.phone && (
-                    <p className="text-[11px] text-muted-foreground truncate">{maskPhone(lead.phone)}</p>
+                    <p className="text-[11px] text-muted-foreground truncate">{formatBRPhone(lead.phone)}</p>
                   )}
                   <div className="flex items-center justify-between gap-2 mt-0.5">
                     <p className={cn("text-xs truncate", hasMessages ? "text-muted-foreground" : "text-muted-foreground/70")}>
