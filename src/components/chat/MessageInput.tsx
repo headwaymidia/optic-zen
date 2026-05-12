@@ -15,6 +15,7 @@ interface Props {
   onApplyScript: (type: "agendar" | "receita" | "resgate" | "confirmar") => void;
   pendingDef: FollowUpDef | null;
   pendingLevel: FollowUpLevel | null;
+  onSendAudio?: (blob: Blob) => Promise<void> | void;
 }
 
 export function MessageInput({
