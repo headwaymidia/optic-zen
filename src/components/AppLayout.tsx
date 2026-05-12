@@ -25,7 +25,12 @@ export default function AppLayout() {
   const { stores, currentStore, loading: storesLoading } = useStores();
 
   if (loading || storesLoading) {
-    return <div className="flex min-h-screen items-center justify-center text-muted-foreground">Carregando...</div>;
+    return (
+      <div className="min-h-screen w-full p-6 bg-background">
+        <DataSkeleton variant="row" count={1} className="mb-6" />
+        <DataSkeleton variant="card" count={4} />
+      </div>
+    );
   }
   if (!session) return <Navigate to="/auth" replace />;
   if (stores.length === 0) return <Navigate to="/onboarding" replace />;
