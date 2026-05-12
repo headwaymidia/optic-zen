@@ -29,7 +29,7 @@ export function useWhatsAppConnection(storeId?: string | null) {
     queryKey: ["whatsapp-connection", storeId],
     enabled: !!storeId,
     queryFn: async (): Promise<WhatsAppConnection | null> => {
-      const { data, error } = await (supabase as any)
+      const { data, error } = await supabase
         .from("whatsapp_connections")
         .select("*")
         .eq("store_id", storeId!)
