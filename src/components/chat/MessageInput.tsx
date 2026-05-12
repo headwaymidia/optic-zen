@@ -99,6 +99,30 @@ export function MessageInput({
       <Button variant="ghost" size="icon" type="button" className="h-8 w-8">
         <Paperclip className="h-4 w-4 text-muted-foreground" />
       </Button>
+      <Tooltip>
+        <TooltipTrigger asChild>
+          <Button
+            variant="ghost"
+            size="icon"
+            type="button"
+            onClick={toggleRecording}
+            aria-label={isRecording ? "Parar gravação" : "Gravar áudio"}
+            className={cn(
+              "h-8 w-8",
+              isRecording && "bg-red-100 hover:bg-red-200 dark:bg-red-900/40"
+            )}
+          >
+            {isRecording ? (
+              <Square className="h-4 w-4 text-red-600 dark:text-red-300 fill-current" />
+            ) : (
+              <Mic className="h-4 w-4 text-muted-foreground" />
+            )}
+          </Button>
+        </TooltipTrigger>
+        <TooltipContent side="top">
+          {isRecording ? "Parar e enviar" : "Gravar áudio"}
+        </TooltipContent>
+      </Tooltip>
       <Popover open={scriptsOpen} onOpenChange={setScriptsOpen}>
         <Tooltip>
           <TooltipTrigger asChild>
