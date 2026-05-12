@@ -346,6 +346,7 @@ export default function WhatsAppPage() {
                   className="w-full flex items-center gap-3 px-4 py-3 hover:bg-muted/50 transition-colors text-left border-b last:border-b-0"
                 >
                   <Avatar className="h-10 w-10 shrink-0">
+                    {(lead as any).avatar_url && <AvatarImage src={(lead as any).avatar_url} alt={lead.name} />}
                     <AvatarFallback className="bg-primary/10 text-primary text-sm font-medium">
                       {initials(lead.name)}
                     </AvatarFallback>
