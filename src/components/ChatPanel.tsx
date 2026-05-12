@@ -315,6 +315,7 @@ export function ChatPanel({
         onApplyScript={applyScript}
         pendingDef={pendingDef}
         pendingLevel={pendingLevel}
+        onSendAudio={handleSendAudio}
       />
 
       <StageGateDialog
