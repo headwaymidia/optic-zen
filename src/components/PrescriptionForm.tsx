@@ -291,7 +291,18 @@ export function PrescriptionForm({ lead }: { lead: Lead }) {
     <div className="rounded-lg border bg-card overflow-hidden">
       <div className="bg-muted/40 border-b px-3 py-2 flex items-center gap-2 text-xs uppercase tracking-wider font-semibold text-muted-foreground">
         <FileText className="h-3.5 w-3.5" />
-        Receita Oftalmológica
+        <span>Receita Oftalmológica</span>
+        <Button
+          type="button"
+          variant="ghost"
+          size="sm"
+          onClick={handleExportPdf}
+          className="ml-auto h-7 px-2 gap-1 text-[10px] normal-case font-medium"
+          aria-label="Exportar receita em PDF"
+        >
+          <Download className="h-3.5 w-3.5" />
+          Exportar PDF
+        </Button>
       </div>
 
       <div className="p-3 space-y-4">
