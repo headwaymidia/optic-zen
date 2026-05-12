@@ -1,5 +1,6 @@
 import { useRef, useState } from "react";
 import { Mic, Paperclip, Send, Smile, Square, Zap } from "lucide-react";
+import EmojiPicker, { EmojiStyle, Theme } from "emoji-picker-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
@@ -94,9 +95,25 @@ export function MessageInput({
 
   return (
     <footer className="shrink-0 border-t bg-card p-2 flex items-center gap-1">
-      <Button variant="ghost" size="icon" type="button" className="h-8 w-8">
-        <Smile className="h-4 w-4 text-muted-foreground" />
-      </Button>
+      <Popover>
+        <PopoverTrigger asChild>
+          <Button variant="ghost" size="icon" type="button" className="h-8 w-8" aria-label="Inserir emoji">
+            <Smile className="h-4 w-4 text-muted-foreground" />
+          </Button>
+        </PopoverTrigger>
+        <PopoverContent side="top" align="start" className="p-0 border-0 w-auto">
+          <EmojiPicker
+            onEmojiClick={(e) => onChange(value + e.emoji)}
+            emojiStyle={EmojiStyle.NATIVE}
+            theme={Theme.AUTO}
+            width={320}
+            height={400}
+            searchPlaceholder="Buscar emoji..."
+            previewConfig={{ showPreview: false }}
+            skinTonesDisabled
+          />
+        </PopoverContent>
+      </Popover>
       <input
         ref={fileInputRef}
         type="file"
