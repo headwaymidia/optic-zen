@@ -98,7 +98,7 @@ interface Props {
  * Multi-eixo BI: Vendas (R$) + Leads + Agendamentos simultâneos.
  * Legenda interativa com checkbox + botão "Ver Escala Total".
  */
-export function RevenueEvolutionChart({ leads }: Props) {
+function RevenueEvolutionChartImpl({ leads }: Props) {
   const [active, setActive] = useState<Record<SeriesKey, boolean>>({
     vendas: true,
     leads: true,
