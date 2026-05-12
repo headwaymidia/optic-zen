@@ -180,6 +180,7 @@ export function ChatPanel({
       hour: "2-digit",
       minute: "2-digit",
     }),
+    status: m.status,
   }));
 
   return (
