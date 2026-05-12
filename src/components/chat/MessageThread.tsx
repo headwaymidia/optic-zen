@@ -25,7 +25,7 @@ export interface SentMessage {
 function MessageContent({ media_type, media_url, text }: { media_type?: string | null; media_url?: string | null; text: string }) {
   if (media_type === "audio") {
     return media_url ? (
-      <audio controls src={media_url} className="max-w-xs" />
+      <AudioPlayer src={media_url} />
     ) : (
       <span>🎵 Áudio</span>
     );
