@@ -1,6 +1,7 @@
-import { useEffect, useState } from "react";
-import { Sparkles } from "lucide-react";
+import { useEffect, useMemo, useState } from "react";
+import { Search, Sparkles, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { toast } from "@/hooks/use-toast";
 import { humanizeError } from "@/lib/error-handler";
 import { Lead, LeadStatus, supabase } from "@/lib/supabase";
