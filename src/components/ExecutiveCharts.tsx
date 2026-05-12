@@ -138,7 +138,7 @@ function ConversionFunnelImpl({ leads }: { leads: Lead[] }) {
   );
 }
 
-export function LeadsVsSalesTimeline({ leads, embedded = false }: { leads: Lead[]; embedded?: boolean }) {
+function LeadsVsSalesTimelineImpl({ leads, embedded = false }: { leads: Lead[]; embedded?: boolean }) {
   const data = useMemo(() => {
     const today = new Date();
     const days = eachDayOfInterval({ start: subDays(today, 6), end: today });
