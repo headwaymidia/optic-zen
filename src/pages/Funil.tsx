@@ -113,7 +113,7 @@ export default function Funil() {
     : "Selecionar datas";
 
   return (
-    <div className="h-full flex flex-col lg:flex-row min-h-0">
+    <div className="h-full max-h-full flex flex-col lg:flex-row min-h-0 overflow-hidden">
       {/* Centro: Kanban + pipeline overview */}
       <div className="flex-1 flex flex-col min-w-0 min-h-0">
         <div className="p-3 sm:p-6 space-y-3 sm:space-y-4 flex-1 flex flex-col min-h-0">
