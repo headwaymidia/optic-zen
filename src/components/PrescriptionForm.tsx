@@ -169,7 +169,7 @@ export function PrescriptionForm({ lead }: { lead: Lead }) {
   }
 
   async function handleDelete(rowId: string) {
-    const { error } = await (supabase as any).from("prescriptions").delete().eq("id", rowId);
+    const { error } = await supabase.from("prescriptions").delete().eq("id", rowId);
     if (error) {
       toast({ title: "Erro ao remover receita", description: humanizeError(error), variant: "destructive" });
       return;
