@@ -7,6 +7,8 @@ export interface ChatMessage {
   text: string;
   time: string;
   status?: string | null;
+  media_type?: string | null;
+  media_url?: string | null;
 }
 
 export interface SentMessage {
@@ -15,6 +17,25 @@ export interface SentMessage {
   text: string;
   time: string;
   status?: string | null;
+  media_type?: string | null;
+  media_url?: string | null;
+}
+
+function MessageContent({ media_type, media_url, text }: { media_type?: string | null; media_url?: string | null; text: string }) {
+  if (media_type === "audio" && media_url) {
+    return <audio controls src={media_url} className="max-w-xs rounded-lg" />;
+  }
+  if (media_type === "image" && media_url) {
+    return <img src={media_url} alt="imagem" className="max-w-xs rounded-lg" />;
+  }
+  if (media_type === "video" && media_url) {
+    return <video controls src={media_url} className="max-w-xs rounded-lg" />;
+  }
+  return (
+    <p className="whitespace-pre-wrap break-words">
+      {text?.trim() ? text : <span className="italic text-muted-foreground">[mensagem vazia]</span>}
+    </p>
+  );
 }
 
 function StatusTicks({ status }: { status?: string | null }) {
@@ -48,9 +69,7 @@ export function MessageThread({ messages, sentMessages, isTyping }: Props) {
                 : "bg-card text-foreground rounded-bl-sm"
             )}
           >
-            <p className="whitespace-pre-wrap break-words">
-              {m.text?.trim() ? m.text : <span className="italic text-muted-foreground">[mensagem vazia]</span>}
-            </p>
+            <MessageContent media_type={m.media_type} media_url={m.media_url} text={m.text} />
             <p className="text-[10px] text-muted-foreground mt-0.5 text-right flex items-center justify-end gap-1">
               <span>{m.time}</span>
               {m.from === "us" && <StatusTicks status={m.status} />}
@@ -61,7 +80,7 @@ export function MessageThread({ messages, sentMessages, isTyping }: Props) {
       {sentMessages.map((m, i) => (
         <div key={`sent-${i}`} className="flex justify-end">
           <div className="max-w-[80%] rounded-2xl px-3 py-1.5 shadow-sm text-sm bg-green-100 text-foreground rounded-br-sm dark:bg-green-900/40">
-            <p className="whitespace-pre-wrap break-words">{m.text}</p>
+            <MessageContent media_type={m.media_type} media_url={m.media_url} text={m.text} />
             <p className="text-[10px] text-muted-foreground mt-0.5 text-right flex items-center justify-end gap-1">
               <span>{m.time}</span>
               <StatusTicks status={m.status ?? "sent"} />

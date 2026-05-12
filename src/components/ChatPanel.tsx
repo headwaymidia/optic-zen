@@ -181,6 +181,8 @@ export function ChatPanel({
       minute: "2-digit",
     }),
     status: m.status,
+    media_type: m.media_type,
+    media_url: m.media_url,
   }));
 
   return (
