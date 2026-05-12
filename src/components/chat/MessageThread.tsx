@@ -8,6 +8,7 @@ export interface ChatMessage {
 }
 
 export interface SentMessage {
+  id?: string;
   from: "us";
   text: string;
   time: string;
