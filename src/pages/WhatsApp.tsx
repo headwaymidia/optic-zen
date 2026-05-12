@@ -41,6 +41,7 @@ function getPeriodRange(key: PeriodKey, custom?: DateRange): { from: Date; to: D
 import { DataSkeleton } from "@/components/ui/DataSkeleton";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { cn } from "@/lib/utils";
+import { maskPhone } from "@/lib/masks";
 import { Button } from "@/components/ui/button";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
