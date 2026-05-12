@@ -737,6 +737,7 @@ export type Database = {
         Args: { _roles: string[]; _store_id: string; _user_id: string }
         Returns: boolean
       }
+      increment_lead_unread: { Args: { _lead_id: string }; Returns: undefined }
       is_store_member: {
         Args: { _store_id: string; _user_id: string }
         Returns: boolean
