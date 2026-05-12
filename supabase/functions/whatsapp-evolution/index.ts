@@ -311,10 +311,10 @@ Deno.serve(async (req) => {
             if (upErr) {
               console.error("[sendMessage] storage upload error:", upErr);
             } else {
-              const { data: pub } = admin.storage
+              const { data: signed } = await admin.storage
                 .from("whatsapp-media")
-                .getPublicUrl(path);
-              mediaUrl = pub.publicUrl;
+                .createSignedUrl(path, 60 * 60 * 24 * 365 * 5); // 5 anos
+              mediaUrl = signed?.signedUrl ?? null;
               mediaType = "audio";
             }
           } catch (e) {
