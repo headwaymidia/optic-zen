@@ -1,5 +1,5 @@
-import { useState } from "react";
-import { Paperclip, Send, Smile, Zap } from "lucide-react";
+import { useRef, useState } from "react";
+import { Mic, Paperclip, Send, Smile, Square, Zap } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
