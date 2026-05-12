@@ -100,7 +100,7 @@ export function PrescriptionForm({ lead }: { lead: Lead }) {
   const [history, setHistory] = useState<PrescriptionRow[]>([]);
 
   const loadHistory = useCallback(async () => {
-    const { data: rows, error } = await (supabase as any)
+    const { data: rows, error } = await supabase
       .from("prescriptions")
       .select("*")
       .eq("lead_id", lead.id)
