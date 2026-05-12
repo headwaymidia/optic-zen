@@ -83,6 +83,53 @@ Deno.serve(async (req) => {
       ? data
       : [data];
 
+    // ─── messages.update: atualiza status (delivered / read) ───
+    const isStatusUpdate = /messages?\.?update/i.test(event);
+    if (isStatusUpdate) {
+      const updates: any[] = Array.isArray(data?.updates)
+        ? data.updates
+        : Array.isArray(data)
+        ? data
+        : [data];
+
+      let updated = 0;
+      for (const u of updates) {
+        if (!u) continue;
+        const msgId: string =
+          u?.key?.id ?? u?.keyId ?? u?.messageId ?? u?.id ?? "";
+        const rawStatus: string = String(
+          u?.status ?? u?.update?.status ?? u?.message?.status ?? "",
+        ).toUpperCase();
+
+        let nextStatus: string | null = null;
+        if (rawStatus === "DELIVERY_ACK" || rawStatus === "DELIVERED") {
+          nextStatus = "delivered";
+        } else if (rawStatus === "READ" || rawStatus === "PLAYED") {
+          nextStatus = "read";
+        } else if (rawStatus === "SERVER_ACK" || rawStatus === "SENT") {
+          nextStatus = "sent";
+        }
+
+        if (!msgId || !nextStatus) continue;
+
+        const { error: updErr } = await admin
+          .from("whatsapp_messages")
+          .update({ status: nextStatus })
+          .eq("store_id", storeId)
+          .eq("message_id", msgId);
+        if (updErr) {
+          console.error("[webhook] status update error:", updErr);
+        } else {
+          updated++;
+        }
+      }
+
+      return new Response(
+        JSON.stringify({ ok: true, status_updated: updated }),
+        { headers: { ...corsHeaders, "Content-Type": "application/json" } },
+      );
+    }
+
     const isMessageEvent =
       !event ||
       /messages?\.?upsert/i.test(event) ||
