@@ -38,7 +38,9 @@ export function MessageThread({ messages, sentMessages, isTyping }: Props) {
                 : "bg-card text-foreground rounded-bl-sm"
             )}
           >
-            <p className="whitespace-pre-wrap break-words">{m.text}</p>
+            <p className="whitespace-pre-wrap break-words">
+              {m.text?.trim() ? m.text : <span className="italic text-muted-foreground">[mensagem vazia]</span>}
+            </p>
             <p className="text-[10px] text-muted-foreground mt-0.5 text-right">{m.time}</p>
           </div>
         </div>
