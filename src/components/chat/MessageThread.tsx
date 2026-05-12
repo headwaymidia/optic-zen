@@ -80,7 +80,7 @@ export function MessageThread({ messages, sentMessages, isTyping }: Props) {
       {sentMessages.map((m, i) => (
         <div key={`sent-${i}`} className="flex justify-end">
           <div className="max-w-[80%] rounded-2xl px-3 py-1.5 shadow-sm text-sm bg-green-100 text-foreground rounded-br-sm dark:bg-green-900/40">
-            <p className="whitespace-pre-wrap break-words">{m.text}</p>
+            <MessageContent media_type={m.media_type} media_url={m.media_url} text={m.text} />
             <p className="text-[10px] text-muted-foreground mt-0.5 text-right flex items-center justify-end gap-1">
               <span>{m.time}</span>
               <StatusTicks status={m.status ?? "sent"} />
