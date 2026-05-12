@@ -144,6 +144,7 @@ export function MessageInput({
             type="button"
             onClick={toggleRecording}
             aria-label={isRecording ? "Parar gravação" : "Gravar áudio"}
+            title="Gravar áudio"
             className={cn(
               "h-8 w-8",
               isRecording && "bg-red-100 hover:bg-red-200 dark:bg-red-900/40"
