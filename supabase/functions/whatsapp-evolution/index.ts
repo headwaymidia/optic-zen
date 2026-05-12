@@ -359,6 +359,13 @@ Deno.serve(async (req) => {
         send.data?.id ||
         crypto.randomUUID();
 
+      const bodyText = isMedia ? (caption || null) : isAudio ? null : message;
+      const preview = isMedia
+        ? (inMediaType === "image" ? "📷 Imagem" : "🎬 Vídeo")
+        : isAudio
+        ? "🎵 Áudio"
+        : message.slice(0, 100);
+
       const { error: insErr } = await admin.from("whatsapp_messages").insert({
         store_id: storeId,
         lead_id: leadId,
@@ -366,7 +373,7 @@ Deno.serve(async (req) => {
         remote_jid: remoteJid,
         message_id: messageId,
         from_me: true,
-        body: isAudio ? null : message,
+        body: bodyText,
         media_type: mediaType,
         media_url: mediaUrl,
         timestamp: new Date().toISOString(),
@@ -381,7 +388,7 @@ Deno.serve(async (req) => {
           .update({
             updated_at: new Date().toISOString(),
             last_message_at: new Date().toISOString(),
-            last_message_preview: isAudio ? "🎵 Áudio" : message.slice(0, 100),
+            last_message_preview: preview,
           })
           .eq("id", leadId);
       }
@@ -393,7 +400,7 @@ Deno.serve(async (req) => {
       );
     }
 
-
+    return new Response(JSON.stringify({ error: "Ação desconhecida" }), {
       status: 400,
       headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
