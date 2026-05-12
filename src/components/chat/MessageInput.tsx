@@ -26,13 +26,70 @@ export function MessageInput({
   onApplyScript,
   pendingDef,
   pendingLevel,
+  onSendAudio,
 }: Props) {
   const [scriptsOpen, setScriptsOpen] = useState(false);
+  const [isRecording, setIsRecording] = useState(false);
+  const [elapsed, setElapsed] = useState(0);
+  const recorderRef = useRef<MediaRecorder | null>(null);
+  const chunksRef = useRef<Blob[]>([]);
+  const timerRef = useRef<number | null>(null);
 
   const handleApply = (type: "agendar" | "receita" | "resgate" | "confirmar") => {
     onApplyScript(type);
     setScriptsOpen(false);
   };
+
+  const stopTimer = () => {
+    if (timerRef.current) {
+      window.clearInterval(timerRef.current);
+      timerRef.current = null;
+    }
+  };
+
+  const startRecording = async () => {
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      const mime = MediaRecorder.isTypeSupported("audio/webm;codecs=opus")
+        ? "audio/webm;codecs=opus"
+        : MediaRecorder.isTypeSupported("audio/webm")
+        ? "audio/webm"
+        : "";
+      const rec = mime ? new MediaRecorder(stream, { mimeType: mime }) : new MediaRecorder(stream);
+      chunksRef.current = [];
+      rec.ondataavailable = (e) => {
+        if (e.data.size > 0) chunksRef.current.push(e.data);
+      };
+      rec.onstop = async () => {
+        stream.getTracks().forEach((t) => t.stop());
+        const blob = new Blob(chunksRef.current, { type: rec.mimeType || "audio/webm" });
+        chunksRef.current = [];
+        if (onSendAudio && blob.size > 0) await onSendAudio(blob);
+      };
+      rec.start();
+      recorderRef.current = rec;
+      setElapsed(0);
+      setIsRecording(true);
+      timerRef.current = window.setInterval(() => setElapsed((s) => s + 1), 1000);
+    } catch (err) {
+      console.error("[MessageInput] mic error", err);
+    }
+  };
+
+  const stopRecording = () => {
+    stopTimer();
+    setIsRecording(false);
+    recorderRef.current?.stop();
+    recorderRef.current = null;
+  };
+
+  const toggleRecording = () => {
+    if (isRecording) stopRecording();
+    else startRecording();
+  };
+
+  const fmt = (s: number) =>
+    `${String(Math.floor(s / 60)).padStart(2, "0")}:${String(s % 60).padStart(2, "0")}`;
 
   return (
     <footer className="shrink-0 border-t bg-card p-2 flex items-center gap-1">
