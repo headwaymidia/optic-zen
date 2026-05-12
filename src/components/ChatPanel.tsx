@@ -169,7 +169,7 @@ export function ChatPanel({
           phone: lead.phone,
           audioMessage: {
             base64,
-            mimetype: blob.type || "audio/webm",
+            mimetype: "audio/ogg; codecs=opus",
           },
         },
       });
