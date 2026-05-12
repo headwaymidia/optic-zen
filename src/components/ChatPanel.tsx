@@ -184,8 +184,8 @@ export function ChatPanel({
   }));
 
   return (
-    <div className="flex flex-col h-full bg-background min-w-0 animate-in slide-in-from-right fade-in duration-300 ease-out">
-      <header className="border-b bg-card px-3 py-2 space-y-2">
+    <div className="flex flex-col h-full min-h-0 bg-background min-w-0 animate-in slide-in-from-right fade-in duration-300 ease-out">
+      <header className="shrink-0 border-b bg-card px-3 py-2 space-y-2">
         <LeadHeader
           lead={lead}
           onBack={onBack}
@@ -196,20 +196,20 @@ export function ChatPanel({
       </header>
 
       {lead.lab_status === "Pronto no laboratório" && (
-        <div className="border-b bg-amber-100 dark:bg-amber-900/30 px-3 py-2 text-xs font-semibold text-amber-900 dark:text-amber-100 flex items-center gap-2">
+        <div className="shrink-0 border-b bg-amber-100 dark:bg-amber-900/30 px-3 py-2 text-xs font-semibold text-amber-900 dark:text-amber-100 flex items-center gap-2">
           <span>⚠️ Pedido pronto — avisar o cliente</span>
         </div>
       )}
 
       {!chatOnly && (
-        <div className="shrink-0 max-h-[45%] overflow-y-auto border-b">
+        <div className="shrink-0 max-h-[40%] overflow-y-auto border-b">
           <LeadSections lead={lead} onApplyLabScript={(msg) => setMessage(msg)} />
           <LeadActivities leadId={lead.id} />
           <ERPTransferCard lead={lead} />
         </div>
       )}
 
-      <div className="flex-1 min-h-0 flex flex-col">
+      <div className="flex-1 min-h-[300px] flex flex-col min-w-0">
         <MessageThread messages={messages} sentMessages={sentMessages} isTyping={isTyping} />
       </div>
       {pendingDef && (
