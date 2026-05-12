@@ -171,6 +171,7 @@ export function MessageInput({
                 type="button"
                 className="h-8 w-8"
                 aria-label="Respostas Rápidas"
+                title="Ações rápidas"
               >
                 <Zap className="h-4 w-4 text-muted-foreground" />
               </Button>
