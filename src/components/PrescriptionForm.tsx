@@ -120,7 +120,7 @@ export function PrescriptionForm({ lead }: { lead: Lead }) {
   async function handleSave() {
     setSaving(true);
     try {
-      const { error: insErr } = await (supabase as any).from("prescriptions").insert({
+      const { error: insErr } = await supabase.from("prescriptions").insert({
         lead_id: lead.id,
         store_id: lead.store_id,
         od_esferico: strOrNull(data.esferico_od),
