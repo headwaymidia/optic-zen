@@ -383,6 +383,7 @@ export function ChatPanel({
         pendingDef={pendingDef}
         pendingLevel={pendingLevel}
         onSendAudio={handleSendAudio}
+        onSendMedia={handleSendMedia}
       />
 
       <StageGateDialog
