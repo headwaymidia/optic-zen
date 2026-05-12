@@ -1,5 +1,6 @@
 import { useRef, useState } from "react";
 import { Mic, Paperclip, Send, Smile, Square, Zap } from "lucide-react";
+import EmojiPicker, { EmojiStyle, Theme } from "emoji-picker-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
