@@ -88,8 +88,10 @@ export function ChatPanel({
     promoteToInAttendance();
     setMessage("");
 
-    const phoneDigits = lead.phone.replace(/\D/g, "");
+    let phoneDigits = lead.phone.replace(/\D/g, "");
+    if (!phoneDigits.startsWith("55")) phoneDigits = `55${phoneDigits}`;
     const remoteJid = `${phoneDigits}@s.whatsapp.net`;
+    const instanceName = `loja-${currentStoreId}`;
 
     try {
       const { data, error } = await supabase.functions.invoke("whatsapp-evolution", {
@@ -113,6 +115,8 @@ export function ChatPanel({
         body: messageBody,
         timestamp: new Date().toISOString(),
         remote_jid: remoteJid,
+        instance_name: instanceName,
+        message_id: crypto.randomUUID(),
       };
       console.log("[ChatPanel] inserting whatsapp_message:", insertPayload);
       const { error: insertError } = await supabase
