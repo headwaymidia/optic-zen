@@ -293,7 +293,7 @@ export default function WhatsAppPage() {
         </div>
       </aside>
 
-      <section className={cn("flex-1 flex flex-col min-w-0", !selected && "hidden md:flex")}>
+      <section className={cn("flex-1 flex flex-col min-w-0 min-h-0", !selected && "hidden md:flex")}>
         {!selected ? (
           <div className="flex-1 flex items-center justify-center text-muted-foreground text-sm">
             Selecione um contato para iniciar a conversa
