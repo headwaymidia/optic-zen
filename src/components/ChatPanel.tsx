@@ -3,8 +3,9 @@ import { Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { toast } from "@/hooks/use-toast";
 import { humanizeError } from "@/lib/error-handler";
-import { Lead, LeadStatus } from "@/lib/supabase";
+import { Lead, LeadStatus, supabase } from "@/lib/supabase";
 import { useLeads } from "@/hooks/useLeads";
+import { useStores } from "@/hooks/useStores";
 import { ERPTransferCard } from "@/components/ERPTransferCard";
 import { StageGateDialog, isGatedStatus, type StageGate } from "@/components/StageGateDialog";
 import { LeadHeader } from "@/components/chat/LeadHeader";
@@ -33,6 +34,7 @@ export function ChatPanel({
 }) {
   console.log("[ChatPanel] lead.id:", lead?.id);
   const { updateStatus, updateLead } = useLeads();
+  const { currentStoreId } = useStores();
   const [message, setMessage] = useState("");
   const [gateStatus, setGateStatus] = useState<StageGate | null>(null);
   const [isTyping, setIsTyping] = useState(false);
@@ -72,10 +74,52 @@ export function ChatPanel({
   const pendingDef = pendingLevel ? getFollowUpDef(pendingLevel) : null;
   const reachedMax = (lead.follow_up_count ?? 0) >= MAX_FOLLOW_UPS;
 
-  const handleSend = () => {
-    if (!message.trim()) return;
+  const handleSend = async () => {
+    const text = message.trim();
+    if (!text) return;
+    if (!currentStoreId) {
+      toast({ title: "Selecione uma loja antes de enviar", variant: "destructive" });
+      return;
+    }
+    if (!lead.phone) {
+      toast({ title: "Lead sem telefone", variant: "destructive" });
+      return;
+    }
     promoteToInAttendance();
     setMessage("");
+
+    const phoneDigits = lead.phone.replace(/\D/g, "");
+    const remoteJid = `${phoneDigits}@s.whatsapp.net`;
+
+    try {
+      const { data, error } = await supabase.functions.invoke("whatsapp-evolution", {
+        body: {
+          action: "sendMessage",
+          store_id: currentStoreId,
+          phone: lead.phone,
+          message: text,
+        },
+      });
+      if (error) throw error;
+      if (data?.error) throw new Error(data.error);
+
+      const { error: insertError } = await supabase.from("whatsapp_messages").insert({
+        from_me: true,
+        lead_id: lead.id,
+        store_id: currentStoreId,
+        body: text,
+        timestamp: new Date().toISOString(),
+        remote_jid: remoteJid,
+      });
+      if (insertError) throw insertError;
+    } catch (err: any) {
+      toast({
+        title: "Falha ao enviar mensagem",
+        description: humanizeError(err),
+        variant: "destructive",
+      });
+      setMessage(text);
+    }
   };
 
   const handleApplyFollowUpScript = () => {
