@@ -202,15 +202,16 @@ export function ChatPanel({
       )}
 
       {!chatOnly && (
-        <>
+        <div className="shrink-0 max-h-[45%] overflow-y-auto border-b">
           <LeadSections lead={lead} onApplyLabScript={(msg) => setMessage(msg)} />
           <LeadActivities leadId={lead.id} />
           <ERPTransferCard lead={lead} />
-        </>
+        </div>
       )}
 
-      <MessageThread messages={messages} sentMessages={sentMessages} isTyping={isTyping} />
-
+      <div className="flex-1 min-h-0 flex flex-col">
+        <MessageThread messages={messages} sentMessages={sentMessages} isTyping={isTyping} />
+      </div>
       {pendingDef && (
         <div className="border-t bg-amber-50 dark:bg-amber-900/20 px-3 py-2 flex items-center gap-2">
           <div className="shrink-0 h-7 w-7 rounded-full bg-amber-100 dark:bg-amber-900/40 flex items-center justify-center">
