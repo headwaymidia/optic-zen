@@ -22,8 +22,12 @@ export interface SentMessage {
 }
 
 function MessageContent({ media_type, media_url, text }: { media_type?: string | null; media_url?: string | null; text: string }) {
-  if (media_type === "audio" && media_url) {
-    return <audio controls src={media_url} className="max-w-xs rounded-lg" />;
+  if (media_type === "audio") {
+    return media_url ? (
+      <audio controls src={media_url} className="max-w-xs" />
+    ) : (
+      <span>🎵 Áudio</span>
+    );
   }
   if (media_type === "image" && media_url) {
     return <img src={media_url} alt="imagem" className="max-w-xs rounded-lg" />;
@@ -31,11 +35,7 @@ function MessageContent({ media_type, media_url, text }: { media_type?: string |
   if (media_type === "video" && media_url) {
     return <video controls src={media_url} className="max-w-xs rounded-lg" />;
   }
-  return (
-    <p className="whitespace-pre-wrap break-words">
-      {text?.trim() ? text : <span className="italic text-muted-foreground">[mensagem vazia]</span>}
-    </p>
-  );
+  return <p className="whitespace-pre-wrap break-words">{text ?? ""}</p>;
 }
 
 function StatusTicks({ status }: { status?: string | null }) {
