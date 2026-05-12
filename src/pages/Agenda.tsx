@@ -523,7 +523,7 @@ function AgendaInner() {
         onOpenChange={setScheduleOpen}
         leads={leads}
         onSchedule={async (leadId, date) => {
-          await updateLead(leadId, { exam_date: date.toISOString() } as any);
+          await updateLead(leadId, { exam_date: date.toISOString() });
           setScheduleOpen(false);
         }}
       />
