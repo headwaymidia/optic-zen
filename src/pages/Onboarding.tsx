@@ -96,8 +96,9 @@ export default function OnboardingPage() {
 
   if (authLoading || checkingSession) {
     return (
-      <div className="min-h-screen w-full flex items-center justify-center bg-zinc-50 text-zinc-500 text-sm">
-        Carregando...
+      <div className="min-h-screen w-full p-6 bg-zinc-50">
+        <DataSkeleton variant="row" count={1} className="mb-6" />
+        <DataSkeleton variant="card" count={3} />
       </div>
     );
   }
