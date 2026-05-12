@@ -1,6 +1,7 @@
 import { useEffect, useRef } from "react";
 import { Check, CheckCheck } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { AudioPlayer } from "@/components/chat/AudioPlayer";
 
 export interface ChatMessage {
   from: "lead" | "us";
