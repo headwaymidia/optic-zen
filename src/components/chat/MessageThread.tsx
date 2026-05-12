@@ -1,6 +1,7 @@
 import { useEffect, useRef } from "react";
 import { Check, CheckCheck } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { AudioPlayer } from "@/components/chat/AudioPlayer";
 
 export interface ChatMessage {
   from: "lead" | "us";
@@ -24,7 +25,7 @@ export interface SentMessage {
 function MessageContent({ media_type, media_url, text }: { media_type?: string | null; media_url?: string | null; text: string }) {
   if (media_type === "audio") {
     return media_url ? (
-      <audio controls src={media_url} className="max-w-xs" />
+      <AudioPlayer src={media_url} />
     ) : (
       <span>🎵 Áudio</span>
     );
