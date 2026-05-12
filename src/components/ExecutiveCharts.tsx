@@ -298,3 +298,7 @@ function LossReasonsDonutImpl({ leads }: { leads: Lead[] }) {
     </Card>
   );
 }
+
+export const ConversionFunnel = memo(ConversionFunnelImpl);
+export const LeadsVsSalesTimeline = memo(LeadsVsSalesTimelineImpl);
+export const LossReasonsDonut = memo(LossReasonsDonutImpl);
