@@ -29,7 +29,7 @@ export function useWhatsAppConnection(storeId?: string | null) {
     queryKey: ["whatsapp-connection", storeId],
     enabled: !!storeId,
     queryFn: async (): Promise<WhatsAppConnection | null> => {
-      const { data, error } = await (supabase as any)
+      const { data, error } = await supabase
         .from("whatsapp_connections")
         .select("*")
         .eq("store_id", storeId!)
@@ -43,7 +43,7 @@ export function useWhatsAppConnection(storeId?: string | null) {
     async (patch: Partial<WhatsAppConnection>) => {
       if (!storeId) return { error: new Error("Loja não selecionada") };
       const payload = { store_id: storeId, ...patch };
-      const { error } = await (supabase as any)
+      const { error } = await supabase
         .from("whatsapp_connections")
         .upsert(payload, { onConflict: "store_id" });
       if (!error) {

@@ -263,7 +263,7 @@ export default function WhatsAppPage() {
                 onClick={async () => {
                   setSelectedId(lead.id);
                   if ((lead.unread_count ?? 0) > 0) {
-                    await updateLead(lead.id, { unread_count: 0 } as any);
+                    await updateLead(lead.id, { unread_count: 0 });
                   }
                 }}
                 className={cn(

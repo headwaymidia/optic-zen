@@ -201,7 +201,7 @@ function AgendaInner() {
 
   async function reschedule() {
     if (!selectedEvent || !reschedDate) return;
-    await updateLead(selectedEvent.lead.id, { exam_date: reschedDate.toISOString() } as any);
+    await updateLead(selectedEvent.lead.id, { exam_date: reschedDate.toISOString() });
     setReschedOpen(false);
     setSelectedEvent(null);
   }
@@ -523,7 +523,7 @@ function AgendaInner() {
         onOpenChange={setScheduleOpen}
         leads={leads}
         onSchedule={async (leadId, date) => {
-          await updateLead(leadId, { exam_date: date.toISOString() } as any);
+          await updateLead(leadId, { exam_date: date.toISOString() });
           setScheduleOpen(false);
         }}
       />

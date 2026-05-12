@@ -100,7 +100,7 @@ export function PrescriptionForm({ lead }: { lead: Lead }) {
   const [history, setHistory] = useState<PrescriptionRow[]>([]);
 
   const loadHistory = useCallback(async () => {
-    const { data: rows, error } = await (supabase as any)
+    const { data: rows, error } = await supabase
       .from("prescriptions")
       .select("*")
       .eq("lead_id", lead.id)
@@ -120,7 +120,7 @@ export function PrescriptionForm({ lead }: { lead: Lead }) {
   async function handleSave() {
     setSaving(true);
     try {
-      const { error: insErr } = await (supabase as any).from("prescriptions").insert({
+      const { error: insErr } = await supabase.from("prescriptions").insert({
         lead_id: lead.id,
         store_id: lead.store_id,
         od_esferico: strOrNull(data.esferico_od),
@@ -169,7 +169,7 @@ export function PrescriptionForm({ lead }: { lead: Lead }) {
   }
 
   async function handleDelete(rowId: string) {
-    const { error } = await (supabase as any).from("prescriptions").delete().eq("id", rowId);
+    const { error } = await supabase.from("prescriptions").delete().eq("id", rowId);
     if (error) {
       toast({ title: "Erro ao remover receita", description: humanizeError(error), variant: "destructive" });
       return;
