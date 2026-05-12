@@ -113,7 +113,7 @@ export default function Funil() {
     : "Selecionar datas";
 
   return (
-    <div className="h-full flex flex-col lg:flex-row min-h-0">
+    <div className="h-full max-h-full flex flex-col lg:flex-row min-h-0 overflow-hidden">
       {/* Centro: Kanban + pipeline overview */}
       <div className="flex-1 flex flex-col min-w-0 min-h-0">
         <div className="p-3 sm:p-6 space-y-3 sm:space-y-4 flex-1 flex flex-col min-h-0">
@@ -256,9 +256,9 @@ export default function Funil() {
       {/* Direita: Chat panel — desktop, só renderiza quando há lead selecionado */}
       {!isMobile && selected && (
         <aside
-          className="hidden lg:flex shrink-0 border-l border-slate-100 dark:border-slate-700 bg-white dark:bg-slate-900 flex-col min-h-0 overflow-hidden shadow-[-4px_0_24px_rgba(0,0,0,0.02)] dark:shadow-none w-[380px] xl:w-[420px] animate-slide-in-right"
+          className="hidden lg:flex shrink-0 border-l border-slate-100 dark:border-slate-700 bg-white dark:bg-slate-900 flex-col h-full max-h-screen min-h-0 overflow-hidden shadow-[-4px_0_24px_rgba(0,0,0,0.02)] dark:shadow-none w-[380px] xl:w-[420px] animate-slide-in-right"
         >
-          <div className="flex-1 min-h-0 flex flex-col">
+          <div className="flex-1 min-h-0 flex flex-col overflow-hidden">
             <ChatPanel lead={selected} onClose={() => setSelectedId(null)} />
           </div>
         </aside>
