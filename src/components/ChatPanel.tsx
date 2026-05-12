@@ -34,6 +34,7 @@ export function ChatPanel({
 }) {
   console.log("[ChatPanel] lead.id:", lead?.id);
   const { updateStatus, updateLead } = useLeads();
+  const { currentStoreId } = useStores();
   const [message, setMessage] = useState("");
   const [gateStatus, setGateStatus] = useState<StageGate | null>(null);
   const [isTyping, setIsTyping] = useState(false);
