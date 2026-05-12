@@ -87,7 +87,7 @@ export function LeadActivityTimeline({
   }, [leadId, limit]);
 
   const body = loading ? (
-    <p className="text-[11px] text-muted-foreground">Carregando...</p>
+    <DataSkeleton variant="row" count={3} />
   ) : items.length === 0 ? (
     <p className="text-[11px] text-muted-foreground">Nenhuma atividade registrada ainda.</p>
   ) : (
