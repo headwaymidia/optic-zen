@@ -101,6 +101,7 @@ export function ChatPanel({
       if (error) throw error;
       if (data?.error) throw new Error(data.error);
 
+      await refetchMessages();
     } catch (err: any) {
       toast({
         title: "Falha ao enviar mensagem",
@@ -159,7 +160,7 @@ export function ChatPanel({
     setMessage(scripts[scriptType]);
   };
 
-  const { messages: waMessages } = useWhatsAppMessages(lead.id);
+  const { messages: waMessages, refetch: refetchMessages } = useWhatsAppMessages(lead.id);
   const messages: ChatMessage[] = waMessages.map((m) => ({
     from: m.from_me ? "us" : "lead",
     text: m.body ?? "",

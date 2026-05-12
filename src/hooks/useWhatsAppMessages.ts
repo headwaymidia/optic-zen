@@ -22,7 +22,7 @@ export function useWhatsAppMessages(leadId: string | undefined) {
   const queryClient = useQueryClient();
   const queryKey = ["whatsapp_messages", leadId] as const;
 
-  const { data: messages = [], isLoading } = useQuery({
+  const { data: messages = [], isLoading, refetch } = useQuery({
     queryKey,
     enabled: !!leadId,
     queryFn: async () => {
@@ -60,5 +60,5 @@ export function useWhatsAppMessages(leadId: string | undefined) {
     };
   }, [leadId, queryClient]);
 
-  return { messages, loading: isLoading };
+  return { messages, loading: isLoading, refetch };
 }
