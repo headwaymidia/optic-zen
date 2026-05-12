@@ -51,7 +51,10 @@ export function MessageThread({ messages, sentMessages, isTyping }: Props) {
             <p className="whitespace-pre-wrap break-words">
               {m.text?.trim() ? m.text : <span className="italic text-muted-foreground">[mensagem vazia]</span>}
             </p>
-            <p className="text-[10px] text-muted-foreground mt-0.5 text-right">{m.time}</p>
+            <p className="text-[10px] text-muted-foreground mt-0.5 text-right flex items-center justify-end gap-1">
+              <span>{m.time}</span>
+              {m.from === "us" && <StatusTicks status={m.status} />}
+            </p>
           </div>
         </div>
       ))}
@@ -59,7 +62,10 @@ export function MessageThread({ messages, sentMessages, isTyping }: Props) {
         <div key={`sent-${i}`} className="flex justify-end">
           <div className="max-w-[80%] rounded-2xl px-3 py-1.5 shadow-sm text-sm bg-green-100 text-foreground rounded-br-sm dark:bg-green-900/40">
             <p className="whitespace-pre-wrap break-words">{m.text}</p>
-            <p className="text-[10px] text-muted-foreground mt-0.5 text-right">{m.time}</p>
+            <p className="text-[10px] text-muted-foreground mt-0.5 text-right flex items-center justify-end gap-1">
+              <span>{m.time}</span>
+              <StatusTicks status={m.status ?? "sent"} />
+            </p>
           </div>
         </div>
       ))}
