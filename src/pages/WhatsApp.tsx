@@ -5,9 +5,6 @@ import { useLeads } from "@/hooks/useLeads";
 import { Input } from "@/components/ui/input";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { ChatPanel } from "@/components/ChatPanel";
-import { LeadSections } from "@/components/chat/LeadSections";
-import { LeadActivities } from "@/components/chat/LeadActivities";
-import { ERPTransferCard } from "@/components/ERPTransferCard";
 import { Search, MessageSquarePlus, MessageCircle, CalendarRange } from "lucide-react";
 import {
   Select,
@@ -306,17 +303,9 @@ export default function WhatsAppPage() {
             Selecione um contato para iniciar a conversa
           </div>
         ) : (
-          <ChatPanel lead={selected} onBack={() => setSelectedId(null)} chatOnly />
+          <ChatPanel lead={selected} onBack={() => setSelectedId(null)} />
         )}
       </section>
-
-      {selected && (
-        <aside className="hidden lg:flex w-80 xl:w-96 shrink-0 border-l bg-card flex-col min-h-0 overflow-y-auto">
-          <LeadSections lead={selected} onApplyLabScript={() => {}} />
-          <LeadActivities leadId={selected.id} />
-          <ERPTransferCard lead={selected} />
-        </aside>
-      )}
 
 
       <Dialog open={newChatOpen} onOpenChange={setNewChatOpen}>
