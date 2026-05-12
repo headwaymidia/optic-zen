@@ -1,6 +1,7 @@
-import { useEffect, useState } from "react";
-import { Sparkles } from "lucide-react";
+import { useEffect, useMemo, useState } from "react";
+import { Search, Sparkles, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { toast } from "@/hooks/use-toast";
 import { humanizeError } from "@/lib/error-handler";
 import { Lead, LeadStatus, supabase } from "@/lib/supabase";
@@ -39,6 +40,8 @@ export function ChatPanel({
   const [gateStatus, setGateStatus] = useState<StageGate | null>(null);
   const [isTyping, setIsTyping] = useState(false);
   const [sentMessages, setSentMessages] = useState<SentMessage[]>([]);
+  const [searchOpen, setSearchOpen] = useState(false);
+  const [searchQuery, setSearchQuery] = useState("");
 
   // Reseta mensagens locais quando troca de lead
   useEffect(() => {
@@ -306,7 +309,7 @@ export function ChatPanel({
   };
 
   const { messages: waMessages, refetch: refetchMessages } = useWhatsAppMessages(lead.id);
-  const messages: ChatMessage[] = waMessages.map((m) => ({
+  const allMessages: ChatMessage[] = waMessages.map((m) => ({
     from: m.from_me ? "us" : "lead",
     text: m.body ?? "",
     time: new Date(m.timestamp).toLocaleTimeString("pt-BR", {
@@ -318,15 +321,65 @@ export function ChatPanel({
     media_url: m.media_url,
   }));
 
+  const filteredMessages = useMemo(() => {
+    const q = searchQuery.trim().toLowerCase();
+    if (!q) return allMessages;
+    return allMessages.filter((m) => (m.text ?? "").toLowerCase().includes(q));
+  }, [allMessages, searchQuery]);
+  const messages = filteredMessages;
+
   return (
     <div className="flex flex-col h-full min-h-0 bg-background min-w-0 animate-in slide-in-from-right fade-in duration-300 ease-out">
       <header className="shrink-0 border-b bg-card px-3 py-2 space-y-2">
-        <LeadHeader
-          lead={lead}
-          onBack={onBack}
-          onClose={onClose}
-          onStatusChange={handleStatusChange}
-        />
+        <div className="flex items-start gap-1">
+          <div className="flex-1 min-w-0">
+            <LeadHeader
+              lead={lead}
+              onBack={onBack}
+              onClose={onClose}
+              onStatusChange={handleStatusChange}
+            />
+          </div>
+          <Button
+            variant="ghost"
+            size="icon"
+            className="h-8 w-8 shrink-0"
+            onClick={() => {
+              setSearchOpen((s) => !s);
+              if (searchOpen) setSearchQuery("");
+            }}
+            aria-label={searchOpen ? "Fechar busca" : "Buscar na conversa"}
+          >
+            <Search className="h-4 w-4" />
+          </Button>
+        </div>
+        {searchOpen && (
+          <div className="relative">
+            <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground pointer-events-none" />
+            <Input
+              autoFocus
+              placeholder="Buscar nesta conversa..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="h-8 pl-8 pr-8 text-sm"
+            />
+            {searchQuery && (
+              <button
+                type="button"
+                onClick={() => setSearchQuery("")}
+                className="absolute right-2 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                aria-label="Limpar busca"
+              >
+                <X className="h-3.5 w-3.5" />
+              </button>
+            )}
+            <p className="text-[10px] text-muted-foreground mt-1 px-1">
+              {searchQuery
+                ? `${filteredMessages.length} resultado${filteredMessages.length === 1 ? "" : "s"}`
+                : "Digite para filtrar"}
+            </p>
+          </div>
+        )}
         <LeadDropdowns lead={lead} />
       </header>
 
@@ -345,7 +398,11 @@ export function ChatPanel({
       )}
 
       <div className="flex-1 min-h-0 flex flex-col min-w-0">
-        <MessageThread messages={messages} sentMessages={sentMessages} isTyping={isTyping} />
+        <MessageThread
+          messages={messages}
+          sentMessages={searchQuery ? [] : sentMessages}
+          isTyping={searchQuery ? false : isTyping}
+        />
       </div>
       {pendingDef && (
         <div className="border-t bg-amber-50 dark:bg-amber-900/20 px-3 py-2 flex items-center gap-2">

@@ -4,7 +4,8 @@ import { useLeads } from "@/hooks/useLeads";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
-import { Save, Check, History, RotateCcw, Loader2, FileText, Trash2 } from "lucide-react";
+import { Save, Check, History, RotateCcw, Loader2, FileText, Trash2, Download } from "lucide-react";
+import jsPDF from "jspdf";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -178,6 +179,109 @@ export function PrescriptionForm({ lead }: { lead: Lead }) {
     toast({ title: "Receita removida do histórico" });
   }
 
+  function handleExportPdf() {
+    try {
+      const doc = new jsPDF({ unit: "pt", format: "a4" });
+      const pageW = doc.internal.pageSize.getWidth();
+      const today = new Date().toLocaleDateString("pt-BR");
+
+      // Cabeçalho
+      doc.setFont("helvetica", "bold");
+      doc.setFontSize(18);
+      doc.text("Receita Oftalmológica", pageW / 2, 60, { align: "center" });
+
+      doc.setFont("helvetica", "normal");
+      doc.setFontSize(10);
+      doc.text(`Emitida em ${today}`, pageW / 2, 78, { align: "center" });
+
+      // Bloco do paciente
+      let y = 110;
+      doc.setFont("helvetica", "bold");
+      doc.setFontSize(12);
+      doc.text("Paciente", 40, y);
+      y += 16;
+      doc.setFont("helvetica", "normal");
+      doc.setFontSize(11);
+      doc.text(`Nome: ${lead.name ?? "—"}`, 40, y);
+      y += 14;
+      doc.text(`Telefone: ${lead.phone ?? "—"}`, 40, y);
+      y += 14;
+      if (lead.cpf) { doc.text(`CPF: ${lead.cpf}`, 40, y); y += 14; }
+      if (lead.data_nascimento) {
+        doc.text(`Nascimento: ${lead.data_nascimento}`, 40, y);
+        y += 14;
+      }
+
+      // Tabela de valores
+      y += 12;
+      doc.setFont("helvetica", "bold");
+      doc.setFontSize(12);
+      doc.text("Valores da receita", 40, y);
+      y += 18;
+
+      const col1 = 40, col2 = 220, col3 = 380;
+      doc.setFontSize(10);
+      doc.text("Parâmetro", col1, y);
+      doc.text("OD (Direito)", col2, y);
+      doc.text("OE (Esquerdo)", col3, y);
+      doc.setLineWidth(0.5);
+      doc.line(40, y + 4, pageW - 40, y + 4);
+      y += 18;
+
+      doc.setFont("helvetica", "normal");
+      const rows: Array<[string, string, string]> = [
+        ["Esférico", fmt(data.esferico_od), fmt(data.esferico_oe)],
+        ["Cilíndrico", fmt(data.cilindrico_od), fmt(data.cilindrico_oe)],
+        ["Eixo", fmt(data.eixo_od), fmt(data.eixo_oe)],
+        ["DNP (mm)", fmt(data.od_dnp), fmt(data.oe_dnp)],
+        ["Altura (mm)", fmt(data.od_altura), fmt(data.oe_altura)],
+      ];
+      for (const [label, od, oe] of rows) {
+        doc.text(label, col1, y);
+        doc.text(od, col2, y);
+        doc.text(oe, col3, y);
+        y += 16;
+      }
+
+      y += 6;
+      doc.setFont("helvetica", "bold");
+      doc.text("Adição:", col1, y);
+      doc.setFont("helvetica", "normal");
+      doc.text(fmt(data.adicao), col1 + 60, y);
+      y += 22;
+
+      if (data.observacoes_medico && String(data.observacoes_medico).trim()) {
+        doc.setFont("helvetica", "bold");
+        doc.text("Observações", 40, y);
+        y += 14;
+        doc.setFont("helvetica", "normal");
+        const lines = doc.splitTextToSize(String(data.observacoes_medico), pageW - 80);
+        doc.text(lines, 40, y);
+        y += lines.length * 13;
+      }
+
+      // Rodapé
+      doc.setFontSize(9);
+      doc.setTextColor(120);
+      doc.text(
+        "Documento gerado a partir do CRM da loja.",
+        pageW / 2,
+        doc.internal.pageSize.getHeight() - 30,
+        { align: "center" },
+      );
+
+      const safeName = (lead.name || "paciente").replace(/[^\w\-]+/g, "_");
+      doc.save(`receita-${safeName}.pdf`);
+      toast({ title: "PDF gerado", description: "Receita exportada com sucesso." });
+    } catch (e: any) {
+      toast({
+        title: "Erro ao gerar PDF",
+        description: humanizeError(e),
+        variant: "destructive",
+      });
+    }
+  }
+
   const justSaved = savedAt && Date.now() - savedAt < 2500;
 
   const odTint = "bg-emerald-50 dark:bg-emerald-950/30 border-emerald-200 dark:border-emerald-900/50";
@@ -187,7 +291,18 @@ export function PrescriptionForm({ lead }: { lead: Lead }) {
     <div className="rounded-lg border bg-card overflow-hidden">
       <div className="bg-muted/40 border-b px-3 py-2 flex items-center gap-2 text-xs uppercase tracking-wider font-semibold text-muted-foreground">
         <FileText className="h-3.5 w-3.5" />
-        Receita Oftalmológica
+        <span>Receita Oftalmológica</span>
+        <Button
+          type="button"
+          variant="ghost"
+          size="sm"
+          onClick={handleExportPdf}
+          className="ml-auto h-7 px-2 gap-1 text-[10px] normal-case font-medium"
+          aria-label="Exportar receita em PDF"
+        >
+          <Download className="h-3.5 w-3.5" />
+          Exportar PDF
+        </Button>
       </div>
 
       <div className="p-3 space-y-4">
