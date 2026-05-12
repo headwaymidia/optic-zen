@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { memo, useMemo, useState } from "react";
 import { Card } from "@/components/ui/card";
 import { Lead } from "@/lib/supabase";
 import {
@@ -98,7 +98,7 @@ interface Props {
  * Multi-eixo BI: Vendas (R$) + Leads + Agendamentos simultâneos.
  * Legenda interativa com checkbox + botão "Ver Escala Total".
  */
-export function RevenueEvolutionChart({ leads }: Props) {
+function RevenueEvolutionChartImpl({ leads }: Props) {
   const [active, setActive] = useState<Record<SeriesKey, boolean>>({
     vendas: true,
     leads: true,
@@ -561,3 +561,5 @@ function Arrow() {
     </div>
   );
 }
+
+export const RevenueEvolutionChart = memo(RevenueEvolutionChartImpl);

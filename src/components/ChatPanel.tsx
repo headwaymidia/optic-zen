@@ -32,7 +32,7 @@ export function ChatPanel({
   onClose?: () => void;
   chatOnly?: boolean;
 }) {
-  console.log("[ChatPanel] lead.id:", lead?.id);
+  if (import.meta.env.DEV) console.log("[ChatPanel] lead.id:", lead?.id);
   const { updateStatus, updateLead } = useLeads();
   const { currentStoreId } = useStores();
   const [message, setMessage] = useState("");

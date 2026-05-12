@@ -73,7 +73,7 @@ export function LeadsProvider({ children }: { children: ReactNode }) {
           filter: `store_id=eq.${currentStoreId}`,
         },
         (payload) => {
-          console.log("[Realtime] whatsapp_messages -> invalidando leads", payload);
+          if (import.meta.env.DEV) console.log("[Realtime] whatsapp_messages -> invalidando leads", payload);
           queryClient.invalidateQueries({ queryKey: ["leads", currentStoreId] });
         }
       )

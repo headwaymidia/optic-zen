@@ -1,4 +1,4 @@
-import { useMemo } from "react";
+import { memo, useMemo } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Lead } from "@/lib/supabase";
 import {
@@ -82,7 +82,7 @@ const tooltipStyle = {
   fontSize: 11,
 };
 
-export function ConversionFunnel({ leads }: { leads: Lead[] }) {
+function ConversionFunnelImpl({ leads }: { leads: Lead[] }) {
   const funnel = useMemo(() => computeFunnel(leads), [leads]);
   const data = useMemo(
     () =>
@@ -138,7 +138,7 @@ export function ConversionFunnel({ leads }: { leads: Lead[] }) {
   );
 }
 
-export function LeadsVsSalesTimeline({ leads, embedded = false }: { leads: Lead[]; embedded?: boolean }) {
+function LeadsVsSalesTimelineImpl({ leads, embedded = false }: { leads: Lead[]; embedded?: boolean }) {
   const data = useMemo(() => {
     const today = new Date();
     const days = eachDayOfInterval({ start: subDays(today, 6), end: today });
@@ -203,7 +203,7 @@ export function LeadsVsSalesTimeline({ leads, embedded = false }: { leads: Lead[
   );
 }
 
-export function LossReasonsDonut({ leads }: { leads: Lead[] }) {
+function LossReasonsDonutImpl({ leads }: { leads: Lead[] }) {
   const data = useMemo(() => {
     const lost = leads.filter((l) => l.status === "Compareceu e Não Comprou");
     const counts: Record<string, number> = { preco: 0, distancia: 0, semresposta: 0, outros: 0 };
@@ -298,3 +298,7 @@ export function LossReasonsDonut({ leads }: { leads: Lead[] }) {
     </Card>
   );
 }
+
+export const ConversionFunnel = memo(ConversionFunnelImpl);
+export const LeadsVsSalesTimeline = memo(LeadsVsSalesTimelineImpl);
+export const LossReasonsDonut = memo(LossReasonsDonutImpl);

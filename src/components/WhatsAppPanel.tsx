@@ -156,7 +156,7 @@ export function WhatsAppPanel({ storeId, role }: Props) {
             if (upsertErr) {
               console.error("[WhatsAppPanel] poll upsert connected RLS/error:", upsertErr);
             } else {
-              console.log("[WhatsAppPanel] poll upsert connected OK");
+              if (import.meta.env.DEV) console.log("[WhatsAppPanel] poll upsert connected OK");
             }
           } catch (e) {
             console.error("[WhatsAppPanel] poll upsert connected threw:", e);
@@ -191,8 +191,10 @@ export function WhatsAppPanel({ storeId, role }: Props) {
     (async () => {
       try {
         const st = await callEvo("status");
-        console.log('[mount] status response:', st);
-        console.log('[mount] isConnected:', isConnectedResponse(st));
+        if (import.meta.env.DEV) {
+          console.log('[mount] status response:', st);
+          console.log('[mount] isConnected:', isConnectedResponse(st));
+        }
         if (isConnectedResponse(st)) {
           setQrCode(null);
           setLocalPhone(st?.phone_number ?? null);
@@ -214,7 +216,7 @@ export function WhatsAppPanel({ storeId, role }: Props) {
             if (upsertErr) {
               console.error("[WhatsAppPanel] mount upsert connected RLS/error:", upsertErr);
             } else {
-              console.log("[WhatsAppPanel] mount upsert connected OK");
+              if (import.meta.env.DEV) console.log("[WhatsAppPanel] mount upsert connected OK");
             }
           } catch (e) {
             console.error("[WhatsAppPanel] mount upsert connected threw:", e);
@@ -263,7 +265,7 @@ export function WhatsAppPanel({ storeId, role }: Props) {
             if (upsertErr) {
               console.error("[WhatsAppPanel] handleConnect upsert connected RLS/error:", upsertErr);
             } else {
-              console.log("[WhatsAppPanel] handleConnect upsert connected OK");
+              if (import.meta.env.DEV) console.log("[WhatsAppPanel] handleConnect upsert connected OK");
             }
           } catch (e) {
             console.error("[WhatsAppPanel] handleConnect upsert connected threw:", e);
@@ -292,7 +294,7 @@ export function WhatsAppPanel({ storeId, role }: Props) {
         if (upsertErr) {
           console.error("[WhatsAppPanel] handleConnect upsert connecting RLS/error:", upsertErr);
         } else {
-          console.log("[WhatsAppPanel] handleConnect upsert connecting OK");
+          if (import.meta.env.DEV) console.log("[WhatsAppPanel] handleConnect upsert connecting OK");
         }
       } catch (e) {
         console.error("[WhatsAppPanel] handleConnect upsert connecting threw:", e);
