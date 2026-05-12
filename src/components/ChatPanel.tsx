@@ -398,7 +398,11 @@ export function ChatPanel({
       )}
 
       <div className="flex-1 min-h-0 flex flex-col min-w-0">
-        <MessageThread messages={messages} sentMessages={sentMessages} isTyping={isTyping} />
+        <MessageThread
+          messages={messages}
+          sentMessages={searchQuery ? [] : sentMessages}
+          isTyping={searchQuery ? false : isTyping}
+        />
       </div>
       {pendingDef && (
         <div className="border-t bg-amber-50 dark:bg-amber-900/20 px-3 py-2 flex items-center gap-2">
