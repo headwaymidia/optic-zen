@@ -118,7 +118,8 @@ export function MessageInput({
         ref={fileInputRef}
         type="file"
         accept="image/*,video/*"
-        className="hidden"
+        style={{ position: "absolute", width: 1, height: 1, opacity: 0, pointerEvents: "none" }}
+        tabIndex={-1}
         onChange={async (e) => {
           const file = e.target.files?.[0];
           e.target.value = "";
@@ -130,7 +131,17 @@ export function MessageInput({
         size="icon"
         type="button"
         className="h-8 w-8"
-        onClick={() => fileInputRef.current?.click()}
+        onClick={(e) => {
+          e.preventDefault();
+          e.stopPropagation();
+          const el = fileInputRef.current;
+          if (!el) {
+            console.warn("[MessageInput] file input ref missing");
+            return;
+          }
+          el.value = "";
+          el.click();
+        }}
         aria-label="Anexar imagem ou vídeo"
         title="Enviar mídia"
       >
