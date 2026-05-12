@@ -109,6 +109,7 @@ export interface Lead {
   last_inbound_at: string | null;
   last_message_at: string | null;
   last_message_preview: string | null;
+  unread_count: number;
   next_return_date: string | null;
   exam_date: string | null;
   created_at: string;

@@ -1,0 +1,1 @@
+ALTER TABLE public.leads ADD COLUMN IF NOT EXISTS unread_count integer NOT NULL DEFAULT 0;

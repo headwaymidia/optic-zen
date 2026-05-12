@@ -100,7 +100,7 @@ function initials(name: string) {
 
 export default function WhatsAppPage() {
   usePageTitle("Atendimentos");
-  const { leads, loading } = useLeads();
+  const { leads, loading, updateLead } = useLeads();
   const [search, setSearch] = useState("");
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [searchParams, setSearchParams] = useSearchParams();
@@ -247,14 +247,18 @@ export default function WhatsAppPage() {
             const timeLabel = hasMessages && lastMsgIso
               ? formatRelativeShort(lastMsgIso)
               : formatLeadTime(lead.created_at);
-            const inbound = lead.last_inbound_at ? new Date(lead.last_inbound_at).getTime() : 0;
-            const replied = lead.last_follow_up_at ? new Date(lead.last_follow_up_at).getTime() : 0;
-            const unread = inbound > 0 && inbound > replied;
+            const unreadCount = lead.unread_count ?? 0;
             const active = selectedId === lead.id;
+            const showUnread = unreadCount > 0 && !active;
             return (
               <button
                 key={lead.id}
-                onClick={() => setSelectedId(lead.id)}
+                onClick={async () => {
+                  setSelectedId(lead.id);
+                  if ((lead.unread_count ?? 0) > 0) {
+                    await updateLead(lead.id, { unread_count: 0 } as any);
+                  }
+                }}
                 className={cn(
                   "w-full flex items-center gap-3 px-4 py-3 border-b hover:bg-muted/50 transition-colors text-left",
                   active && "bg-muted"
@@ -269,14 +273,9 @@ export default function WhatsAppPage() {
                   <div className="flex items-center justify-between gap-2">
                     <div className="flex items-center gap-1.5 min-w-0">
                       <p className="font-medium text-sm truncate">{lead.name}</p>
-                      {unread && !active && (
-                        <Badge className="h-4 min-w-4 px-1 text-[10px] bg-emerald-500 hover:bg-emerald-500 text-white rounded-full">
-                          1
-                        </Badge>
-                      )}
                     </div>
                     {timeLabel && (
-                      <span className={cn("text-[11px] shrink-0", unread && !active ? "text-emerald-600 font-medium" : "text-muted-foreground")}>
+                      <span className={cn("text-[11px] shrink-0", showUnread ? "text-emerald-600 font-medium" : "text-muted-foreground")}>
                         {timeLabel}
                       </span>
                     )}
@@ -285,6 +284,11 @@ export default function WhatsAppPage() {
                     <p className={cn("text-xs truncate", hasMessages ? "text-muted-foreground" : "text-muted-foreground/70")}>
                       {preview}
                     </p>
+                    {showUnread && (
+                      <Badge className="h-5 min-w-5 px-1.5 text-[11px] font-semibold bg-emerald-500 hover:bg-emerald-500 text-white rounded-full flex items-center justify-center shrink-0">
+                        {unreadCount > 99 ? "99+" : unreadCount}
+                      </Badge>
+                    )}
                   </div>
                 </div>
               </button>
