@@ -246,7 +246,84 @@ Deno.serve(async (req) => {
       });
     }
 
-    return new Response(JSON.stringify({ error: "Ação inválida" }), {
+    if (action === "sendMessage") {
+      const phone = String(body.phone ?? "");
+      const message = String(body.message ?? "");
+      if (!phone) throw new Error("phone é obrigatório");
+      if (!message.trim()) throw new Error("message é obrigatório");
+
+      let phoneDigits = phone.replace(/\D/g, "");
+      if (!phoneDigits.startsWith("55")) phoneDigits = `55${phoneDigits}`;
+      const remoteJid = `${phoneDigits}@s.whatsapp.net`;
+
+      const send = await evo(`/message/sendText/${instance}`, {
+        method: "POST",
+        body: JSON.stringify({ number: phoneDigits, text: message }),
+      });
+
+      if (send.status >= 400) {
+        const errMsg =
+          send.data?.message ||
+          send.data?.error ||
+          JSON.stringify(send.data ?? {});
+        return new Response(
+          JSON.stringify({ error: `Falha ao enviar: ${errMsg}` }),
+          { status: send.status, headers: { ...corsHeaders, "Content-Type": "application/json" } },
+        );
+      }
+
+      // Resolve lead_id pelo phone na loja
+      let leadId: string | null = body.lead_id ?? null;
+      if (!leadId) {
+        const last10 = phoneDigits.slice(-10);
+        const { data: leadRow } = await admin
+          .from("leads")
+          .select("id, phone")
+          .eq("store_id", storeId)
+          .ilike("phone", `%${last10}%`)
+          .limit(1)
+          .maybeSingle();
+        leadId = leadRow?.id ?? null;
+      }
+
+      const messageId =
+        send.data?.key?.id ||
+        send.data?.messageId ||
+        send.data?.id ||
+        crypto.randomUUID();
+
+      const { error: insErr } = await admin.from("whatsapp_messages").insert({
+        store_id: storeId,
+        lead_id: leadId,
+        instance_name: instance,
+        remote_jid: remoteJid,
+        message_id: messageId,
+        from_me: true,
+        body: message,
+        timestamp: new Date().toISOString(),
+        status: "sent",
+      });
+      if (insErr) console.error("[sendMessage] insert error:", insErr);
+
+      // Atualiza preview do lead
+      if (leadId) {
+        await admin
+          .from("leads")
+          .update({
+            updated_at: new Date().toISOString(),
+            last_message_at: new Date().toISOString(),
+            last_message_preview: message.slice(0, 100),
+          })
+          .eq("id", leadId);
+      }
+
+      return new Response(
+        JSON.stringify({ ok: true, message_id: messageId, lead_id: leadId }),
+        { headers: { ...corsHeaders, "Content-Type": "application/json" } },
+      );
+    }
+
+
       status: 400,
       headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
