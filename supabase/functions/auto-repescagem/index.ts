@@ -15,6 +15,18 @@ Deno.serve(async (req) => {
     return new Response("ok", { headers: corsHeaders });
   }
 
+  // Proteção: exige header secreto compartilhado com o cron job
+  const cronSecret = req.headers.get("x-cron-secret");
+  if (cronSecret !== "oticadominante@2024") {
+    return new Response(
+      JSON.stringify({ ok: false, error: "Unauthorized" }),
+      {
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+        status: 401,
+      },
+    );
+  }
+
   try {
     const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
     const serviceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
