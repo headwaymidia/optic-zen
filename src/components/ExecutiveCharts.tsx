@@ -203,7 +203,7 @@ function LeadsVsSalesTimelineImpl({ leads, embedded = false }: { leads: Lead[]; 
   );
 }
 
-export function LossReasonsDonut({ leads }: { leads: Lead[] }) {
+function LossReasonsDonutImpl({ leads }: { leads: Lead[] }) {
   const data = useMemo(() => {
     const lost = leads.filter((l) => l.status === "Compareceu e Não Comprou");
     const counts: Record<string, number> = { preco: 0, distancia: 0, semresposta: 0, outros: 0 };
