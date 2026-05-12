@@ -115,38 +115,24 @@ export function MessageInput({
         </PopoverContent>
       </Popover>
       <input
-        ref={fileInputRef}
+        id="file-upload-input"
         type="file"
         accept="image/*,video/*"
-        style={{ position: "absolute", width: 1, height: 1, opacity: 0, pointerEvents: "none" }}
-        tabIndex={-1}
+        style={{ display: "none" }}
         onChange={async (e) => {
           const file = e.target.files?.[0];
           e.target.value = "";
           if (file && onSendMedia) await onSendMedia(file);
         }}
       />
-      <Button
-        variant="ghost"
-        size="icon"
-        type="button"
-        className="h-8 w-8"
-        onClick={(e) => {
-          e.preventDefault();
-          e.stopPropagation();
-          const el = fileInputRef.current;
-          if (!el) {
-            console.warn("[MessageInput] file input ref missing");
-            return;
-          }
-          el.value = "";
-          el.click();
-        }}
-        aria-label="Anexar imagem ou vídeo"
+      <label
+        htmlFor="file-upload-input"
         title="Enviar mídia"
+        aria-label="Anexar imagem ou vídeo"
+        className="inline-flex h-8 w-8 items-center justify-center rounded-md hover:bg-accent hover:text-accent-foreground cursor-pointer"
       >
         <Paperclip className="h-4 w-4 text-muted-foreground" />
-      </Button>
+      </label>
       <Tooltip>
         <TooltipTrigger asChild>
           <Button
