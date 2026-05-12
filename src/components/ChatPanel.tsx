@@ -88,6 +88,16 @@ export function ChatPanel({
     promoteToInAttendance();
     setMessage("");
 
+    const optimisticId = crypto.randomUUID();
+    const now = new Date();
+    const optimistic: SentMessage = {
+      id: optimisticId,
+      from: "us",
+      text,
+      time: now.toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" }),
+    };
+    setSentMessages((prev) => [...prev, optimistic]);
+
     try {
       const { data, error } = await supabase.functions.invoke("whatsapp-evolution", {
         body: {
@@ -102,7 +112,9 @@ export function ChatPanel({
       if (data?.error) throw new Error(data.error);
 
       await refetchMessages();
+      setSentMessages((prev) => prev.filter((m) => m.id !== optimisticId));
     } catch (err: any) {
+      setSentMessages((prev) => prev.filter((m) => m.id !== optimisticId));
       toast({
         title: "Falha ao enviar mensagem",
         description: humanizeError(err),
