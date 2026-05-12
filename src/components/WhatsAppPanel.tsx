@@ -216,7 +216,7 @@ export function WhatsAppPanel({ storeId, role }: Props) {
             if (upsertErr) {
               console.error("[WhatsAppPanel] mount upsert connected RLS/error:", upsertErr);
             } else {
-              console.log("[WhatsAppPanel] mount upsert connected OK");
+              if (import.meta.env.DEV) console.log("[WhatsAppPanel] mount upsert connected OK");
             }
           } catch (e) {
             console.error("[WhatsAppPanel] mount upsert connected threw:", e);
