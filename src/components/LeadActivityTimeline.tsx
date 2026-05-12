@@ -14,6 +14,7 @@ import {
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { cn } from "@/lib/utils";
+import { DataSkeleton } from "@/components/ui/DataSkeleton";
 
 type ActivityRow = {
   id: string;
