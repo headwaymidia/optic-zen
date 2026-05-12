@@ -38,6 +38,7 @@ export function LeadHeader({ lead, onBack, onClose, onStatusChange }: Props) {
         </Button>
       )}
       <Avatar className="h-9 w-9 shrink-0">
+        {(lead as any).avatar_url && <AvatarImage src={(lead as any).avatar_url} alt={lead.name} />}
         <AvatarFallback className="bg-primary/10 text-primary text-xs font-medium">
           {initials(lead.name)}
         </AvatarFallback>
