@@ -82,7 +82,7 @@ const tooltipStyle = {
   fontSize: 11,
 };
 
-export function ConversionFunnel({ leads }: { leads: Lead[] }) {
+function ConversionFunnelImpl({ leads }: { leads: Lead[] }) {
   const funnel = useMemo(() => computeFunnel(leads), [leads]);
   const data = useMemo(
     () =>
