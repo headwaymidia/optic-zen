@@ -42,7 +42,7 @@ export default function AppLayout() {
               } as React.CSSProperties
             }
           >
-            <div className="min-h-screen flex w-full bg-background select-none pt-safe pl-safe pr-safe overflow-x-hidden">
+            <div className="h-screen flex w-full bg-background select-none pt-safe pl-safe pr-safe overflow-hidden">
               <div className="hidden md:block">
                 <AppSidebar />
               </div>
