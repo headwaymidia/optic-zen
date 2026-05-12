@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { memo, useMemo, useState } from "react";
 import { Card } from "@/components/ui/card";
 import { Lead } from "@/lib/supabase";
 import {
