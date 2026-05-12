@@ -9,6 +9,7 @@ import { ThemeProvider } from "@/hooks/useTheme";
 import { StoresProvider, useStores } from "@/hooks/useStores";
 import AppLayout from "@/components/AppLayout";
 import { LeadsProvider } from "@/hooks/useLeads";
+import { DataSkeleton } from "@/components/ui/DataSkeleton";
 
 import Dashboard from "@/pages/Dashboard";
 import Funil from "@/pages/Funil";
