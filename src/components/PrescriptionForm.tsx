@@ -4,7 +4,8 @@ import { useLeads } from "@/hooks/useLeads";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
-import { Save, Check, History, RotateCcw, Loader2, FileText, Trash2 } from "lucide-react";
+import { Save, Check, History, RotateCcw, Loader2, FileText, Trash2, Download } from "lucide-react";
+import jsPDF from "jspdf";
 import {
   AlertDialog,
   AlertDialogAction,
