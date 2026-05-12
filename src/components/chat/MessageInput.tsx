@@ -1,5 +1,5 @@
-import { useState } from "react";
-import { Paperclip, Send, Smile, Zap } from "lucide-react";
+import { useRef, useState } from "react";
+import { Mic, Paperclip, Send, Smile, Square, Zap } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
@@ -15,6 +15,7 @@ interface Props {
   onApplyScript: (type: "agendar" | "receita" | "resgate" | "confirmar") => void;
   pendingDef: FollowUpDef | null;
   pendingLevel: FollowUpLevel | null;
+  onSendAudio?: (blob: Blob) => Promise<void> | void;
 }
 
 export function MessageInput({
@@ -25,13 +26,70 @@ export function MessageInput({
   onApplyScript,
   pendingDef,
   pendingLevel,
+  onSendAudio,
 }: Props) {
   const [scriptsOpen, setScriptsOpen] = useState(false);
+  const [isRecording, setIsRecording] = useState(false);
+  const [elapsed, setElapsed] = useState(0);
+  const recorderRef = useRef<MediaRecorder | null>(null);
+  const chunksRef = useRef<Blob[]>([]);
+  const timerRef = useRef<number | null>(null);
 
   const handleApply = (type: "agendar" | "receita" | "resgate" | "confirmar") => {
     onApplyScript(type);
     setScriptsOpen(false);
   };
+
+  const stopTimer = () => {
+    if (timerRef.current) {
+      window.clearInterval(timerRef.current);
+      timerRef.current = null;
+    }
+  };
+
+  const startRecording = async () => {
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      const mime = MediaRecorder.isTypeSupported("audio/webm;codecs=opus")
+        ? "audio/webm;codecs=opus"
+        : MediaRecorder.isTypeSupported("audio/webm")
+        ? "audio/webm"
+        : "";
+      const rec = mime ? new MediaRecorder(stream, { mimeType: mime }) : new MediaRecorder(stream);
+      chunksRef.current = [];
+      rec.ondataavailable = (e) => {
+        if (e.data.size > 0) chunksRef.current.push(e.data);
+      };
+      rec.onstop = async () => {
+        stream.getTracks().forEach((t) => t.stop());
+        const blob = new Blob(chunksRef.current, { type: rec.mimeType || "audio/webm" });
+        chunksRef.current = [];
+        if (onSendAudio && blob.size > 0) await onSendAudio(blob);
+      };
+      rec.start();
+      recorderRef.current = rec;
+      setElapsed(0);
+      setIsRecording(true);
+      timerRef.current = window.setInterval(() => setElapsed((s) => s + 1), 1000);
+    } catch (err) {
+      console.error("[MessageInput] mic error", err);
+    }
+  };
+
+  const stopRecording = () => {
+    stopTimer();
+    setIsRecording(false);
+    recorderRef.current?.stop();
+    recorderRef.current = null;
+  };
+
+  const toggleRecording = () => {
+    if (isRecording) stopRecording();
+    else startRecording();
+  };
+
+  const fmt = (s: number) =>
+    `${String(Math.floor(s / 60)).padStart(2, "0")}:${String(s % 60).padStart(2, "0")}`;
 
   return (
     <footer className="shrink-0 border-t bg-card p-2 flex items-center gap-1">
@@ -41,6 +99,30 @@ export function MessageInput({
       <Button variant="ghost" size="icon" type="button" className="h-8 w-8">
         <Paperclip className="h-4 w-4 text-muted-foreground" />
       </Button>
+      <Tooltip>
+        <TooltipTrigger asChild>
+          <Button
+            variant="ghost"
+            size="icon"
+            type="button"
+            onClick={toggleRecording}
+            aria-label={isRecording ? "Parar gravação" : "Gravar áudio"}
+            className={cn(
+              "h-8 w-8",
+              isRecording && "bg-red-100 hover:bg-red-200 dark:bg-red-900/40"
+            )}
+          >
+            {isRecording ? (
+              <Square className="h-4 w-4 text-red-600 dark:text-red-300 fill-current" />
+            ) : (
+              <Mic className="h-4 w-4 text-muted-foreground" />
+            )}
+          </Button>
+        </TooltipTrigger>
+        <TooltipContent side="top">
+          {isRecording ? "Parar e enviar" : "Gravar áudio"}
+        </TooltipContent>
+      </Tooltip>
       <Popover open={scriptsOpen} onOpenChange={setScriptsOpen}>
         <Tooltip>
           <TooltipTrigger asChild>
@@ -106,18 +188,27 @@ export function MessageInput({
           </div>
         </PopoverContent>
       </Popover>
-      <Input
-        value={value}
-        onChange={(e) => onChange(e.target.value)}
-        onKeyDown={(e) => {
-          if (e.key === "Enter" && !e.shiftKey) {
-            e.preventDefault();
-            onSend();
-          }
-        }}
-        placeholder="Digite sua mensagem..."
-        className="flex-1 bg-muted/50 border-0 h-9"
-      />
+      {isRecording ? (
+        <div className="flex-1 flex items-center gap-2 px-3 h-9 rounded-md bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800">
+          <span className="h-2 w-2 rounded-full bg-red-500 animate-pulse" />
+          <span className="text-xs font-medium text-red-700 dark:text-red-200">
+            Gravando… {fmt(elapsed)}
+          </span>
+        </div>
+      ) : (
+        <Input
+          value={value}
+          onChange={(e) => onChange(e.target.value)}
+          onKeyDown={(e) => {
+            if (e.key === "Enter" && !e.shiftKey) {
+              e.preventDefault();
+              onSend();
+            }
+          }}
+          placeholder="Digite sua mensagem..."
+          className="flex-1 bg-muted/50 border-0 h-9"
+        />
+      )}
       <Button
         size={pendingDef ? "default" : "icon"}
         type="button"
