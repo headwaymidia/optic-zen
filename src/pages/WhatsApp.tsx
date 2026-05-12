@@ -3,7 +3,7 @@ import { usePageTitle } from "@/hooks/usePageTitle";
 import { useSearchParams } from "react-router-dom";
 import { useLeads } from "@/hooks/useLeads";
 import { Input } from "@/components/ui/input";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { ChatPanel } from "@/components/ChatPanel";
 import { Search, MessageSquarePlus, MessageCircle, CalendarRange } from "lucide-react";
 import {
