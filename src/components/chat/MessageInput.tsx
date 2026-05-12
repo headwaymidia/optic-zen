@@ -97,7 +97,7 @@ export function MessageInput({
     <footer className="shrink-0 border-t bg-card p-2 flex items-center gap-1">
       <Popover>
         <PopoverTrigger asChild>
-          <Button variant="ghost" size="icon" type="button" className="h-8 w-8" aria-label="Inserir emoji">
+          <Button variant="ghost" size="icon" type="button" className="h-8 w-8" aria-label="Inserir emoji" title="Emojis">
             <Smile className="h-4 w-4 text-muted-foreground" />
           </Button>
         </PopoverTrigger>
@@ -132,6 +132,7 @@ export function MessageInput({
         className="h-8 w-8"
         onClick={() => fileInputRef.current?.click()}
         aria-label="Anexar imagem ou vídeo"
+        title="Enviar mídia"
       >
         <Paperclip className="h-4 w-4 text-muted-foreground" />
       </Button>
@@ -143,6 +144,7 @@ export function MessageInput({
             type="button"
             onClick={toggleRecording}
             aria-label={isRecording ? "Parar gravação" : "Gravar áudio"}
+            title="Gravar áudio"
             className={cn(
               "h-8 w-8",
               isRecording && "bg-red-100 hover:bg-red-200 dark:bg-red-900/40"
@@ -169,6 +171,7 @@ export function MessageInput({
                 type="button"
                 className="h-8 w-8"
                 aria-label="Respostas Rápidas"
+                title="Ações rápidas"
               >
                 <Zap className="h-4 w-4 text-muted-foreground" />
               </Button>
