@@ -281,6 +281,9 @@ export default function WhatsAppPage() {
                       </span>
                     )}
                   </div>
+                  {lead.phone && (
+                    <p className="text-[11px] text-muted-foreground truncate">{maskPhone(lead.phone)}</p>
+                  )}
                   <div className="flex items-center justify-between gap-2 mt-0.5">
                     <p className={cn("text-xs truncate", hasMessages ? "text-muted-foreground" : "text-muted-foreground/70")}>
                       {preview}
