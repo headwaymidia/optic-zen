@@ -124,6 +124,69 @@ export function ChatPanel({
     }
   };
 
+  const handleSendAudio = async (blob: Blob) => {
+    if (!currentStoreId) {
+      toast({ title: "Selecione uma loja antes de enviar", variant: "destructive" });
+      return;
+    }
+    if (!lead.phone) {
+      toast({ title: "Lead sem telefone", variant: "destructive" });
+      return;
+    }
+    promoteToInAttendance();
+
+    const base64: string = await new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        const result = reader.result as string;
+        resolve(result.split(",")[1] ?? "");
+      };
+      reader.onerror = () => reject(reader.error);
+      reader.readAsDataURL(blob);
+    });
+
+    const optimisticId = crypto.randomUUID();
+    const now = new Date();
+    const audioUrl = URL.createObjectURL(blob);
+    setSentMessages((prev) => [
+      ...prev,
+      {
+        id: optimisticId,
+        from: "us",
+        text: "",
+        time: now.toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" }),
+        media_type: "audio",
+        media_url: audioUrl,
+      },
+    ]);
+
+    try {
+      const { data, error } = await supabase.functions.invoke("whatsapp-evolution", {
+        body: {
+          action: "sendMessage",
+          store_id: currentStoreId,
+          lead_id: lead.id,
+          phone: lead.phone,
+          audioMessage: {
+            base64,
+            mimetype: blob.type || "audio/webm",
+          },
+        },
+      });
+      if (error) throw error;
+      if (data?.error) throw new Error(data.error);
+      await refetchMessages();
+      setSentMessages((prev) => prev.filter((m) => m.id !== optimisticId));
+    } catch (err: any) {
+      setSentMessages((prev) => prev.filter((m) => m.id !== optimisticId));
+      toast({
+        title: "Falha ao enviar áudio",
+        description: humanizeError(err),
+        variant: "destructive",
+      });
+    }
+  };
+
   const handleApplyFollowUpScript = () => {
     if (!pendingDef) return;
     setMessage(pendingDef.buildScript(firstName));
