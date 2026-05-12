@@ -26,13 +26,13 @@ export function useWhatsAppMessages(leadId: string | undefined) {
     queryKey,
     enabled: !!leadId,
     queryFn: async () => {
-      console.log("[useWhatsAppMessages] querying with lead_id =", leadId);
+      if (import.meta.env.DEV) console.log("[useWhatsAppMessages] querying with lead_id =", leadId);
       const { data, error } = await supabase
         .from("whatsapp_messages")
         .select("*")
         .eq("lead_id", leadId!)
         .order("timestamp", { ascending: true });
-      console.log("[useWhatsAppMessages] leadId:", leadId, "result:", data, "error:", error);
+      if (import.meta.env.DEV) console.log("[useWhatsAppMessages] leadId:", leadId, "result:", data, "error:", error);
       if (error) throw error;
       return (data ?? []) as WhatsAppMessageRow[];
     },
