@@ -31,10 +31,24 @@ function MessageContent({ media_type, media_url, text }: { media_type?: string |
     );
   }
   if (media_type === "image" && media_url) {
-    return <img src={media_url} alt="imagem" className="max-w-xs rounded-lg" />;
+    return (
+      <img
+        src={media_url}
+        alt="imagem"
+        className="rounded-lg w-full h-auto"
+        style={{ maxWidth: 280 }}
+      />
+    );
   }
   if (media_type === "video" && media_url) {
-    return <video controls src={media_url} className="max-w-xs rounded-lg" />;
+    return (
+      <video
+        controls
+        src={media_url}
+        className="rounded-lg w-full h-auto"
+        style={{ maxWidth: 280 }}
+      />
+    );
   }
   return <p className="whitespace-pre-wrap break-words">{text ?? ""}</p>;
 }
