@@ -16,6 +16,7 @@ interface Props {
   pendingDef: FollowUpDef | null;
   pendingLevel: FollowUpLevel | null;
   onSendAudio?: (blob: Blob) => Promise<void> | void;
+  onSendMedia?: (file: File) => Promise<void> | void;
 }
 
 export function MessageInput({
@@ -27,7 +28,9 @@ export function MessageInput({
   pendingDef,
   pendingLevel,
   onSendAudio,
+  onSendMedia,
 }: Props) {
+  const fileInputRef = useRef<HTMLInputElement | null>(null);
   const [scriptsOpen, setScriptsOpen] = useState(false);
   const [isRecording, setIsRecording] = useState(false);
   const [elapsed, setElapsed] = useState(0);
