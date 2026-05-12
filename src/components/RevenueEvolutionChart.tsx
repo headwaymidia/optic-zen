@@ -561,3 +561,5 @@ function Arrow() {
     </div>
   );
 }
+
+export const RevenueEvolutionChart = memo(RevenueEvolutionChartImpl);
