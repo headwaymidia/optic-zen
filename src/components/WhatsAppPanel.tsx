@@ -265,7 +265,7 @@ export function WhatsAppPanel({ storeId, role }: Props) {
             if (upsertErr) {
               console.error("[WhatsAppPanel] handleConnect upsert connected RLS/error:", upsertErr);
             } else {
-              console.log("[WhatsAppPanel] handleConnect upsert connected OK");
+              if (import.meta.env.DEV) console.log("[WhatsAppPanel] handleConnect upsert connected OK");
             }
           } catch (e) {
             console.error("[WhatsAppPanel] handleConnect upsert connected threw:", e);
