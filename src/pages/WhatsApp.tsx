@@ -5,6 +5,9 @@ import { useLeads } from "@/hooks/useLeads";
 import { Input } from "@/components/ui/input";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { ChatPanel } from "@/components/ChatPanel";
+import { LeadSections } from "@/components/chat/LeadSections";
+import { LeadActivities } from "@/components/chat/LeadActivities";
+import { ERPTransferCard } from "@/components/ERPTransferCard";
 import { Search, MessageSquarePlus, MessageCircle, CalendarRange } from "lucide-react";
 import {
   Select,
