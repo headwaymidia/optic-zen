@@ -69,9 +69,7 @@ export function MessageThread({ messages, sentMessages, isTyping }: Props) {
                 : "bg-card text-foreground rounded-bl-sm"
             )}
           >
-            <p className="whitespace-pre-wrap break-words">
-              {m.text?.trim() ? m.text : <span className="italic text-muted-foreground">[mensagem vazia]</span>}
-            </p>
+            <MessageContent media_type={m.media_type} media_url={m.media_url} text={m.text} />
             <p className="text-[10px] text-muted-foreground mt-0.5 text-right flex items-center justify-end gap-1">
               <span>{m.time}</span>
               {m.from === "us" && <StatusTicks status={m.status} />}
