@@ -100,7 +100,7 @@ function initials(name: string) {
 
 export default function WhatsAppPage() {
   usePageTitle("Atendimentos");
-  const { leads, loading } = useLeads();
+  const { leads, loading, updateLead } = useLeads();
   const [search, setSearch] = useState("");
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [searchParams, setSearchParams] = useSearchParams();
