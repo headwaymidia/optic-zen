@@ -249,17 +249,66 @@ Deno.serve(async (req) => {
     if (action === "sendMessage") {
       const phone = String(body.phone ?? "");
       const message = String(body.message ?? "");
+      const audioMessage = body.audioMessage as
+        | { base64?: string; mimetype?: string }
+        | undefined;
+      const isAudio = !!audioMessage?.base64;
+
       if (!phone) throw new Error("phone é obrigatório");
-      if (!message.trim()) throw new Error("message é obrigatório");
+      if (!isAudio && !message.trim()) throw new Error("message é obrigatório");
 
       let phoneDigits = phone.replace(/\D/g, "");
       if (!phoneDigits.startsWith("55")) phoneDigits = `55${phoneDigits}`;
       const remoteJid = `${phoneDigits}@s.whatsapp.net`;
 
-      const send = await evo(`/message/sendText/${instance}`, {
-        method: "POST",
-        body: JSON.stringify({ number: phoneDigits, text: message }),
-      });
+      let send: { status: number; data: any };
+      let mediaUrl: string | null = null;
+      let mediaType: string | null = null;
+
+      if (isAudio) {
+        // Send audio via Evolution
+        send = await evo(`/message/sendWhatsAppAudio/${instance}`, {
+          method: "POST",
+          body: JSON.stringify({
+            number: phoneDigits,
+            audio: audioMessage!.base64,
+          }),
+        });
+
+        if (send.status < 400) {
+          // Upload to storage so the chat player can render it
+          try {
+            const bin = Uint8Array.from(atob(audioMessage!.base64!), (c) =>
+              c.charCodeAt(0),
+            );
+            const ext =
+              (audioMessage!.mimetype ?? "").includes("ogg") ? "ogg" : "webm";
+            const path = `${storeId}/${Date.now()}-${crypto.randomUUID()}.${ext}`;
+            const { error: upErr } = await admin.storage
+              .from("whatsapp-media")
+              .upload(path, bin, {
+                contentType: audioMessage!.mimetype ?? "audio/ogg",
+                upsert: false,
+              });
+            if (upErr) {
+              console.error("[sendMessage] storage upload error:", upErr);
+            } else {
+              const { data: pub } = admin.storage
+                .from("whatsapp-media")
+                .getPublicUrl(path);
+              mediaUrl = pub.publicUrl;
+              mediaType = "audio";
+            }
+          } catch (e) {
+            console.error("[sendMessage] storage exception:", e);
+          }
+        }
+      } else {
+        send = await evo(`/message/sendText/${instance}`, {
+          method: "POST",
+          body: JSON.stringify({ number: phoneDigits, text: message }),
+        });
+      }
 
       if (send.status >= 400) {
         const errMsg =
@@ -299,7 +348,9 @@ Deno.serve(async (req) => {
         remote_jid: remoteJid,
         message_id: messageId,
         from_me: true,
-        body: message,
+        body: isAudio ? null : message,
+        media_type: mediaType,
+        media_url: mediaUrl,
         timestamp: new Date().toISOString(),
         status: "sent",
       });
@@ -312,10 +363,11 @@ Deno.serve(async (req) => {
           .update({
             updated_at: new Date().toISOString(),
             last_message_at: new Date().toISOString(),
-            last_message_preview: message.slice(0, 100),
+            last_message_preview: isAudio ? "🎵 Áudio" : message.slice(0, 100),
           })
           .eq("id", leadId);
       }
+
 
       return new Response(
         JSON.stringify({ ok: true, message_id: messageId, lead_id: leadId }),
