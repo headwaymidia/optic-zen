@@ -9,6 +9,7 @@ import { ThemeProvider } from "@/hooks/useTheme";
 import { StoresProvider, useStores } from "@/hooks/useStores";
 import AppLayout from "@/components/AppLayout";
 import { LeadsProvider } from "@/hooks/useLeads";
+import { DataSkeleton } from "@/components/ui/DataSkeleton";
 
 import Dashboard from "@/pages/Dashboard";
 import Funil from "@/pages/Funil";
@@ -43,7 +44,12 @@ function FullscreenAuthGate({ children }: { children: React.ReactNode }) {
   const { session, loading } = useAuth();
   const { stores, loading: storesLoading } = useStores();
   if (loading || storesLoading) {
-    return <div className="flex min-h-screen items-center justify-center text-muted-foreground">Carregando...</div>;
+    return (
+      <div className="min-h-screen w-full p-6 bg-background">
+        <DataSkeleton variant="row" count={1} className="mb-6" />
+        <DataSkeleton variant="card" count={4} />
+      </div>
+    );
   }
   if (!session) return <Navigate to="/auth" replace />;
   if (stores.length === 0) return <Navigate to="/onboarding" replace />;
@@ -51,7 +57,10 @@ function FullscreenAuthGate({ children }: { children: React.ReactNode }) {
 }
 
 const AuthFallback = () => (
-  <div className="flex min-h-screen items-center justify-center text-muted-foreground">Carregando...</div>
+  <div className="min-h-screen w-full p-6 bg-background">
+    <DataSkeleton variant="row" count={1} className="mb-6" />
+    <DataSkeleton variant="card" count={3} />
+  </div>
 );
 
 const App = () => (

@@ -22,7 +22,7 @@ export function BottomNav() {
       role="navigation"
       aria-label="Navegação principal"
       className={cn(
-        "md:hidden fixed bottom-0 inset-x-0 z-50",
+        "lg:hidden fixed bottom-0 inset-x-0 z-50",
         // Glass / blur estilo iOS
         "bg-background/85 backdrop-blur-xl",
         "border-t border-border",

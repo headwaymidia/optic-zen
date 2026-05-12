@@ -13,6 +13,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { DataSkeleton } from "@/components/ui/DataSkeleton";
 import { toast } from "@/hooks/use-toast";
 import { humanizeError } from "@/lib/error-handler";
 import { cn } from "@/lib/utils";
@@ -95,8 +96,9 @@ export default function OnboardingPage() {
 
   if (authLoading || checkingSession) {
     return (
-      <div className="min-h-screen w-full flex items-center justify-center bg-zinc-50 text-zinc-500 text-sm">
-        Carregando...
+      <div className="min-h-screen w-full p-6 bg-zinc-50">
+        <DataSkeleton variant="row" count={1} className="mb-6" />
+        <DataSkeleton variant="card" count={3} />
       </div>
     );
   }

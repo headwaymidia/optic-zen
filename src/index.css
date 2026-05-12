@@ -90,18 +90,24 @@
   body {
     @apply bg-background text-foreground antialiased;
     font-feature-settings: "cv02", "cv03", "cv04", "cv11";
-    -webkit-user-select: none;
-    user-select: none;
     overscroll-behavior-y: none;
   }
 
-  input, textarea, [contenteditable="true"], .selectable, .chat-bubble {
-    -webkit-user-select: text;
-    user-select: text;
+  /* user-select: none somente em alvos de drag/drop e UI sensível a seleção */
+  [draggable="true"],
+  [data-draggable="true"],
+  [data-dnd-handle],
+  [role="button"]:not(input):not(textarea):not([contenteditable="true"]),
+  .no-select {
+    -webkit-user-select: none;
+    user-select: none;
   }
 
-  input, textarea, select {
-    font-size: 16px;
+  /* iOS zoom fix: 16px apenas em telas pequenas, preservando hierarquia em desktop */
+  @media (max-width: 767px) {
+    input, textarea, select {
+      font-size: 16px;
+    }
   }
 }
 

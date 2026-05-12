@@ -14,6 +14,7 @@ import {
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { cn } from "@/lib/utils";
+import { DataSkeleton } from "@/components/ui/DataSkeleton";
 
 type ActivityRow = {
   id: string;
@@ -86,7 +87,7 @@ export function LeadActivityTimeline({
   }, [leadId, limit]);
 
   const body = loading ? (
-    <p className="text-[11px] text-muted-foreground">Carregando...</p>
+    <DataSkeleton variant="row" count={3} />
   ) : items.length === 0 ? (
     <p className="text-[11px] text-muted-foreground">Nenhuma atividade registrada ainda.</p>
   ) : (
