@@ -46,7 +46,7 @@ export default function AppLayout() {
               <div className="hidden md:block">
                 <AppSidebar />
               </div>
-              <div className="flex-1 flex flex-col min-w-0 transition-all duration-300 ease-in-out">
+              <div className="flex-1 flex flex-col min-w-0 min-h-0 transition-all duration-300 ease-in-out">
                 <TrialBanner />
                 <header className="h-14 flex items-center justify-between border-b border-border bg-card px-4 gap-3 shadow-[0_1px_3px_rgba(0,0,0,0.02)]">
                   <div className="flex items-center gap-2 min-w-0">
