@@ -103,14 +103,21 @@ export function ChatPanel({
       if (error) throw error;
       if (data?.error) throw new Error(data.error);
 
-      const { error: insertError } = await supabase.from("whatsapp_messages").insert({
+      const messageBody = text;
+      if (!messageBody) throw new Error("Mensagem vazia");
+
+      const insertPayload = {
         from_me: true,
         lead_id: lead.id,
         store_id: currentStoreId,
-        body: text,
+        body: messageBody,
         timestamp: new Date().toISOString(),
         remote_jid: remoteJid,
-      });
+      };
+      console.log("[ChatPanel] inserting whatsapp_message:", insertPayload);
+      const { error: insertError } = await supabase
+        .from("whatsapp_messages")
+        .insert(insertPayload);
       if (insertError) throw insertError;
     } catch (err: any) {
       toast({
