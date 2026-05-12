@@ -309,7 +309,7 @@ export function ChatPanel({
   };
 
   const { messages: waMessages, refetch: refetchMessages } = useWhatsAppMessages(lead.id);
-  const messages: ChatMessage[] = waMessages.map((m) => ({
+  const allMessages: ChatMessage[] = waMessages.map((m) => ({
     from: m.from_me ? "us" : "lead",
     text: m.body ?? "",
     time: new Date(m.timestamp).toLocaleTimeString("pt-BR", {
@@ -320,6 +320,13 @@ export function ChatPanel({
     media_type: m.media_type,
     media_url: m.media_url,
   }));
+
+  const filteredMessages = useMemo(() => {
+    const q = searchQuery.trim().toLowerCase();
+    if (!q) return allMessages;
+    return allMessages.filter((m) => (m.text ?? "").toLowerCase().includes(q));
+  }, [allMessages, searchQuery]);
+  const messages = filteredMessages;
 
   return (
     <div className="flex flex-col h-full min-h-0 bg-background min-w-0 animate-in slide-in-from-right fade-in duration-300 ease-out">
