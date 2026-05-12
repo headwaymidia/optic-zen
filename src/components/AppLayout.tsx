@@ -12,6 +12,7 @@ import { SubscriptionProvider, useSubscription } from "@/hooks/useSubscription";
 import { translateRole } from "@/lib/profile-helpers";
 
 import { TrialExpiredScreen } from "./TrialExpiredScreen";
+import { DataSkeleton } from "./ui/DataSkeleton";
 
 function TrialGuard({ children }: { children: React.ReactNode }) {
   const { isTrialExpired, loading } = useSubscription();
