@@ -97,7 +97,7 @@ export function MessageInput({
     <footer className="shrink-0 border-t bg-card p-2 flex items-center gap-1">
       <Popover>
         <PopoverTrigger asChild>
-          <Button variant="ghost" size="icon" type="button" className="h-8 w-8" aria-label="Inserir emoji">
+          <Button variant="ghost" size="icon" type="button" className="h-8 w-8" aria-label="Inserir emoji" title="Emojis">
             <Smile className="h-4 w-4 text-muted-foreground" />
           </Button>
         </PopoverTrigger>
