@@ -252,10 +252,14 @@ Deno.serve(async (req) => {
       const audioMessage = body.audioMessage as
         | { base64?: string; mimetype?: string }
         | undefined;
+      const inMediaUrl = body.mediaUrl ? String(body.mediaUrl) : "";
+      const inMediaType = body.mediaType ? String(body.mediaType) : ""; // "image" | "video"
+      const caption = body.caption ? String(body.caption) : "";
       const isAudio = !!audioMessage?.base64;
+      const isMedia = !!inMediaUrl && (inMediaType === "image" || inMediaType === "video");
 
       if (!phone) throw new Error("phone é obrigatório");
-      if (!isAudio && !message.trim()) throw new Error("message é obrigatório");
+      if (!isAudio && !isMedia && !message.trim()) throw new Error("message é obrigatório");
 
       let phoneDigits = phone.replace(/\D/g, "");
       if (!phoneDigits.startsWith("55")) phoneDigits = `55${phoneDigits}`;
@@ -265,7 +269,21 @@ Deno.serve(async (req) => {
       let mediaUrl: string | null = null;
       let mediaType: string | null = null;
 
-      if (isAudio) {
+      if (isMedia) {
+        send = await evo(`/message/sendMedia/${instance}`, {
+          method: "POST",
+          body: JSON.stringify({
+            number: phoneDigits,
+            mediatype: inMediaType,
+            media: inMediaUrl,
+            caption: caption || "",
+          }),
+        });
+        if (send.status < 400) {
+          mediaUrl = inMediaUrl;
+          mediaType = inMediaType;
+        }
+      } else if (isAudio) {
         // Send audio via Evolution
         send = await evo(`/message/sendWhatsAppAudio/${instance}`, {
           method: "POST",
