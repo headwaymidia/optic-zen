@@ -114,7 +114,7 @@ export function NotificationBell() {
       queryClient.invalidateQueries({ queryKey });
     }
     if (n.lead_id) {
-      navigate(`/whatsapp?lead=${n.lead_id}`);
+      navigate(`/whatsapp?leadId=${n.lead_id}`);
     }
   }
 
