@@ -187,6 +187,13 @@ Deno.serve(async (req) => {
             ...(fromMe ? {} : { last_inbound_at: new Date().toISOString() }),
           })
           .eq("id", leadId);
+
+        if (!fromMe) {
+          const { error: incErr } = await admin.rpc("increment_lead_unread", {
+            _lead_id: leadId,
+          });
+          if (incErr) console.error("[webhook] increment_lead_unread error:", incErr);
+        }
       }
     }
 
