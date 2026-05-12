@@ -118,6 +118,7 @@ export type Database = {
           sale_value: number | null
           status: string
           store_id: string
+          unread_count: number
           updated_at: string
         }
         Insert: {
@@ -152,6 +153,7 @@ export type Database = {
           sale_value?: number | null
           status?: string
           store_id: string
+          unread_count?: number
           updated_at?: string
         }
         Update: {
@@ -186,6 +188,7 @@ export type Database = {
           sale_value?: number | null
           status?: string
           store_id?: string
+          unread_count?: number
           updated_at?: string
         }
         Relationships: [
