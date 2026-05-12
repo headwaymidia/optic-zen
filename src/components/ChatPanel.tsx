@@ -226,8 +226,11 @@ export function ChatPanel({
         .from("whatsapp-media")
         .upload(path, file, { contentType: file.type, upsert: false });
       if (upErr) throw upErr;
-      const { data: pub } = supabase.storage.from("whatsapp-media").getPublicUrl(path);
-      const publicUrl = pub.publicUrl;
+      const { data: signed, error: signErr } = await supabase.storage
+        .from("whatsapp-media")
+        .createSignedUrl(path, 60 * 60 * 24 * 365 * 5); // 5 anos
+      if (signErr || !signed?.signedUrl) throw signErr ?? new Error("Falha ao gerar URL");
+      const publicUrl = signed.signedUrl;
 
       const { data, error } = await supabase.functions.invoke("whatsapp-evolution", {
         body: {
