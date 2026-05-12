@@ -115,6 +115,8 @@ export function ChatPanel({
         body: messageBody,
         timestamp: new Date().toISOString(),
         remote_jid: remoteJid,
+        instance_name: instanceName,
+        message_id: crypto.randomUUID(),
       };
       console.log("[ChatPanel] inserting whatsapp_message:", insertPayload);
       const { error: insertError } = await supabase
