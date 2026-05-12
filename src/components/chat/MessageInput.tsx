@@ -34,7 +34,7 @@ export function MessageInput({
   };
 
   return (
-    <footer className="border-t bg-card p-2 flex items-center gap-1">
+    <footer className="shrink-0 border-t bg-card p-2 flex items-center gap-1">
       <Button variant="ghost" size="icon" type="button" className="h-8 w-8">
         <Smile className="h-4 w-4 text-muted-foreground" />
       </Button>
