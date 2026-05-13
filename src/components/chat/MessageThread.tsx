@@ -72,9 +72,18 @@ interface Props {
   messages: ChatMessage[];
   sentMessages: SentMessage[];
   isTyping: boolean;
+  onReply?: (m: ChatMessage) => void;
 }
 
-export function MessageThread({ messages, sentMessages, isTyping }: Props) {
+function QuoteBlock({ text }: { text: string }) {
+  return (
+    <div className="mb-1 border-l-2 border-emerald-500/70 bg-black/5 dark:bg-white/5 rounded px-2 py-1 text-[11px] text-muted-foreground whitespace-pre-wrap break-words">
+      {text}
+    </div>
+  );
+}
+
+export function MessageThread({ messages, sentMessages, isTyping, onReply }: Props) {
   const endRef = useRef<HTMLDivElement | null>(null);
 
   useEffect(() => {
@@ -83,35 +92,65 @@ export function MessageThread({ messages, sentMessages, isTyping }: Props) {
 
   return (
     <div className="flex-1 overflow-y-auto bg-muted/40 px-3 py-4 space-y-2">
-      {messages.map((m, i) => (
-        <div key={i} className={cn("flex", m.from === "us" ? "justify-end" : "justify-start")}>
-          <div
-            className={cn(
-              "max-w-[80%] rounded-2xl px-3 py-1.5 shadow-sm text-sm",
-              m.from === "us"
-                ? "bg-green-100 text-foreground rounded-br-sm dark:bg-green-900/40"
-                : "bg-card text-foreground rounded-bl-sm"
+      {messages.map((m, i) => {
+        const { quote, body } = parseQuote(m.text ?? "");
+        return (
+          <div key={i} className={cn("group flex items-center gap-1", m.from === "us" ? "justify-end" : "justify-start")}>
+            {m.from === "us" && onReply && (
+              <button
+                type="button"
+                onClick={() => onReply({ ...m, text: body })}
+                className="opacity-0 group-hover:opacity-100 transition-opacity p-1 rounded-full hover:bg-muted"
+                aria-label="Responder"
+                title="Responder"
+              >
+                <Reply className="h-3.5 w-3.5 text-muted-foreground" />
+              </button>
             )}
-          >
-            <MessageContent media_type={m.media_type} media_url={m.media_url} text={m.text} />
-            <p className="text-[10px] text-muted-foreground mt-0.5 text-right flex items-center justify-end gap-1">
-              <span>{m.time}</span>
-              {m.from === "us" && <StatusTicks status={m.status} />}
-            </p>
+            <div
+              className={cn(
+                "max-w-[80%] rounded-2xl px-3 py-1.5 shadow-sm text-sm",
+                m.from === "us"
+                  ? "bg-green-100 text-foreground rounded-br-sm dark:bg-green-900/40"
+                  : "bg-card text-foreground rounded-bl-sm"
+              )}
+            >
+              {quote && <QuoteBlock text={quote} />}
+              <MessageContent media_type={m.media_type} media_url={m.media_url} text={body} />
+              <p className="text-[10px] text-muted-foreground mt-0.5 text-right flex items-center justify-end gap-1">
+                <span>{m.time}</span>
+                {m.from === "us" && <StatusTicks status={m.status} />}
+              </p>
+            </div>
+            {m.from === "lead" && onReply && (
+              <button
+                type="button"
+                onClick={() => onReply({ ...m, text: body })}
+                className="opacity-0 group-hover:opacity-100 transition-opacity p-1 rounded-full hover:bg-muted"
+                aria-label="Responder"
+                title="Responder"
+              >
+                <Reply className="h-3.5 w-3.5 text-muted-foreground" />
+              </button>
+            )}
           </div>
-        </div>
-      ))}
-      {sentMessages.map((m, i) => (
-        <div key={`sent-${i}`} className="flex justify-end">
-          <div className="max-w-[80%] rounded-2xl px-3 py-1.5 shadow-sm text-sm bg-green-100 text-foreground rounded-br-sm dark:bg-green-900/40">
-            <MessageContent media_type={m.media_type} media_url={m.media_url} text={m.text} />
-            <p className="text-[10px] text-muted-foreground mt-0.5 text-right flex items-center justify-end gap-1">
-              <span>{m.time}</span>
-              <StatusTicks status={m.status ?? "sent"} />
-            </p>
+        );
+      })}
+      {sentMessages.map((m, i) => {
+        const { quote, body } = parseQuote(m.text ?? "");
+        return (
+          <div key={`sent-${i}`} className="flex justify-end">
+            <div className="max-w-[80%] rounded-2xl px-3 py-1.5 shadow-sm text-sm bg-green-100 text-foreground rounded-br-sm dark:bg-green-900/40">
+              {quote && <QuoteBlock text={quote} />}
+              <MessageContent media_type={m.media_type} media_url={m.media_url} text={body} />
+              <p className="text-[10px] text-muted-foreground mt-0.5 text-right flex items-center justify-end gap-1">
+                <span>{m.time}</span>
+                <StatusTicks status={m.status ?? "sent"} />
+              </p>
+            </div>
           </div>
-        </div>
-      ))}
+        );
+      })}
       {isTyping && (
         <div className="flex justify-end" aria-live="polite" aria-label="Digitando">
           <div className="rounded-2xl rounded-br-sm bg-green-100 dark:bg-green-900/40 px-3 py-2 shadow-sm">
