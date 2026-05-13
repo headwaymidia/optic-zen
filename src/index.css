@@ -299,18 +299,13 @@
   background-color: rgba(255, 255, 255, 0.3);
 }
 
-/* Mobile: enforce 44px minimum touch target on interactive controls.
- * Opt-out with `.no-touch-min` when a smaller control is intentional. */
+/* Mobile: enforce 44px minimum touch target on form controls (inputs, selects, dropdowns).
+ * Buttons are intentionally excluded to preserve dense UIs (chat, kanban). */
 @media (max-width: 767px) {
-  button:not(.no-touch-min),
-  [role="button"]:not(.no-touch-min),
-  a[role="button"]:not(.no-touch-min),
-  input:not([type="checkbox"]):not([type="radio"]):not(.no-touch-min),
+  input:not([type="checkbox"]):not([type="radio"]):not([type="hidden"]):not(.no-touch-min),
   select:not(.no-touch-min),
   textarea:not(.no-touch-min),
-  [role="combobox"]:not(.no-touch-min),
-  [role="menuitem"]:not(.no-touch-min),
-  [role="option"]:not(.no-touch-min) {
+  [role="combobox"]:not(.no-touch-min) {
     min-height: 44px;
   }
 }
