@@ -298,3 +298,22 @@
 .dark ::-webkit-scrollbar-thumb:hover {
   background-color: rgba(255, 255, 255, 0.3);
 }
+
+/* Mobile: enforce 44px minimum touch target on form controls (inputs, selects, dropdowns).
+ * Buttons are intentionally excluded to preserve dense UIs (chat, kanban). */
+@media (max-width: 767px) {
+  input:not([type="checkbox"]):not([type="radio"]):not([type="hidden"]):not(.no-touch-min),
+  select:not(.no-touch-min),
+  textarea:not(.no-touch-min),
+  [role="combobox"]:not(.no-touch-min) {
+    min-height: 44px;
+  }
+}
+
+/* Truncate helper to prevent layout breaks from long text. */
+.truncate-safe {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  min-width: 0;
+}
