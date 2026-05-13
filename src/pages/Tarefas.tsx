@@ -145,7 +145,7 @@ export default function Tarefas() {
       <div>
         <h1 className="text-xl sm:text-2xl font-semibold tracking-tight">Tarefas de Hoje</h1>
         <p className="text-xs sm:text-sm text-muted-foreground">
-          {loading ? "Carregando..." : `${total} leads precisam da sua atenção hoje.`}
+          {loading ? "\u00A0" : `${total} leads precisam da sua atenção hoje.`}
         </p>
       </div>
 
