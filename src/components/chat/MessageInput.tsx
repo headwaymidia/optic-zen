@@ -99,38 +99,64 @@ export function MessageInput({
 
   return (
     <footer className="shrink-0 border-t bg-card p-2 flex items-center gap-1">
-      <Popover open={emojiOpen} onOpenChange={setEmojiOpen}>
-        <Tooltip>
-          <TooltipTrigger asChild>
-            <PopoverTrigger asChild>
-              <Button
-                variant="ghost"
-                size="icon"
-                type="button"
-                className="h-8 w-8"
-                aria-label="Inserir emoji"
-              >
-                <Smile className="h-4 w-4 text-muted-foreground" />
-              </Button>
-            </PopoverTrigger>
-          </TooltipTrigger>
-          <TooltipContent side="top">Emojis</TooltipContent>
-        </Tooltip>
-        <PopoverContent side="top" align="start" className="p-0 border-0 w-auto z-50">
-          <EmojiPicker
-            onEmojiClick={(e) => {
-              onChange(value + e.emoji);
-            }}
-            emojiStyle={EmojiStyle.NATIVE}
-            theme={Theme.AUTO}
-            width={320}
-            height={400}
-            searchPlaceholder="Buscar emoji..."
-            previewConfig={{ showPreview: false }}
-            skinTonesDisabled
-          />
-        </PopoverContent>
-      </Popover>
+      {isMobile ? (
+        <Sheet open={emojiOpen} onOpenChange={setEmojiOpen}>
+          <SheetTrigger asChild>
+            <Button
+              variant="ghost"
+              size="icon"
+              type="button"
+              className="h-8 w-8 no-touch-min"
+              aria-label="Inserir emoji"
+            >
+              <Smile className="h-4 w-4 text-muted-foreground" />
+            </Button>
+          </SheetTrigger>
+          <SheetContent side="bottom" className="p-0 h-[60vh] flex items-start justify-center">
+            <EmojiPicker
+              onEmojiClick={(e) => onChange(value + e.emoji)}
+              emojiStyle={EmojiStyle.NATIVE}
+              theme={Theme.AUTO}
+              width="100%"
+              height="100%"
+              searchPlaceholder="Buscar emoji..."
+              previewConfig={{ showPreview: false }}
+              skinTonesDisabled
+            />
+          </SheetContent>
+        </Sheet>
+      ) : (
+        <Popover open={emojiOpen} onOpenChange={setEmojiOpen}>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <PopoverTrigger asChild>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  type="button"
+                  className="h-8 w-8"
+                  aria-label="Inserir emoji"
+                >
+                  <Smile className="h-4 w-4 text-muted-foreground" />
+                </Button>
+              </PopoverTrigger>
+            </TooltipTrigger>
+            <TooltipContent side="top">Emojis</TooltipContent>
+          </Tooltip>
+          <PopoverContent side="top" align="start" className="p-0 border-0 w-auto z-50">
+            <EmojiPicker
+              onEmojiClick={(e) => onChange(value + e.emoji)}
+              emojiStyle={EmojiStyle.NATIVE}
+              theme={Theme.AUTO}
+              width={320}
+              height={400}
+              searchPlaceholder="Buscar emoji..."
+              previewConfig={{ showPreview: false }}
+              skinTonesDisabled
+            />
+          </PopoverContent>
+        </Popover>
+      )}
       <input
         ref={fileInputRef}
         type="file"
