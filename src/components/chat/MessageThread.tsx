@@ -31,7 +31,7 @@ export interface SentMessage {
   media_url?: string | null;
 }
 
-function MessageContent({ media_type, media_url, text }: { media_type?: string | null; media_url?: string | null; text: string }) {
+function MessageContent({ media_type, media_url, text, onImageClick }: { media_type?: string | null; media_url?: string | null; text: string; onImageClick?: (url: string) => void }) {
   if (media_type === "audio") {
     return media_url ? (
       <AudioPlayer src={media_url} />
@@ -45,7 +45,8 @@ function MessageContent({ media_type, media_url, text }: { media_type?: string |
         src={media_url}
         alt="imagem"
         loading="lazy"
-        className="rounded-lg w-full h-auto max-w-full sm:max-w-[280px]"
+        onClick={() => onImageClick?.(media_url)}
+        className="rounded-lg w-full h-auto max-w-full sm:max-w-[280px] cursor-zoom-in"
       />
     );
   }
