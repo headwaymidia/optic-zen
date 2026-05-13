@@ -426,81 +426,95 @@ export function ChatPanel({
       )}
 
       {!chatOnly && (
-        <div className="shrink-0 max-h-[40%] overflow-y-auto border-b">
+        <div
+          className={cn(
+            "shrink-0 lg:max-h-[40%] overflow-y-auto border-b",
+            "lg:block",
+            mobileTab === "details" ? "flex-1 min-h-0" : "hidden"
+          )}
+        >
           <LeadSections lead={lead} onApplyLabScript={(msg) => setMessage(msg)} />
           <LeadActivities leadId={lead.id} />
           <ERPTransferCard lead={lead} />
         </div>
       )}
 
-      <div className="flex-1 min-h-0 flex flex-col min-w-0">
-        <MessageThread
-          messages={messages}
-          sentMessages={searchQuery ? [] : sentMessages}
-          isTyping={searchQuery ? false : isTyping}
-          onReply={(m) => setReplyTo({ from: m.from, text: m.text })}
+      <div
+        className={cn(
+          "flex-1 min-h-0 flex-col min-w-0",
+          "lg:flex",
+          mobileTab === "chat" ? "flex" : "hidden"
+        )}
+      >
+        <div className="flex-1 min-h-0 flex flex-col min-w-0">
+          <MessageThread
+            messages={messages}
+            sentMessages={searchQuery ? [] : sentMessages}
+            isTyping={searchQuery ? false : isTyping}
+            onReply={(m) => setReplyTo({ from: m.from, text: m.text })}
+          />
+        </div>
+        {replyTo && (
+          <div className="border-t bg-muted/40 px-3 py-2 flex items-start gap-2">
+            <Reply className="h-3.5 w-3.5 text-muted-foreground mt-0.5 shrink-0" />
+            <div className="flex-1 min-w-0 border-l-2 border-emerald-500/70 pl-2">
+              <p className="text-[10px] font-semibold text-muted-foreground">
+                Respondendo {replyTo.from === "us" ? "sua mensagem" : firstName}
+              </p>
+              <p className="text-xs text-foreground/80 line-clamp-2 break-words">{replyTo.text}</p>
+            </div>
+            <button
+              type="button"
+              onClick={() => setReplyTo(null)}
+              className="p-1 rounded-full hover:bg-muted shrink-0"
+              aria-label="Cancelar resposta"
+            >
+              <X className="h-3.5 w-3.5" />
+            </button>
+          </div>
+        )}
+        {pendingDef && (
+          <div className="border-t bg-amber-50 dark:bg-amber-900/20 px-3 py-2 flex items-center gap-2">
+            <div className="shrink-0 h-7 w-7 rounded-full bg-amber-100 dark:bg-amber-900/40 flex items-center justify-center">
+              <Sparkles className="h-3.5 w-3.5 text-amber-700 dark:text-amber-200" />
+            </div>
+            <div className="flex-1 min-w-0">
+              <p className="text-[11px] font-semibold text-amber-900 dark:text-amber-100 leading-tight">
+                Ação sugerida: {pendingDef.label}
+              </p>
+              <p className="text-[10px] text-amber-800/80 dark:text-amber-200/70 truncate">
+                {pendingDef.hint} · sem retorno há 8h+
+              </p>
+            </div>
+            <Button
+              size="sm"
+              variant="outline"
+              type="button"
+              onClick={handleApplyFollowUpScript}
+              className="h-7 text-[11px] gap-1 bg-white hover:bg-amber-50 border-amber-300 text-amber-900 dark:bg-amber-950/40 dark:text-amber-100 dark:border-amber-700"
+            >
+              Usar script
+            </Button>
+          </div>
+        )}
+        {reachedMax && isCadenceStatus && (
+          <div className="border-t bg-red-50 dark:bg-red-900/20 px-3 py-2 text-[11px] text-red-800 dark:text-red-200">
+            🏁 Cadência completa ({MAX_FOLLOW_UPS} tentativas). Lead será movido para Repescagem em até 24h sem resposta.
+          </div>
+        )}
+
+        <MessageInput
+          value={message}
+          onChange={setMessage}
+          onSend={handleSend}
+          onSendFollowUp={handleSendFollowUp}
+          onApplyScript={applyScript}
+          pendingDef={pendingDef}
+          pendingLevel={pendingLevel}
+          onSendAudio={handleSendAudio}
+          onSendMedia={handleSendMedia}
         />
       </div>
-      {replyTo && (
-        <div className="border-t bg-muted/40 px-3 py-2 flex items-start gap-2">
-          <Reply className="h-3.5 w-3.5 text-muted-foreground mt-0.5 shrink-0" />
-          <div className="flex-1 min-w-0 border-l-2 border-emerald-500/70 pl-2">
-            <p className="text-[10px] font-semibold text-muted-foreground">
-              Respondendo {replyTo.from === "us" ? "sua mensagem" : firstName}
-            </p>
-            <p className="text-xs text-foreground/80 line-clamp-2 break-words">{replyTo.text}</p>
-          </div>
-          <button
-            type="button"
-            onClick={() => setReplyTo(null)}
-            className="p-1 rounded-full hover:bg-muted shrink-0"
-            aria-label="Cancelar resposta"
-          >
-            <X className="h-3.5 w-3.5" />
-          </button>
-        </div>
-      )}
-      {pendingDef && (
-        <div className="border-t bg-amber-50 dark:bg-amber-900/20 px-3 py-2 flex items-center gap-2">
-          <div className="shrink-0 h-7 w-7 rounded-full bg-amber-100 dark:bg-amber-900/40 flex items-center justify-center">
-            <Sparkles className="h-3.5 w-3.5 text-amber-700 dark:text-amber-200" />
-          </div>
-          <div className="flex-1 min-w-0">
-            <p className="text-[11px] font-semibold text-amber-900 dark:text-amber-100 leading-tight">
-              Ação sugerida: {pendingDef.label}
-            </p>
-            <p className="text-[10px] text-amber-800/80 dark:text-amber-200/70 truncate">
-              {pendingDef.hint} · sem retorno há 8h+
-            </p>
-          </div>
-          <Button
-            size="sm"
-            variant="outline"
-            type="button"
-            onClick={handleApplyFollowUpScript}
-            className="h-7 text-[11px] gap-1 bg-white hover:bg-amber-50 border-amber-300 text-amber-900 dark:bg-amber-950/40 dark:text-amber-100 dark:border-amber-700"
-          >
-            Usar script
-          </Button>
-        </div>
-      )}
-      {reachedMax && isCadenceStatus && (
-        <div className="border-t bg-red-50 dark:bg-red-900/20 px-3 py-2 text-[11px] text-red-800 dark:text-red-200">
-          🏁 Cadência completa ({MAX_FOLLOW_UPS} tentativas). Lead será movido para Repescagem em até 24h sem resposta.
-        </div>
-      )}
-
-      <MessageInput
-        value={message}
-        onChange={setMessage}
-        onSend={handleSend}
-        onSendFollowUp={handleSendFollowUp}
-        onApplyScript={applyScript}
-        pendingDef={pendingDef}
-        pendingLevel={pendingLevel}
-        onSendAudio={handleSendAudio}
-        onSendMedia={handleSendMedia}
-      />
 
       <StageGateDialog
         open={!!gateStatus}
