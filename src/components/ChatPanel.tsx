@@ -38,6 +38,8 @@ export function ChatPanel({
   if (import.meta.env.DEV) console.log("[ChatPanel] lead.id:", lead?.id);
   const { updateStatus, updateLead } = useLeads();
   const { currentStoreId } = useStores();
+  const { connection } = useWhatsAppConnection(currentStoreId);
+  const waFunction = connection?.provider === "meta" ? "whatsapp-meta-send" : "whatsapp-evolution";
   const [message, setMessage] = useState("");
   const [gateStatus, setGateStatus] = useState<StageGate | null>(null);
   const [isTyping, setIsTyping] = useState(false);
