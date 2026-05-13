@@ -54,7 +54,7 @@ Deno.serve(async (req) => {
       const storeIds = (stores ?? []).map((s) => s.id);
 
       const [{ data: profiles }, { data: subs }] = await Promise.all([
-        admin.from("profiles").select("id, email, full_name").in("id", ownerIds.length ? ownerIds : ["00000000-0000-0000-0000-000000000000"]),
+        admin.from("profiles").select("id, email, full_name, whatsapp").in("id", ownerIds.length ? ownerIds : ["00000000-0000-0000-0000-000000000000"]),
         admin.from("subscriptions").select("*").in("store_id", storeIds.length ? storeIds : ["00000000-0000-0000-0000-000000000000"]),
       ]);
 
