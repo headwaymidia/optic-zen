@@ -43,6 +43,7 @@ export function ChatPanel({
   const [searchOpen, setSearchOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [replyTo, setReplyTo] = useState<{ from: "us" | "lead"; text: string } | null>(null);
+  const [mobileTab, setMobileTab] = useState<"chat" | "details">("chat");
 
   // Reseta mensagens locais quando troca de lead
   useEffect(() => {
