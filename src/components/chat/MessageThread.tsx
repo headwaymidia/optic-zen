@@ -44,8 +44,8 @@ function MessageContent({ media_type, media_url, text }: { media_type?: string |
       <img
         src={media_url}
         alt="imagem"
-        className="rounded-lg w-full h-auto"
-        style={{ maxWidth: 280 }}
+        loading="lazy"
+        className="rounded-lg w-full h-auto max-w-full sm:max-w-[280px]"
       />
     );
   }
@@ -54,8 +54,7 @@ function MessageContent({ media_type, media_url, text }: { media_type?: string |
       <video
         controls
         src={media_url}
-        className="rounded-lg w-full h-auto"
-        style={{ maxWidth: 280 }}
+        className="rounded-lg w-full h-auto max-w-full sm:max-w-[280px]"
       />
     );
   }
