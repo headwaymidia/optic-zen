@@ -149,7 +149,7 @@ export default function WhatsAppPage() {
   const selected = leads.find((l) => l.id === selectedId) ?? null;
 
   return (
-    <div className="flex h-[calc(100dvh-3.5rem-5rem)] md:h-[calc(100dvh-3.5rem)] w-full overflow-hidden bg-background">
+    <div className="flex h-[calc(100dvh-3.5rem-5rem)] lg:h-[calc(100dvh-3.5rem)] w-full overflow-hidden bg-background">
       <aside
         className={cn(
           "w-full md:w-[30%] md:min-w-[280px] md:max-w-[400px] border-r flex flex-col bg-card",
