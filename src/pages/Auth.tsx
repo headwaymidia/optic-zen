@@ -275,6 +275,18 @@ export default function AuthPage() {
                   required
                 />
                 <FormField
+                  id="phone"
+                  label="Celular"
+                  type="tel"
+                  value={phone}
+                  onChange={(v) => setPhone(maskPhone(v))}
+                  autoComplete="tel"
+                  placeholder="(11) 98765-4321"
+                  inputMode="numeric"
+                  maxLength={16}
+                  required
+                />
+                <FormField
                   id="password"
                   label="Senha"
                   type="password"
