@@ -65,6 +65,7 @@ export function WhatsAppPanel({ storeId, role }: Props) {
             evolution_api_url: null,
             evolution_api_key: null,
             meta_phone_number_id: null,
+            meta_waba_id: null,
             meta_access_token: null,
             meta_webhook_verify_token: null,
             connected_at: null,
