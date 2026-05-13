@@ -1,6 +1,9 @@
 import { useEffect, useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { toast } from "@/components/ui/use-toast";
 import { humanizeError } from "@/lib/error-handler";
 import { cn } from "@/lib/utils";
@@ -8,6 +11,7 @@ import { supabase } from "@/integrations/supabase/client";
 import {
   AlertCircle,
   CheckCircle2,
+  Copy,
   Loader2,
   LogOut,
   QrCode,
@@ -21,6 +25,10 @@ import {
   type WhatsAppConnection,
   type WhatsAppStatus,
 } from "@/hooks/useWhatsAppConnection";
+
+const META_WEBHOOK_URL =
+  "https://fxcgvlukzjmwzpzuvzcp.supabase.co/functions/v1/whatsapp-meta-webhook";
+const META_VERIFY_TOKEN = "oticadominante_meta_webhook_2024";
 
 interface Props {
   storeId: string;
