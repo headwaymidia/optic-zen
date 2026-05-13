@@ -80,8 +80,8 @@ export function ChatPanel({
   const reachedMax = (lead.follow_up_count ?? 0) >= MAX_FOLLOW_UPS;
 
   const handleSend = async () => {
-    const text = message.trim();
-    if (!text) return;
+    const raw = message.trim();
+    if (!raw) return;
     if (!currentStoreId) {
       toast({ title: "Selecione uma loja antes de enviar", variant: "destructive" });
       return;
@@ -90,8 +90,12 @@ export function ChatPanel({
       toast({ title: "Lead sem telefone", variant: "destructive" });
       return;
     }
+    const text = replyTo
+      ? `> ${replyTo.text.split("\n").join("\n> ")}\n\n${raw}`
+      : raw;
     promoteToInAttendance();
     setMessage("");
+    setReplyTo(null);
 
     const optimisticId = crypto.randomUUID();
     const now = new Date();
