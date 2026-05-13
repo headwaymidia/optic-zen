@@ -31,6 +31,7 @@ const AuthPage = lazy(() => import("./pages/Auth"));
 const OnboardingPage = lazy(() => import("./pages/Onboarding"));
 const AceitarConvitePage = lazy(() => import("./pages/AceitarConvite"));
 const ResetPasswordPage = lazy(() => import("./pages/ResetPassword"));
+const AdminPage = lazy(() => import("./pages/Admin"));
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -119,6 +120,14 @@ const App = () => (
                   <Route path="/planos" element={<Planos />} />
                   <Route path="/parceiro" element={<Parceiro />} />
                   <Route path="/ajuda" element={<Ajuda />} />
+                  <Route
+                    path="/admin"
+                    element={
+                      <Suspense fallback={<AuthFallback />}>
+                        <AdminPage />
+                      </Suspense>
+                    }
+                  />
                 </Route>
                 <Route
                   path="/ranking"
