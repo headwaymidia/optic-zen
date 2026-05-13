@@ -131,7 +131,7 @@ export function MessageThread({ messages, sentMessages, isTyping, onReply }: Pro
               )}
             >
               {quote && <QuoteBlock text={quote} />}
-              <MessageContent media_type={m.media_type} media_url={m.media_url} text={body} />
+              <MessageContent media_type={m.media_type} media_url={m.media_url} text={body} onImageClick={setLightbox} />
               <p className="text-[10px] text-muted-foreground mt-0.5 text-right flex items-center justify-end gap-1">
                 <span>{m.time}</span>
                 {m.from === "us" && <StatusTicks status={m.status} />}
