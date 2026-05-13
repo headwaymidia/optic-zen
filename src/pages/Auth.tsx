@@ -11,6 +11,7 @@ import { toast } from "@/components/ui/use-toast";
 import { humanizeError } from "@/lib/error-handler";
 import { Eye, ArrowLeft, Loader2 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { maskPhone } from "@/lib/masks";
 
 type AuthMode = "LOGIN" | "REGISTER" | "RECOVERY";
 
@@ -40,6 +41,7 @@ export default function AuthPage() {
   const [mode, setMode] = useState<AuthMode>(initialMode);
   const [name, setName] = useState("");
   const [email, setEmail] = useState(prefilledEmail);
+  const [phone, setPhone] = useState("");
   const [password, setPassword] = useState("");
   const [rememberMe, setRememberMe] = useState(true);
   const [submitting, setSubmitting] = useState(false);
@@ -82,6 +84,15 @@ export default function AuthPage() {
 
   async function handleRegister(e: React.FormEvent) {
     e.preventDefault();
+    const phoneDigits = phone.replace(/\D/g, "");
+    if (phoneDigits.length !== 11) {
+      toast({
+        title: "Telefone inválido",
+        description: "Informe um celular no formato (DD) 9XXXX-XXXX.",
+        variant: "destructive",
+      });
+      return;
+    }
     setSubmitting(true);
     const isInvite = Boolean(redirectTo && redirectTo.startsWith("/aceitar-convite/"));
     const { error } = await supabase.auth.signUp({
@@ -93,6 +104,7 @@ export default function AuthPage() {
           : `${window.location.origin}/`,
         data: {
           name: name.trim() || undefined,
+          phone: phoneDigits,
           invited: isInvite || undefined,
         },
       },
@@ -263,6 +275,18 @@ export default function AuthPage() {
                   required
                 />
                 <FormField
+                  id="phone"
+                  label="Celular"
+                  type="tel"
+                  value={phone}
+                  onChange={(v) => setPhone(maskPhone(v))}
+                  autoComplete="tel"
+                  placeholder="(11) 98765-4321"
+                  inputMode="numeric"
+                  maxLength={16}
+                  required
+                />
+                <FormField
                   id="password"
                   label="Senha"
                   type="password"
@@ -363,6 +387,8 @@ function FormField({
   autoComplete,
   placeholder,
   required,
+  inputMode,
+  maxLength,
 }: {
   id: string;
   label: string;
@@ -372,6 +398,8 @@ function FormField({
   autoComplete?: string;
   placeholder?: string;
   required?: boolean;
+  inputMode?: "text" | "numeric" | "tel" | "email" | "url" | "search" | "decimal" | "none";
+  maxLength?: number;
 }) {
   return (
     <div className="space-y-1.5">
@@ -386,6 +414,8 @@ function FormField({
         required={required}
         autoComplete={autoComplete}
         placeholder={placeholder}
+        inputMode={inputMode}
+        maxLength={maxLength}
         className="h-11 rounded-lg border border-zinc-200 bg-white text-zinc-900 placeholder:text-zinc-400 focus-visible:ring-2 focus-visible:ring-zinc-800 focus-visible:ring-offset-0 focus-visible:border-zinc-300"
       />
     </div>
