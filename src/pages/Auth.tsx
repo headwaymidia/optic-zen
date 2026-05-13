@@ -11,6 +11,7 @@ import { toast } from "@/components/ui/use-toast";
 import { humanizeError } from "@/lib/error-handler";
 import { Eye, ArrowLeft, Loader2 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { maskPhone } from "@/lib/masks";
 
 type AuthMode = "LOGIN" | "REGISTER" | "RECOVERY";
 
