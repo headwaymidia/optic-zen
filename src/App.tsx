@@ -31,6 +31,7 @@ const AuthPage = lazy(() => import("./pages/Auth"));
 const OnboardingPage = lazy(() => import("./pages/Onboarding"));
 const AceitarConvitePage = lazy(() => import("./pages/AceitarConvite"));
 const ResetPasswordPage = lazy(() => import("./pages/ResetPassword"));
+const AdminPage = lazy(() => import("./pages/Admin"));
 
 const queryClient = new QueryClient({
   defaultOptions: {
