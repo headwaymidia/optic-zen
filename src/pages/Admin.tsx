@@ -16,6 +16,7 @@ import {
 import { DataSkeleton } from "@/components/ui/DataSkeleton";
 import { toast } from "@/components/ui/use-toast";
 import { Input } from "@/components/ui/input";
+import { PhoneLink } from "@/components/PhoneLink";
 
 const ADMIN_EMAIL = "headwaymidia@gmail.com";
 
@@ -24,6 +25,7 @@ interface AdminStoreRow {
   store_name: string;
   owner_email: string | null;
   owner_name: string | null;
+  owner_phone: string | null;
   created_at: string;
   subscription_status: string | null;
   plan: string | null;
@@ -87,6 +89,7 @@ export default function Admin() {
       store_name: r.store_name ?? r.name ?? "—",
       owner_email: r.owner_email ?? r.email ?? null,
       owner_name: r.owner_name ?? r.full_name ?? null,
+      owner_phone: r.owner_phone ?? r.whatsapp ?? r.phone ?? null,
       created_at: r.created_at,
       subscription_status: r.subscription_status ?? r.status ?? null,
       plan: r.plan ?? r.plan_type ?? null,
@@ -200,6 +203,15 @@ export default function Admin() {
                         <div className="text-xs text-muted-foreground truncate">
                           {r.owner_email ?? "—"}
                         </div>
+                        {r.owner_phone && (
+                          <div className="text-xs text-muted-foreground truncate">
+                            <PhoneLink
+                              phone={r.owner_phone}
+                              className="text-muted-foreground"
+                              iconClassName="h-3 w-3"
+                            />
+                          </div>
+                        )}
                       </TableCell>
                       <TableCell>{formatDate(r.created_at)}</TableCell>
                       <TableCell>{statusBadge(r.subscription_status)}</TableCell>
