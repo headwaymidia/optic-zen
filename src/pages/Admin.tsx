@@ -81,7 +81,20 @@ export default function Admin() {
       });
       return;
     }
-    setRows(((data as any)?.stores ?? []) as AdminStoreRow[]);
+    const raw = (data as any)?.data ?? (data as any)?.stores ?? [];
+    const normalized: AdminStoreRow[] = (raw as any[]).map((r) => ({
+      store_id: r.store_id ?? r.id,
+      store_name: r.store_name ?? r.name ?? "—",
+      owner_email: r.owner_email ?? r.email ?? null,
+      owner_name: r.owner_name ?? r.full_name ?? null,
+      created_at: r.created_at,
+      subscription_status: r.subscription_status ?? r.status ?? null,
+      plan: r.plan ?? r.plan_type ?? null,
+      billing_cycle: r.billing_cycle ?? null,
+      trial_ends_at: r.trial_ends_at ?? null,
+      current_period_end: r.current_period_end ?? null,
+    }));
+    setRows(normalized);
   }
 
   useEffect(() => {
