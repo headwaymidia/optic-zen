@@ -1,6 +1,6 @@
 import { useMemo } from "react";
 import { Card } from "@/components/ui/card";
-import { Lead } from "@/lib/supabase";
+import { Lead } from "@/integrations/supabase/client";
 import { ResponsiveContainer, LineChart, Line, BarChart, Bar } from "recharts";
 import { Wallet, Users, CalendarPlus, Trophy, ArrowUp, ArrowDown } from "lucide-react";
 import {

@@ -1,5 +1,5 @@
 import { useEffect, useState, useCallback } from "react";
-import { Lead, Prescription, supabase } from "@/lib/supabase";
+import { Lead, Prescription, supabase } from "@/integrations/supabase/client";
 import { useLeads } from "@/hooks/useLeads";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -17,7 +17,7 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
-import { toast } from "@/hooks/use-toast";
+import { toast } from "@/components/ui/use-toast";
 import { humanizeError } from "@/lib/error-handler";
 import { cn } from "@/lib/utils";
 

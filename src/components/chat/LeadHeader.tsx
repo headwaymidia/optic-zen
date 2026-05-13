@@ -10,7 +10,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { PhoneLink } from "@/components/PhoneLink";
-import { Lead, LEAD_STATUSES, LeadStatus } from "@/lib/supabase";
+import { Lead, LEAD_STATUSES, LeadStatus } from "@/integrations/supabase/client";
 
 function initials(name: string) {
   return name.split(" ").map((p) => p[0]).slice(0, 2).join("").toUpperCase();

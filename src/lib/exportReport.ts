@@ -1,4 +1,4 @@
-import { Lead, LEAD_STATUSES } from "@/lib/supabase";
+import { Lead, LEAD_STATUSES } from "@/integrations/supabase/client";
 import { format, isWithinInterval, parseISO, startOfMonth, endOfMonth } from "date-fns";
 import { ptBR } from "date-fns/locale";
 

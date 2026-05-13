@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-import { Lead, supabase } from "@/lib/supabase";
+import { Lead, supabase } from "@/integrations/supabase/client";
 
 export interface RankItem {
   id: string;

@@ -25,7 +25,7 @@ import {
   Search,
 } from "lucide-react";
 import { LeadsProvider, useLeads } from "@/hooks/useLeads";
-import { Lead } from "@/lib/supabase";
+import { Lead } from "@/integrations/supabase/client";
 import { useStoreMembers } from "@/hooks/useStoreMembers";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";

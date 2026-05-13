@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Lead, LeadStatus } from "@/lib/supabase";
+import { Lead, LeadStatus } from "@/integrations/supabase/client";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";

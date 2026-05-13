@@ -7,11 +7,11 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { cn } from "@/lib/utils";
-import { toast } from "@/hooks/use-toast";
+import { toast } from "@/components/ui/use-toast";
 import { humanizeError } from "@/lib/error-handler";
 import { useLeads } from "@/hooks/useLeads";
 import { useStores } from "@/hooks/useStores";
-import { INTEREST_TAGS, LEAD_SOURCES, Lead, supabase } from "@/lib/supabase";
+import { INTEREST_TAGS, LEAD_SOURCES, Lead, supabase } from "@/integrations/supabase/client";
 
 interface Props {
   lead: Lead;

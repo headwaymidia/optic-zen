@@ -1,7 +1,7 @@
-import { Lead } from "@/lib/supabase";
+import { Lead } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Copy } from "lucide-react";
-import { toast } from "@/hooks/use-toast";
+import { toast } from "@/components/ui/use-toast";
 import { useStoreMembers } from "@/hooks/useStoreMembers";
 
 function formatCurrency(value: number | null) {

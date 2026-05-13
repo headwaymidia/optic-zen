@@ -1,8 +1,8 @@
 import { createContext, useCallback, useContext, useEffect, ReactNode } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { Lead, LeadStatus, supabase } from "@/lib/supabase";
+import { Lead, LeadStatus, supabase } from "@/integrations/supabase/client";
 import { useStores } from "@/hooks/useStores";
-import { toast } from "@/hooks/use-toast";
+import { toast } from "@/components/ui/use-toast";
 import { humanizeError } from "@/lib/error-handler";
 
 interface LeadsContextValue {
