@@ -203,6 +203,15 @@ export default function Admin() {
                         <div className="text-xs text-muted-foreground truncate">
                           {r.owner_email ?? "—"}
                         </div>
+                        {r.owner_phone && (
+                          <div className="text-xs text-muted-foreground truncate">
+                            <PhoneLink
+                              phone={r.owner_phone}
+                              className="text-muted-foreground"
+                              iconClassName="h-3 w-3"
+                            />
+                          </div>
+                        )}
                       </TableCell>
                       <TableCell>{formatDate(r.created_at)}</TableCell>
                       <TableCell>{statusBadge(r.subscription_status)}</TableCell>
