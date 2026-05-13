@@ -172,11 +172,11 @@ export default function Dashboard() {
             <div className="lg:col-span-2">
               <RoiMegaCard leads={filtered} />
             </div>
-            <PeriodKPIRow leads={storeLeads} range={range} inline />
+            <PeriodKPIRow leads={sellerScoped} range={range} inline />
           </div>
 
           {/* Retornos previstos para os próximos 30 dias */}
-          <UpcomingReturnsCard leads={storeLeads} />
+          <UpcomingReturnsCard leads={sellerScoped} />
 
           {/* 4. Velocidade & Ranking — mobile: empilha 100% / desktop: 50-50 */}
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6 pt-2 items-stretch">
@@ -201,7 +201,7 @@ export default function Dashboard() {
           <VerticalNeonFunnel leads={filtered} />
 
           {/* 6. Evolução (gráfico 3-em-1) */}
-          <RevenueEvolutionChart leads={storeLeads} />
+          <RevenueEvolutionChart leads={sellerScoped} />
         </>
       )}
     </div>
