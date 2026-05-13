@@ -228,9 +228,9 @@ export function StoresProvider({ children }: { children: ReactNode }) {
         console.error("[useStores.addStore] Falha no INSERT em stores:", {
           error,
           message: error?.message,
-          details: (error as any)?.details,
-          hint: (error as any)?.hint,
-          code: (error as any)?.code,
+          details: error?.details,
+          hint: error?.hint,
+          code: error?.code,
           payload: { name, owner_id: user.id },
         });
         if (input.throwOnError) {
