@@ -123,14 +123,29 @@ export default function Dashboard() {
 
       {/* 1. Filtro Temporal — minimalista */}
       <div className="flex flex-wrap items-center justify-between gap-3">
-        <PeriodFilter
-          value={period}
-          customRange={custom}
-          onChange={(k, c) => {
-            setPeriod(k);
-            if (c) setCustom(c);
-          }}
-        />
+        <div className="flex flex-wrap items-center gap-2">
+          <PeriodFilter
+            value={period}
+            customRange={custom}
+            onChange={(k, c) => {
+              setPeriod(k);
+              if (c) setCustom(c);
+            }}
+          />
+          <Select value={sellerId} onValueChange={setSellerId}>
+            <SelectTrigger className="h-8 w-[180px] rounded-full text-xs">
+              <SelectValue placeholder="Vendedor" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">Todos os vendedores</SelectItem>
+              {members.map((m) => (
+                <SelectItem key={m.id} value={m.id}>
+                  {m.full_name}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
         <p className="text-[11px] text-zinc-400 dark:text-zinc-500 tabular-nums">
           {periodSummary}
         </p>
