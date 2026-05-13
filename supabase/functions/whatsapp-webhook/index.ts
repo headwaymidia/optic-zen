@@ -193,12 +193,6 @@ Deno.serve(async (req) => {
           console.error("[webhook] auto-create lead error:", leadErr);
         } else {
           leadId = created?.id ?? null;
-          // Notifica o dono da loja por e-mail (fire-and-forget)
-          if (leadId) {
-            admin.functions
-              .invoke("notify-new-lead", { body: { lead_id: leadId } })
-              .catch((e) => console.error("[webhook] notify-new-lead invoke error:", e));
-          }
         }
       }
 
