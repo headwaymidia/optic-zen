@@ -16,6 +16,7 @@ import { MessageThread, type ChatMessage, type SentMessage } from "@/components/
 import { MessageInput } from "@/components/chat/MessageInput";
 import { LeadActivities } from "@/components/chat/LeadActivities";
 import { useWhatsAppMessages } from "@/hooks/useWhatsAppMessages";
+import { useWhatsAppConnection } from "@/hooks/useWhatsAppConnection";
 import { cn } from "@/lib/utils";
 import {
   getFollowUpDef,
