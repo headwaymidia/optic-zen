@@ -1,8 +1,9 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { usePageTitle } from "@/hooks/usePageTitle";
 import { Button } from "@/components/ui/button";
 import { useLeads } from "@/hooks/useLeads";
 import { useStores } from "@/hooks/useStores";
+import { useStoreMembers } from "@/hooks/useStoreMembers";
 import { PeriodFilter, PeriodKey, getPeriodRange } from "@/components/PeriodFilter";
 import { SalesRanking } from "@/components/SalesRanking";
 import { PeriodKPIRow } from "@/components/PeriodKPIRow";
@@ -17,13 +18,53 @@ import { isWithinInterval, parseISO, format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { FileDown, Tv } from "lucide-react";
 import { DataSkeleton } from "@/components/ui/DataSkeleton";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+
+const LS_KEY = "dashboard:filters:v1";
+type PersistedFilters = { period: PeriodKey; custom?: { from?: string; to?: string }; sellerId: string };
+
+function loadFilters(): PersistedFilters {
+  try {
+    const raw = localStorage.getItem(LS_KEY);
+    if (raw) return JSON.parse(raw) as PersistedFilters;
+  } catch {}
+  return { period: "month", sellerId: "all" };
+}
 
 export default function Dashboard() {
   usePageTitle("Dashboard");
   const { leads, loading } = useLeads();
   const { currentStore, filterByCurrentStore } = useStores();
-  const [period, setPeriod] = useState<PeriodKey>("month");
-  const [custom, setCustom] = useState<{ from?: Date; to?: Date }>();
+  const { members } = useStoreMembers();
+
+  const initial = useMemo(loadFilters, []);
+  const [period, setPeriod] = useState<PeriodKey>(initial.period);
+  const [custom, setCustom] = useState<{ from?: Date; to?: Date } | undefined>(
+    initial.custom?.from && initial.custom?.to
+      ? { from: new Date(initial.custom.from), to: new Date(initial.custom.to) }
+      : undefined
+  );
+  const [sellerId, setSellerId] = useState<string>(initial.sellerId);
+
+  useEffect(() => {
+    try {
+      localStorage.setItem(
+        LS_KEY,
+        JSON.stringify({
+          period,
+          sellerId,
+          custom: custom ? { from: custom.from?.toISOString(), to: custom.to?.toISOString() } : undefined,
+        })
+      );
+    } catch {}
+  }, [period, custom, sellerId]);
+
   const range = useMemo(() => getPeriodRange(period, custom), [period, custom]);
 
   // Isolamento por loja: cada filial vê apenas a fatia mockada de leads que lhe pertence.
@@ -32,14 +73,19 @@ export default function Dashboard() {
     [leads, filterByCurrentStore]
   );
 
+  const sellerScoped = useMemo(
+    () => (sellerId === "all" ? storeLeads : storeLeads.filter((l) => l.responsible_id === sellerId)),
+    [storeLeads, sellerId]
+  );
+
   const filtered = useMemo(
     () =>
-      storeLeads.filter(
+      sellerScoped.filter(
         (l) =>
           l.created_at &&
           isWithinInterval(parseISO(l.created_at), { start: range.from, end: range.to })
       ),
-    [storeLeads, range]
+    [sellerScoped, range]
   );
 
   const total = filtered.length;
@@ -77,14 +123,29 @@ export default function Dashboard() {
 
       {/* 1. Filtro Temporal — minimalista */}
       <div className="flex flex-wrap items-center justify-between gap-3">
-        <PeriodFilter
-          value={period}
-          customRange={custom}
-          onChange={(k, c) => {
-            setPeriod(k);
-            if (c) setCustom(c);
-          }}
-        />
+        <div className="flex flex-wrap items-center gap-2">
+          <PeriodFilter
+            value={period}
+            customRange={custom}
+            onChange={(k, c) => {
+              setPeriod(k);
+              if (c) setCustom(c);
+            }}
+          />
+          <Select value={sellerId} onValueChange={setSellerId}>
+            <SelectTrigger className="h-8 w-[180px] rounded-full text-xs">
+              <SelectValue placeholder="Vendedor" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">Todos os vendedores</SelectItem>
+              {members.map((m) => (
+                <SelectItem key={m.id} value={m.id}>
+                  {m.full_name}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
         <p className="text-[11px] text-zinc-400 dark:text-zinc-500 tabular-nums">
           {periodSummary}
         </p>
@@ -111,11 +172,11 @@ export default function Dashboard() {
             <div className="lg:col-span-2">
               <RoiMegaCard leads={filtered} />
             </div>
-            <PeriodKPIRow leads={storeLeads} range={range} inline />
+            <PeriodKPIRow leads={sellerScoped} range={range} inline />
           </div>
 
           {/* Retornos previstos para os próximos 30 dias */}
-          <UpcomingReturnsCard leads={storeLeads} />
+          <UpcomingReturnsCard leads={sellerScoped} />
 
           {/* 4. Velocidade & Ranking — mobile: empilha 100% / desktop: 50-50 */}
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6 pt-2 items-stretch">
@@ -140,7 +201,7 @@ export default function Dashboard() {
           <VerticalNeonFunnel leads={filtered} />
 
           {/* 6. Evolução (gráfico 3-em-1) */}
-          <RevenueEvolutionChart leads={storeLeads} />
+          <RevenueEvolutionChart leads={sellerScoped} />
         </>
       )}
     </div>

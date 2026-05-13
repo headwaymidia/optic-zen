@@ -10,7 +10,7 @@ import { cn } from "@/lib/utils";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 
-export type PeriodKey = "today" | "7d" | "month" | "prev_month" | "custom";
+export type PeriodKey = "today" | "7d" | "30d" | "90d" | "month" | "prev_month" | "custom";
 
 export interface PeriodRange {
   key: PeriodKey;
@@ -26,6 +26,10 @@ export function getPeriodRange(key: PeriodKey, custom?: { from?: Date; to?: Date
       return { key, label: "Hoje", from: startOfDay(now), to: endOfDay(now) };
     case "7d":
       return { key, label: "Últimos 7 dias", from: startOfDay(subDays(now, 6)), to: endOfDay(now) };
+    case "30d":
+      return { key, label: "Últimos 30 dias", from: startOfDay(subDays(now, 29)), to: endOfDay(now) };
+    case "90d":
+      return { key, label: "Últimos 90 dias", from: startOfDay(subDays(now, 89)), to: endOfDay(now) };
     case "month":
       return {
         key,
@@ -54,9 +58,10 @@ export function getPeriodRange(key: PeriodKey, custom?: { from?: Date; to?: Date
 
 const OPTIONS: { key: PeriodKey; label: string }[] = [
   { key: "today", label: "Hoje" },
-  { key: "7d", label: "Últimos 7 dias" },
+  { key: "7d", label: "7 dias" },
+  { key: "30d", label: "30 dias" },
+  { key: "90d", label: "90 dias" },
   { key: "month", label: "Este mês" },
-  { key: "prev_month", label: "Mês anterior" },
 ];
 
 interface Props {
