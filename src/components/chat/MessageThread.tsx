@@ -1,5 +1,5 @@
-import { useEffect, useRef } from "react";
-import { Check, CheckCheck, Reply } from "lucide-react";
+import { useEffect, useRef, useState } from "react";
+import { Check, CheckCheck, Reply, X } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { AudioPlayer } from "@/components/chat/AudioPlayer";
 
@@ -31,7 +31,7 @@ export interface SentMessage {
   media_url?: string | null;
 }
 
-function MessageContent({ media_type, media_url, text }: { media_type?: string | null; media_url?: string | null; text: string }) {
+function MessageContent({ media_type, media_url, text, onImageClick }: { media_type?: string | null; media_url?: string | null; text: string; onImageClick?: (url: string) => void }) {
   if (media_type === "audio") {
     return media_url ? (
       <AudioPlayer src={media_url} />
@@ -45,7 +45,8 @@ function MessageContent({ media_type, media_url, text }: { media_type?: string |
         src={media_url}
         alt="imagem"
         loading="lazy"
-        className="rounded-lg w-full h-auto max-w-full sm:max-w-[280px]"
+        onClick={() => onImageClick?.(media_url)}
+        className="rounded-lg w-full h-auto max-w-full sm:max-w-[280px] cursor-zoom-in"
       />
     );
   }
@@ -84,10 +85,25 @@ function QuoteBlock({ text }: { text: string }) {
 
 export function MessageThread({ messages, sentMessages, isTyping, onReply }: Props) {
   const endRef = useRef<HTMLDivElement | null>(null);
+  const [lightbox, setLightbox] = useState<string | null>(null);
 
   useEffect(() => {
     endRef.current?.scrollIntoView({ behavior: "smooth", block: "end" });
   }, [messages.length, sentMessages.length, isTyping]);
+
+  useEffect(() => {
+    if (!lightbox) return;
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") setLightbox(null);
+    };
+    const prev = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    window.addEventListener("keydown", onKey);
+    return () => {
+      window.removeEventListener("keydown", onKey);
+      document.body.style.overflow = prev;
+    };
+  }, [lightbox]);
 
   return (
     <div className="flex-1 overflow-y-auto bg-muted/40 px-3 py-4 space-y-2">
@@ -115,7 +131,7 @@ export function MessageThread({ messages, sentMessages, isTyping, onReply }: Pro
               )}
             >
               {quote && <QuoteBlock text={quote} />}
-              <MessageContent media_type={m.media_type} media_url={m.media_url} text={body} />
+              <MessageContent media_type={m.media_type} media_url={m.media_url} text={body} onImageClick={setLightbox} />
               <p className="text-[10px] text-muted-foreground mt-0.5 text-right flex items-center justify-end gap-1">
                 <span>{m.time}</span>
                 {m.from === "us" && <StatusTicks status={m.status} />}
@@ -141,7 +157,7 @@ export function MessageThread({ messages, sentMessages, isTyping, onReply }: Pro
           <div key={`sent-${i}`} className="flex justify-end">
             <div className="max-w-[80%] rounded-2xl px-3 py-1.5 shadow-sm text-sm bg-green-100 text-foreground rounded-br-sm dark:bg-green-900/40">
               {quote && <QuoteBlock text={quote} />}
-              <MessageContent media_type={m.media_type} media_url={m.media_url} text={body} />
+              <MessageContent media_type={m.media_type} media_url={m.media_url} text={body} onImageClick={setLightbox} />
               <p className="text-[10px] text-muted-foreground mt-0.5 text-right flex items-center justify-end gap-1">
                 <span>{m.time}</span>
                 <StatusTicks status={m.status ?? "sent"} />
@@ -163,6 +179,29 @@ export function MessageThread({ messages, sentMessages, isTyping, onReply }: Pro
         </div>
       )}
       <div ref={endRef} />
+      {lightbox && (
+        <div
+          className="fixed inset-0 z-[100] bg-black/90 flex items-center justify-center p-4 animate-in fade-in"
+          onClick={() => setLightbox(null)}
+          role="dialog"
+          aria-modal="true"
+        >
+          <button
+            type="button"
+            onClick={(e) => { e.stopPropagation(); setLightbox(null); }}
+            className="absolute top-4 right-4 p-2 rounded-full bg-white/10 hover:bg-white/20 text-white"
+            aria-label="Fechar"
+          >
+            <X className="h-6 w-6" />
+          </button>
+          <img
+            src={lightbox}
+            alt="imagem ampliada"
+            onClick={(e) => e.stopPropagation()}
+            className="max-w-full max-h-full object-contain rounded-lg"
+          />
+        </div>
+      )}
     </div>
   );
 }
