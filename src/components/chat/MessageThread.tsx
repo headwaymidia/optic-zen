@@ -85,10 +85,25 @@ function QuoteBlock({ text }: { text: string }) {
 
 export function MessageThread({ messages, sentMessages, isTyping, onReply }: Props) {
   const endRef = useRef<HTMLDivElement | null>(null);
+  const [lightbox, setLightbox] = useState<string | null>(null);
 
   useEffect(() => {
     endRef.current?.scrollIntoView({ behavior: "smooth", block: "end" });
   }, [messages.length, sentMessages.length, isTyping]);
+
+  useEffect(() => {
+    if (!lightbox) return;
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") setLightbox(null);
+    };
+    const prev = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    window.addEventListener("keydown", onKey);
+    return () => {
+      window.removeEventListener("keydown", onKey);
+      document.body.style.overflow = prev;
+    };
+  }, [lightbox]);
 
   return (
     <div className="flex-1 overflow-y-auto bg-muted/40 px-3 py-4 space-y-2">
