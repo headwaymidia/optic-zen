@@ -1,7 +1,16 @@
 import { useEffect, useRef } from "react";
-import { Check, CheckCheck } from "lucide-react";
+import { Check, CheckCheck, Reply } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { AudioPlayer } from "@/components/chat/AudioPlayer";
+
+/** Splits a markdown-style quote prefix ("> ...\n\n...") from the body. */
+function parseQuote(text: string): { quote: string | null; body: string } {
+  if (!text || !text.startsWith("> ")) return { quote: null, body: text ?? "" };
+  const sepIdx = text.indexOf("\n\n");
+  if (sepIdx === -1) return { quote: null, body: text };
+  const quoteBlock = text.slice(2, sepIdx).replace(/\n> /g, "\n");
+  return { quote: quoteBlock, body: text.slice(sepIdx + 2) };
+}
 
 export interface ChatMessage {
   from: "lead" | "us";
