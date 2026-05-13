@@ -3,7 +3,7 @@ import { usePageTitle } from "@/hooks/usePageTitle";
 import { KanbanBoard, CadenceFilter, countLeadsByPendingFu } from "@/components/KanbanBoard";
 import { ChatPanel } from "@/components/ChatPanel";
 import { useLeads } from "@/hooks/useLeads";
-import { LEAD_STATUSES, LeadStatus } from "@/lib/supabase";
+import { LEAD_STATUSES, LeadStatus } from "@/integrations/supabase/client";
 import { useStoreMembers } from "@/hooks/useStoreMembers";
 import { Sheet, SheetContent } from "@/components/ui/sheet";
 import { useIsMobile } from "@/hooks/use-mobile";

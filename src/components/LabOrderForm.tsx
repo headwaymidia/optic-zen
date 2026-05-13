@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { LAB_STATUSES, LabStatus, Lead } from "@/lib/supabase";
+import { LAB_STATUSES, LabStatus, Lead } from "@/integrations/supabase/client";
 import { useLeads } from "@/hooks/useLeads";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";

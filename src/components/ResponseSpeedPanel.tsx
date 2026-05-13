@@ -1,6 +1,6 @@
 import { useMemo } from "react";
 import { Card } from "@/components/ui/card";
-import { Lead } from "@/lib/supabase";
+import { Lead } from "@/integrations/supabase/client";
 import { Zap, MessageSquare, Clock } from "lucide-react";
 
 interface Props {

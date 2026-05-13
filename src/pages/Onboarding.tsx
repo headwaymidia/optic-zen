@@ -14,10 +14,10 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { DataSkeleton } from "@/components/ui/DataSkeleton";
-import { toast } from "@/hooks/use-toast";
+import { toast } from "@/components/ui/use-toast";
 import { humanizeError } from "@/lib/error-handler";
 import { cn } from "@/lib/utils";
-import { supabase } from "@/lib/supabase";
+import { supabase } from "@/integrations/supabase/client";
 
 export const ONBOARDING_KEY = "od.onboarding.completed.v1";
 

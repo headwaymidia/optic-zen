@@ -1,6 +1,6 @@
 import { Card, CardContent } from "@/components/ui/card";
 import { Users, Calendar, ShoppingBag, DollarSign } from "lucide-react";
-import { Lead } from "@/lib/supabase";
+import { Lead } from "@/integrations/supabase/client";
 
 const ADS_SOURCES = new Set(["Instagram", "Facebook", "Google Ads", "Meta Ads (Instagram/FB)"]);
 

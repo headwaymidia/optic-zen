@@ -1,4 +1,16 @@
-// @deprecated - Use "@/lib/supabase" instead.
-// Este arquivo é re-exportado para manter um único client Supabase apontando
-// para o projeto correto do usuário (crm-optico / fxcgvlukzjmwzpzuvzcp).
-export { supabase } from "@/lib/supabase";
+import { createClient } from "@supabase/supabase-js";
+
+// Projeto Supabase oficial do usuário (crm-optico)
+const SUPABASE_URL = "https://fxcgvlukzjmwzpzuvzcp.supabase.co";
+const SUPABASE_PUBLISHABLE_KEY = "sb_publishable_BgnFYgwfBCXxZcqO2rQJWA_qDAjT4_R";
+
+export const supabase = createClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY, {
+  auth: {
+    storage: localStorage,
+    persistSession: true,
+    autoRefreshToken: true,
+  },
+});
+
+// Re-exporta tipos/constantes de domínio para manter compatibilidade dos imports.
+export * from "@/lib/leads-constants";

@@ -6,7 +6,7 @@ import { ptBR } from "date-fns/locale";
 import { format } from "date-fns";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ArrowDown, ArrowUp, Minus } from "lucide-react";
-import { Lead } from "@/lib/supabase";
+import { Lead } from "@/integrations/supabase/client";
 import { cn } from "@/lib/utils";
 
 function countInRange(leads: Lead[], from: Date, to: Date) {

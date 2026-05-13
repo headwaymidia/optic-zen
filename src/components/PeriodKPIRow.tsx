@@ -1,5 +1,5 @@
 import { useMemo } from "react";
-import { Lead } from "@/lib/supabase";
+import { Lead } from "@/integrations/supabase/client";
 import { differenceInMilliseconds, isWithinInterval, parseISO } from "date-fns";
 import { ArrowUp, ArrowDown, Minus } from "lucide-react";
 import { cn } from "@/lib/utils";

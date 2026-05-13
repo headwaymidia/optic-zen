@@ -1,13 +1,13 @@
 import { useEffect, useState } from "react";
 import { Navigate, useNavigate, useSearchParams } from "react-router-dom";
-import { supabase, setRememberSession } from "@/lib/supabase";
+import { supabase, setRememberSession } from "@/integrations/supabase/client";
 import { Checkbox } from "@/components/ui/checkbox";
 import { useAuth } from "@/hooks/useAuth";
 import { useStores } from "@/hooks/useStores";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { toast } from "@/hooks/use-toast";
+import { toast } from "@/components/ui/use-toast";
 import { humanizeError } from "@/lib/error-handler";
 import { Eye, ArrowLeft, Loader2 } from "lucide-react";
 import { cn } from "@/lib/utils";

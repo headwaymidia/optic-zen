@@ -1,5 +1,5 @@
 import { useMemo } from "react";
-import { Lead } from "@/lib/supabase";
+import { Lead } from "@/integrations/supabase/client";
 import { BellRing, ChevronRight } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 

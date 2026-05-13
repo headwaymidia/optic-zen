@@ -17,11 +17,11 @@ import {
   NotebookPen,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { toast } from "@/hooks/use-toast";
+import { toast } from "@/components/ui/use-toast";
 import { PrescriptionForm } from "@/components/PrescriptionForm";
 import { LabOrderForm } from "@/components/LabOrderForm";
 import { useLeads } from "@/hooks/useLeads";
-import { Lead } from "@/lib/supabase";
+import { Lead } from "@/integrations/supabase/client";
 
 interface Props {
   lead: Lead;

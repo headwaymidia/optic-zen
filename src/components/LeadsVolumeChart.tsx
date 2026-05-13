@@ -12,7 +12,7 @@ import {
   CartesianGrid,
   Legend,
 } from "recharts";
-import { Lead, LEAD_STATUSES, LeadStatus } from "@/lib/supabase";
+import { Lead, LEAD_STATUSES, LeadStatus } from "@/integrations/supabase/client";
 
 interface Props {
   leads: Lead[];
