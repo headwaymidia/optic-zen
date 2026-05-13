@@ -1,5 +1,5 @@
-import { useEffect, useRef } from "react";
-import { Check, CheckCheck, Reply } from "lucide-react";
+import { useEffect, useRef, useState } from "react";
+import { Check, CheckCheck, Reply, X } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { AudioPlayer } from "@/components/chat/AudioPlayer";
 
