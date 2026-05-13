@@ -408,8 +408,28 @@ export function ChatPanel({
           messages={messages}
           sentMessages={searchQuery ? [] : sentMessages}
           isTyping={searchQuery ? false : isTyping}
+          onReply={(m) => setReplyTo({ from: m.from, text: m.text })}
         />
       </div>
+      {replyTo && (
+        <div className="border-t bg-muted/40 px-3 py-2 flex items-start gap-2">
+          <Reply className="h-3.5 w-3.5 text-muted-foreground mt-0.5 shrink-0" />
+          <div className="flex-1 min-w-0 border-l-2 border-emerald-500/70 pl-2">
+            <p className="text-[10px] font-semibold text-muted-foreground">
+              Respondendo {replyTo.from === "us" ? "sua mensagem" : firstName}
+            </p>
+            <p className="text-xs text-foreground/80 line-clamp-2 break-words">{replyTo.text}</p>
+          </div>
+          <button
+            type="button"
+            onClick={() => setReplyTo(null)}
+            className="p-1 rounded-full hover:bg-muted shrink-0"
+            aria-label="Cancelar resposta"
+          >
+            <X className="h-3.5 w-3.5" />
+          </button>
+        </div>
+      )}
       {pendingDef && (
         <div className="border-t bg-amber-50 dark:bg-amber-900/20 px-3 py-2 flex items-center gap-2">
           <div className="shrink-0 h-7 w-7 rounded-full bg-amber-100 dark:bg-amber-900/40 flex items-center justify-center">
