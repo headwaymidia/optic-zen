@@ -4,7 +4,9 @@ import EmojiPicker, { EmojiStyle, Theme } from "emoji-picker-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
+import { useIsMobile } from "@/hooks/use-mobile";
 import { cn } from "@/lib/utils";
 import type { FollowUpDef, FollowUpLevel } from "@/lib/followUpScripts";
 
@@ -34,6 +36,7 @@ export function MessageInput({
   const fileInputRef = useRef<HTMLInputElement | null>(null);
   const [scriptsOpen, setScriptsOpen] = useState(false);
   const [emojiOpen, setEmojiOpen] = useState(false);
+  const isMobile = useIsMobile();
   const [isRecording, setIsRecording] = useState(false);
   const [elapsed, setElapsed] = useState(0);
   const recorderRef = useRef<MediaRecorder | null>(null);
