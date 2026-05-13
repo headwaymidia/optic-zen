@@ -615,6 +615,7 @@ export type Database = {
           id: string
           meta_access_token: string | null
           meta_phone_number_id: string | null
+          meta_waba_id: string | null
           meta_webhook_verify_token: string | null
           phone_number: string | null
           provider: string
@@ -631,6 +632,7 @@ export type Database = {
           id?: string
           meta_access_token?: string | null
           meta_phone_number_id?: string | null
+          meta_waba_id?: string | null
           meta_webhook_verify_token?: string | null
           phone_number?: string | null
           provider?: string
@@ -647,6 +649,7 @@ export type Database = {
           id?: string
           meta_access_token?: string | null
           meta_phone_number_id?: string | null
+          meta_waba_id?: string | null
           meta_webhook_verify_token?: string | null
           phone_number?: string | null
           provider?: string

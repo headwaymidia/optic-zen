@@ -15,6 +15,7 @@ export interface WhatsAppConnection {
   evolution_api_url: string | null;
   evolution_api_key: string | null;
   meta_phone_number_id: string | null;
+  meta_waba_id: string | null;
   meta_access_token: string | null;
   meta_webhook_verify_token: string | null;
   connected_at: string | null;
