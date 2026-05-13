@@ -113,7 +113,7 @@ export function ChatPanel({
     setSentMessages((prev) => [...prev, optimistic]);
 
     try {
-      const { data, error } = await supabase.functions.invoke("whatsapp-evolution", {
+      const { data, error } = await supabase.functions.invoke(waFunction, {
         body: {
           action: "sendMessage",
           store_id: currentStoreId,
@@ -175,7 +175,7 @@ export function ChatPanel({
     ]);
 
     try {
-      const { data, error } = await supabase.functions.invoke("whatsapp-evolution", {
+      const { data, error } = await supabase.functions.invoke(waFunction, {
         body: {
           action: "sendMessage",
           store_id: currentStoreId,
@@ -246,7 +246,7 @@ export function ChatPanel({
       if (signErr || !signed?.signedUrl) throw signErr ?? new Error("Falha ao gerar URL");
       const publicUrl = signed.signedUrl;
 
-      const { data, error } = await supabase.functions.invoke("whatsapp-evolution", {
+      const { data, error } = await supabase.functions.invoke(waFunction, {
         body: {
           action: "sendMessage",
           store_id: currentStoreId,
