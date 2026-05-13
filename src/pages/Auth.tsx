@@ -387,6 +387,8 @@ function FormField({
   autoComplete,
   placeholder,
   required,
+  inputMode,
+  maxLength,
 }: {
   id: string;
   label: string;
@@ -396,6 +398,8 @@ function FormField({
   autoComplete?: string;
   placeholder?: string;
   required?: boolean;
+  inputMode?: "text" | "numeric" | "tel" | "email" | "url" | "search" | "decimal" | "none";
+  maxLength?: number;
 }) {
   return (
     <div className="space-y-1.5">
@@ -410,6 +414,8 @@ function FormField({
         required={required}
         autoComplete={autoComplete}
         placeholder={placeholder}
+        inputMode={inputMode}
+        maxLength={maxLength}
         className="h-11 rounded-lg border border-zinc-200 bg-white text-zinc-900 placeholder:text-zinc-400 focus-visible:ring-2 focus-visible:ring-zinc-800 focus-visible:ring-offset-0 focus-visible:border-zinc-300"
       />
     </div>
