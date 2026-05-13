@@ -69,6 +69,7 @@ Deno.serve(async (req) => {
           store_name: s.name,
           owner_email: owner?.email ?? null,
           owner_name: owner?.full_name ?? null,
+          owner_phone: owner?.whatsapp ?? null,
           created_at: s.created_at,
           subscription_status: sub?.status ?? null,
           plan: sub?.plan ?? null,
