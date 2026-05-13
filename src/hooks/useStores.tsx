@@ -107,15 +107,18 @@ export function StoresProvider({ children }: { children: ReactNode }) {
 
     const map = new Map<string, Store>();
 
+    type StoreLite = { id: string; name: string; owner_id: string };
+    type MemberRow = { role: StoreRole; store: StoreLite | StoreLite[] | null };
+
     // 1) Lojas via store_members (com role real)
-    for (const row of membersRes.data ?? []) {
-      const s: any = (row as any).store;
+    for (const row of (membersRes.data ?? []) as MemberRow[]) {
+      const s = Array.isArray(row.store) ? row.store[0] : row.store;
       if (!s) continue;
       map.set(s.id, {
         id: s.id,
         name: s.name,
         owner_id: s.owner_id,
-        role: (row as any).role as StoreRole,
+        role: row.role,
         initial: initialFromName(s.name),
       });
     }
