@@ -390,6 +390,34 @@ export function ChatPanel({
         <LeadDropdowns lead={lead} />
       </header>
 
+      {/* Mobile-only tab switcher */}
+      <div className="lg:hidden shrink-0 border-b bg-card flex">
+        <button
+          type="button"
+          onClick={() => setMobileTab("chat")}
+          className={cn(
+            "flex-1 py-2 text-xs font-medium transition-colors border-b-2",
+            mobileTab === "chat"
+              ? "border-primary text-primary"
+              : "border-transparent text-muted-foreground hover:text-foreground"
+          )}
+        >
+          💬 Chat
+        </button>
+        <button
+          type="button"
+          onClick={() => setMobileTab("details")}
+          className={cn(
+            "flex-1 py-2 text-xs font-medium transition-colors border-b-2",
+            mobileTab === "details"
+              ? "border-primary text-primary"
+              : "border-transparent text-muted-foreground hover:text-foreground"
+          )}
+        >
+          📋 Detalhes
+        </button>
+      </div>
+
       {lead.lab_status === "Pronto no laboratório" && (
         <div className="shrink-0 border-b bg-amber-100 dark:bg-amber-900/30 px-3 py-2 text-xs font-semibold text-amber-900 dark:text-amber-100 flex items-center gap-2">
           <span>⚠️ Pedido pronto — avisar o cliente</span>
