@@ -24,6 +24,7 @@ interface AdminStoreRow {
   store_name: string;
   owner_email: string | null;
   owner_name: string | null;
+  owner_phone: string | null;
   created_at: string;
   subscription_status: string | null;
   plan: string | null;
