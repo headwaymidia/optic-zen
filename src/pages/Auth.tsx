@@ -84,6 +84,15 @@ export default function AuthPage() {
 
   async function handleRegister(e: React.FormEvent) {
     e.preventDefault();
+    const phoneDigits = phone.replace(/\D/g, "");
+    if (phoneDigits.length !== 11) {
+      toast({
+        title: "Telefone inválido",
+        description: "Informe um celular no formato (DD) 9XXXX-XXXX.",
+        variant: "destructive",
+      });
+      return;
+    }
     setSubmitting(true);
     const isInvite = Boolean(redirectTo && redirectTo.startsWith("/aceitar-convite/"));
     const { error } = await supabase.auth.signUp({
@@ -95,6 +104,7 @@ export default function AuthPage() {
           : `${window.location.origin}/`,
         data: {
           name: name.trim() || undefined,
+          phone: phoneDigits,
           invited: isInvite || undefined,
         },
       },
