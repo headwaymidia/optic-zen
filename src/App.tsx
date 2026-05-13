@@ -120,6 +120,14 @@ const App = () => (
                   <Route path="/planos" element={<Planos />} />
                   <Route path="/parceiro" element={<Parceiro />} />
                   <Route path="/ajuda" element={<Ajuda />} />
+                  <Route
+                    path="/admin"
+                    element={
+                      <Suspense fallback={<AuthFallback />}>
+                        <AdminPage />
+                      </Suspense>
+                    }
+                  />
                 </Route>
                 <Route
                   path="/ranking"
