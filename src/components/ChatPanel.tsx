@@ -42,10 +42,12 @@ export function ChatPanel({
   const [sentMessages, setSentMessages] = useState<SentMessage[]>([]);
   const [searchOpen, setSearchOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
+  const [replyTo, setReplyTo] = useState<{ from: "us" | "lead"; text: string } | null>(null);
 
   // Reseta mensagens locais quando troca de lead
   useEffect(() => {
     setSentMessages([]);
+    setReplyTo(null);
   }, [lead.id]);
 
   const handleStatusChange = (next: LeadStatus) => {
