@@ -30,6 +30,7 @@ import NotFound from "@/pages/NotFound";
 const AuthPage = lazy(() => import("./pages/Auth"));
 const OnboardingPage = lazy(() => import("./pages/Onboarding"));
 const AceitarConvitePage = lazy(() => import("./pages/AceitarConvite"));
+const ResetPasswordPage = lazy(() => import("./pages/ResetPassword"));
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -94,6 +95,14 @@ const App = () => (
                   element={
                     <Suspense fallback={<AuthFallback />}>
                       <AceitarConvitePage />
+                    </Suspense>
+                  }
+                />
+                <Route
+                  path="/reset-password"
+                  element={
+                    <Suspense fallback={<AuthFallback />}>
+                      <ResetPasswordPage />
                     </Suspense>
                   }
                 />
