@@ -16,6 +16,7 @@ import { MessageThread, type ChatMessage, type SentMessage } from "@/components/
 import { MessageInput } from "@/components/chat/MessageInput";
 import { LeadActivities } from "@/components/chat/LeadActivities";
 import { useWhatsAppMessages } from "@/hooks/useWhatsAppMessages";
+import { useWhatsAppConnection } from "@/hooks/useWhatsAppConnection";
 import { cn } from "@/lib/utils";
 import {
   getFollowUpDef,
@@ -37,6 +38,8 @@ export function ChatPanel({
   if (import.meta.env.DEV) console.log("[ChatPanel] lead.id:", lead?.id);
   const { updateStatus, updateLead } = useLeads();
   const { currentStoreId } = useStores();
+  const { connection } = useWhatsAppConnection(currentStoreId);
+  const waFunction = connection?.provider === "meta" ? "whatsapp-meta-send" : "whatsapp-evolution";
   const [message, setMessage] = useState("");
   const [gateStatus, setGateStatus] = useState<StageGate | null>(null);
   const [isTyping, setIsTyping] = useState(false);
@@ -110,7 +113,7 @@ export function ChatPanel({
     setSentMessages((prev) => [...prev, optimistic]);
 
     try {
-      const { data, error } = await supabase.functions.invoke("whatsapp-evolution", {
+      const { data, error } = await supabase.functions.invoke(waFunction, {
         body: {
           action: "sendMessage",
           store_id: currentStoreId,
@@ -172,7 +175,7 @@ export function ChatPanel({
     ]);
 
     try {
-      const { data, error } = await supabase.functions.invoke("whatsapp-evolution", {
+      const { data, error } = await supabase.functions.invoke(waFunction, {
         body: {
           action: "sendMessage",
           store_id: currentStoreId,
@@ -243,7 +246,7 @@ export function ChatPanel({
       if (signErr || !signed?.signedUrl) throw signErr ?? new Error("Falha ao gerar URL");
       const publicUrl = signed.signedUrl;
 
-      const { data, error } = await supabase.functions.invoke("whatsapp-evolution", {
+      const { data, error } = await supabase.functions.invoke(waFunction, {
         body: {
           action: "sendMessage",
           store_id: currentStoreId,
