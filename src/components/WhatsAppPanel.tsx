@@ -376,138 +376,159 @@ export function WhatsAppPanel({ storeId, role }: Props) {
         <ConnectionStatusCard connection={effectiveConnection} loading={loading} />
       )}
 
-      <div className="rounded-xl border bg-card p-5 space-y-4">
-        <div className="flex items-start justify-between gap-2">
-          <div className="flex items-center gap-2">
-            <div className="h-9 w-9 rounded-lg bg-emerald-100 dark:bg-emerald-900/30 flex items-center justify-center">
-              <QrCode className="h-5 w-5 text-emerald-700 dark:text-emerald-300" />
-            </div>
-            <div>
-              <h3 className="font-semibold text-sm">Conectar via QR Code</h3>
-              <Badge variant="secondary" className="text-[10px] mt-0.5">
-                Evolution API
-              </Badge>
-            </div>
-          </div>
-        </div>
+      <Tabs
+        defaultValue={connection?.provider === "meta" ? "meta" : "evolution"}
+        className="w-full"
+      >
+        <TabsList className="grid w-full grid-cols-2">
+          <TabsTrigger value="evolution">Evolution API (QR Code)</TabsTrigger>
+          <TabsTrigger value="meta">Meta Cloud API (Oficial)</TabsTrigger>
+        </TabsList>
 
-        <div className="rounded-md border border-amber-300 bg-amber-50 dark:bg-amber-900/20 dark:border-amber-700/50 px-3 py-2 text-[11px] text-amber-900 dark:text-amber-100 flex gap-2">
-          <AlertCircle className="h-3.5 w-3.5 shrink-0 mt-0.5" />
-          <span>
-            Use um número dedicado para a loja. Números pessoais podem ser banidos
-            pelo WhatsApp.
-          </span>
-        </div>
-
-        {/* Estado: conectado */}
-        {isConnected && (
-          <div className="space-y-3">
-            <div className="rounded-lg border bg-emerald-50 dark:bg-emerald-900/20 border-emerald-200 dark:border-emerald-800 p-4 flex items-center gap-3">
-              <CheckCircle2 className="h-6 w-6 text-emerald-600 dark:text-emerald-300 shrink-0" />
-              <div className="flex-1 min-w-0">
-                <p className="text-sm font-semibold text-emerald-900 dark:text-emerald-100">
-                  WhatsApp conectado
-                </p>
-                {effectiveConnection?.phone_number && (
-                  <p className="text-xs text-emerald-800 dark:text-emerald-200">
-                    Número: {formatPhone(effectiveConnection.phone_number)}
-                  </p>
-                )}
-              </div>
-            </div>
-            {canEdit && (
-              <Button
-                variant="outline"
-                onClick={handleDisconnect}
-                disabled={busy !== null}
-                className="w-full h-9 gap-2"
-              >
-                {busy === "disconnect" ? (
-                  <Loader2 className="h-4 w-4 animate-spin" />
-                ) : (
-                  <LogOut className="h-4 w-4" />
-                )}
-                Desconectar
-              </Button>
-            )}
-          </div>
-        )}
-
-        {/* Estado: conectando — exibe QR */}
-        {!isConnected && (isConnecting || qrCode) && (
-          <div className="space-y-3">
-            <div className="mx-auto h-64 w-64 rounded-xl border-2 border-dashed border-border bg-white flex items-center justify-center overflow-hidden">
-              {qrCode ? (
-                <img
-                  src={qrCode.startsWith("data:") ? qrCode : `data:image/png;base64,${qrCode}`}
-                  alt="QR Code WhatsApp"
-                  className="h-full w-full object-contain"
-                />
-              ) : (
-                <div className="flex flex-col items-center gap-2 text-muted-foreground">
-                  <Loader2 className="h-8 w-8 animate-spin" />
-                  <p className="text-[11px]">Gerando QR Code…</p>
+        <TabsContent value="evolution" className="mt-4">
+          <div className="rounded-xl border bg-card p-5 space-y-4">
+            <div className="flex items-start justify-between gap-2">
+              <div className="flex items-center gap-2">
+                <div className="h-9 w-9 rounded-lg bg-emerald-100 dark:bg-emerald-900/30 flex items-center justify-center">
+                  <QrCode className="h-5 w-5 text-emerald-700 dark:text-emerald-300" />
                 </div>
-              )}
+                <div>
+                  <h3 className="font-semibold text-sm">Conectar via QR Code</h3>
+                  <Badge variant="secondary" className="text-[10px] mt-0.5">
+                    Evolution API
+                  </Badge>
+                </div>
+              </div>
             </div>
-            <div className="rounded-lg bg-muted/40 p-3 text-xs space-y-1.5">
-              <p className="font-medium">Como conectar:</p>
-              <ol className="list-decimal list-inside space-y-1 text-muted-foreground">
-                <li>Abra o WhatsApp no celular</li>
-                <li>Toque em ⋮ → Aparelhos conectados</li>
-                <li>Toque em Conectar um aparelho</li>
-                <li>Aponte a câmera para o QR Code</li>
-              </ol>
+
+            <div className="rounded-md border border-amber-300 bg-amber-50 dark:bg-amber-900/20 dark:border-amber-700/50 px-3 py-2 text-[11px] text-amber-900 dark:text-amber-100 flex gap-2">
+              <AlertCircle className="h-3.5 w-3.5 shrink-0 mt-0.5" />
+              <span>
+                Use um número dedicado para a loja. Números pessoais podem ser banidos
+                pelo WhatsApp.
+              </span>
             </div>
-            <div className="flex items-center gap-2 text-xs text-amber-700 dark:text-amber-300">
-              <Loader2 className="h-3.5 w-3.5 animate-spin" />
-              <span>Aguardando leitura do QR Code…</span>
-            </div>
-            {canEdit && (
-              <div className="flex gap-2">
+
+            {/* Estado: conectado */}
+            {isConnected && (
+              <div className="space-y-3">
+                <div className="rounded-lg border bg-emerald-50 dark:bg-emerald-900/20 border-emerald-200 dark:border-emerald-800 p-4 flex items-center gap-3">
+                  <CheckCircle2 className="h-6 w-6 text-emerald-600 dark:text-emerald-300 shrink-0" />
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm font-semibold text-emerald-900 dark:text-emerald-100">
+                      WhatsApp conectado
+                    </p>
+                    {effectiveConnection?.phone_number && (
+                      <p className="text-xs text-emerald-800 dark:text-emerald-200">
+                        Número: {formatPhone(effectiveConnection.phone_number)}
+                      </p>
+                    )}
+                  </div>
+                </div>
+                {canEdit && (
+                  <Button
+                    variant="outline"
+                    onClick={handleDisconnect}
+                    disabled={busy !== null}
+                    className="w-full h-9 gap-2"
+                  >
+                    {busy === "disconnect" ? (
+                      <Loader2 className="h-4 w-4 animate-spin" />
+                    ) : (
+                      <LogOut className="h-4 w-4" />
+                    )}
+                    Desconectar
+                  </Button>
+                )}
+              </div>
+            )}
+
+            {/* Estado: conectando — exibe QR */}
+            {!isConnected && (isConnecting || qrCode) && (
+              <div className="space-y-3">
+                <div className="mx-auto h-64 w-64 rounded-xl border-2 border-dashed border-border bg-white flex items-center justify-center overflow-hidden">
+                  {qrCode ? (
+                    <img
+                      src={qrCode.startsWith("data:") ? qrCode : `data:image/png;base64,${qrCode}`}
+                      alt="QR Code WhatsApp"
+                      className="h-full w-full object-contain"
+                    />
+                  ) : (
+                    <div className="flex flex-col items-center gap-2 text-muted-foreground">
+                      <Loader2 className="h-8 w-8 animate-spin" />
+                      <p className="text-[11px]">Gerando QR Code…</p>
+                    </div>
+                  )}
+                </div>
+                <div className="rounded-lg bg-muted/40 p-3 text-xs space-y-1.5">
+                  <p className="font-medium">Como conectar:</p>
+                  <ol className="list-decimal list-inside space-y-1 text-muted-foreground">
+                    <li>Abra o WhatsApp no celular</li>
+                    <li>Toque em ⋮ → Aparelhos conectados</li>
+                    <li>Toque em Conectar um aparelho</li>
+                    <li>Aponte a câmera para o QR Code</li>
+                  </ol>
+                </div>
+                <div className="flex items-center gap-2 text-xs text-amber-700 dark:text-amber-300">
+                  <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                  <span>Aguardando leitura do QR Code…</span>
+                </div>
+                {canEdit && (
+                  <div className="flex gap-2">
+                    <Button
+                      variant="outline"
+                      onClick={handleRefreshQr}
+                      disabled={busy !== null}
+                      className="flex-1 h-9 gap-2"
+                    >
+                      <RefreshCw className="h-4 w-4" />
+                      Atualizar QR Code
+                    </Button>
+                    <Button
+                      variant="outline"
+                      onClick={handleDisconnect}
+                      disabled={busy !== null}
+                      className="flex-1 h-9 gap-2"
+                    >
+                      Cancelar
+                    </Button>
+                  </div>
+                )}
+              </div>
+            )}
+
+            {/* Estado: desconectado */}
+            {!isConnected && !isConnecting && !qrCode && !isChecking && (
+              <div className="space-y-3">
+                <p className="text-xs text-muted-foreground">
+                  Clique em conectar para gerar o QR Code e vincular o WhatsApp da loja.
+                </p>
                 <Button
-                  variant="outline"
-                  onClick={handleRefreshQr}
-                  disabled={busy !== null}
-                  className="flex-1 h-9 gap-2"
+                  onClick={handleConnect}
+                  disabled={busy !== null || !canEdit}
+                  className="w-full h-9 gap-2"
                 >
-                  <RefreshCw className="h-4 w-4" />
-                  Atualizar QR Code
-                </Button>
-                <Button
-                  variant="outline"
-                  onClick={handleDisconnect}
-                  disabled={busy !== null}
-                  className="flex-1 h-9 gap-2"
-                >
-                  Cancelar
+                  {busy === "connect" ? (
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                  ) : (
+                    <QrCode className="h-4 w-4" />
+                  )}
+                  Conectar via QR Code
                 </Button>
               </div>
             )}
           </div>
-        )}
+        </TabsContent>
 
-        {/* Estado: desconectado */}
-        {!isConnected && !isConnecting && !qrCode && !isChecking && (
-          <div className="space-y-3">
-            <p className="text-xs text-muted-foreground">
-              Clique em conectar para gerar o QR Code e vincular o WhatsApp da loja.
-            </p>
-            <Button
-              onClick={handleConnect}
-              disabled={busy !== null || !canEdit}
-              className="w-full h-9 gap-2"
-            >
-              {busy === "connect" ? (
-                <Loader2 className="h-4 w-4 animate-spin" />
-              ) : (
-                <QrCode className="h-4 w-4" />
-              )}
-              Conectar via QR Code
-            </Button>
-          </div>
-        )}
-      </div>
+        <TabsContent value="meta" className="mt-4">
+          <MetaCloudForm
+            storeId={storeId}
+            canEdit={canEdit}
+            connection={connection}
+            onSaved={refetch}
+          />
+        </TabsContent>
+      </Tabs>
 
       {!canEdit && (
         <p className="text-[11px] text-muted-foreground">
