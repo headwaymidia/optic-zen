@@ -105,13 +105,19 @@ function toLocalInputValue(iso: string | null) {
   return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
 }
 
+function todayKey() {
+  const d = new Date();
+  const pad = (n: number) => String(n).padStart(2, "0");
+  return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
+}
+
 export function ExamScheduler({ lead }: { lead: Lead }) {
   const { updateLead, leads } = useLeads();
   const [value, setValue] = useState<string>(toLocalInputValue(lead.exam_date));
   const [saving, setSaving] = useState(false);
   const [editing, setEditing] = useState(false);
 
-  const selectedDayKey = value ? value.slice(0, 10) : "";
+  const selectedDayKey = value ? value.slice(0, 10) : todayKey();
   const bookedSameDay = selectedDayKey
     ? leads
         .filter((l) => {
