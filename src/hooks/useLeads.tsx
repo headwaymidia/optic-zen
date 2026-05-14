@@ -1,9 +1,13 @@
-import { createContext, useCallback, useContext, useEffect, ReactNode } from "react";
+import { createContext, useCallback, useContext, useEffect, useState, ReactNode } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Lead, LeadStatus, supabase } from "@/integrations/supabase/client";
 import { useStores } from "@/hooks/useStores";
 import { toast } from "@/components/ui/use-toast";
 import { humanizeError } from "@/lib/error-handler";
+
+const INITIAL_PAGE_SIZE = 50;
+const PAGE_INCREMENT = 50;
+const LOAD_ALL_LIMIT = 5000;
 
 interface LeadsContextValue {
   leads: Lead[];
@@ -13,6 +17,10 @@ interface LeadsContextValue {
   updateLead: (leadId: string, patch: Partial<Lead>) => Promise<void>;
   countByStatus: (status: LeadStatus) => number;
   total: number;
+  hasMore: boolean;
+  loadMore: () => void;
+  loadAll: () => void;
+  isFetchingMore: boolean;
 }
 
 const LeadsContext = createContext<LeadsContextValue | undefined>(undefined);
@@ -38,9 +46,14 @@ function getMessagePreview(row: { body?: string | null; media_type?: string | nu
 export function LeadsProvider({ children }: { children: ReactNode }) {
   const { currentStoreId } = useStores();
   const queryClient = useQueryClient();
-  const queryKey = ["leads", currentStoreId] as const;
+  const [limit, setLimit] = useState<number>(INITIAL_PAGE_SIZE);
+  const queryKey = ["leads", currentStoreId, limit] as const;
 
-  const { data: leads = [], isLoading, refetch: rqRefetch } = useQuery({
+  useEffect(() => {
+    setLimit(INITIAL_PAGE_SIZE);
+  }, [currentStoreId]);
+
+  const { data: leads = [], isLoading, isFetching, refetch: rqRefetch } = useQuery({
     queryKey,
     enabled: !!currentStoreId,
     queryFn: async () => {
@@ -48,14 +61,27 @@ export function LeadsProvider({ children }: { children: ReactNode }) {
         .from("leads")
         .select("*")
         .eq("store_id", currentStoreId!)
-        .order("last_message_at", { ascending: false, nullsFirst: false });
+        .order("last_message_at", { ascending: false, nullsFirst: false })
+        .limit(limit);
       if (error) {
         toast({ title: "Erro ao carregar leads", description: humanizeError(error), variant: "destructive" });
         throw error;
       }
       return sortByLastMessage((data ?? []) as unknown as Lead[]);
     },
-  });
+    placeholderData: (prev: Lead[] | undefined) => prev,
+  } as any);
+
+  const hasMore = leads.length >= limit;
+  const isFetchingMore = isFetching && !isLoading;
+
+  const loadMore = useCallback(() => {
+    setLimit((l) => l + PAGE_INCREMENT);
+  }, []);
+
+  const loadAll = useCallback(() => {
+    setLimit((l) => (l >= LOAD_ALL_LIMIT ? l : LOAD_ALL_LIMIT));
+  }, []);
 
   const refetch = useCallback(async () => {
     await rqRefetch();
