@@ -95,6 +95,22 @@ export function StoresProvider({ children }: { children: ReactNode }) {
     ]);
 
     if (membersRes.error && ownedRes.error) {
+      console.error("[useStores.fetchStores] ERRO BRUTO antes de humanizar:", {
+        membersError: membersRes.error,
+        membersDetails: {
+          message: (membersRes.error as any)?.message,
+          details: (membersRes.error as any)?.details,
+          hint: (membersRes.error as any)?.hint,
+          code: (membersRes.error as any)?.code,
+        },
+        ownedError: ownedRes.error,
+        ownedDetails: {
+          message: (ownedRes.error as any)?.message,
+          details: (ownedRes.error as any)?.details,
+          hint: (ownedRes.error as any)?.hint,
+          code: (ownedRes.error as any)?.code,
+        },
+      });
       toast({
         title: "Erro ao carregar lojas",
         description: humanizeError(membersRes.error),
