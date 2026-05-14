@@ -105,6 +105,7 @@ Deno.serve(async (req) => {
           {
             store_id: storeId,
             provider: "evolution",
+            instance_name: instance,
             evolution_instance_name: instance,
             ...patch,
           },
@@ -113,7 +114,6 @@ Deno.serve(async (req) => {
     }
 
     if (action === "status") {
-      // Retorna status atual + tenta atualizar do servidor
       const { status, data } = await evo(
         `/instance/connectionState/${instance}`,
       );
@@ -157,9 +157,7 @@ Deno.serve(async (req) => {
         );
       }
 
-      // 1) tenta criar instância (se já existir, segue).
-      // Algumas versões da Evolution rejeitam o campo "integration" ou exigem
-      // um valor específico. Tentamos sem o campo primeiro e depois variantes.
+      // 1) Cria instância na Evolution
       const integrationCandidates: (string | null)[] = [
         null,
         "WHATSAPP-BAILEYS",
@@ -177,16 +175,30 @@ Deno.serve(async (req) => {
           method: "POST",
           body: JSON.stringify(payload),
         });
-        // 201/200 = criado; 403/409 = já existe → segue
         if (create.status < 400 || create.status === 403 || create.status === 409) break;
         const msg = JSON.stringify(create.data ?? "");
-        if (!/integration/i.test(msg)) break; // erro não é por integration → para
+        if (!/integration/i.test(msg)) break;
       }
 
+      // 2) ✅ Configura webhook automaticamente para esta instância
+      const webhookUrl = `${SUPABASE_URL}/functions/v1/whatsapp-webhook`;
+      const webhookResult = await evo(`/webhook/set/${instance}`, {
+        method: "POST",
+        body: JSON.stringify({
+          url: webhookUrl,
+          webhook_by_events: false,
+          webhook_base64: false,
+          events: ["MESSAGES_UPSERT", "MESSAGES_UPDATE", "CONNECTION_UPDATE"],
+        }),
+      });
+      if (webhookResult.status >= 400) {
+        console.error("[connect] webhook config error:", webhookResult.data);
+      }
+
+      // 3) Pega QR code
       let qrBase64: string | null =
         create?.data?.qrcode?.base64 ?? create?.data?.qrcode ?? null;
 
-      // 2) se já existia ou veio sem QR, pega QR via /instance/connect
       if (!qrBase64 || (create && create.status >= 400)) {
         const conn = await evo(`/instance/connect/${instance}`);
         qrBase64 =
@@ -196,6 +208,7 @@ Deno.serve(async (req) => {
           null;
       }
 
+      // 4) Salva conexão no banco
       await upsertConn({ status: "connecting" });
 
       return new Response(
@@ -253,7 +266,7 @@ Deno.serve(async (req) => {
         | { base64?: string; mimetype?: string }
         | undefined;
       const inMediaUrl = body.mediaUrl ? String(body.mediaUrl) : "";
-      const inMediaType = body.mediaType ? String(body.mediaType) : ""; // "image" | "video"
+      const inMediaType = body.mediaType ? String(body.mediaType) : "";
       const caption = body.caption ? String(body.caption) : "";
       const isAudio = !!audioMessage?.base64;
       const isMedia = !!inMediaUrl && (inMediaType === "image" || inMediaType === "video");
@@ -284,7 +297,6 @@ Deno.serve(async (req) => {
           mediaType = inMediaType;
         }
       } else if (isAudio) {
-        // Send audio via Evolution
         send = await evo(`/message/sendWhatsAppAudio/${instance}`, {
           method: "POST",
           body: JSON.stringify({
@@ -294,7 +306,6 @@ Deno.serve(async (req) => {
         });
 
         if (send.status < 400) {
-          // Upload to storage so the chat player can render it
           try {
             const bin = Uint8Array.from(atob(audioMessage!.base64!), (c) =>
               c.charCodeAt(0),
@@ -313,7 +324,7 @@ Deno.serve(async (req) => {
             } else {
               const { data: signed } = await admin.storage
                 .from("whatsapp-media")
-                .createSignedUrl(path, 60 * 60 * 24 * 365 * 5); // 5 anos
+                .createSignedUrl(path, 60 * 60 * 24 * 365 * 5);
               mediaUrl = signed?.signedUrl ?? null;
               mediaType = "audio";
             }
@@ -339,7 +350,6 @@ Deno.serve(async (req) => {
         );
       }
 
-      // Resolve lead_id pelo phone na loja
       let leadId: string | null = body.lead_id ?? null;
       if (!leadId) {
         const last10 = phoneDigits.slice(-10);
@@ -381,7 +391,6 @@ Deno.serve(async (req) => {
       });
       if (insErr) console.error("[sendMessage] insert error:", insErr);
 
-      // Atualiza preview do lead
       if (leadId) {
         await admin
           .from("leads")
@@ -392,7 +401,6 @@ Deno.serve(async (req) => {
           })
           .eq("id", leadId);
       }
-
 
       return new Response(
         JSON.stringify({ ok: true, message_id: messageId, lead_id: leadId }),
