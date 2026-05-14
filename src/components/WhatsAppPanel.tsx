@@ -268,7 +268,9 @@ export function WhatsAppPanel({ storeId, role }: Props) {
     try {
       await callEvo("disconnect");
       setQrCode(null);
-      await refetch();
+      setLocalPhone(null);
+      setLocalStatus("disconnected");
+      await syncConnection();
       toast({ title: "WhatsApp desconectado" });
     } catch (e) {
       toast({
