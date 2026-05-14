@@ -131,8 +131,7 @@ export default function WhatsAppPage() {
   const filtered = useMemo(() => {
     const range = getPeriodRange(period, customRange);
     const ts = (l: typeof leads[number]) => {
-      const iso = l.last_message_at ?? l.last_interaction ?? l.last_inbound_at ?? l.created_at;
-      return iso ? new Date(iso).getTime() : 0;
+      return l.last_message_at ? new Date(l.last_message_at).getTime() : -Infinity;
     };
     return leads
       .filter((l) => {
@@ -251,11 +250,11 @@ export default function WhatsAppPage() {
             />
           )}
           {filtered.map((lead) => {
-            const lastMsgIso = lead.last_message_at ?? lead.last_interaction ?? lead.last_inbound_at ?? null;
+            const lastMsgIso = lead.last_message_at ?? null;
             const previewText = lead.last_message_preview?.trim();
-            const hasMessages = Boolean(previewText);
+            const hasMessages = Boolean(lastMsgIso);
             const preview = hasMessages
-              ? truncate(previewText!, 40)
+              ? truncate(previewText || "Mensagem", 40)
               : "Sem mensagens ainda";
             const timeLabel = hasMessages && lastMsgIso
               ? formatRelativeShort(lastMsgIso)
