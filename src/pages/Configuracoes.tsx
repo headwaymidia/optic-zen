@@ -31,6 +31,7 @@ export default function Configuracoes() {
   const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
   const [initialAvatar, setInitialAvatar] = useState<string | null>(null);
   const [role, setRole] = useState<string | null>(null);
+  const [initialRole, setInitialRole] = useState<string | null>(null);
   const [storeName, setStoreName] = useState("");
   const [storeCity, setStoreCity] = useState("");
   const [storeState, setStoreState] = useState("");
