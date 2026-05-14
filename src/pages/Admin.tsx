@@ -89,7 +89,7 @@ export default function Admin() {
       store_name: r.store_name ?? r.name ?? "—",
       owner_email: r.owner_email ?? r.email ?? null,
       owner_name: r.owner_name ?? r.full_name ?? null,
-      owner_phone: r.owner_phone ?? r.whatsapp ?? r.phone ?? null,
+      owner_phone: r.owner_phone ?? r.whatsapp ?? null,
       created_at: r.created_at,
       subscription_status: r.subscription_status ?? r.status ?? null,
       plan: r.plan ?? r.plan_type ?? null,
