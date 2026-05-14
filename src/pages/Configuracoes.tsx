@@ -31,6 +31,7 @@ export default function Configuracoes() {
   const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
   const [initialAvatar, setInitialAvatar] = useState<string | null>(null);
   const [role, setRole] = useState<string | null>(null);
+  const [initialRole, setInitialRole] = useState<string | null>(null);
   const [storeName, setStoreName] = useState("");
   const [storeCity, setStoreCity] = useState("");
   const [storeState, setStoreState] = useState("");
@@ -45,16 +46,21 @@ export default function Configuracoes() {
     if (!user?.id) return;
     supabase
       .from("profiles")
-      .select("full_name, avatar_url")
+      .select("full_name, avatar_url, role")
       .eq("id", user.id)
       .maybeSingle()
       .then(({ data }) => {
         const n = data?.full_name ?? "";
         const a = (data as { avatar_url?: string | null } | null)?.avatar_url ?? null;
+        const r = (data as { role?: string | null } | null)?.role ?? null;
         setFullName(n);
         setInitialName(n);
         setAvatarUrl(a);
         setInitialAvatar(a);
+        if (r) {
+          setRole(r);
+          setInitialRole(r);
+        }
       });
   }, [user?.id]);
 
@@ -67,7 +73,12 @@ export default function Configuracoes() {
       .eq("store_id", currentStoreId)
       .eq("user_id", user.id)
       .maybeSingle()
-      .then(({ data }) => setRole(data?.role ?? null));
+      .then(({ data }) => {
+        if (data?.role) {
+          setRole((prev) => prev ?? data.role ?? null);
+          setInitialRole((prev) => prev ?? data.role ?? null);
+        }
+      });
   }, [user?.id, currentStoreId]);
 
   // Carrega dados da loja
@@ -160,7 +171,7 @@ export default function Configuracoes() {
     setSaving(true);
     const { error } = await supabase
       .from("profiles")
-      .update({ full_name: trimmed, avatar_url: avatarUrl })
+      .update({ full_name: trimmed, avatar_url: avatarUrl, role: role })
       .eq("id", user.id);
     setSaving(false);
     if (error) {
@@ -169,10 +180,14 @@ export default function Configuracoes() {
     }
     setInitialName(trimmed);
     setInitialAvatar(avatarUrl);
+    setInitialRole(role);
     toast({ title: "Configurações salvas!" });
   }
 
-  const dirty = fullName.trim() !== initialName.trim() || avatarUrl !== initialAvatar;
+  const dirty =
+    fullName.trim() !== initialName.trim() ||
+    avatarUrl !== initialAvatar ||
+    (role ?? "") !== (initialRole ?? "");
   const initials = getUserInitials(fullName, user?.email);
   const normalizedRole = (role ?? "").toLowerCase();
   const canEditStore = ["dono", "owner", "proprietário", "proprietario", "gerente", "manager"].includes(normalizedRole);
@@ -295,9 +310,14 @@ export default function Configuracoes() {
             <Input value={user?.email ?? ""} readOnly />
           </div>
           <div className="space-y-2">
-            <Label>Função</Label>
-            <Input value={translateRole(role) || "—"} readOnly />
-            <p className="text-[11px] text-muted-foreground">Definido pelo dono da loja.</p>
+            <Label htmlFor="profile-role">Função</Label>
+            <Input
+              id="profile-role"
+              value={role ?? ""}
+              onChange={(e) => setRole(e.target.value)}
+              placeholder="Sua função"
+            />
+            <p className="text-[11px] text-muted-foreground">Como você atua na loja.</p>
           </div>
           <div className="flex justify-end">
             <Button onClick={handleSave} disabled={!dirty || saving || !!nameError}>
