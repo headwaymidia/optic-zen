@@ -73,7 +73,12 @@ export default function Configuracoes() {
       .eq("store_id", currentStoreId)
       .eq("user_id", user.id)
       .maybeSingle()
-      .then(({ data }) => setRole(data?.role ?? null));
+      .then(({ data }) => {
+        if (data?.role) {
+          setRole((prev) => prev ?? data.role ?? null);
+          setInitialRole((prev) => prev ?? data.role ?? null);
+        }
+      });
   }, [user?.id, currentStoreId]);
 
   // Carrega dados da loja
