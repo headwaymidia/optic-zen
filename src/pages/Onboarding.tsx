@@ -167,6 +167,17 @@ export default function OnboardingPage() {
 
       setStep(3);
     } catch (err: any) {
+      console.error("[Onboarding.handleCreateStore] ERRO BRUTO antes de humanizar:", {
+        err,
+        message: err?.message,
+        details: err?.details,
+        hint: err?.hint,
+        code: err?.code,
+        status: err?.status,
+        statusCode: err?.statusCode,
+        stack: err?.stack,
+        stringified: (() => { try { return JSON.stringify(err, Object.getOwnPropertyNames(err ?? {})); } catch { return String(err); } })(),
+      });
       toast({
         title: "Erro ao criar loja",
         description: humanizeError(err),
@@ -258,7 +269,20 @@ export default function OnboardingPage() {
                     { onConflict: "id" }
                   );
                 if (profileError) {
-                  console.error("[Onboarding] erro ao salvar profile (etapa 1):", profileError);
+                  console.error("[Onboarding etapa1] ERRO BRUTO upsert profiles antes de humanizar:", {
+                    error: profileError,
+                    message: (profileError as any)?.message,
+                    details: (profileError as any)?.details,
+                    hint: (profileError as any)?.hint,
+                    code: (profileError as any)?.code,
+                    status: (profileError as any)?.status,
+                    payload: {
+                      id: activeSession.user.id,
+                      full_name: ownerName.trim(),
+                      whatsapp: whatsapp.replace(/\D/g, ""),
+                      role,
+                    },
+                  });
                   toast({
                     title: "Erro ao salvar perfil",
                     description: humanizeError(profileError),
