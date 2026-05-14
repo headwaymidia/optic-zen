@@ -314,7 +314,7 @@ export default function WhatsAppPage() {
             Selecione um contato para iniciar a conversa
           </div>
         ) : (
-          <ChatPanel lead={selected} onBack={() => setSelectedId(null)} />
+          <ChatPanel lead={selected} onBack={() => setSelectedId(null)} chatOnly />
         )}
       </section>
 
