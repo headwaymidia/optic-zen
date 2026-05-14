@@ -165,14 +165,23 @@ export default function OnboardingPage() {
 
       try { localStorage.setItem(ONBOARDING_KEY, "1"); } catch {}
 
-      // Disparar email de boas-vindas (não bloquear o fluxo se falhar)
-      supabase.functions.invoke("send-welcome-email", {
-        body: {
-          user_id: activeSession.user.id,
-          email: activeSession.user.email,
-          name: ownerName.trim(),
-        },
-      }).catch(() => { /* welcome email é best-effort */ });
+      // Disparar email de boas-vindas (best-effort: nunca bloqueia o fluxo)
+      try {
+        supabase.functions
+          .invoke("send-welcome-email", {
+            body: {
+              user_id: activeSession.user.id,
+              email: activeSession.user.email,
+              name: ownerName.trim(),
+            },
+          })
+          .then(({ error: weErr }) => {
+            if (weErr) console.warn("[Onboarding] send-welcome-email falhou (ignorado):", weErr);
+          })
+          .catch((e) => console.warn("[Onboarding] send-welcome-email erro (ignorado):", e));
+      } catch (e) {
+        console.warn("[Onboarding] send-welcome-email exception (ignorado):", e);
+      }
 
       setStep(3);
     } catch (err: any) {
