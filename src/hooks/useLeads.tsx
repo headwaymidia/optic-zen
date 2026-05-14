@@ -53,7 +53,7 @@ export function LeadsProvider({ children }: { children: ReactNode }) {
     setLimit(INITIAL_PAGE_SIZE);
   }, [currentStoreId]);
 
-  const { data: leads = [], isLoading, isFetching, refetch: rqRefetch } = useQuery({
+  const { data, isLoading, isFetching, refetch: rqRefetch } = useQuery<Lead[]>({
     queryKey,
     enabled: !!currentStoreId,
     queryFn: async () => {
@@ -69,9 +69,10 @@ export function LeadsProvider({ children }: { children: ReactNode }) {
       }
       return sortByLastMessage((data ?? []) as unknown as Lead[]);
     },
-    placeholderData: (prev: Lead[] | undefined) => prev,
+    placeholderData: (prev) => prev,
   } as any);
 
+  const leads: Lead[] = data ?? [];
   const hasMore = leads.length >= limit;
   const isFetchingMore = isFetching && !isLoading;
 
