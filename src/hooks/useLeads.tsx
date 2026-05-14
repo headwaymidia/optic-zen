@@ -99,7 +99,7 @@ export function LeadsProvider({ children }: { children: ReactNode }) {
         (payload) => {
           const row = (payload.new ?? payload.old) as Lead | undefined;
           if (row?.id) {
-            queryClient.setQueryData<Lead[]>(queryKey, (old = []) => {
+            queryClient.setQueriesData<Lead[]>({ queryKey: ["leads", currentStoreId] }, (old = []) => {
               if (payload.eventType === "DELETE") return sortByLastMessage(old.filter((l) => l.id !== row.id));
               const idx = old.findIndex((l) => l.id === row.id);
               const next = idx >= 0
@@ -108,7 +108,7 @@ export function LeadsProvider({ children }: { children: ReactNode }) {
               return sortByLastMessage(next);
             });
           }
-          queryClient.invalidateQueries({ queryKey });
+          queryClient.invalidateQueries({ queryKey: ["leads", currentStoreId] });
         }
       )
       .subscribe();
