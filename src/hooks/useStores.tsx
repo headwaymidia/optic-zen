@@ -252,13 +252,19 @@ export function StoresProvider({ children }: { children: ReactNode }) {
         user_id: user.id,
         role,
       });
-      const { data: memberRow, error: memberErr } = await supabase
+      const { error: memberErr } = await supabase
         .from("store_members")
         .upsert(
           { store_id: storeRow.id, user_id: user.id, role },
-          { onConflict: "store_id,user_id" }
-        )
+          { onConflict: "store_id,user_id", ignoreDuplicates: true }
+        );
+
+      // Confirma o vínculo via SELECT (funciona mesmo se o upsert foi no-op)
+      const { data: memberRow } = await supabase
+        .from("store_members")
         .select("id, store_id, user_id, role")
+        .eq("store_id", storeRow.id)
+        .eq("user_id", user.id)
         .maybeSingle();
 
       if (memberErr || !memberRow) {
