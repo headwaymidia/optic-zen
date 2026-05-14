@@ -222,7 +222,7 @@ export function LeadsProvider({ children }: { children: ReactNode }) {
   const loading = !!currentStoreId && isLoading;
 
   return (
-    <LeadsContext.Provider value={{ leads, loading, refetch, updateStatus, updateLead, countByStatus, total: leads.length }}>
+    <LeadsContext.Provider value={{ leads, loading, refetch, updateStatus, updateLead, countByStatus, total: leads.length, hasMore, loadMore, loadAll, isFetchingMore }}>
       {children}
     </LeadsContext.Provider>
   );
