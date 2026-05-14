@@ -206,12 +206,13 @@ export function ExamScheduler({ lead }: { lead: Lead }) {
       {selectedDayKey && (
         <div className="rounded-md border bg-muted/30 px-2.5 py-2 space-y-1.5">
           <div className="text-[11px] font-medium text-muted-foreground">
-            Horários ocupados em{" "}
+            Agendamentos do dia{" "}
             {new Date(selectedDayKey + "T00:00:00").toLocaleDateString("pt-BR", {
               day: "2-digit",
               month: "2-digit",
               year: "numeric",
             })}
+            :
           </div>
           {bookedSameDay.length === 0 ? (
             <div className="text-[11px] text-emerald-700 dark:text-emerald-300">
