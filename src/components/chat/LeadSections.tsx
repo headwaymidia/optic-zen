@@ -105,7 +105,7 @@ function toLocalInputValue(iso: string | null) {
   return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
 }
 
-function ExamScheduler({ lead }: { lead: Lead }) {
+export function ExamScheduler({ lead }: { lead: Lead }) {
   const { updateLead } = useLeads();
   const [value, setValue] = useState<string>(toLocalInputValue(lead.exam_date));
   const [saving, setSaving] = useState(false);
