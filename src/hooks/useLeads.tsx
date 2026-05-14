@@ -133,7 +133,7 @@ export function LeadsProvider({ children }: { children: ReactNode }) {
           const row = payload.new as { lead_id?: string | null; timestamp?: string | null; created_at?: string | null; body?: string | null; media_type?: string | null } | undefined;
           if (payload.eventType === "INSERT" && row?.lead_id) {
             const lastMessageAt = row.timestamp ?? row.created_at ?? new Date().toISOString();
-            queryClient.setQueryData<Lead[]>(queryKey, (old = []) =>
+            queryClient.setQueriesData<Lead[]>({ queryKey: ["leads", currentStoreId] }, (old = []) =>
               sortByLastMessage(
                 old.map((lead) =>
                   lead.id === row.lead_id
@@ -148,7 +148,7 @@ export function LeadsProvider({ children }: { children: ReactNode }) {
             );
             return;
           }
-          queryClient.invalidateQueries({ queryKey });
+          queryClient.invalidateQueries({ queryKey: ["leads", currentStoreId] });
         }
       )
       .subscribe();
