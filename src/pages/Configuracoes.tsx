@@ -54,26 +54,32 @@ export default function Configuracoes() {
   // Carrega profile (full_name + avatar_url + role)
   useEffect(() => {
     if (!user?.id) return;
-    supabase
-      .from("profiles")
-      .select("full_name, avatar_url, role")
-      .eq("id", user.id)
-      .maybeSingle()
-      .then(({ data, error }) => {
-        if (error) {
-          console.error("[Configuracoes] erro ao carregar profile:", error);
-          return;
-        }
-        const n = data?.full_name ?? "";
-        const a = (data as { avatar_url?: string | null } | null)?.avatar_url ?? null;
-        const r = normalizeRole((data as { role?: string | null } | null)?.role ?? null);
-        setFullName(n);
-        setInitialName(n);
-        setAvatarUrl(a);
-        setInitialAvatar(a);
-        setRole(r);
-        setInitialRole(r);
-      });
+    let cancelled = false;
+    (async () => {
+      const { data, error } = await supabase
+        .from("profiles")
+        .select("full_name, avatar_url, role")
+        .eq("id", user.id)
+        .maybeSingle();
+      if (cancelled) return;
+      if (error) {
+        console.error("[Configuracoes] erro ao carregar profile:", error);
+        return;
+      }
+      console.info("[Configuracoes] profile carregado:", data);
+      const n = data?.full_name ?? "";
+      const a = (data as { avatar_url?: string | null } | null)?.avatar_url ?? null;
+      const r = normalizeRole((data as { role?: string | null } | null)?.role ?? null);
+      setFullName(n);
+      setInitialName(n);
+      setAvatarUrl(a);
+      setInitialAvatar(a);
+      setRole(r);
+      setInitialRole(r);
+    })();
+    return () => {
+      cancelled = true;
+    };
   }, [user?.id]);
 
   // Carrega função na loja atual (fallback se profile.role estiver vazio)
