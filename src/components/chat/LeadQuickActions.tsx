@@ -1,18 +1,22 @@
-import { useState } from "react";
-import { Eye, CalendarClock, Package, AlertCircle, CheckCircle2 } from "lucide-react";
+import { useEffect, useState } from "react";
+import { Eye, CalendarClock, Package, AlertCircle, CheckCircle2, NotebookPen } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
+import { Textarea } from "@/components/ui/textarea";
 import { PrescriptionForm } from "@/components/PrescriptionForm";
 import { LabOrderForm } from "@/components/LabOrderForm";
 import { ExamScheduler } from "@/components/chat/LeadSections";
 import { Lead } from "@/integrations/supabase/client";
+import { useLeads } from "@/hooks/useLeads";
+import { toast } from "@/components/ui/use-toast";
 
 interface Props {
   lead: Lead;
   onApplyLabScript?: (msg: string) => void;
 }
 
-type ActionKey = "prescription" | "exam" | "lab" | null;
+type ActionKey = "prescription" | "exam" | "lab" | "notes" | null;
 
 function StatusBadge({ ok, okLabel = "Ok" }: { ok: boolean; okLabel?: string }) {
   if (ok) {
@@ -32,21 +36,37 @@ function StatusBadge({ ok, okLabel = "Ok" }: { ok: boolean; okLabel?: string }) 
 }
 
 export function LeadQuickActions({ lead, onApplyLabScript }: Props) {
+  const { updateLead } = useLeads();
   const [open, setOpen] = useState<ActionKey>(null);
   const close = () => setOpen(null);
+
+  const [notesDraft, setNotesDraft] = useState(lead.notes ?? "");
+  const [savingNotes, setSavingNotes] = useState(false);
+  useEffect(() => {
+    setNotesDraft(lead.notes ?? "");
+  }, [lead.id, lead.notes]);
 
   const p = lead.prescription ?? {};
   const has = (v: unknown) => (typeof v === "string" ? v.trim() !== "" : v != null);
   const prescriptionOk = Boolean(has(p.esferico_od) && has(p.esferico_oe));
   const examOk = !!lead.exam_date;
   const labOk = Boolean(lead.delivery_prediction || lead.lab_status);
+  const notesOk = has(lead.notes);
 
   const itemCls = "inline-flex items-center gap-1.5 shrink-0";
-  const btnCls = "h-7 px-2.5 text-[11px] gap-1.5 justify-start";
+  const btnCls = "h-7 px-2.5 text-[11px] gap-1.5 justify-start shrink-0";
+
+  async function handleSaveNotes() {
+    setSavingNotes(true);
+    await updateLead(lead.id, { notes: notesDraft });
+    setSavingNotes(false);
+    toast({ title: "Observações salvas" });
+    close();
+  }
 
   return (
     <>
-      <div className="flex items-center gap-2 flex-wrap justify-start">
+      <div className="flex items-center gap-2 overflow-x-auto whitespace-nowrap scrollbar-thin">
         <div className={itemCls}>
           <Button type="button" size="sm" variant="outline" onClick={() => setOpen("prescription")} className={btnCls}>
             <Eye className="h-3.5 w-3.5 text-primary" />
@@ -64,9 +84,16 @@ export function LeadQuickActions({ lead, onApplyLabScript }: Props) {
         <div className={itemCls}>
           <Button type="button" size="sm" variant="outline" onClick={() => setOpen("lab")} className={btnCls}>
             <Package className="h-3.5 w-3.5 text-primary" />
-            Gestão de Pedido / Laboratório
+            Gestão de Pedido
           </Button>
           <StatusBadge ok={labOk} />
+        </div>
+        <div className={itemCls}>
+          <Button type="button" size="sm" variant="outline" onClick={() => setOpen("notes")} className={btnCls}>
+            <NotebookPen className="h-3.5 w-3.5 text-primary" />
+            Observações
+          </Button>
+          <StatusBadge ok={notesOk} okLabel="Preenchida" />
         </div>
       </div>
 
@@ -108,6 +135,25 @@ export function LeadQuickActions({ lead, onApplyLabScript }: Props) {
           </div>
         </SheetContent>
       </Sheet>
+
+      <Dialog open={open === "notes"} onOpenChange={(o) => !o && close()}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>Observações</DialogTitle>
+          </DialogHeader>
+          <Textarea
+            value={notesDraft}
+            onChange={(e) => setNotesDraft(e.target.value)}
+            placeholder="Anote qualquer informação relevante sobre este lead..."
+            rows={6}
+            className="text-sm resize-y"
+          />
+          <DialogFooter>
+            <Button variant="ghost" onClick={close}>Cancelar</Button>
+            <Button onClick={handleSaveNotes} disabled={savingNotes}>Salvar</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </>
   );
 }
