@@ -185,10 +185,13 @@ Deno.serve(async (req) => {
       const webhookResult = await evo(`/webhook/set/${instance}`, {
         method: "POST",
         body: JSON.stringify({
-          url: webhookUrl,
-          webhook_by_events: false,
-          webhook_base64: false,
-          events: ["MESSAGES_UPSERT", "MESSAGES_UPDATE", "CONNECTION_UPDATE"],
+          webhook: {
+            url: webhookUrl,
+            byEvents: false,
+            base64: false,
+            enabled: true,
+            events: ["MESSAGES_UPSERT", "MESSAGES_UPDATE", "CONNECTION_UPDATE"],
+          }
         }),
       });
       if (webhookResult.status >= 400) {
