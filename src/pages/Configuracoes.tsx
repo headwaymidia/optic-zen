@@ -310,9 +310,14 @@ export default function Configuracoes() {
             <Input value={user?.email ?? ""} readOnly />
           </div>
           <div className="space-y-2">
-            <Label>Função</Label>
-            <Input value={translateRole(role) || "—"} readOnly />
-            <p className="text-[11px] text-muted-foreground">Definido pelo dono da loja.</p>
+            <Label htmlFor="profile-role">Função</Label>
+            <Input
+              id="profile-role"
+              value={role ?? ""}
+              onChange={(e) => setRole(e.target.value)}
+              placeholder="Sua função"
+            />
+            <p className="text-[11px] text-muted-foreground">Como você atua na loja.</p>
           </div>
           <div className="flex justify-end">
             <Button onClick={handleSave} disabled={!dirty || saving || !!nameError}>
