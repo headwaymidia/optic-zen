@@ -146,30 +146,7 @@ export function WhatsAppPanel({ storeId, role }: Props) {
             window.clearInterval(pollRef.current);
             pollRef.current = null;
           }
-          // Persiste no banco (a edge function também faz upsert server-side
-          // com service_role; este aqui é redundante mas útil como fallback).
-          try {
-            const { error: upsertErr } = await supabase
-              .from("whatsapp_connections")
-              .upsert(
-                {
-                  store_id: storeId,
-                  provider: "evolution",
-                  evolution_instance_name: `loja-${storeId}`,
-                  status: "connected",
-                  phone_number: st?.phone_number ?? null,
-                  connected_at: new Date().toISOString(),
-                },
-                { onConflict: "store_id" },
-              );
-            if (upsertErr) {
-              console.error("[WhatsAppPanel] poll upsert connected RLS/error:", upsertErr);
-            } else {
-              if (import.meta.env.DEV) console.log("[WhatsAppPanel] poll upsert connected OK");
-            }
-          } catch (e) {
-            console.error("[WhatsAppPanel] poll upsert connected threw:", e);
-          }
+          // A Edge Function (action: 'status') já fez o upsert server-side com service_role.
           await refetch();
           toast({ title: "WhatsApp conectado!", description: "Loja vinculada com sucesso." });
           return;
@@ -208,28 +185,7 @@ export function WhatsAppPanel({ storeId, role }: Props) {
           setQrCode(null);
           setLocalPhone(st?.phone_number ?? null);
           setLocalStatus("connected");
-          try {
-            const { error: upsertErr } = await supabase
-              .from("whatsapp_connections")
-              .upsert(
-                {
-                  store_id: storeId,
-                  provider: "evolution",
-                  evolution_instance_name: `loja-${storeId}`,
-                  status: "connected",
-                  phone_number: st?.phone_number ?? null,
-                  connected_at: new Date().toISOString(),
-                },
-                { onConflict: "store_id" },
-              );
-            if (upsertErr) {
-              console.error("[WhatsAppPanel] mount upsert connected RLS/error:", upsertErr);
-            } else {
-              if (import.meta.env.DEV) console.log("[WhatsAppPanel] mount upsert connected OK");
-            }
-          } catch (e) {
-            console.error("[WhatsAppPanel] mount upsert connected threw:", e);
-          }
+          // A Edge Function (action: 'status') já fez o upsert server-side com service_role.
         } else {
           setQrCode(null);
           setLocalPhone(connection?.phone_number ?? null);
@@ -257,28 +213,7 @@ export function WhatsAppPanel({ storeId, role }: Props) {
           setQrCode(null);
           setLocalPhone(st?.phone_number ?? null);
           setLocalStatus("connected");
-          try {
-            const { error: upsertErr } = await supabase
-              .from("whatsapp_connections")
-              .upsert(
-                {
-                  store_id: storeId,
-                  provider: "evolution",
-                  evolution_instance_name: `loja-${storeId}`,
-                  status: "connected",
-                  phone_number: st?.phone_number ?? null,
-                  connected_at: new Date().toISOString(),
-                },
-                { onConflict: "store_id" },
-              );
-            if (upsertErr) {
-              console.error("[WhatsAppPanel] handleConnect upsert connected RLS/error:", upsertErr);
-            } else {
-              if (import.meta.env.DEV) console.log("[WhatsAppPanel] handleConnect upsert connected OK");
-            }
-          } catch (e) {
-            console.error("[WhatsAppPanel] handleConnect upsert connected threw:", e);
-          }
+          // A Edge Function (action: 'status') já fez o upsert server-side com service_role.
           await refetch();
           toast({ title: "WhatsApp já conectado", description: "Loja vinculada com sucesso." });
           return;
@@ -287,29 +222,8 @@ export function WhatsAppPanel({ storeId, role }: Props) {
         console.warn("status check before connect failed", e);
       }
 
-      // 2) Marca como "connecting" para iniciar o polling imediatamente
-      try {
-        const { error: upsertErr } = await supabase
-          .from("whatsapp_connections")
-          .upsert(
-            {
-              store_id: storeId,
-              provider: "evolution",
-              evolution_instance_name: `loja-${storeId}`,
-              status: "connecting",
-            },
-            { onConflict: "store_id" },
-          );
-        if (upsertErr) {
-          console.error("[WhatsAppPanel] handleConnect upsert connecting RLS/error:", upsertErr);
-        } else {
-          if (import.meta.env.DEV) console.log("[WhatsAppPanel] handleConnect upsert connecting OK");
-        }
-      } catch (e) {
-        console.error("[WhatsAppPanel] handleConnect upsert connecting threw:", e);
-      }
-
-      // Override local imediato para o polling iniciar mesmo se o upsert falhar
+      // 2) Override local imediato para iniciar o polling — a Edge Function (action: 'connect')
+      // fará o upsert do registro com status 'connecting' usando service_role.
       setLocalStatus("connecting");
 
       // 3) Gera o QR Code
