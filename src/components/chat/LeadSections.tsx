@@ -106,10 +106,24 @@ function toLocalInputValue(iso: string | null) {
 }
 
 export function ExamScheduler({ lead }: { lead: Lead }) {
-  const { updateLead } = useLeads();
+  const { updateLead, leads } = useLeads();
   const [value, setValue] = useState<string>(toLocalInputValue(lead.exam_date));
   const [saving, setSaving] = useState(false);
   const [editing, setEditing] = useState(false);
+
+  const selectedDayKey = value ? value.slice(0, 10) : "";
+  const bookedSameDay = selectedDayKey
+    ? leads
+        .filter((l) => {
+          if (!l.exam_date || l.id === lead.id) return false;
+          const d = new Date(l.exam_date);
+          if (isNaN(d.getTime())) return false;
+          const pad = (n: number) => String(n).padStart(2, "0");
+          const key = `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
+          return key === selectedDayKey;
+        })
+        .sort((a, b) => new Date(a.exam_date!).getTime() - new Date(b.exam_date!).getTime())
+    : [];
 
   useEffect(() => {
     setValue(toLocalInputValue(lead.exam_date));
