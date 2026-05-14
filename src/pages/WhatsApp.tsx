@@ -152,10 +152,10 @@ export default function WhatsAppPage() {
     <div className="flex h-[calc(100dvh-3.5rem-5rem)] lg:h-[calc(100dvh-3.5rem)] w-full overflow-hidden bg-background">
       <aside
         className={cn(
-          "w-full md:w-[30%] md:min-w-[280px] md:max-w-[400px] border-r flex flex-col bg-card",
+          "w-full md:w-[320px] md:shrink-0 border-r flex flex-col bg-card min-h-0",
           selected && "hidden md:flex"
         )}
-          >
+      >
         <div className="p-4 border-b space-y-3">
           <h1 className="text-lg font-semibold">Atendimentos</h1>
           <div className="flex items-center gap-2">

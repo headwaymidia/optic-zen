@@ -396,7 +396,7 @@ export function ChatPanel({
 
       {/* Mobile-only tab switcher */}
       {!chatOnly && (
-        <div className="lg:hidden shrink-0 border-b bg-card flex">
+        <div className="md:hidden shrink-0 border-b bg-card flex">
           <button
             type="button"
             onClick={() => setMobileTab("chat")}
@@ -431,12 +431,12 @@ export function ChatPanel({
       )}
 
       {/* Main split: chat (center) + details aside (right on desktop) */}
-      <div className="flex-1 min-h-0 flex flex-col lg:flex-row min-w-0 overflow-hidden">
+      <div className="flex-1 min-h-0 flex flex-col md:flex-row min-w-0 overflow-hidden">
         {/* Chat column */}
         <div
           className={cn(
             "flex-1 min-h-0 min-w-0 flex-col",
-            "lg:flex",
+            "md:flex",
             !chatOnly && mobileTab === "chat" ? "flex" : "hidden",
             chatOnly && "flex"
           )}
@@ -516,8 +516,8 @@ export function ChatPanel({
           <aside
             className={cn(
               "min-h-0 overflow-y-auto bg-card",
-              "lg:block lg:w-[320px] xl:w-[360px] lg:shrink-0 lg:border-l",
-              "border-t lg:border-t-0",
+              "md:block md:w-[320px] xl:w-[360px] md:shrink-0 md:border-l md:border-t-0",
+              "border-t",
               mobileTab === "details" ? "flex-1 block" : "hidden"
             )}
           >
