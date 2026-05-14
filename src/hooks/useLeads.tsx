@@ -51,7 +51,7 @@ export function LeadsProvider({ children }: { children: ReactNode }) {
         toast({ title: "Erro ao carregar leads", description: humanizeError(error), variant: "destructive" });
         throw error;
       }
-      return (data ?? []) as unknown as Lead[];
+      return sortByLastMessage((data ?? []) as unknown as Lead[]);
     },
   });
 
@@ -79,7 +79,7 @@ export function LeadsProvider({ children }: { children: ReactNode }) {
               return sortByLastMessage(next);
             });
           }
-          queryClient.invalidateQueries({ queryKey: ["leads", currentStoreId] });
+          queryClient.invalidateQueries({ queryKey });
         }
       )
       .subscribe();
@@ -118,7 +118,7 @@ export function LeadsProvider({ children }: { children: ReactNode }) {
               )
             );
           }
-          queryClient.invalidateQueries({ queryKey: ["leads", currentStoreId] });
+          queryClient.invalidateQueries({ queryKey });
         }
       )
       .subscribe();
