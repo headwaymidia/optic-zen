@@ -21,15 +21,15 @@ type ActionKey = "prescription" | "exam" | "lab" | "notes" | null;
 function StatusBadge({ ok, okLabel = "Ok" }: { ok: boolean; okLabel?: string }) {
   if (ok) {
     return (
-      <span className="inline-flex items-center gap-1 rounded-full bg-emerald-100 dark:bg-emerald-900/40 text-emerald-700 dark:text-emerald-200 px-1.5 py-0.5 text-[10px] font-semibold">
-        <CheckCircle2 className="h-3 w-3" />
+      <span className="inline-flex max-w-full items-center gap-1 rounded-full bg-primary/10 px-2 py-0.5 text-[10px] font-semibold leading-none text-primary">
+        <CheckCircle2 className="h-3 w-3 shrink-0" />
         {okLabel}
       </span>
     );
   }
   return (
-    <span className="inline-flex items-center gap-1 rounded-full bg-amber-100 dark:bg-amber-900/40 text-amber-800 dark:text-amber-100 px-1.5 py-0.5 text-[10px] font-semibold">
-      <AlertCircle className="h-3 w-3" />
+    <span className="inline-flex max-w-full items-center gap-1 rounded-full border border-border bg-muted px-2 py-0.5 text-[10px] font-semibold leading-none text-muted-foreground">
+      <AlertCircle className="h-3 w-3 shrink-0" />
       Pendente
     </span>
   );
@@ -53,8 +53,12 @@ export function LeadQuickActions({ lead, onApplyLabScript }: Props) {
   const labOk = Boolean(lead.delivery_prediction || lead.lab_status);
   const notesOk = has(lead.notes);
 
-  const itemCls = "flex items-center justify-between gap-2 rounded-md border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 px-2.5 py-2";
-  const btnCls = "h-8 px-0 text-xs gap-1.5 justify-start font-medium hover:bg-transparent flex-1 min-w-0";
+  const actions = [
+    { key: "prescription" as const, label: "Receita Oftalmológica", icon: Eye, ok: prescriptionOk, okLabel: "Preenchida" },
+    { key: "exam" as const, label: "Agendar Exame", icon: CalendarClock, ok: examOk },
+    { key: "lab" as const, label: "Gestão de Pedido", icon: Package, ok: labOk },
+    { key: "notes" as const, label: "Observações", icon: NotebookPen, ok: notesOk, okLabel: "Preenchida" },
+  ];
 
   async function handleSaveNotes() {
     setSavingNotes(true);
@@ -66,35 +70,22 @@ export function LeadQuickActions({ lead, onApplyLabScript }: Props) {
 
   return (
     <>
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-        <div className={itemCls}>
-          <Button type="button" variant="ghost" onClick={() => setOpen("prescription")} className={btnCls}>
-            <Eye className="h-4 w-4 text-primary shrink-0" />
-            <span className="truncate">Receita Oftalmológica</span>
+      <div className="grid grid-cols-2 gap-2 overflow-visible">
+        {actions.map(({ key, label, icon: Icon, ok, okLabel }) => (
+          <Button
+            key={key}
+            type="button"
+            variant="outline"
+            onClick={() => setOpen(key)}
+            className="h-auto min-h-[76px] w-full min-w-0 flex-col items-start justify-between gap-2 whitespace-normal rounded-md border-border bg-card px-3 py-2.5 text-left hover:bg-accent"
+          >
+            <span className="flex w-full min-w-0 items-start gap-2">
+              <Icon className="mt-0.5 h-4 w-4 shrink-0 text-primary" />
+              <span className="min-w-0 break-words text-xs font-medium leading-snug text-foreground">{label}</span>
+            </span>
+            <StatusBadge ok={ok} okLabel={okLabel} />
           </Button>
-          <StatusBadge ok={prescriptionOk} okLabel="Preenchida" />
-        </div>
-        <div className={itemCls}>
-          <Button type="button" variant="ghost" onClick={() => setOpen("exam")} className={btnCls}>
-            <CalendarClock className="h-4 w-4 text-primary shrink-0" />
-            <span className="truncate">Agendar Exame</span>
-          </Button>
-          <StatusBadge ok={examOk} />
-        </div>
-        <div className={itemCls}>
-          <Button type="button" variant="ghost" onClick={() => setOpen("lab")} className={btnCls}>
-            <Package className="h-4 w-4 text-primary shrink-0" />
-            <span className="truncate">Gestão de Pedido</span>
-          </Button>
-          <StatusBadge ok={labOk} />
-        </div>
-        <div className={itemCls}>
-          <Button type="button" variant="ghost" onClick={() => setOpen("notes")} className={btnCls}>
-            <NotebookPen className="h-4 w-4 text-primary shrink-0" />
-            <span className="truncate">Observações</span>
-          </Button>
-          <StatusBadge ok={notesOk} okLabel="Preenchida" />
-        </div>
+        ))}
       </div>
 
 
