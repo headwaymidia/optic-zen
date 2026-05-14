@@ -722,6 +722,10 @@ export type Database = {
     Functions: {
       _actor_name: { Args: never; Returns: string }
       accept_store_invite: { Args: { _token: string }; Returns: string }
+      add_store_owner: {
+        Args: { p_store_id: string; p_user_id: string }
+        Returns: undefined
+      }
       auto_move_due_returns: { Args: never; Returns: number }
       generate_cooling_notifications: { Args: never; Returns: number }
       get_invite_by_token: {
