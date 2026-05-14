@@ -11,6 +11,7 @@ import { ERPTransferCard } from "@/components/ERPTransferCard";
 import { StageGateDialog, isGatedStatus, type StageGate } from "@/components/StageGateDialog";
 import { LeadHeader } from "@/components/chat/LeadHeader";
 import { LeadDropdowns } from "@/components/chat/LeadDropdowns";
+import { LeadQuickActions } from "@/components/chat/LeadQuickActions";
 import { LeadSections } from "@/components/chat/LeadSections";
 import { MessageThread, type ChatMessage, type SentMessage } from "@/components/chat/MessageThread";
 import { MessageInput } from "@/components/chat/MessageInput";
@@ -392,6 +393,9 @@ export function ChatPanel({
           </div>
         )}
         <LeadDropdowns lead={lead} />
+        <div className="mt-2">
+          <LeadQuickActions lead={lead} onApplyLabScript={(msg) => setMessage(msg)} />
+        </div>
       </header>
 
       {/* Mobile-only tab switcher */}
