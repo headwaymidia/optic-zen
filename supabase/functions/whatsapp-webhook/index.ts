@@ -161,6 +161,7 @@ Deno.serve(async (req) => {
         null;
       const media = pickMediaType(m);
       const bodyText = text ?? media.body ?? null;
+      const messageTimestamp = new Date().toISOString();
 
       // 1) Try to find existing lead by phone in this store
       let leadId: string | null = null;
@@ -185,7 +186,7 @@ Deno.serve(async (req) => {
             phone: phoneDigits,
             status: "Novo Lead",
             lead_source: "WhatsApp",
-            last_inbound_at: new Date().toISOString(),
+            last_inbound_at: messageTimestamp,
           })
           .select("id")
           .single();
@@ -218,22 +219,23 @@ Deno.serve(async (req) => {
         body: bodyText,
         media_type: media.type,
         media_url: media.url,
-        timestamp: new Date().toISOString(),
+        timestamp: messageTimestamp,
         status: "received",
       });
       if (insErr) console.error("[webhook] insert message error:", insErr);
 
       // 4) Update lead preview / last_inbound_at
       if (leadId) {
-        await admin
+        const { error: leadUpdateErr } = await admin
           .from("leads")
           .update({
-            updated_at: new Date().toISOString(),
-            last_message_at: new Date().toISOString(),
+            updated_at: messageTimestamp,
+            last_message_at: messageTimestamp,
             last_message_preview: preview,
-            ...(fromMe ? {} : { last_inbound_at: new Date().toISOString() }),
+            ...(fromMe ? {} : { last_inbound_at: messageTimestamp }),
           })
           .eq("id", leadId);
+        if (leadUpdateErr) console.error("[webhook] update lead last_message_at error:", leadUpdateErr);
 
         if (!fromMe) {
           const { error: incErr } = await admin.rpc("increment_lead_unread", {

@@ -378,6 +378,7 @@ Deno.serve(async (req) => {
         : isAudio
         ? "🎵 Áudio"
         : message.slice(0, 100);
+      const messageTimestamp = new Date().toISOString();
 
       const { error: insErr } = await admin.from("whatsapp_messages").insert({
         store_id: storeId,
@@ -389,20 +390,21 @@ Deno.serve(async (req) => {
         body: bodyText,
         media_type: mediaType,
         media_url: mediaUrl,
-        timestamp: new Date().toISOString(),
+        timestamp: messageTimestamp,
         status: "sent",
       });
       if (insErr) console.error("[sendMessage] insert error:", insErr);
 
       if (leadId) {
-        await admin
+        const { error: leadUpdateErr } = await admin
           .from("leads")
           .update({
-            updated_at: new Date().toISOString(),
-            last_message_at: new Date().toISOString(),
+            updated_at: messageTimestamp,
+            last_message_at: messageTimestamp,
             last_message_preview: preview,
           })
           .eq("id", leadId);
+        if (leadUpdateErr) console.error("[sendMessage] update lead last_message_at error:", leadUpdateErr);
       }
 
       return new Response(

@@ -17,6 +17,24 @@ interface LeadsContextValue {
 
 const LeadsContext = createContext<LeadsContextValue | undefined>(undefined);
 
+function lastMessageMs(lead: Lead) {
+  if (!lead.last_message_at) return Number.NEGATIVE_INFINITY;
+  const ms = new Date(lead.last_message_at).getTime();
+  return Number.isFinite(ms) ? ms : Number.NEGATIVE_INFINITY;
+}
+
+function sortByLastMessage(leads: Lead[]) {
+  return [...leads].sort((a, b) => lastMessageMs(b) - lastMessageMs(a));
+}
+
+function getMessagePreview(row: { body?: string | null; media_type?: string | null }) {
+  if (row.media_type === "image") return "📷 Imagem";
+  if (row.media_type === "video") return "🎬 Vídeo";
+  if (row.media_type === "audio") return "🎵 Áudio";
+  if (row.media_type === "document") return "📎 Documento";
+  return (row.body ?? "").slice(0, 100);
+}
+
 export function LeadsProvider({ children }: { children: ReactNode }) {
   const { currentStoreId } = useStores();
   const queryClient = useQueryClient();
@@ -30,12 +48,12 @@ export function LeadsProvider({ children }: { children: ReactNode }) {
         .from("leads")
         .select("*")
         .eq("store_id", currentStoreId!)
-        .order("created_at", { ascending: false });
+        .order("last_message_at", { ascending: false, nullsFirst: false });
       if (error) {
         toast({ title: "Erro ao carregar leads", description: humanizeError(error), variant: "destructive" });
         throw error;
       }
-      return (data ?? []) as unknown as Lead[];
+      return sortByLastMessage((data ?? []) as unknown as Lead[]);
     },
   });
 
@@ -51,8 +69,19 @@ export function LeadsProvider({ children }: { children: ReactNode }) {
       .on(
         "postgres_changes",
         { event: "*", schema: "public", table: "leads", filter: `store_id=eq.${currentStoreId}` },
-        () => {
-          queryClient.invalidateQueries({ queryKey: ["leads", currentStoreId] });
+        (payload) => {
+          const row = (payload.new ?? payload.old) as Lead | undefined;
+          if (row?.id) {
+            queryClient.setQueryData<Lead[]>(queryKey, (old = []) => {
+              if (payload.eventType === "DELETE") return sortByLastMessage(old.filter((l) => l.id !== row.id));
+              const idx = old.findIndex((l) => l.id === row.id);
+              const next = idx >= 0
+                ? old.map((l) => (l.id === row.id ? { ...l, ...row } : l))
+                : [...old, row];
+              return sortByLastMessage(next);
+            });
+          }
+          queryClient.invalidateQueries({ queryKey });
         }
       )
       .subscribe();
@@ -74,7 +103,25 @@ export function LeadsProvider({ children }: { children: ReactNode }) {
         },
         (payload) => {
           if (import.meta.env.DEV) console.log("[Realtime] whatsapp_messages -> invalidando leads", payload);
-          queryClient.invalidateQueries({ queryKey: ["leads", currentStoreId] });
+          const row = payload.new as { lead_id?: string | null; timestamp?: string | null; created_at?: string | null; body?: string | null; media_type?: string | null } | undefined;
+          if (payload.eventType === "INSERT" && row?.lead_id) {
+            const lastMessageAt = row.timestamp ?? row.created_at ?? new Date().toISOString();
+            queryClient.setQueryData<Lead[]>(queryKey, (old = []) =>
+              sortByLastMessage(
+                old.map((lead) =>
+                  lead.id === row.lead_id
+                    ? {
+                        ...lead,
+                        last_message_at: lastMessageAt,
+                        last_message_preview: getMessagePreview(row),
+                      }
+                    : lead
+                )
+              )
+            );
+            return;
+          }
+          queryClient.invalidateQueries({ queryKey });
         }
       )
       .subscribe();
