@@ -46,16 +46,21 @@ export default function Configuracoes() {
     if (!user?.id) return;
     supabase
       .from("profiles")
-      .select("full_name, avatar_url")
+      .select("full_name, avatar_url, role")
       .eq("id", user.id)
       .maybeSingle()
       .then(({ data }) => {
         const n = data?.full_name ?? "";
         const a = (data as { avatar_url?: string | null } | null)?.avatar_url ?? null;
+        const r = (data as { role?: string | null } | null)?.role ?? null;
         setFullName(n);
         setInitialName(n);
         setAvatarUrl(a);
         setInitialAvatar(a);
+        if (r) {
+          setRole(r);
+          setInitialRole(r);
+        }
       });
   }, [user?.id]);
 
