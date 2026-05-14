@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from "react";
+import { useQueryClient } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
@@ -40,6 +41,11 @@ type LocalWhatsAppStatus = WhatsAppStatus | "checking";
 export function WhatsAppPanel({ storeId, role }: Props) {
   const canEdit = role === "Dono" || role === "Gerente";
   const { connection, loading, refetch } = useWhatsAppConnection(storeId);
+  const queryClient = useQueryClient();
+  const syncConnection = async () => {
+    await queryClient.invalidateQueries({ queryKey: ["whatsapp-connection", storeId] });
+    await syncConnection();
+  };
 
   const [qrCode, setQrCode] = useState<string | null>(null);
   const [busy, setBusy] = useState<"connect" | "disconnect" | null>(null);
@@ -147,7 +153,7 @@ export function WhatsAppPanel({ storeId, role }: Props) {
             pollRef.current = null;
           }
           // A Edge Function (action: 'status') já fez o upsert server-side com service_role.
-          await refetch();
+          await syncConnection();
           toast({ title: "WhatsApp conectado!", description: "Loja vinculada com sucesso." });
           return;
         }
@@ -191,7 +197,7 @@ export function WhatsAppPanel({ storeId, role }: Props) {
           setLocalPhone(connection?.phone_number ?? null);
           setLocalStatus(connection?.status ?? "disconnected");
         }
-        await refetch();
+        await syncConnection();
       } catch {
         /* noop */
       } finally {
@@ -214,7 +220,7 @@ export function WhatsAppPanel({ storeId, role }: Props) {
           setLocalPhone(st?.phone_number ?? null);
           setLocalStatus("connected");
           // A Edge Function (action: 'status') já fez o upsert server-side com service_role.
-          await refetch();
+          await syncConnection();
           toast({ title: "WhatsApp já conectado", description: "Loja vinculada com sucesso." });
           return;
         }
@@ -230,7 +236,7 @@ export function WhatsAppPanel({ storeId, role }: Props) {
       const res = await callEvo("connect");
       const qr = extractQr(res);
       if (qr) setQrCode(qr);
-      await refetch();
+      await syncConnection();
     } catch (e) {
       toast({
         title: "Erro ao conectar",
@@ -262,7 +268,9 @@ export function WhatsAppPanel({ storeId, role }: Props) {
     try {
       await callEvo("disconnect");
       setQrCode(null);
-      await refetch();
+      setLocalPhone(null);
+      setLocalStatus("disconnected");
+      await syncConnection();
       toast({ title: "WhatsApp desconectado" });
     } catch (e) {
       toast({
