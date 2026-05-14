@@ -47,7 +47,8 @@ const ALL_SALES = "__all__";
 
 export default function Funil() {
   usePageTitle("Funil de Vendas");
-  const { leads, loading } = useLeads();
+  const { leads, loading, loadAll } = useLeads();
+  useEffect(() => { loadAll(); }, [loadAll]);
   const { members } = useStoreMembers();
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const isMobile = useIsMobile();
