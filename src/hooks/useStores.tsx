@@ -246,19 +246,51 @@ export function StoresProvider({ children }: { children: ReactNode }) {
 
       // Vincula o criador como Dono (idempotente — trigger handle_new_user só roda no signup)
       const role: StoreRole = input.role ?? "Dono";
-      const { error: memberErr } = await supabase
+      console.info("[useStores.addStore] Inserindo store_members:", {
+        store_id: storeRow.id,
+        user_id: user.id,
+        role,
+      });
+      const { data: memberRow, error: memberErr } = await supabase
         .from("store_members")
         .upsert(
           { store_id: storeRow.id, user_id: user.id, role },
           { onConflict: "store_id,user_id" }
-        );
+        )
+        .select("id, store_id, user_id, role")
+        .maybeSingle();
 
       if (memberErr) {
+        console.error("[useStores.addStore] Falha no UPSERT em store_members:", {
+          error: memberErr,
+          message: memberErr.message,
+          details: (memberErr as any).details,
+          hint: (memberErr as any).hint,
+          code: (memberErr as any).code,
+          payload: { store_id: storeRow.id, user_id: user.id, role },
+        });
         toast({
           title: "Loja criada, mas falhou vincular usuário",
           description: humanizeError(memberErr),
           variant: "destructive",
         });
+      } else {
+        console.info("[useStores.addStore] store_members inserido com sucesso:", memberRow);
+        // Verificação de leitura (confirma que RLS permite ver o registro recém-criado)
+        const { data: check, error: checkErr } = await supabase
+          .from("store_members")
+          .select("id, role")
+          .eq("store_id", storeRow.id)
+          .eq("user_id", user.id)
+          .maybeSingle();
+        if (checkErr || !check) {
+          console.warn("[useStores.addStore] Não foi possível confirmar store_members após insert:", {
+            checkErr,
+            check,
+          });
+        } else {
+          console.info("[useStores.addStore] Confirmação OK store_members:", check);
+        }
       }
 
       const created: Store = {
