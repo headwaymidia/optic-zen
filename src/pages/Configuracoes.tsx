@@ -311,12 +311,16 @@ export default function Configuracoes() {
           </div>
           <div className="space-y-2">
             <Label htmlFor="profile-role">Função</Label>
-            <Input
-              id="profile-role"
-              value={role ?? ""}
-              onChange={(e) => setRole(e.target.value)}
-              placeholder="Sua função"
-            />
+            <Select value={role ?? undefined} onValueChange={(v) => setRole(v)}>
+              <SelectTrigger id="profile-role">
+                <SelectValue placeholder="Selecione" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="Dono">Dono</SelectItem>
+                <SelectItem value="Gerente">Gerente</SelectItem>
+                <SelectItem value="Vendedor">Vendedor</SelectItem>
+              </SelectContent>
+            </Select>
             <p className="text-[11px] text-muted-foreground">Como você atua na loja.</p>
           </div>
           <div className="flex justify-end">
