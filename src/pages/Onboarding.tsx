@@ -167,6 +167,17 @@ export default function OnboardingPage() {
 
       setStep(3);
     } catch (err: any) {
+      console.error("[Onboarding.handleCreateStore] ERRO BRUTO antes de humanizar:", {
+        err,
+        message: err?.message,
+        details: err?.details,
+        hint: err?.hint,
+        code: err?.code,
+        status: err?.status,
+        statusCode: err?.statusCode,
+        stack: err?.stack,
+        stringified: (() => { try { return JSON.stringify(err, Object.getOwnPropertyNames(err ?? {})); } catch { return String(err); } })(),
+      });
       toast({
         title: "Erro ao criar loja",
         description: humanizeError(err),
