@@ -185,28 +185,7 @@ export function WhatsAppPanel({ storeId, role }: Props) {
           setQrCode(null);
           setLocalPhone(st?.phone_number ?? null);
           setLocalStatus("connected");
-          try {
-            const { error: upsertErr } = await supabase
-              .from("whatsapp_connections")
-              .upsert(
-                {
-                  store_id: storeId,
-                  provider: "evolution",
-                  evolution_instance_name: `loja-${storeId}`,
-                  status: "connected",
-                  phone_number: st?.phone_number ?? null,
-                  connected_at: new Date().toISOString(),
-                },
-                { onConflict: "store_id" },
-              );
-            if (upsertErr) {
-              console.error("[WhatsAppPanel] mount upsert connected RLS/error:", upsertErr);
-            } else {
-              if (import.meta.env.DEV) console.log("[WhatsAppPanel] mount upsert connected OK");
-            }
-          } catch (e) {
-            console.error("[WhatsAppPanel] mount upsert connected threw:", e);
-          }
+          // A Edge Function (action: 'status') já fez o upsert server-side com service_role.
         } else {
           setQrCode(null);
           setLocalPhone(connection?.phone_number ?? null);
