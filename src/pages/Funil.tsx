@@ -1,7 +1,7 @@
 import { useMemo, useState } from "react";
 import { usePageTitle } from "@/hooks/usePageTitle";
 import { KanbanBoard, CadenceFilter, countLeadsByPendingFu } from "@/components/KanbanBoard";
-import { ChatPanel } from "@/components/ChatPanel";
+import { LeadDialog } from "@/components/LeadDialog";
 import { useLeads } from "@/hooks/useLeads";
 import { LEAD_STATUSES, LeadStatus } from "@/integrations/supabase/client";
 import { useStoreMembers } from "@/hooks/useStoreMembers";
@@ -253,28 +253,13 @@ export default function Funil() {
         </div>
       </div>
 
-      {/* Direita: Chat panel — desktop, só renderiza quando há lead selecionado */}
-      {!isMobile && selected && (
-        <aside
-          className="hidden lg:flex shrink-0 border-l border-slate-100 dark:border-slate-700 bg-white dark:bg-slate-900 flex-col h-full max-h-screen min-h-0 overflow-hidden shadow-[-4px_0_24px_rgba(0,0,0,0.02)] dark:shadow-none w-[380px] xl:w-[420px] animate-slide-in-right"
-        >
-          <div className="flex-1 min-h-0 flex flex-col overflow-hidden">
-            <ChatPanel lead={selected} onClose={() => setSelectedId(null)} chatOnly />
-          </div>
-        </aside>
-      )}
-
-      {/* Mobile: drawer */}
-      {isMobile && (
-        <Sheet open={!!selected} onOpenChange={(o) => !o && setSelectedId(null)}>
-          <SheetContent
-            side="right"
-            className="p-0 w-screen max-w-full sm:max-w-full border-0"
-          >
-            {selected && <ChatPanel lead={selected} onBack={() => setSelectedId(null)} />}
-          </SheetContent>
-        </Sheet>
-      )}
+      {/* Detalhes do lead — sem chat (chat completo só em /atendimentos) */}
+      <LeadDialog
+        open={!!selected}
+        onOpenChange={(o) => !o && setSelectedId(null)}
+        lead={selected}
+        onSaved={() => setSelectedId(null)}
+      />
     </div>
   );
 }
