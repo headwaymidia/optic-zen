@@ -170,6 +170,18 @@ Deno.serve(async (req) => {
         );
       }
 
+      // 0) Garante linha em whatsapp_connections ANTES de qualquer outra operação
+      const pre = await upsertConn({ status: "connecting" });
+      if (pre.error) {
+        return new Response(
+          JSON.stringify({
+            error: "Falha ao registrar conexão no banco",
+            details: pre.error.message,
+          }),
+          { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } },
+        );
+      }
+
       // 1) Cria instância na Evolution
       const integrationCandidates: (string | null)[] = [
         null,
