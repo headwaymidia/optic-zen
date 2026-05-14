@@ -171,7 +171,7 @@ export default function Configuracoes() {
     setSaving(true);
     const { error } = await supabase
       .from("profiles")
-      .update({ full_name: trimmed, avatar_url: avatarUrl })
+      .update({ full_name: trimmed, avatar_url: avatarUrl, role: role })
       .eq("id", user.id);
     setSaving(false);
     if (error) {
@@ -180,10 +180,14 @@ export default function Configuracoes() {
     }
     setInitialName(trimmed);
     setInitialAvatar(avatarUrl);
+    setInitialRole(role);
     toast({ title: "Configurações salvas!" });
   }
 
-  const dirty = fullName.trim() !== initialName.trim() || avatarUrl !== initialAvatar;
+  const dirty =
+    fullName.trim() !== initialName.trim() ||
+    avatarUrl !== initialAvatar ||
+    (role ?? "") !== (initialRole ?? "");
   const initials = getUserInitials(fullName, user?.email);
   const normalizedRole = (role ?? "").toLowerCase();
   const canEditStore = ["dono", "owner", "proprietário", "proprietario", "gerente", "manager"].includes(normalizedRole);
