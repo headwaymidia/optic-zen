@@ -188,12 +188,16 @@ export default function Configuracoes() {
     }
     const trimmed = fullName.trim();
     setSaving(true);
+    // upsert garante que cria a linha se ela não existir (fallback ao trigger)
     const { error } = await supabase
       .from("profiles")
-      .update({ full_name: trimmed, avatar_url: avatarUrl, role: role })
-      .eq("id", user.id);
+      .upsert(
+        { id: user.id, full_name: trimmed, avatar_url: avatarUrl, role: role },
+        { onConflict: "id" }
+      );
     setSaving(false);
     if (error) {
+      console.error("[Configuracoes] erro ao salvar profile:", error);
       toast({ title: "Erro ao salvar", description: humanizeError(error), variant: "destructive" });
       return;
     }
