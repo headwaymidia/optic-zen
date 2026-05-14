@@ -242,15 +242,25 @@ export default function Funil() {
           </div>
 
           <div className="flex-1 min-h-0 -mx-4 sm:-mx-6">
-            <KanbanBoard
-              onSelectLead={(lead) => setSelectedId(lead.id)}
-              selectedLeadId={selectedId}
-              search={search}
-              salesFilter={salesFilter === ALL_SALES ? null : salesFilter}
-              cadenceFilter={cadence}
-              createdFrom={periodRange?.from ?? null}
-              createdTo={periodRange?.to ?? null}
-            />
+            {loading && leads.length === 0 ? (
+              <div className="px-4 sm:px-6 flex gap-3 overflow-x-auto thin-scrollbar">
+                {Array.from({ length: 6 }).map((_, i) => (
+                  <div key={i} className="shrink-0 w-[280px]">
+                    <DataSkeleton variant="card" count={4} className="[&>div]:h-24" />
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <KanbanBoard
+                onSelectLead={(lead) => setSelectedId(lead.id)}
+                selectedLeadId={selectedId}
+                search={search}
+                salesFilter={salesFilter === ALL_SALES ? null : salesFilter}
+                cadenceFilter={cadence}
+                createdFrom={periodRange?.from ?? null}
+                createdTo={periodRange?.to ?? null}
+              />
+            )}
           </div>
         </div>
       </div>
