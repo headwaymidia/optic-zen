@@ -70,18 +70,18 @@ export function LeadQuickActions({ lead, onApplyLabScript }: Props) {
 
   return (
     <>
-      <div className="grid grid-cols-2 gap-2 overflow-visible">
+      <div className="grid grid-cols-2 gap-1.5 sm:grid-cols-4">
         {actions.map(({ key, label, icon: Icon, ok, okLabel }) => (
           <Button
             key={key}
             type="button"
             variant="outline"
             onClick={() => setOpen(key)}
-            className="h-auto min-h-[76px] w-full min-w-0 flex-col items-start justify-between gap-2 whitespace-normal rounded-md border-border bg-card px-3 py-2.5 text-left hover:bg-accent"
+            className="h-auto min-w-0 flex-col items-center justify-center gap-1 rounded-md border-border bg-card px-2 py-1.5 text-center hover:bg-accent"
           >
-            <span className="flex w-full min-w-0 items-start gap-2">
-              <Icon className="mt-0.5 h-4 w-4 shrink-0 text-primary" />
-              <span className="min-w-0 break-words text-xs font-medium leading-snug text-foreground">{label}</span>
+            <span className="flex w-full min-w-0 items-center justify-center gap-1.5">
+              <Icon className="h-3.5 w-3.5 shrink-0 text-primary" />
+              <span className="min-w-0 truncate text-[11px] font-medium leading-tight text-foreground">{label}</span>
             </span>
             <StatusBadge ok={ok} okLabel={okLabel} />
           </Button>
