@@ -216,7 +216,7 @@ export function ExamScheduler({ lead }: { lead: Lead }) {
           </div>
           {bookedSameDay.length === 0 ? (
             <div className="text-[11px] text-emerald-700 dark:text-emerald-300">
-              Nenhum exame agendado neste dia.
+              Nenhum agendamento para este dia.
             </div>
           ) : (
             <ul className="space-y-1">
