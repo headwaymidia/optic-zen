@@ -72,7 +72,34 @@ export function useWhatsAppMessages(leadId: string | undefined) {
           if (import.meta.env.DEV) {
             console.log("[useWhatsAppMessages] realtime payload", payload.eventType, row);
           }
-          queryClient.invalidateQueries({ queryKey: ["whatsapp_messages", currentStoreId, leadId] });
+
+          const key = ["whatsapp_messages", currentStoreId, leadId] as const;
+          queryClient.setQueryData<WhatsAppMessageRow[]>(key, (prev) => {
+            const list = prev ?? [];
+            if (payload.eventType === "DELETE") {
+              const oldRow = payload.old as Partial<WhatsAppMessageRow> | undefined;
+              if (!oldRow?.id) return list;
+              return list.filter((m) => m.id !== oldRow.id);
+            }
+            const newRow = payload.new as WhatsAppMessageRow | undefined;
+            if (!newRow?.id) return list;
+            const idx = list.findIndex(
+              (m) =>
+                m.id === newRow.id ||
+                (newRow.message_id && m.message_id && m.message_id === newRow.message_id)
+            );
+            if (idx >= 0) {
+              const next = list.slice();
+              next[idx] = { ...list[idx], ...newRow };
+              return next;
+            }
+            // INSERT: anexa mantendo ordenação por timestamp asc
+            const next = [...list, newRow];
+            next.sort(
+              (a, b) => new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime()
+            );
+            return next;
+          });
         }
       )
       .subscribe((status) => {
