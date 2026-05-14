@@ -99,18 +99,31 @@ Deno.serve(async (req) => {
     const instance = instanceNameFor(storeId);
 
     async function upsertConn(patch: Record<string, unknown>) {
-      await admin
+      const payload = {
+        store_id: storeId,
+        provider: "evolution",
+        evolution_instance_name: instance,
+        ...patch,
+      };
+      const { data, error } = await admin
         .from("whatsapp_connections")
-        .upsert(
-          {
-            store_id: storeId,
-            provider: "evolution",
-            instance_name: instance,
-            evolution_instance_name: instance,
-            ...patch,
-          },
-          { onConflict: "store_id" },
-        );
+        .upsert(payload, { onConflict: "store_id" })
+        .select()
+        .maybeSingle();
+      if (error) {
+        console.error("[upsertConn] FAILED", {
+          store_id: storeId,
+          payload,
+          error_message: error.message,
+          error_details: (error as any).details,
+          error_hint: (error as any).hint,
+          error_code: (error as any).code,
+          error_full: error,
+        });
+      } else {
+        console.log("[upsertConn] ok", { store_id: storeId, status: (data as any)?.status });
+      }
+      return { data, error };
     }
 
     if (action === "status") {
