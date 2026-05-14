@@ -378,28 +378,40 @@ export default function OnboardingPage() {
               </Select>
             </div>
 
-            <Button
-              type="submit"
-              disabled={!step2Valid || submitting}
-              className={cn(
-                "w-full h-14 rounded-xl text-base font-semibold gap-2 group",
-                step2Valid && !submitting
-                  ? "bg-emerald-500 hover:bg-emerald-600 text-white"
-                  : "bg-zinc-200 text-zinc-400 hover:bg-zinc-200 cursor-not-allowed disabled:opacity-100"
-              )}
-            >
-              {submitting ? (
-                <>
-                  <Loader2 className="h-5 w-5 animate-spin" />
-                  Criando sua loja...
-                </>
-              ) : (
-                <>
-                  Continuar
-                  <ArrowRight className="h-5 w-5 transition-transform group-hover:translate-x-0.5" />
-                </>
-              )}
-            </Button>
+            <div className="flex gap-3">
+              <Button
+                type="button"
+                variant="outline"
+                disabled={submitting}
+                onClick={() => setStep(1)}
+                className="h-14 rounded-xl text-base font-semibold gap-2 px-5 border-zinc-200 text-zinc-700 hover:bg-zinc-100"
+              >
+                <ArrowLeft className="h-5 w-5" />
+                Voltar
+              </Button>
+              <Button
+                type="submit"
+                disabled={!step2Valid || submitting}
+                className={cn(
+                  "flex-1 h-14 rounded-xl text-base font-semibold gap-2 group",
+                  step2Valid && !submitting
+                    ? "bg-emerald-500 hover:bg-emerald-600 text-white"
+                    : "bg-zinc-200 text-zinc-400 hover:bg-zinc-200 cursor-not-allowed disabled:opacity-100"
+                )}
+              >
+                {submitting ? (
+                  <>
+                    <Loader2 className="h-5 w-5 animate-spin" />
+                    Criando sua loja...
+                  </>
+                ) : (
+                  <>
+                    Continuar
+                    <ArrowRight className="h-5 w-5 transition-transform group-hover:translate-x-0.5" />
+                  </>
+                )}
+              </Button>
+            </div>
           </form>
         )}
 
