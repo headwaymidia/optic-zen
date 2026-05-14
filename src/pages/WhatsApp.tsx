@@ -130,14 +130,20 @@ export default function WhatsAppPage() {
 
   const filtered = useMemo(() => {
     const range = getPeriodRange(period, customRange);
-    return leads.filter((l) => {
-      if (!l.name.toLowerCase().includes(search.toLowerCase())) return false;
-      if (range) {
-        const t = l.created_at ? new Date(l.created_at).getTime() : 0;
-        if (t < range.from.getTime() || t > range.to.getTime()) return false;
-      }
-      return true;
-    });
+    const ts = (l: typeof leads[number]) => {
+      const iso = l.last_message_at ?? l.last_interaction ?? l.last_inbound_at ?? l.created_at;
+      return iso ? new Date(iso).getTime() : 0;
+    };
+    return leads
+      .filter((l) => {
+        if (!l.name.toLowerCase().includes(search.toLowerCase())) return false;
+        if (range) {
+          const t = l.created_at ? new Date(l.created_at).getTime() : 0;
+          if (t < range.from.getTime() || t > range.to.getTime()) return false;
+        }
+        return true;
+      })
+      .sort((a, b) => ts(b) - ts(a));
   }, [leads, search, period, customRange]);
 
   const customLabel = customRange?.from
