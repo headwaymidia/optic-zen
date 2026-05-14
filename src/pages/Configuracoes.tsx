@@ -19,6 +19,16 @@ import { cn } from "@/lib/utils";
 import { getUserInitials, translateRole } from "@/lib/profile-helpers";
 import { TeamPanel } from "@/pages/ConfiguracoesLoja";
 
+const ROLE_OPTIONS = ["Dono", "Gerente", "Vendedor"] as const;
+function normalizeRole(value?: string | null): string | null {
+  if (!value) return null;
+  const v = value.trim().toLowerCase();
+  if (["dono", "owner", "proprietário", "proprietario"].includes(v)) return "Dono";
+  if (["gerente", "manager"].includes(v)) return "Gerente";
+  if (["vendedor", "vendedora", "consultor", "consultora", "atendente", "attendant"].includes(v)) return "Vendedor";
+  return null;
+}
+
 export default function Configuracoes() {
   usePageTitle("Configurações");
   const { user } = useAuth();
