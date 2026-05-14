@@ -41,6 +41,11 @@ type LocalWhatsAppStatus = WhatsAppStatus | "checking";
 export function WhatsAppPanel({ storeId, role }: Props) {
   const canEdit = role === "Dono" || role === "Gerente";
   const { connection, loading, refetch } = useWhatsAppConnection(storeId);
+  const queryClient = useQueryClient();
+  const syncConnection = async () => {
+    await queryClient.invalidateQueries({ queryKey: ["whatsapp-connection", storeId] });
+    await refetch();
+  };
 
   const [qrCode, setQrCode] = useState<string | null>(null);
   const [busy, setBusy] = useState<"connect" | "disconnect" | null>(null);
