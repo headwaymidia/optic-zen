@@ -130,16 +130,25 @@ export default function OnboardingPage() {
         return;
       }
 
-      await supabase.from("profiles").upsert(
-        {
-          id: activeSession.user.id,
+      const { error: profileError } = await supabase
+        .from("profiles")
+        .update({
           full_name: ownerName.trim(),
-          email: activeSession.user.email,
           whatsapp: whatsapp.replace(/\D/g, ""),
           role,
-        },
-        { onConflict: "id" }
-      );
+        })
+        .eq("id", activeSession.user.id);
+
+      if (profileError) {
+        console.error("[Onboarding] erro ao salvar profile:", profileError);
+        toast({
+          title: "Erro ao salvar perfil",
+          description: humanizeError(profileError),
+          variant: "destructive",
+        });
+        setSubmitting(false);
+        return;
+      }
 
       const created = await addStore({ name: storeName.trim(), throwOnError: true });
       if (!created) {
