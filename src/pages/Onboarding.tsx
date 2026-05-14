@@ -132,15 +132,18 @@ export default function OnboardingPage() {
 
       const { error: profileError } = await supabase
         .from("profiles")
-        .update({
-          full_name: ownerName.trim(),
-          whatsapp: whatsapp.replace(/\D/g, ""),
-          role,
-        })
-        .eq("id", activeSession.user.id);
+        .upsert(
+          {
+            id: activeSession.user.id,
+            full_name: ownerName.trim(),
+            whatsapp: whatsapp.replace(/\D/g, ""),
+            role,
+          },
+          { onConflict: "id" }
+        );
 
       if (profileError) {
-        console.error("[Onboarding] erro ao salvar profile:", profileError);
+        console.error("[Onboarding] erro ao salvar profile (upsert):", profileError);
         toast({
           title: "Erro ao salvar perfil",
           description: humanizeError(profileError),
