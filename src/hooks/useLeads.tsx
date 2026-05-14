@@ -18,7 +18,9 @@ interface LeadsContextValue {
 const LeadsContext = createContext<LeadsContextValue | undefined>(undefined);
 
 function lastMessageMs(lead: Lead) {
-  return lead.last_message_at ? new Date(lead.last_message_at).getTime() : -Infinity;
+  if (!lead.last_message_at) return Number.NEGATIVE_INFINITY;
+  const ms = new Date(lead.last_message_at).getTime();
+  return Number.isFinite(ms) ? ms : Number.NEGATIVE_INFINITY;
 }
 
 function sortByLastMessage(leads: Lead[]) {
@@ -117,6 +119,7 @@ export function LeadsProvider({ children }: { children: ReactNode }) {
                 )
               )
             );
+            return;
           }
           queryClient.invalidateQueries({ queryKey });
         }
