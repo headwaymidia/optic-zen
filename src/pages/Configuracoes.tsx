@@ -19,6 +19,16 @@ import { cn } from "@/lib/utils";
 import { getUserInitials, translateRole } from "@/lib/profile-helpers";
 import { TeamPanel } from "@/pages/ConfiguracoesLoja";
 
+const ROLE_OPTIONS = ["Dono", "Gerente", "Vendedor"] as const;
+function normalizeRole(value?: string | null): string | null {
+  if (!value) return null;
+  const v = value.trim().toLowerCase();
+  if (["dono", "owner", "proprietário", "proprietario"].includes(v)) return "Dono";
+  if (["gerente", "manager"].includes(v)) return "Gerente";
+  if (["vendedor", "vendedora", "consultor", "consultora", "atendente", "attendant"].includes(v)) return "Vendedor";
+  return null;
+}
+
 export default function Configuracoes() {
   usePageTitle("Configurações");
   const { user } = useAuth();
@@ -41,7 +51,7 @@ export default function Configuracoes() {
   const [savingStore, setSavingStore] = useState(false);
   const fileRef = useRef<HTMLInputElement>(null);
 
-  // Carrega profile (full_name + avatar_url)
+  // Carrega profile (full_name + avatar_url + role)
   useEffect(() => {
     if (!user?.id) return;
     supabase
@@ -49,22 +59,24 @@ export default function Configuracoes() {
       .select("full_name, avatar_url, role")
       .eq("id", user.id)
       .maybeSingle()
-      .then(({ data }) => {
+      .then(({ data, error }) => {
+        if (error) {
+          console.error("[Configuracoes] erro ao carregar profile:", error);
+          return;
+        }
         const n = data?.full_name ?? "";
         const a = (data as { avatar_url?: string | null } | null)?.avatar_url ?? null;
-        const r = (data as { role?: string | null } | null)?.role ?? null;
+        const r = normalizeRole((data as { role?: string | null } | null)?.role ?? null);
         setFullName(n);
         setInitialName(n);
         setAvatarUrl(a);
         setInitialAvatar(a);
-        if (r) {
-          setRole(r);
-          setInitialRole(r);
-        }
+        setRole(r);
+        setInitialRole(r);
       });
   }, [user?.id]);
 
-  // Carrega função na loja atual
+  // Carrega função na loja atual (fallback se profile.role estiver vazio)
   useEffect(() => {
     if (!user?.id || !currentStoreId) return;
     supabase
@@ -74,9 +86,10 @@ export default function Configuracoes() {
       .eq("user_id", user.id)
       .maybeSingle()
       .then(({ data }) => {
-        if (data?.role) {
-          setRole((prev) => prev ?? data.role ?? null);
-          setInitialRole((prev) => prev ?? data.role ?? null);
+        const r = normalizeRole(data?.role ?? null);
+        if (r) {
+          setRole((prev) => prev ?? r);
+          setInitialRole((prev) => prev ?? r);
         }
       });
   }, [user?.id, currentStoreId]);
@@ -311,12 +324,16 @@ export default function Configuracoes() {
           </div>
           <div className="space-y-2">
             <Label htmlFor="profile-role">Função</Label>
-            <Input
-              id="profile-role"
-              value={role ?? ""}
-              onChange={(e) => setRole(e.target.value)}
-              placeholder="Sua função"
-            />
+            <Select value={role ?? undefined} onValueChange={(v) => setRole(v)}>
+              <SelectTrigger id="profile-role">
+                <SelectValue placeholder="Selecione" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="Dono">Dono</SelectItem>
+                <SelectItem value="Gerente">Gerente</SelectItem>
+                <SelectItem value="Vendedor">Vendedor</SelectItem>
+              </SelectContent>
+            </Select>
             <p className="text-[11px] text-muted-foreground">Como você atua na loja.</p>
           </div>
           <div className="flex justify-end">
