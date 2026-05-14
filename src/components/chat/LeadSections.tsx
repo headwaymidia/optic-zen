@@ -105,13 +105,19 @@ function toLocalInputValue(iso: string | null) {
   return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
 }
 
+function todayKey() {
+  const d = new Date();
+  const pad = (n: number) => String(n).padStart(2, "0");
+  return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
+}
+
 export function ExamScheduler({ lead }: { lead: Lead }) {
   const { updateLead, leads } = useLeads();
   const [value, setValue] = useState<string>(toLocalInputValue(lead.exam_date));
   const [saving, setSaving] = useState(false);
   const [editing, setEditing] = useState(false);
 
-  const selectedDayKey = value ? value.slice(0, 10) : "";
+  const selectedDayKey = value ? value.slice(0, 10) : todayKey();
   const bookedSameDay = selectedDayKey
     ? leads
         .filter((l) => {
@@ -200,16 +206,17 @@ export function ExamScheduler({ lead }: { lead: Lead }) {
       {selectedDayKey && (
         <div className="rounded-md border bg-muted/30 px-2.5 py-2 space-y-1.5">
           <div className="text-[11px] font-medium text-muted-foreground">
-            Horários ocupados em{" "}
+            Agendamentos do dia{" "}
             {new Date(selectedDayKey + "T00:00:00").toLocaleDateString("pt-BR", {
               day: "2-digit",
               month: "2-digit",
               year: "numeric",
             })}
+            :
           </div>
           {bookedSameDay.length === 0 ? (
             <div className="text-[11px] text-emerald-700 dark:text-emerald-300">
-              Nenhum exame agendado neste dia.
+              Nenhum agendamento para este dia.
             </div>
           ) : (
             <ul className="space-y-1">
