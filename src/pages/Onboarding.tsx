@@ -130,28 +130,7 @@ export default function OnboardingPage() {
         return;
       }
 
-      const { error: profileError } = await supabase
-        .from("profiles")
-        .upsert(
-          {
-            id: activeSession.user.id,
-            full_name: ownerName.trim(),
-            whatsapp: whatsapp.replace(/\D/g, ""),
-            role,
-          },
-          { onConflict: "id" }
-        );
-
-      if (profileError) {
-        console.error("[Onboarding] erro ao salvar profile (upsert):", profileError);
-        toast({
-          title: "Erro ao salvar perfil",
-          description: humanizeError(profileError),
-          variant: "destructive",
-        });
-        setSubmitting(false);
-        return;
-      }
+      // Perfil já foi salvo (upsert) na transição da etapa 1 → 2.
 
       const created = await addStore({ name: storeName.trim(), throwOnError: true });
       if (!created) {
