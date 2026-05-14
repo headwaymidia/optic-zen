@@ -392,6 +392,9 @@ export function ChatPanel({
           </div>
         )}
         <LeadDropdowns lead={lead} />
+        <div className="mt-2">
+          <LeadQuickActions lead={lead} onApplyLabScript={(msg) => setMessage(msg)} />
+        </div>
       </header>
 
       {/* Mobile-only tab switcher */}
