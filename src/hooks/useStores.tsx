@@ -244,7 +244,8 @@ export function StoresProvider({ children }: { children: ReactNode }) {
         return null;
       }
 
-      // Vincula o criador como Dono (idempotente — trigger handle_new_user só roda no signup)
+      // Vincula o criador como Dono. CRÍTICO: se isso falhar, a loja fica órfã
+      // (RLS bloqueia acesso). Tratamos como erro fatal quando throwOnError=true.
       const role: StoreRole = input.role ?? "Dono";
       console.info("[useStores.addStore] Inserindo store_members:", {
         store_id: storeRow.id,
@@ -260,38 +261,27 @@ export function StoresProvider({ children }: { children: ReactNode }) {
         .select("id, store_id, user_id, role")
         .maybeSingle();
 
-      if (memberErr) {
-        console.error("[useStores.addStore] Falha no UPSERT em store_members:", {
+      if (memberErr || !memberRow) {
+        console.error("[useStores.addStore] Falha ao vincular usuário em store_members:", {
           error: memberErr,
-          message: memberErr.message,
-          details: (memberErr as any).details,
-          hint: (memberErr as any).hint,
-          code: (memberErr as any).code,
+          message: memberErr?.message,
+          details: (memberErr as any)?.details,
+          hint: (memberErr as any)?.hint,
+          code: (memberErr as any)?.code,
           payload: { store_id: storeRow.id, user_id: user.id, role },
         });
+        if (input.throwOnError) {
+          throw memberErr ?? new Error("INSERT em store_members não retornou registro.");
+        }
         toast({
           title: "Loja criada, mas falhou vincular usuário",
           description: humanizeError(memberErr),
           variant: "destructive",
         });
-      } else {
-        console.info("[useStores.addStore] store_members inserido com sucesso:", memberRow);
-        // Verificação de leitura (confirma que RLS permite ver o registro recém-criado)
-        const { data: check, error: checkErr } = await supabase
-          .from("store_members")
-          .select("id, role")
-          .eq("store_id", storeRow.id)
-          .eq("user_id", user.id)
-          .maybeSingle();
-        if (checkErr || !check) {
-          console.warn("[useStores.addStore] Não foi possível confirmar store_members após insert:", {
-            checkErr,
-            check,
-          });
-        } else {
-          console.info("[useStores.addStore] Confirmação OK store_members:", check);
-        }
+        return null;
       }
+
+      console.info("[useStores.addStore] store_members confirmado:", memberRow);
 
       const created: Store = {
         id: storeRow.id,
