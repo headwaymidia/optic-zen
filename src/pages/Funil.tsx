@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { usePageTitle } from "@/hooks/usePageTitle";
 import { KanbanBoard, CadenceFilter, countLeadsByPendingFu } from "@/components/KanbanBoard";
 import { LeadDialog } from "@/components/LeadDialog";
@@ -18,6 +18,7 @@ import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import type { DateRange } from "react-day-picker";
 import { Search, X, CalendarRange } from "lucide-react";
+import { DataSkeleton } from "@/components/ui/DataSkeleton";
 
 type PeriodKey = "all" | "today" | "7d" | "month" | "custom";
 
@@ -47,7 +48,8 @@ const ALL_SALES = "__all__";
 
 export default function Funil() {
   usePageTitle("Funil de Vendas");
-  const { leads, loading } = useLeads();
+  const { leads, loading, loadAll } = useLeads();
+  useEffect(() => { loadAll(); }, [loadAll]);
   const { members } = useStoreMembers();
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const isMobile = useIsMobile();
@@ -240,15 +242,25 @@ export default function Funil() {
           </div>
 
           <div className="flex-1 min-h-0 -mx-4 sm:-mx-6">
-            <KanbanBoard
-              onSelectLead={(lead) => setSelectedId(lead.id)}
-              selectedLeadId={selectedId}
-              search={search}
-              salesFilter={salesFilter === ALL_SALES ? null : salesFilter}
-              cadenceFilter={cadence}
-              createdFrom={periodRange?.from ?? null}
-              createdTo={periodRange?.to ?? null}
-            />
+            {loading && leads.length === 0 ? (
+              <div className="px-4 sm:px-6 flex gap-3 overflow-x-auto thin-scrollbar">
+                {Array.from({ length: 6 }).map((_, i) => (
+                  <div key={i} className="shrink-0 w-[280px]">
+                    <DataSkeleton variant="card" count={4} className="[&>div]:h-24" />
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <KanbanBoard
+                onSelectLead={(lead) => setSelectedId(lead.id)}
+                selectedLeadId={selectedId}
+                search={search}
+                salesFilter={salesFilter === ALL_SALES ? null : salesFilter}
+                cadenceFilter={cadence}
+                createdFrom={periodRange?.from ?? null}
+                createdTo={periodRange?.to ?? null}
+              />
+            )}
           </div>
         </div>
       </div>

@@ -99,18 +99,31 @@ Deno.serve(async (req) => {
     const instance = instanceNameFor(storeId);
 
     async function upsertConn(patch: Record<string, unknown>) {
-      await admin
+      const payload = {
+        store_id: storeId,
+        provider: "evolution",
+        evolution_instance_name: instance,
+        ...patch,
+      };
+      const { data, error } = await admin
         .from("whatsapp_connections")
-        .upsert(
-          {
-            store_id: storeId,
-            provider: "evolution",
-            instance_name: instance,
-            evolution_instance_name: instance,
-            ...patch,
-          },
-          { onConflict: "store_id" },
-        );
+        .upsert(payload, { onConflict: "store_id" })
+        .select()
+        .maybeSingle();
+      if (error) {
+        console.error("[upsertConn] FAILED", {
+          store_id: storeId,
+          payload,
+          error_message: error.message,
+          error_details: (error as any).details,
+          error_hint: (error as any).hint,
+          error_code: (error as any).code,
+          error_full: error,
+        });
+      } else {
+        console.log("[upsertConn] ok", { store_id: storeId, status: (data as any)?.status });
+      }
+      return { data, error };
     }
 
     if (action === "status") {
@@ -154,6 +167,18 @@ Deno.serve(async (req) => {
         return new Response(
           JSON.stringify({ error: "Apenas Dono/Gerente pode conectar" }),
           { status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" } },
+        );
+      }
+
+      // 0) Garante linha em whatsapp_connections ANTES de qualquer outra operação
+      const pre = await upsertConn({ status: "connecting" });
+      if (pre.error) {
+        return new Response(
+          JSON.stringify({
+            error: "Falha ao registrar conexão no banco",
+            details: pre.error.message,
+          }),
+          { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } },
         );
       }
 
