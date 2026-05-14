@@ -1,7 +1,7 @@
 import { useMemo, useState } from "react";
 import { usePageTitle } from "@/hooks/usePageTitle";
 import { KanbanBoard, CadenceFilter, countLeadsByPendingFu } from "@/components/KanbanBoard";
-import { ChatPanel } from "@/components/ChatPanel";
+import { LeadDialog } from "@/components/LeadDialog";
 import { useLeads } from "@/hooks/useLeads";
 import { LEAD_STATUSES, LeadStatus } from "@/integrations/supabase/client";
 import { useStoreMembers } from "@/hooks/useStoreMembers";
