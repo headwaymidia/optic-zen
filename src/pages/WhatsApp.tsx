@@ -236,10 +236,18 @@ export default function WhatsAppPage() {
           </div>
         </div>
 
-        <div className="flex-1 overflow-y-auto">
+        <div
+          className="flex-1 overflow-y-auto"
+          onScroll={(e) => {
+            const el = e.currentTarget;
+            if (hasMore && !isFetchingMore && el.scrollHeight - el.scrollTop - el.clientHeight < 200) {
+              loadMore();
+            }
+          }}
+        >
           {loading && leads.length === 0 && (
             <div className="p-4">
-              <DataSkeleton variant="row" count={6} className="[&>div]:h-14" />
+              <DataSkeleton variant="row" count={8} className="[&>div]:h-14" />
             </div>
           )}
           {!loading && filtered.length === 0 && (
@@ -310,6 +318,11 @@ export default function WhatsAppPage() {
               </button>
             );
           })}
+          {isFetchingMore && (
+            <div className="p-3">
+              <DataSkeleton variant="row" count={3} className="[&>div]:h-14" />
+            </div>
+          )}
         </div>
       </aside>
 
