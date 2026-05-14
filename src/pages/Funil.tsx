@@ -18,6 +18,7 @@ import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import type { DateRange } from "react-day-picker";
 import { Search, X, CalendarRange } from "lucide-react";
+import { DataSkeleton } from "@/components/ui/DataSkeleton";
 
 type PeriodKey = "all" | "today" | "7d" | "month" | "custom";
 
