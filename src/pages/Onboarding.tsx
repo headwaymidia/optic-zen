@@ -130,28 +130,7 @@ export default function OnboardingPage() {
         return;
       }
 
-      const { error: profileError } = await supabase
-        .from("profiles")
-        .upsert(
-          {
-            id: activeSession.user.id,
-            full_name: ownerName.trim(),
-            whatsapp: whatsapp.replace(/\D/g, ""),
-            role,
-          },
-          { onConflict: "id" }
-        );
-
-      if (profileError) {
-        console.error("[Onboarding] erro ao salvar profile (upsert):", profileError);
-        toast({
-          title: "Erro ao salvar perfil",
-          description: humanizeError(profileError),
-          variant: "destructive",
-        });
-        setSubmitting(false);
-        return;
-      }
+      // Perfil já foi salvo (upsert) na transição da etapa 1 → 2.
 
       const created = await addStore({ name: storeName.trim(), throwOnError: true });
       if (!created) {
@@ -256,7 +235,42 @@ export default function OnboardingPage() {
 
         {step === 1 && (
           <form
-            onSubmit={(e) => { e.preventDefault(); if (step1Valid) setStep(2); }}
+            onSubmit={async (e) => {
+              e.preventDefault();
+              if (!step1Valid || submitting) return;
+              setSubmitting(true);
+              try {
+                const { data: { session: activeSession } } = await supabase.auth.getSession();
+                if (!activeSession?.user) {
+                  toast({ title: "Sua conta foi confirmada! Faça login para continuar." });
+                  navigate("/auth", { replace: true });
+                  return;
+                }
+                const { error: profileError } = await supabase
+                  .from("profiles")
+                  .upsert(
+                    {
+                      id: activeSession.user.id,
+                      full_name: ownerName.trim(),
+                      whatsapp: whatsapp.replace(/\D/g, ""),
+                      role,
+                    },
+                    { onConflict: "id" }
+                  );
+                if (profileError) {
+                  console.error("[Onboarding] erro ao salvar profile (etapa 1):", profileError);
+                  toast({
+                    title: "Erro ao salvar perfil",
+                    description: humanizeError(profileError),
+                    variant: "destructive",
+                  });
+                  return;
+                }
+                setStep(2);
+              } finally {
+                setSubmitting(false);
+              }
+            }}
             className="space-y-5"
           >
             <div className="space-y-3 text-center mb-2">
