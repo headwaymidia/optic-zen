@@ -1,6 +1,7 @@
 import { useEffect } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
+import { useStores } from "@/hooks/useStores";
 
 export interface WhatsAppMessageRow {
   id: string;
@@ -20,7 +21,8 @@ export interface WhatsAppMessageRow {
 
 export function useWhatsAppMessages(leadId: string | undefined) {
   const queryClient = useQueryClient();
-  const queryKey = ["whatsapp_messages", leadId] as const;
+  const { currentStoreId } = useStores();
+  const queryKey = ["whatsapp_messages", currentStoreId, leadId] as const;
 
   const { data: messages = [], isLoading, refetch } = useQuery({
     queryKey,
@@ -40,8 +42,17 @@ export function useWhatsAppMessages(leadId: string | undefined) {
 
   useEffect(() => {
     if (!leadId) return;
+    // Canal único por (store, lead). Realtime aceita apenas 1 expressão de filtro,
+    // então filtramos por lead_id e validamos store_id no handler.
+    const channelName = `wa-msgs-${currentStoreId ?? "no-store"}-${leadId}`;
+    if (import.meta.env.DEV) {
+      console.log("[useWhatsAppMessages] subscribing channel", channelName, {
+        storeId: currentStoreId,
+        leadId,
+      });
+    }
     const channel = supabase
-      .channel(`wa-msgs-${leadId}`)
+      .channel(channelName)
       .on(
         "postgres_changes",
         {
@@ -50,15 +61,29 @@ export function useWhatsAppMessages(leadId: string | undefined) {
           table: "whatsapp_messages",
           filter: `lead_id=eq.${leadId}`,
         },
-        () => {
-          queryClient.invalidateQueries({ queryKey: ["whatsapp_messages", leadId] });
+        (payload) => {
+          const row = (payload.new ?? payload.old) as Partial<WhatsAppMessageRow> | undefined;
+          if (currentStoreId && row?.store_id && row.store_id !== currentStoreId) {
+            if (import.meta.env.DEV) {
+              console.log("[useWhatsAppMessages] payload de outra loja ignorado", row.store_id);
+            }
+            return;
+          }
+          if (import.meta.env.DEV) {
+            console.log("[useWhatsAppMessages] realtime payload", payload.eventType, row);
+          }
+          queryClient.invalidateQueries({ queryKey: ["whatsapp_messages", currentStoreId, leadId] });
         }
       )
-      .subscribe();
+      .subscribe((status) => {
+        if (import.meta.env.DEV) {
+          console.log("[useWhatsAppMessages] subscription status:", status, channelName);
+        }
+      });
     return () => {
       supabase.removeChannel(channel);
     };
-  }, [leadId, queryClient]);
+  }, [leadId, currentStoreId, queryClient]);
 
   return { messages, loading: isLoading, refetch };
 }
