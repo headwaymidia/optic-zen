@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { LEAD_STATUSES, Lead, LeadStatus } from "@/integrations/supabase/client";
 import { useStoreMembers } from "@/hooks/useStoreMembers";
 import { useLeads } from "@/hooks/useLeads";
