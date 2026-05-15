@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { toast } from "@/components/ui/use-toast";
 import { humanizeError } from "@/lib/error-handler";
+import { validatePhoneBR } from "@/lib/validators";
 import { Lead, LeadStatus, supabase } from "@/integrations/supabase/client";
 import { useLeads } from "@/hooks/useLeads";
 import { useStores } from "@/hooks/useStores";
@@ -45,6 +46,7 @@ export function ChatPanel({
   const [gateStatus, setGateStatus] = useState<StageGate | null>(null);
   const [isTyping, setIsTyping] = useState(false);
   const [sentMessages, setSentMessages] = useState<SentMessage[]>([]);
+  const [isSending, setIsSending] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [replyTo, setReplyTo] = useState<{ from: "us" | "lead"; text: string } | null>(null);
@@ -86,6 +88,7 @@ export function ChatPanel({
   const reachedMax = (lead.follow_up_count ?? 0) >= MAX_FOLLOW_UPS;
 
   const handleSend = async () => {
+    if (isSending) return;
     const raw = message.trim();
     if (!raw) return;
     if (!currentStoreId) {
@@ -96,12 +99,18 @@ export function ChatPanel({
       toast({ title: "Lead sem telefone", variant: "destructive" });
       return;
     }
+    const phoneErr = validatePhoneBR(lead.phone);
+    if (phoneErr) {
+      toast({ title: "Telefone inválido", description: phoneErr, variant: "destructive" });
+      return;
+    }
     const text = replyTo
       ? `> ${replyTo.text.split("\n").join("\n> ")}\n\n${raw}`
       : raw;
     promoteToInAttendance();
     setMessage("");
     setReplyTo(null);
+    setIsSending(true);
 
     const optimisticId = crypto.randomUUID();
     const now = new Date();
@@ -136,6 +145,8 @@ export function ChatPanel({
         variant: "destructive",
       });
       setMessage(raw);
+    } finally {
+      setIsSending(false);
     }
   };
 
@@ -451,6 +462,7 @@ export function ChatPanel({
               sentMessages={searchQuery ? [] : sentMessages}
               isTyping={searchQuery ? false : isTyping}
               onReply={(m) => setReplyTo({ from: m.from, text: m.text })}
+              leadId={lead.id}
             />
           </div>
           {replyTo && (
@@ -512,6 +524,7 @@ export function ChatPanel({
             pendingLevel={pendingLevel}
             onSendAudio={handleSendAudio}
             onSendMedia={handleSendMedia}
+            isSending={isSending}
           />
         </div>
 

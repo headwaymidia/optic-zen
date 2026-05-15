@@ -1,5 +1,5 @@
 import { useRef, useState } from "react";
-import { Mic, Paperclip, Send, Smile, Square, Zap } from "lucide-react";
+import { Loader2, Mic, Paperclip, Send, Smile, Square, Zap } from "lucide-react";
 import EmojiPicker, { EmojiStyle, Theme } from "emoji-picker-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -20,6 +20,7 @@ interface Props {
   pendingLevel: FollowUpLevel | null;
   onSendAudio?: (blob: Blob) => Promise<void> | void;
   onSendMedia?: (file: File) => Promise<void> | void;
+  isSending?: boolean;
 }
 
 export function MessageInput({
@@ -32,6 +33,7 @@ export function MessageInput({
   pendingLevel,
   onSendAudio,
   onSendMedia,
+  isSending = false,
 }: Props) {
   const fileInputRef = useRef<HTMLInputElement | null>(null);
   const [scriptsOpen, setScriptsOpen] = useState(false);
@@ -288,24 +290,27 @@ export function MessageInput({
           onKeyDown={(e) => {
             if (e.key === "Enter" && !e.shiftKey) {
               e.preventDefault();
-              onSend();
+              if (!isSending && value.trim()) onSend();
             }
           }}
           placeholder="Digite sua mensagem..."
-          className="flex-1 bg-muted/50 border-0 h-9"
+          disabled={isSending}
+          className="flex-1 bg-muted/50 border-0 h-9 disabled:opacity-60"
         />
       )}
       <Button
         size={pendingDef ? "default" : "icon"}
         type="button"
         onClick={pendingDef ? onSendFollowUp : onSend}
+        disabled={isSending || (!pendingDef && !value.trim())}
+        aria-busy={isSending}
         className={cn(
-          "h-9 text-white gap-1.5",
+          "h-9 text-white gap-1.5 disabled:opacity-60 disabled:cursor-not-allowed",
           pendingDef ? "px-3" : "w-9",
           pendingDef ? "bg-amber-600 hover:bg-amber-700" : "bg-green-600 hover:bg-green-700"
         )}
       >
-        <Send className="h-4 w-4" />
+        {isSending ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}
         {pendingDef && <span className="text-xs font-semibold">Enviar FU{pendingLevel}</span>}
       </Button>
     </footer>
