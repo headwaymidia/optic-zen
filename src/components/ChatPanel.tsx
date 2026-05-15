@@ -462,6 +462,7 @@ export function ChatPanel({
               sentMessages={searchQuery ? [] : sentMessages}
               isTyping={searchQuery ? false : isTyping}
               onReply={(m) => setReplyTo({ from: m.from, text: m.text })}
+              leadId={lead.id}
             />
           </div>
           {replyTo && (
