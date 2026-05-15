@@ -73,6 +73,7 @@ interface Props {
   sentMessages: SentMessage[];
   isTyping: boolean;
   onReply?: (m: ChatMessage) => void;
+  leadId?: string;
 }
 
 function QuoteBlock({ text }: { text: string }) {
@@ -83,10 +84,16 @@ function QuoteBlock({ text }: { text: string }) {
   );
 }
 
-export function MessageThread({ messages, sentMessages, isTyping, onReply }: Props) {
+export function MessageThread({ messages, sentMessages, isTyping, onReply, leadId }: Props) {
   const endRef = useRef<HTMLDivElement | null>(null);
   const [lightbox, setLightbox] = useState<string | null>(null);
 
+  // Instant scroll when switching leads (no animation)
+  useEffect(() => {
+    endRef.current?.scrollIntoView({ behavior: "auto", block: "end" });
+  }, [leadId]);
+
+  // Smooth scroll for new messages / typing
   useEffect(() => {
     endRef.current?.scrollIntoView({ behavior: "smooth", block: "end" });
   }, [messages.length, sentMessages.length, isTyping]);
