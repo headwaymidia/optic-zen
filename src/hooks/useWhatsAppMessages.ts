@@ -73,28 +73,31 @@ export function useWhatsAppMessages(leadId: string | undefined) {
             console.log("[useWhatsAppMessages] realtime payload", payload.eventType, row);
           }
 
-          const key = ["whatsapp_messages", currentStoreId, leadId] as const;
-          queryClient.setQueryData<WhatsAppMessageRow[]>(key, (prev) => {
-            const list = prev ?? [];
+          // IMPORTANTE: usar a MESMA referência de queryKey que o useQuery acima,
+          // para garantir que o setQueryData escreve na mesma entrada de cache que o
+          // componente lê. Nunca substituir o array — sempre fazer append/upsert.
+          queryClient.setQueryData<WhatsAppMessageRow[]>(queryKey, (old) => {
+            const list = old ?? [];
             if (payload.eventType === "DELETE") {
               const oldRow = payload.old as Partial<WhatsAppMessageRow> | undefined;
               if (!oldRow?.id) return list;
               return list.filter((m) => m.id !== oldRow.id);
             }
-            const newRow = payload.new as WhatsAppMessageRow | undefined;
-            if (!newRow?.id) return list;
+            const newMessage = payload.new as WhatsAppMessageRow | undefined;
+            if (!newMessage?.id) return list;
+            // Upsert: se a mensagem já existe (por id ou message_id), atualiza in-place
             const idx = list.findIndex(
               (m) =>
-                m.id === newRow.id ||
-                (newRow.message_id && m.message_id && m.message_id === newRow.message_id)
+                m.id === newMessage.id ||
+                (newMessage.message_id && m.message_id && m.message_id === newMessage.message_id)
             );
             if (idx >= 0) {
               const next = list.slice();
-              next[idx] = { ...list[idx], ...newRow };
+              next[idx] = { ...list[idx], ...newMessage };
               return next;
             }
-            // INSERT: anexa mantendo ordenação por timestamp asc
-            const next = [...list, newRow];
+            // INSERT: append preservando o array existente (NUNCA substituir)
+            const next = [...list, newMessage];
             next.sort(
               (a, b) => new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime()
             );
