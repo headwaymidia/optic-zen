@@ -42,9 +42,10 @@ export function WhatsAppPanel({ storeId, role }: Props) {
   const canEdit = role === "Dono" || role === "Gerente";
   const { connection, loading, refetch } = useWhatsAppConnection(storeId);
   const queryClient = useQueryClient();
+  // Fonte única de verdade: invalida a query compartilhada (sidebar + painel) e refaz fetch.
   const syncConnection = async () => {
     await queryClient.invalidateQueries({ queryKey: ["whatsapp-connection", storeId] });
-    await syncConnection();
+    await refetch();
   };
 
   const [qrCode, setQrCode] = useState<string | null>(null);
@@ -207,6 +208,42 @@ export function WhatsAppPanel({ storeId, role }: Props) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [storeId]);
 
+  // Realtime: qualquer CONNECTION_UPDATE no servidor invalida a query compartilhada,
+  // mantendo sidebar e painel sincronizados a partir da mesma fonte.
+  useEffect(() => {
+    if (!storeId) return;
+    const channel = supabase
+      .channel(`wa-conn-${storeId}`)
+      .on(
+        "postgres_changes",
+        {
+          event: "*",
+          schema: "public",
+          table: "whatsapp_connections",
+          filter: `store_id=eq.${storeId}`,
+        },
+        () => {
+          queryClient.invalidateQueries({ queryKey: ["whatsapp-connection", storeId] });
+        },
+      )
+      .subscribe();
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [storeId, queryClient]);
+
+  // Espelha o status do servidor (atualizado via Realtime) no estado local quando muda externamente,
+  // exceto durante operações em andamento (busy) ou checagem inicial.
+  useEffect(() => {
+    if (busy || isChecking || !connection) return;
+    if (connection.status !== localStatus) {
+      setLocalStatus(connection.status);
+      setLocalPhone(connection.phone_number ?? null);
+      if (connection.status !== "connecting") setQrCode(null);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [connection?.status, connection?.phone_number]);
+
   async function handleConnect() {
     if (!canEdit) return;
     setBusy("connect");
@@ -368,6 +405,16 @@ export function WhatsAppPanel({ storeId, role }: Props) {
             {/* Estado: conectando — exibe QR */}
             {!isConnected && (isConnecting || qrCode) && (
               <div className="space-y-3">
+                <div className="rounded-md border border-orange-300 bg-orange-50 dark:bg-orange-900/20 dark:border-orange-700/50 px-3 py-2 text-xs text-orange-900 dark:text-orange-100 flex gap-2">
+                  <WifiOff className="h-4 w-4 shrink-0 mt-0.5" />
+                  <div>
+                    <p className="font-semibold">Conexão pendente — reconecte via QR Code</p>
+                    <p className="opacity-90 mt-0.5">
+                      A instância do WhatsApp caiu ou ainda não foi vinculada. Escaneie o QR
+                      Code abaixo com o aparelho da loja para reconectar.
+                    </p>
+                  </div>
+                </div>
                 <div className="mx-auto h-64 w-64 rounded-xl border-2 border-dashed border-border bg-white flex items-center justify-center overflow-hidden">
                   {qrCode ? (
                     <img
