@@ -1,260 +1,255 @@
-// Webhook receiver for Evolution API.
-// Handles incoming WhatsApp messages, persists to whatsapp_messages and
-// auto-creates a lead when the sender phone is unknown for the store.
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.0";
-
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers":
-    "authorization, x-client-info, apikey, content-type",
-  "Access-Control-Allow-Methods": "POST, OPTIONS",
+  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
+  "Access-Control-Allow-Methods": "POST, OPTIONS"
 };
-
-const SUPABASE_URL = Deno.env.get("SUPABASE_URL")!;
-const SERVICE_ROLE = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
-
+const SUPABASE_URL = Deno.env.get("SUPABASE_URL");
+const SERVICE_ROLE = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
+const EVOLUTION_URL = Deno.env.get("EVOLUTION_API_URL");
+const EVOLUTION_KEY = Deno.env.get("EVOLUTION_API_KEY");
 const admin = createClient(SUPABASE_URL, SERVICE_ROLE);
-
-function formatPhoneAsName(digits: string): string {
-  const d = digits.replace(/\D/g, "");
-  // Strip Brazil country code 55 if present for the display name
-  const local = d.startsWith("55") ? d.slice(2) : d;
-  if (local.length === 11) {
-    return `Contato (${local.slice(0, 2)}) ${local.slice(2, 7)}-${local.slice(7)}`;
-  }
-  if (local.length === 10) {
-    return `Contato (${local.slice(0, 2)}) ${local.slice(2, 6)}-${local.slice(6)}`;
-  }
-  return `Contato ${local || d}`;
+function digitsOnly(s) {
+  return (s ?? "").replace(/\D/g, "");
 }
-
-function pickMediaType(msg: any): { type: string | null; url: string | null; body: string | null } {
-  const m = msg?.message ?? msg;
-  if (m?.imageMessage) {
-    return { type: "image", url: m.imageMessage?.url ?? null, body: m.imageMessage?.caption ?? null };
-  }
-  if (m?.videoMessage) {
-    return { type: "video", url: m.videoMessage?.url ?? null, body: m.videoMessage?.caption ?? null };
-  }
-  if (m?.audioMessage) {
-    return { type: "audio", url: m.audioMessage?.url ?? null, body: null };
-  }
-  if (m?.documentMessage) {
-    return { type: "document", url: m.documentMessage?.url ?? null, body: m.documentMessage?.fileName ?? null };
-  }
-  return { type: null, url: null, body: null };
+function extractText(message) {
+  if (!message) return "";
+  return message.conversation || message.extendedTextMessage?.text || message.imageMessage?.caption || message.videoMessage?.caption || message.documentMessage?.caption || message.buttonsResponseMessage?.selectedDisplayText || message.listResponseMessage?.title || "";
 }
-
-Deno.serve(async (req) => {
-  if (req.method === "OPTIONS") {
-    return new Response("ok", { headers: corsHeaders });
-  }
-
+function detectMediaType(message) {
+  if (!message) return null;
+  if (message.imageMessage) return "image";
+  if (message.videoMessage) return "video";
+  if (message.audioMessage) return "audio";
+  if (message.documentMessage) return "document";
+  if (message.stickerMessage) return "sticker";
+  return null;
+}
+async function resolvePhoneFromLid(remoteJid, instanceName) {
   try {
-    const payload = await req.json().catch(() => ({}));
-    const event: string = payload?.event ?? payload?.type ?? "";
-    const instance: string = payload?.instance ?? payload?.instanceName ?? "";
-    const data = payload?.data ?? payload;
-
-    // Resolve store_id from the instance name (loja-{store_id})
-    let storeId: string | null = null;
-    if (instance) {
-      const { data: conn } = await admin
-        .from("whatsapp_connections")
-        .select("store_id")
-        .eq("evolution_instance_name", instance)
-        .maybeSingle();
+    const res = await fetch(`${EVOLUTION_URL}/contact/getInfo/${instanceName}?number=${remoteJid}`, {
+      headers: {
+        "apikey": EVOLUTION_KEY
+      }
+    });
+    const data = await res.json();
+    const realJid = data?.jid || data?.id || "";
+    if (realJid.includes("@s.whatsapp.net")) {
+      return digitsOnly(realJid.split("@")[0]);
+    }
+  } catch (e) {
+    console.warn("[whatsapp-webhook] falha ao resolver @lid:", e);
+  }
+  return digitsOnly(remoteJid.split("@")[0]);
+}
+async function downloadAndStoreMedia(messageId, instanceName, mediaType) {
+  try {
+    const res = await fetch(`${EVOLUTION_URL}/chat/getBase64FromMediaMessage/${instanceName}`, {
+      method: "POST",
+      headers: {
+        "apikey": EVOLUTION_KEY,
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({
+        message: {
+          key: {
+            id: messageId
+          }
+        },
+        convertToMp4: false
+      })
+    });
+    const data = await res.json();
+    const base64 = data?.base64 || data?.mediaUrl || "";
+    if (!base64) return null;
+    const base64Data = base64.includes(",") ? base64.split(",")[1] : base64;
+    const mimeType = data?.mimetype || (mediaType === "audio" ? "audio/ogg" : "application/octet-stream");
+    const ext = mimeType.split("/")[1]?.split(";")[0] || "bin";
+    const filePath = `${mediaType}/${messageId}.${ext}`;
+    const byteString = atob(base64Data);
+    const byteArray = new Uint8Array(byteString.length);
+    for(let i = 0; i < byteString.length; i++){
+      byteArray[i] = byteString.charCodeAt(i);
+    }
+    const { error } = await admin.storage.from("whatsapp-media").upload(filePath, byteArray, {
+      contentType: mimeType,
+      upsert: true
+    });
+    if (error) {
+      console.warn("[whatsapp-webhook] erro ao salvar mídia:", error.message);
+      return null;
+    }
+    const { data: urlData } = admin.storage.from("whatsapp-media").getPublicUrl(filePath);
+    return urlData?.publicUrl ?? null;
+  } catch (e) {
+    console.warn("[whatsapp-webhook] falha ao baixar mídia:", e);
+    return null;
+  }
+}
+Deno.serve(async (req)=>{
+  if (req.method === "OPTIONS") {
+    return new Response(null, {
+      headers: corsHeaders
+    });
+  }
+  try {
+    const payload = await req.json().catch(()=>({}));
+    const event = String(payload.event ?? "").toLowerCase();
+    const instance = String(payload.instance ?? payload.instanceName ?? "");
+    let storeId = null;
+    if (instance.startsWith("loja-")) {
+      storeId = instance.slice(5);
+    } else {
+      const { data: conn } = await admin.from("whatsapp_connections").select("store_id").eq("evolution_instance_name", instance).maybeSingle();
       storeId = conn?.store_id ?? null;
     }
-    if (!storeId && instance.startsWith("loja-")) {
-      storeId = instance.slice(5);
-    }
-
     if (!storeId) {
-      return new Response(JSON.stringify({ ok: true, ignored: "no store" }), {
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      return new Response(JSON.stringify({
+        ok: true,
+        ignored: "no_store"
+      }), {
+        headers: {
+          ...corsHeaders,
+          "Content-Type": "application/json"
+        }
       });
     }
-
-    // Normalize a list of message events
-    const messages: any[] = Array.isArray(data?.messages)
-      ? data.messages
-      : Array.isArray(data)
-      ? data
-      : [data];
-
-    // ─── messages.update: atualiza status (delivered / read) ───
-    const isStatusUpdate = /messages?\.?update/i.test(event);
-    if (isStatusUpdate) {
-      const updates: any[] = Array.isArray(data?.updates)
-        ? data.updates
-        : Array.isArray(data)
-        ? data
-        : [data];
-
-      let updated = 0;
-      for (const u of updates) {
-        if (!u) continue;
-        const msgId: string =
-          u?.key?.id ?? u?.keyId ?? u?.messageId ?? u?.id ?? "";
-        const rawStatus: string = String(
-          u?.status ?? u?.update?.status ?? u?.message?.status ?? "",
-        ).toUpperCase();
-
-        let nextStatus: string | null = null;
-        if (rawStatus === "DELIVERY_ACK" || rawStatus === "DELIVERED") {
-          nextStatus = "delivered";
-        } else if (rawStatus === "READ" || rawStatus === "PLAYED") {
-          nextStatus = "read";
-        } else if (rawStatus === "SERVER_ACK" || rawStatus === "SENT") {
-          nextStatus = "sent";
+    if (event === "connection.update") {
+      const state = payload.data?.state ?? payload.state;
+      const mapped = state === "open" ? "connected" : state === "connecting" ? "connecting" : "disconnected";
+      await admin.from("whatsapp_connections").update({
+        status: mapped,
+        connected_at: mapped === "connected" ? new Date().toISOString() : null
+      }).eq("store_id", storeId);
+      return new Response(JSON.stringify({
+        ok: true
+      }), {
+        headers: {
+          ...corsHeaders,
+          "Content-Type": "application/json"
         }
-
-        if (!msgId || !nextStatus) continue;
-
-        const { error: updErr } = await admin
-          .from("whatsapp_messages")
-          .update({ status: nextStatus })
-          .eq("store_id", storeId)
-          .eq("message_id", msgId);
-        if (updErr) {
-          console.error("[webhook] status update error:", updErr);
+      });
+    }
+    if (event === "messages.upsert" || event === "send.message") {
+      const dataArr = Array.isArray(payload.data) ? payload.data : [
+        payload.data
+      ];
+      for (const msg of dataArr){
+        if (!msg) continue;
+        const key = msg.key ?? {};
+        const remoteJid = key.remoteJid ?? "";
+        const fromMe = Boolean(key.fromMe);
+        const messageId = key.id ?? msg.messageId ?? crypto.randomUUID();
+        if (!remoteJid || remoteJid.endsWith("@g.us") || remoteJid === "status@broadcast") continue;
+        let phoneDigits;
+        if (remoteJid.endsWith("@lid")) {
+          phoneDigits = await resolvePhoneFromLid(remoteJid, instance);
         } else {
-          updated++;
+          phoneDigits = digitsOnly(remoteJid.split("@")[0]);
         }
-      }
-
-      return new Response(
-        JSON.stringify({ ok: true, status_updated: updated }),
-        { headers: { ...corsHeaders, "Content-Type": "application/json" } },
-      );
-    }
-
-    const isMessageEvent =
-      !event ||
-      /messages?\.?upsert/i.test(event) ||
-      /message/i.test(event);
-
-    if (!isMessageEvent) {
-      return new Response(JSON.stringify({ ok: true, ignored: event }), {
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-      });
-    }
-
-    for (const m of messages) {
-      if (!m) continue;
-      const remoteJid: string =
-        m?.key?.remoteJid ?? m?.remoteJid ?? m?.from ?? "";
-      if (!remoteJid || remoteJid.endsWith("@g.us")) continue; // ignore groups
-      const fromMe: boolean = !!(m?.key?.fromMe ?? m?.fromMe);
-      const messageId: string =
-        m?.key?.id ?? m?.messageId ?? m?.id ?? crypto.randomUUID();
-
-      const phoneDigits = remoteJid.split("@")[0].replace(/\D/g, "");
-      const last10 = phoneDigits.slice(-10);
-
-      const text =
-        m?.message?.conversation ??
-        m?.message?.extendedTextMessage?.text ??
-        m?.body ??
-        m?.text ??
-        null;
-      const media = pickMediaType(m);
-      const bodyText = text ?? media.body ?? null;
-      const messageTimestamp = new Date().toISOString();
-
-      // 1) Try to find existing lead by phone in this store
-      let leadId: string | null = null;
-      if (last10) {
-        const { data: leadRow } = await admin
-          .from("leads")
-          .select("id")
-          .eq("store_id", storeId)
-          .ilike("phone", `%${last10}%`)
-          .limit(1)
-          .maybeSingle();
-        leadId = leadRow?.id ?? null;
-      }
-
-      // 2) If unknown and the message is inbound, auto-create the lead
-      if (!leadId && !fromMe) {
-        const { data: created, error: leadErr } = await admin
-          .from("leads")
-          .insert({
+        const last10 = phoneDigits.slice(-10);
+        const body = extractText(msg.message);
+        const mediaType = detectMediaType(msg.message);
+        const timestamp = msg.messageTimestamp ? new Date(Number(msg.messageTimestamp) * 1000).toISOString() : new Date().toISOString();
+        let mediaUrl = null;
+        if (mediaType) {
+          mediaUrl = await downloadAndStoreMedia(messageId, instance, mediaType);
+        }
+        let leadId = null;
+        if (last10) {
+          const { data: leadRow } = await admin.rpc("find_lead_by_phone", {
+            p_store_id: storeId,
+            p_last10: last10
+          });
+          leadId = leadRow ?? null;
+        }
+        // Auto-criar lead se não existir e mensagem for recebida
+        if (!leadId && last10 && !fromMe) {
+          const fullPhone = phoneDigits.startsWith("55") ? phoneDigits : `55${phoneDigits}`;
+          const pushName = msg.pushName || null;
+          const { data: newLead } = await admin.from("leads").insert({
             store_id: storeId,
-            name: formatPhoneAsName(phoneDigits),
-            phone: phoneDigits,
+            name: pushName || `+${fullPhone}`,
+            phone: fullPhone,
             status: "Novo Lead",
             lead_source: "WhatsApp",
-            last_inbound_at: messageTimestamp,
-          })
-          .select("id")
-          .single();
-        if (leadErr) {
-          console.error("[webhook] auto-create lead error:", leadErr);
-        } else {
-          leadId = created?.id ?? null;
+            created_at: new Date().toISOString(),
+            updated_at: new Date().toISOString()
+          }).select("id").single();
+          leadId = newLead?.id ?? null;
+          console.log("[whatsapp-webhook] lead auto-criado:", leadId, fullPhone, pushName);
+        }
+        await admin.from("whatsapp_messages").upsert({
+          store_id: storeId,
+          lead_id: leadId,
+          instance_name: instance,
+          remote_jid: remoteJid,
+          message_id: messageId,
+          from_me: fromMe,
+          body: body || null,
+          media_type: mediaType,
+          media_url: mediaUrl,
+          timestamp,
+          status: fromMe ? "sent" : "received"
+        }, {
+          onConflict: "message_id"
+        });
+        if (leadId) {
+          const previewText = (body || (mediaType ? `[${mediaType}]` : "")).slice(0, 100);
+          if (!fromMe) {
+            const { error: rpcErr } = await admin.rpc("increment_lead_unread", {
+              _lead_id: leadId,
+              _preview: previewText,
+              _ts: timestamp
+            });
+            if (rpcErr) {
+              const { data: leadCur } = await admin.from("leads").select("unread_count").eq("id", leadId).maybeSingle();
+              const next = (leadCur?.unread_count ?? 0) + 1;
+              await admin.from("leads").update({
+                unread_count: next,
+                last_message_at: timestamp,
+                last_inbound_at: timestamp,
+                last_message_preview: previewText,
+                updated_at: new Date().toISOString()
+              }).eq("id", leadId);
+            }
+          } else {
+            await admin.from("leads").update({
+              last_message_at: timestamp,
+              last_message_preview: previewText,
+              updated_at: new Date().toISOString()
+            }).eq("id", leadId);
+          }
         }
       }
-
-      // 3) Insert the message
-      const preview =
-        media.type === "image"
-          ? "📷 Imagem"
-          : media.type === "video"
-          ? "🎬 Vídeo"
-          : media.type === "audio"
-          ? "🎵 Áudio"
-          : media.type === "document"
-          ? "📎 Documento"
-          : (bodyText ?? "").slice(0, 100);
-
-      const { error: insErr } = await admin.from("whatsapp_messages").insert({
-        store_id: storeId,
-        lead_id: leadId,
-        instance_name: instance || null,
-        remote_jid: remoteJid,
-        message_id: messageId,
-        from_me: fromMe,
-        body: bodyText,
-        media_type: media.type,
-        media_url: media.url,
-        timestamp: messageTimestamp,
-        status: "received",
+      return new Response(JSON.stringify({
+        ok: true
+      }), {
+        headers: {
+          ...corsHeaders,
+          "Content-Type": "application/json"
+        }
       });
-      if (insErr) console.error("[webhook] insert message error:", insErr);
-
-      // 4) Update lead preview / last_inbound_at
-      if (leadId) {
-        const { error: leadUpdateErr } = await admin
-          .from("leads")
-          .update({
-            updated_at: messageTimestamp,
-            last_message_at: messageTimestamp,
-            last_message_preview: preview,
-            ...(fromMe ? {} : { last_inbound_at: messageTimestamp }),
-          })
-          .eq("id", leadId);
-        if (leadUpdateErr) console.error("[webhook] update lead last_message_at error:", leadUpdateErr);
-
-        if (!fromMe) {
-          const { error: incErr } = await admin.rpc("increment_lead_unread", {
-            _lead_id: leadId,
-          });
-          if (incErr) console.error("[webhook] increment_lead_unread error:", incErr);
-        }
-      }
     }
-
-    return new Response(JSON.stringify({ ok: true }), {
-      headers: { ...corsHeaders, "Content-Type": "application/json" },
+    return new Response(JSON.stringify({
+      ok: true,
+      ignored: event
+    }), {
+      headers: {
+        ...corsHeaders,
+        "Content-Type": "application/json"
+      }
     });
   } catch (err) {
     const msg = err instanceof Error ? err.message : "Erro desconhecido";
-    console.error("[whatsapp-webhook]", msg);
-    return new Response(JSON.stringify({ error: msg }), {
+    return new Response(JSON.stringify({
+      error: msg
+    }), {
       status: 500,
-      headers: { ...corsHeaders, "Content-Type": "application/json" },
+      headers: {
+        ...corsHeaders,
+        "Content-Type": "application/json"
+      }
     });
   }
 });

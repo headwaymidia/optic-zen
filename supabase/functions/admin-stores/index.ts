@@ -1,148 +1,110 @@
-// Admin endpoint: lists all stores and manages subscriptions.
-// Restricted to a single super-admin email.
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.0";
-
-const ADMIN_EMAIL = "headwaymidia@gmail.com";
-
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers":
-    "authorization, x-client-info, apikey, content-type",
-  "Access-Control-Allow-Methods": "POST, OPTIONS",
+  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type"
 };
-
-const SUPABASE_URL = Deno.env.get("SUPABASE_URL")!;
-const SUPABASE_ANON = Deno.env.get("SUPABASE_ANON_KEY")!;
-const SERVICE_ROLE = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
-
-function json(body: unknown, status = 200) {
-  return new Response(JSON.stringify(body), {
-    status,
-    headers: { ...corsHeaders, "Content-Type": "application/json" },
-  });
-}
-
-Deno.serve(async (req) => {
+const SUPABASE_URL = Deno.env.get("SUPABASE_URL");
+const SERVICE_ROLE = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
+const ADMIN_EMAIL = "headwaymidia@gmail.com";
+const admin = createClient(SUPABASE_URL, SERVICE_ROLE);
+Deno.serve(async (req)=>{
   if (req.method === "OPTIONS") {
-    return new Response(null, { headers: corsHeaders });
-  }
-
-  try {
-    const authHeader = req.headers.get("Authorization") ?? "";
-    const userClient = createClient(SUPABASE_URL, SUPABASE_ANON, {
-      global: { headers: { Authorization: authHeader } },
+    return new Response(null, {
+      headers: corsHeaders
     });
-    const admin = createClient(SUPABASE_URL, SERVICE_ROLE);
-
-    const { data: userData, error: userErr } = await userClient.auth.getUser();
-    if (userErr || !userData?.user) return json({ error: "Não autenticado" }, 401);
-
-    const email = (userData.user.email ?? "").toLowerCase();
-    if (email !== ADMIN_EMAIL) return json({ error: "Acesso negado" }, 403);
-
-    const body = await req.json().catch(() => ({}));
-    const action = String(body.action ?? "list");
-
+  }
+  try {
+    const authHeader = req.headers.get("Authorization");
+    if (!authHeader) throw new Error("Não autorizado");
+    const token = authHeader.replace("Bearer ", "");
+    const { data: { user }, error: authError } = await admin.auth.getUser(token);
+    if (authError || !user) throw new Error("Token inválido");
+    if (user.email !== ADMIN_EMAIL) throw new Error("Acesso negado");
+    const body = await req.json().catch(()=>({}));
+    const { action, store_id, days } = body;
     if (action === "list") {
-      const { data: stores, error } = await admin
-        .from("stores")
-        .select("id, name, owner_id, created_at")
-        .order("created_at", { ascending: false });
-      if (error) throw error;
-
-      const ownerIds = [...new Set((stores ?? []).map((s) => s.owner_id))];
-      const storeIds = (stores ?? []).map((s) => s.id);
-
-      const [{ data: profiles }, { data: subs }] = await Promise.all([
-        admin.from("profiles").select("id, email, full_name, whatsapp").in("id", ownerIds.length ? ownerIds : ["00000000-0000-0000-0000-000000000000"]),
-        admin.from("subscriptions").select("*").in("store_id", storeIds.length ? storeIds : ["00000000-0000-0000-0000-000000000000"]),
-      ]);
-
-      const profileMap = new Map((profiles ?? []).map((p: any) => [p.id, p]));
-      const subMap = new Map((subs ?? []).map((s: any) => [s.store_id, s]));
-
-      const rows = (stores ?? []).map((s: any) => {
-        const owner = profileMap.get(s.owner_id);
-        const sub = subMap.get(s.id);
-        return {
-          store_id: s.id,
-          store_name: s.name,
-          owner_email: owner?.email ?? null,
-          owner_name: owner?.full_name ?? null,
-          owner_phone: owner?.whatsapp ?? null,
-          phone: owner?.whatsapp ?? null,
-          created_at: s.created_at,
-          subscription_status: sub?.status ?? null,
-          plan: sub?.plan ?? null,
-          billing_cycle: sub?.billing_cycle ?? null,
-          trial_ends_at: sub?.trial_ends_at ?? null,
-          current_period_end: sub?.current_period_end ?? null,
-        };
+      const { data: stores } = await admin.from("stores").select("id, name, created_at, owner_id").order("created_at", {
+        ascending: false
       });
-
-      return json({ stores: rows });
+      const result = [];
+      for (const store of stores || []){
+        const { data: sub } = await admin.from("subscriptions").select("status, trial_ends_at, plan, billing_cycle").eq("store_id", store.id).maybeSingle();
+        const { data: u } = await admin.auth.admin.getUserById(store.owner_id);
+        const { data: profile } = await admin.from("profiles").select("whatsapp, full_name").eq("id", store.owner_id).maybeSingle();
+        result.push({
+          id: store.id,
+          name: store.name,
+          email: u?.user?.email || "—",
+          phone: profile?.whatsapp || "—",
+          owner_name: profile?.full_name || "—",
+          created_at: store.created_at,
+          status: sub?.status || "—",
+          trial_ends_at: sub?.trial_ends_at || null,
+          plan_type: sub?.plan || "—",
+          billing_cycle: sub?.billing_cycle || "—"
+        });
+      }
+      return new Response(JSON.stringify({
+        data: result
+      }), {
+        headers: {
+          ...corsHeaders,
+          "Content-Type": "application/json"
+        }
+      });
     }
-
-    const storeId = String(body.store_id ?? "");
-    if (!storeId) return json({ error: "store_id obrigatório" }, 400);
-
-    // Ensure subscription row exists
-    const { data: existing } = await admin
-      .from("subscriptions")
-      .select("*")
-      .eq("store_id", storeId)
-      .maybeSingle();
-
     if (action === "activate") {
-      const payload = {
-        store_id: storeId,
+      await admin.from("subscriptions").update({
         status: "active",
-        plan: existing?.plan ?? "pro",
-        billing_cycle: existing?.billing_cycle ?? "monthly",
-        current_period_end: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(),
-      };
-      const { error } = existing
-        ? await admin.from("subscriptions").update(payload).eq("store_id", storeId)
-        : await admin.from("subscriptions").insert(payload);
-      if (error) throw error;
-      return json({ ok: true });
+        trial_ends_at: null
+      }).eq("store_id", store_id);
+      return new Response(JSON.stringify({
+        ok: true
+      }), {
+        headers: {
+          ...corsHeaders,
+          "Content-Type": "application/json"
+        }
+      });
     }
-
     if (action === "block") {
-      const payload = {
-        store_id: storeId,
-        status: "blocked",
-        plan: existing?.plan ?? "pro",
-        billing_cycle: existing?.billing_cycle ?? "monthly",
-      };
-      const { error } = existing
-        ? await admin.from("subscriptions").update({ status: "blocked" }).eq("store_id", storeId)
-        : await admin.from("subscriptions").insert(payload);
-      if (error) throw error;
-      return json({ ok: true });
+      await admin.from("subscriptions").update({
+        status: "blocked"
+      }).eq("store_id", store_id);
+      return new Response(JSON.stringify({
+        ok: true
+      }), {
+        headers: {
+          ...corsHeaders,
+          "Content-Type": "application/json"
+        }
+      });
     }
-
-    if (action === "extend_trial") {
-      const base = existing?.trial_ends_at ? new Date(existing.trial_ends_at) : new Date();
-      const start = base.getTime() < Date.now() ? new Date() : base;
-      const newEnd = new Date(start.getTime() + 30 * 24 * 60 * 60 * 1000).toISOString();
-      const payload = {
-        store_id: storeId,
+    if (action === "extend") {
+      const d = days || 30;
+      await admin.from("subscriptions").update({
         status: "trial",
-        plan: existing?.plan ?? "pro",
-        billing_cycle: existing?.billing_cycle ?? "monthly",
-        trial_ends_at: newEnd,
-      };
-      const { error } = existing
-        ? await admin.from("subscriptions").update({ status: "trial", trial_ends_at: newEnd }).eq("store_id", storeId)
-        : await admin.from("subscriptions").insert(payload);
-      if (error) throw error;
-      return json({ ok: true, trial_ends_at: newEnd });
+        trial_ends_at: new Date(Date.now() + d * 24 * 60 * 60 * 1000).toISOString()
+      }).eq("store_id", store_id);
+      return new Response(JSON.stringify({
+        ok: true
+      }), {
+        headers: {
+          ...corsHeaders,
+          "Content-Type": "application/json"
+        }
+      });
     }
-
-    return json({ error: "Ação inválida" }, 400);
-  } catch (e: any) {
-    console.error("admin-stores error:", e);
-    return json({ error: e?.message ?? "Erro interno" }, 500);
+    throw new Error("Ação inválida");
+  } catch (e) {
+    return new Response(JSON.stringify({
+      error: e.message
+    }), {
+      status: 403,
+      headers: {
+        ...corsHeaders,
+        "Content-Type": "application/json"
+      }
+    });
   }
 });
