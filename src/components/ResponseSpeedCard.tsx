@@ -1,6 +1,8 @@
 import { useMemo } from "react";
+import { useQuery } from "@tanstack/react-query";
 import { Card } from "@/components/ui/card";
-import { Lead } from "@/integrations/supabase/client";
+import { Lead, supabase } from "@/integrations/supabase/client";
+import { useStores } from "@/hooks/useStores";
 import { Zap } from "lucide-react";
 
 interface Props {
@@ -14,17 +16,65 @@ function fmtDuration(min: number) {
   return `${m.toString().padStart(2, "0")}m ${s.toString().padStart(2, "0")}s`;
 }
 
+interface MsgRow {
+  lead_id: string | null;
+  from_me: boolean;
+  timestamp: string;
+}
+
 export function ResponseSpeedCard({ leads }: Props) {
+  const { currentStoreId } = useStores();
+
+  const { data: messages = [] } = useQuery({
+    queryKey: ["wa-msgs-speed", currentStoreId],
+    enabled: !!currentStoreId,
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("whatsapp_messages")
+        .select("lead_id,from_me,timestamp")
+        .eq("store_id", currentStoreId!)
+        .order("timestamp", { ascending: true })
+        .limit(5000);
+      if (error) throw error;
+      return (data ?? []) as MsgRow[];
+    },
+    staleTime: 60_000,
+  });
+
   const { avg, badge, under5, under15, awaiting, avgFollowUps } = useMemo(() => {
-    const responded = leads.filter((l) => l.last_follow_up_at && l.created_at);
-    const diffs = responded
-      .map(
-        (l) =>
-          (new Date(l.last_follow_up_at as string).getTime() -
-            new Date(l.created_at).getTime()) /
-          60000
-      )
-      .filter((v) => v >= 0);
+    // Para cada lead: primeira inbound (from_me=false) e primeira outbound (from_me=true)
+    const firstIn = new Map<string, number>();
+    const firstOut = new Map<string, number>();
+    for (const m of messages) {
+      if (!m.lead_id) continue;
+      const t = new Date(m.timestamp).getTime();
+      if (m.from_me) {
+        if (!firstOut.has(m.lead_id) || t < (firstOut.get(m.lead_id) as number)) {
+          firstOut.set(m.lead_id, t);
+        }
+      } else {
+        if (!firstIn.has(m.lead_id) || t < (firstIn.get(m.lead_id) as number)) {
+          firstIn.set(m.lead_id, t);
+        }
+      }
+    }
+
+    const diffs: number[] = [];
+    let under5 = 0;
+    let under15 = 0;
+    let awaiting = 0;
+    firstIn.forEach((inT, leadId) => {
+      const outT = firstOut.get(leadId);
+      if (outT && outT >= inT) {
+        const diffMin = (outT - inT) / 60000;
+        diffs.push(diffMin);
+        if (diffMin < 5) under5++;
+        else if (diffMin < 15) under15++;
+      } else if (!outT) {
+        awaiting++;
+      }
+    });
+
     const avg = diffs.length ? diffs.reduce((s, v) => s + v, 0) / diffs.length : 0;
 
     let badge: { label: string; tone: "good" | "warn" | "bad" } = {
@@ -37,19 +87,13 @@ export function ResponseSpeedCard({ leads }: Props) {
       else badge = { label: "Crítico", tone: "bad" };
     }
 
-    const under5 = diffs.filter((v) => v <= 5).length;
-    const under15 = diffs.filter((v) => v > 5 && v <= 15).length;
-    const awaiting = leads.filter(
-      (l) => l.status === "Aguardando Resposta" || l.status === "Novo Lead"
-    ).length;
-
     const fuCounts = leads.map((l) => Number(l.follow_up_count) || 0);
     const avgFollowUps = fuCounts.length
       ? fuCounts.reduce((s, v) => s + v, 0) / fuCounts.length
       : 0;
 
     return { avg, badge, under5, under15, awaiting, avgFollowUps };
-  }, [leads]);
+  }, [messages, leads]);
 
   const totalDist = under5 + under15 + awaiting || 1;
 
