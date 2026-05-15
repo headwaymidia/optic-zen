@@ -405,6 +405,16 @@ export function WhatsAppPanel({ storeId, role }: Props) {
             {/* Estado: conectando — exibe QR */}
             {!isConnected && (isConnecting || qrCode) && (
               <div className="space-y-3">
+                <div className="rounded-md border border-orange-300 bg-orange-50 dark:bg-orange-900/20 dark:border-orange-700/50 px-3 py-2 text-xs text-orange-900 dark:text-orange-100 flex gap-2">
+                  <WifiOff className="h-4 w-4 shrink-0 mt-0.5" />
+                  <div>
+                    <p className="font-semibold">Conexão pendente — reconecte via QR Code</p>
+                    <p className="opacity-90 mt-0.5">
+                      A instância do WhatsApp caiu ou ainda não foi vinculada. Escaneie o QR
+                      Code abaixo com o aparelho da loja para reconectar.
+                    </p>
+                  </div>
+                </div>
                 <div className="mx-auto h-64 w-64 rounded-xl border-2 border-dashed border-border bg-white flex items-center justify-center overflow-hidden">
                   {qrCode ? (
                     <img
