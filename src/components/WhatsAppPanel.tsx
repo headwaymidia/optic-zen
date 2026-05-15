@@ -42,9 +42,10 @@ export function WhatsAppPanel({ storeId, role }: Props) {
   const canEdit = role === "Dono" || role === "Gerente";
   const { connection, loading, refetch } = useWhatsAppConnection(storeId);
   const queryClient = useQueryClient();
+  // Fonte única de verdade: invalida a query compartilhada (sidebar + painel) e refaz fetch.
   const syncConnection = async () => {
     await queryClient.invalidateQueries({ queryKey: ["whatsapp-connection", storeId] });
-    await syncConnection();
+    await refetch();
   };
 
   const [qrCode, setQrCode] = useState<string | null>(null);
