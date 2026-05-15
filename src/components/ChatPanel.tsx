@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { toast } from "@/components/ui/use-toast";
 import { humanizeError } from "@/lib/error-handler";
+import { validatePhoneBR } from "@/lib/validators";
 import { Lead, LeadStatus, supabase } from "@/integrations/supabase/client";
 import { useLeads } from "@/hooks/useLeads";
 import { useStores } from "@/hooks/useStores";
