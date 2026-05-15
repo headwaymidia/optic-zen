@@ -20,7 +20,21 @@ interface Props {
   pendingLevel: FollowUpLevel | null;
   onSendAudio?: (blob: Blob) => Promise<void> | void;
   onSendMedia?: (file: File) => Promise<void> | void;
+  isSending?: boolean;
 }
+
+export function MessageInput({
+  value,
+  onChange,
+  onSend,
+  onSendFollowUp,
+  onApplyScript,
+  pendingDef,
+  pendingLevel,
+  onSendAudio,
+  onSendMedia,
+  isSending = false,
+}: Props) {
 
 export function MessageInput({
   value,
