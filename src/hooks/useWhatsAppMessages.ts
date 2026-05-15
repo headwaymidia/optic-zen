@@ -22,17 +22,18 @@ export interface WhatsAppMessageRow {
 export function useWhatsAppMessages(leadId: string | undefined) {
   const queryClient = useQueryClient();
   const { currentStoreId } = useStores();
-  const queryKey = ["whatsapp_messages", currentStoreId, leadId] as const;
+  const queryKey = ["messages", leadId] as const;
 
   const { data: messages = [], isLoading, refetch } = useQuery({
     queryKey,
-    enabled: !!leadId,
+    enabled: !!leadId && !!currentStoreId,
     queryFn: async () => {
       if (import.meta.env.DEV) console.log("[useWhatsAppMessages] querying with lead_id =", leadId);
       const { data, error } = await supabase
         .from("whatsapp_messages")
         .select("*")
         .eq("lead_id", leadId!)
+        .eq("store_id", currentStoreId!)
         .order("timestamp", { ascending: true });
       if (import.meta.env.DEV) console.log("[useWhatsAppMessages] leadId:", leadId, "result:", data, "error:", error);
       if (error) throw error;
@@ -73,31 +74,19 @@ export function useWhatsAppMessages(leadId: string | undefined) {
             console.log("[useWhatsAppMessages] realtime payload", payload.eventType, row);
           }
 
-          // IMPORTANTE: usar a MESMA referência de queryKey que o useQuery acima,
-          // para garantir que o setQueryData escreve na mesma entrada de cache que o
-          // componente lê. Nunca substituir o array — sempre fazer append/upsert.
+          // IMPORTANTE: usar a MESMA query key do useQuery acima como fonte única.
+          // Nunca substituir o array inteiro — apenas remover, ignorar duplicados ou anexar.
           queryClient.setQueryData<WhatsAppMessageRow[]>(queryKey, (old) => {
-            const list = old ?? [];
             if (payload.eventType === "DELETE") {
               const oldRow = payload.old as Partial<WhatsAppMessageRow> | undefined;
-              if (!oldRow?.id) return list;
-              return list.filter((m) => m.id !== oldRow.id);
+              if (!oldRow?.id) return old ?? [];
+              return (old ?? []).filter((m) => m.id !== oldRow.id);
             }
             const newMessage = payload.new as WhatsAppMessageRow | undefined;
-            if (!newMessage?.id) return list;
-            // Upsert: se a mensagem já existe (por id ou message_id), atualiza in-place
-            const idx = list.findIndex(
-              (m) =>
-                m.id === newMessage.id ||
-                (newMessage.message_id && m.message_id && m.message_id === newMessage.message_id)
-            );
-            if (idx >= 0) {
-              const next = list.slice();
-              next[idx] = { ...list[idx], ...newMessage };
-              return next;
-            }
-            // INSERT: append preservando o array existente (NUNCA substituir)
-            const next = [...list, newMessage];
+            if (!newMessage?.id) return old ?? [];
+            const exists = old?.find((m) => m.id === newMessage.id);
+            if (exists) return old ?? [];
+            const next = [...(old ?? []), newMessage];
             next.sort(
               (a, b) => new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime()
             );
