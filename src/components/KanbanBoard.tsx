@@ -348,7 +348,7 @@ function LeadCardContent({ lead, onEdit, dragging, selected, cadenceHighlight, m
                 if (lead.status === "Novo Lead") {
                   updateStatus(lead.id, "Em Atendimento");
                 }
-                window.open(whatsappUrl(lead.phone!), "_blank");
+                navigate(`/whatsapp?leadId=${lead.id}`);
               }}
               aria-label="Abrir WhatsApp"
             >
