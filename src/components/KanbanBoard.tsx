@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { LEAD_STATUSES, Lead, LeadStatus } from "@/integrations/supabase/client";
 import { useStoreMembers } from "@/hooks/useStoreMembers";
 import { useLeads } from "@/hooks/useLeads";
@@ -167,6 +168,7 @@ interface LeadCardProps {
 
 function LeadCardContent({ lead, onEdit, dragging, selected, cadenceHighlight, members = [], nameById }: LeadCardProps) {
   const { updateLead, updateStatus } = useLeads();
+  const navigate = useNavigate();
   const cooling = isCooling(lead);
   const awaitingReply = isAwaitingReply(lead);
   const assignedName = lead.responsible_id ? nameById?.get(lead.responsible_id) : null;
@@ -346,7 +348,7 @@ function LeadCardContent({ lead, onEdit, dragging, selected, cadenceHighlight, m
                 if (lead.status === "Novo Lead") {
                   updateStatus(lead.id, "Em Atendimento");
                 }
-                window.open(whatsappUrl(lead.phone!), "_blank");
+                navigate(`/whatsapp?leadId=${lead.id}`);
               }}
               aria-label="Abrir WhatsApp"
             >
