@@ -523,6 +523,7 @@ export function ChatPanel({
             pendingLevel={pendingLevel}
             onSendAudio={handleSendAudio}
             onSendMedia={handleSendMedia}
+            isSending={isSending}
           />
         </div>
 
