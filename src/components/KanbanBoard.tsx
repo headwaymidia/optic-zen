@@ -168,6 +168,7 @@ interface LeadCardProps {
 
 function LeadCardContent({ lead, onEdit, dragging, selected, cadenceHighlight, members = [], nameById }: LeadCardProps) {
   const { updateLead, updateStatus } = useLeads();
+  const navigate = useNavigate();
   const cooling = isCooling(lead);
   const awaitingReply = isAwaitingReply(lead);
   const assignedName = lead.responsible_id ? nameById?.get(lead.responsible_id) : null;
