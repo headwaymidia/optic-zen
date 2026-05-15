@@ -208,6 +208,42 @@ export function WhatsAppPanel({ storeId, role }: Props) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [storeId]);
 
+  // Realtime: qualquer CONNECTION_UPDATE no servidor invalida a query compartilhada,
+  // mantendo sidebar e painel sincronizados a partir da mesma fonte.
+  useEffect(() => {
+    if (!storeId) return;
+    const channel = supabase
+      .channel(`wa-conn-${storeId}`)
+      .on(
+        "postgres_changes",
+        {
+          event: "*",
+          schema: "public",
+          table: "whatsapp_connections",
+          filter: `store_id=eq.${storeId}`,
+        },
+        () => {
+          queryClient.invalidateQueries({ queryKey: ["whatsapp-connection", storeId] });
+        },
+      )
+      .subscribe();
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [storeId, queryClient]);
+
+  // Espelha o status do servidor (atualizado via Realtime) no estado local quando muda externamente,
+  // exceto durante operações em andamento (busy) ou checagem inicial.
+  useEffect(() => {
+    if (busy || isChecking || !connection) return;
+    if (connection.status !== localStatus) {
+      setLocalStatus(connection.status);
+      setLocalPhone(connection.phone_number ?? null);
+      if (connection.status !== "connecting") setQrCode(null);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [connection?.status, connection?.phone_number]);
+
   async function handleConnect() {
     if (!canEdit) return;
     setBusy("connect");
