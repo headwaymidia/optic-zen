@@ -35,18 +35,6 @@ export function MessageInput({
   onSendMedia,
   isSending = false,
 }: Props) {
-
-export function MessageInput({
-  value,
-  onChange,
-  onSend,
-  onSendFollowUp,
-  onApplyScript,
-  pendingDef,
-  pendingLevel,
-  onSendAudio,
-  onSendMedia,
-}: Props) {
   const fileInputRef = useRef<HTMLInputElement | null>(null);
   const [scriptsOpen, setScriptsOpen] = useState(false);
   const [emojiOpen, setEmojiOpen] = useState(false);
