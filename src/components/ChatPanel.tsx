@@ -88,6 +88,7 @@ export function ChatPanel({
   const reachedMax = (lead.follow_up_count ?? 0) >= MAX_FOLLOW_UPS;
 
   const handleSend = async () => {
+    if (isSending) return;
     const raw = message.trim();
     if (!raw) return;
     if (!currentStoreId) {
@@ -98,12 +99,18 @@ export function ChatPanel({
       toast({ title: "Lead sem telefone", variant: "destructive" });
       return;
     }
+    const phoneErr = validatePhoneBR(lead.phone);
+    if (phoneErr) {
+      toast({ title: "Telefone inválido", description: phoneErr, variant: "destructive" });
+      return;
+    }
     const text = replyTo
       ? `> ${replyTo.text.split("\n").join("\n> ")}\n\n${raw}`
       : raw;
     promoteToInAttendance();
     setMessage("");
     setReplyTo(null);
+    setIsSending(true);
 
     const optimisticId = crypto.randomUUID();
     const now = new Date();
@@ -138,6 +145,8 @@ export function ChatPanel({
         variant: "destructive",
       });
       setMessage(raw);
+    } finally {
+      setIsSending(false);
     }
   };
 
