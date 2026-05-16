@@ -11,10 +11,14 @@ export function validateName(value: string): string | null {
 }
 
 export function validatePhoneBR(value: string, required = true): string | null {
-  const digits = value.replace(/\D/g, "");
+  let digits = value.replace(/\D/g, "");
   if (!digits) return required ? "Telefone obrigatório." : null;
+  // Aceita DDI internacional do Brasil (+55) → remove se vier com 12 ou 13 dígitos começando com 55
+  if ((digits.length === 12 || digits.length === 13) && digits.startsWith("55")) {
+    digits = digits.slice(2);
+  }
   if (digits.length !== 10 && digits.length !== 11) {
-    return "Telefone deve ter 10 ou 11 dígitos.";
+    return "Telefone deve ter 10 ou 11 dígitos (ou 12-13 com DDI +55).";
   }
   return null;
 }
