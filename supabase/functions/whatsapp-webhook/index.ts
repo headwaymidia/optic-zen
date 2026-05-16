@@ -121,6 +121,20 @@ Deno.serve(async (req)=>{
         status: mapped,
         connected_at: mapped === "connected" ? new Date().toISOString() : null
       }).eq("store_id", storeId);
+
+      // Auto-reconexão: se a instância caiu, dispara /instance/connect/{instance}
+      if (mapped === "disconnected" && instance && EVOLUTION_URL && EVOLUTION_KEY) {
+        try {
+          const reconnectRes = await fetch(`${EVOLUTION_URL}/instance/connect/${instance}`, {
+            method: "GET",
+            headers: { "apikey": EVOLUTION_KEY }
+          });
+          console.log("[whatsapp-webhook] auto-reconnect", instance, reconnectRes.status);
+        } catch (e) {
+          console.warn("[whatsapp-webhook] falha auto-reconnect:", e);
+        }
+      }
+
       return new Response(JSON.stringify({
         ok: true
       }), {
