@@ -2,7 +2,7 @@ import { createClient } from "@supabase/supabase-js";
 
 // Projeto Supabase oficial do usuário (crm-optico)
 const SUPABASE_URL = "https://fxcgvlukzjmwzpzuvzcp.supabase.co";
-const SUPABASE_PUBLISHABLE_KEY = "sb_publishable_BgnFYgwfBCXxZcqO2rQJWA_qDAjT4_R";
+const SUPABASE_PUBLISHABLE_KEY = "sb_publishable_du0PZdxRhmp_JqHEaLipng_sk0i3HS2";
 
 export const supabase = createClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY, {
   auth: {
