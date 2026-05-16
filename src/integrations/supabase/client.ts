@@ -13,4 +13,4 @@ export const supabase = createClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY, {
 });
 
 // Re-exporta tipos/constantes de domínio para manter compatibilidade dos imports.
-export * from "@lib/leads-constants";
+export * from "@/lib/leads-constants";
