@@ -60,10 +60,13 @@ export function useWhatsAppMessages(leadId: string | undefined) {
           event: "*",
           schema: "public",
           table: "whatsapp_messages",
-          filter: `lead_id=eq.${leadId}`,
+          // Sem filtro server-side: filtros do Realtime falham silenciosamente em
+          // alguns cenários (reconnect, múltiplos canais na mesma tabela).
+          // Filtramos no handler para garantir entrega.
         },
         (payload) => {
           const row = (payload.new ?? payload.old) as Partial<WhatsAppMessageRow> | undefined;
+          if (!row?.lead_id || row.lead_id !== leadId) return;
           if (currentStoreId && row?.store_id && row.store_id !== currentStoreId) {
             if (import.meta.env.DEV) {
               console.log("[useWhatsAppMessages] payload de outra loja ignorado", row.store_id);
