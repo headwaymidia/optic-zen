@@ -251,6 +251,7 @@ export function ChatPanel({
         if (data?.error) throw new Error(data.error);
       },
       "Falha ao enviar mensagem",
+      async () => enqueueMessage({ body: text }),
     );
 
     if (ok) {
