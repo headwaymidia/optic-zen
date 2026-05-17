@@ -129,10 +129,39 @@ export function ChatPanel({
     setSentMessages((prev) => prev.map((m) => (m.id === id ? { ...m, ...patch } : m)));
   };
 
+  const buildRemoteJid = (phone: string) => {
+    let digits = phone.replace(/\D/g, "");
+    if (!digits.startsWith("55")) digits = `55${digits}`;
+    return `${digits}@s.whatsapp.net`;
+  };
+
+  const enqueueMessage = async (payload: {
+    body: string | null;
+    media_type?: string | null;
+    media_url?: string | null;
+  }) => {
+    if (!currentStoreId || !lead.phone) return;
+    const instance =
+      connection?.evolution_instance_name ?? `loja-${currentStoreId}`;
+    await supabase.from("whatsapp_messages").insert({
+      store_id: currentStoreId,
+      lead_id: lead.id,
+      instance_name: instance,
+      remote_jid: buildRemoteJid(lead.phone),
+      from_me: true,
+      body: payload.body,
+      media_type: payload.media_type ?? null,
+      media_url: payload.media_url ?? null,
+      timestamp: new Date().toISOString(),
+      status: "queued",
+    });
+  };
+
   const sendWithRetry = async (
     optimisticId: string,
     invoke: () => Promise<void>,
     errorTitle: string,
+    onQueue?: () => Promise<void>,
   ): Promise<boolean> => {
     for (let attempt = 0; attempt < 3; attempt++) {
       try {
@@ -141,6 +170,19 @@ export function ChatPanel({
       } catch (err: any) {
         const isLast = attempt === 2;
         if (isLast) {
+          if (onQueue) {
+            try {
+              await onQueue();
+              updateOptimistic(optimisticId, { status: "queued" });
+              // Remove o optimistic — a row real (queued) virá pelo realtime
+              setTimeout(() => {
+                setSentMessages((prev) => prev.filter((m) => m.id !== optimisticId));
+              }, 800);
+              return false;
+            } catch (qErr) {
+              console.error("[sendWithRetry] falha ao enfileirar", qErr);
+            }
+          }
           updateOptimistic(optimisticId, { status: "failed" });
           toast({
             title: errorTitle,
@@ -209,6 +251,7 @@ export function ChatPanel({
         if (data?.error) throw new Error(data.error);
       },
       "Falha ao enviar mensagem",
+      async () => enqueueMessage({ body: text }),
     );
 
     if (ok) {
@@ -345,6 +388,14 @@ export function ChatPanel({
         if (data?.error) throw new Error(data.error);
       },
       isImage ? "Falha ao enviar imagem" : "Falha ao enviar vídeo",
+      async () => {
+        if (!publicUrl) return; // sem URL não dá pra enfileirar
+        await enqueueMessage({
+          body: null,
+          media_type: isImage ? "image" : "video",
+          media_url: publicUrl,
+        });
+      },
     );
     if (ok) {
       await refetchMessages();
