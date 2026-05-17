@@ -89,6 +89,42 @@ export function ChatPanel({
 
   const RETRY_DELAYS_MS = [30_000, 60_000];
 
+  // Verifica silenciosamente se o WhatsApp (Evolution) está conectado antes de enviar.
+  // Se não estiver, dispara connect e aguarda até 5s. Nunca lança erro para a UI.
+  const ensureWhatsAppConnected = async (): Promise<void> => {
+    if (!currentStoreId) return;
+    if (connection?.provider && connection.provider !== "evolution") return;
+    try {
+      const { data: statusData } = await supabase.functions.invoke("whatsapp-evolution", {
+        body: { action: "status", store_id: currentStoreId },
+      });
+      if (statusData?.status === "connected") return;
+
+      // Dispara reconexão sem bloquear
+      supabase.functions
+        .invoke("whatsapp-evolution", {
+          body: { action: "connect", store_id: currentStoreId },
+        })
+        .catch(() => {});
+
+      // Aguarda até 5s, fazendo polling do status a cada 1s
+      const deadline = Date.now() + 5000;
+      while (Date.now() < deadline) {
+        await new Promise((r) => setTimeout(r, 1000));
+        try {
+          const { data: poll } = await supabase.functions.invoke("whatsapp-evolution", {
+            body: { action: "status", store_id: currentStoreId },
+          });
+          if (poll?.status === "connected") return;
+        } catch {
+          // ignora — segue tentando
+        }
+      }
+    } catch {
+      // silencioso — segue tentando enviar mesmo assim
+    }
+  };
+
   const updateOptimistic = (id: string, patch: Partial<SentMessage>) => {
     setSentMessages((prev) => prev.map((m) => (m.id === id ? { ...m, ...patch } : m)));
   };
