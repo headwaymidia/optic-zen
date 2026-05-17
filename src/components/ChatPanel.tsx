@@ -388,6 +388,14 @@ export function ChatPanel({
         if (data?.error) throw new Error(data.error);
       },
       isImage ? "Falha ao enviar imagem" : "Falha ao enviar vídeo",
+      async () => {
+        if (!publicUrl) return; // sem URL não dá pra enfileirar
+        await enqueueMessage({
+          body: null,
+          media_type: isImage ? "image" : "video",
+          media_url: publicUrl,
+        });
+      },
     );
     if (ok) {
       await refetchMessages();
