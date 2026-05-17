@@ -258,6 +258,7 @@ export function ChatPanel({
     const ok = await sendWithRetry(
       optimisticId,
       async () => {
+        await ensureWhatsAppConnected();
         const { data, error } = await supabase.functions.invoke(waFunction, {
           body: {
             action: "sendMessage",
