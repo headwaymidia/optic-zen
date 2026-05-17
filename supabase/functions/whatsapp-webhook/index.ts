@@ -144,7 +144,52 @@ Deno.serve(async (req)=>{
         }
       });
     }
-    if (event === "messages.upsert" || event === "send.message") {
+    if (event === "messages.update" || event === "messages.status" || event === "message.ack") {
+      // Evolution envia atualizações de ACK aqui (DELIVERY_ACK, READ, etc.)
+      const dataArr = Array.isArray(payload.data) ? payload.data : [payload.data];
+      for (const upd of dataArr) {
+        if (!upd) continue;
+        const key = upd.key ?? upd;
+        const messageId = key?.id ?? upd.messageId ?? upd.id;
+        if (!messageId) continue;
+
+        // Evolution pode mandar status como string ou número (Baileys)
+        const rawStatus = upd.status ?? upd.update?.status ?? upd.ack;
+        let mapped: string | null = null;
+        if (typeof rawStatus === "number") {
+          // 0 PENDING, 1 SERVER_ACK, 2 DELIVERY_ACK, 3 READ, 4 PLAYED
+          if (rawStatus === 1) mapped = "sent";
+          else if (rawStatus === 2) mapped = "delivered";
+          else if (rawStatus === 3 || rawStatus === 4) mapped = "read";
+          else if (rawStatus === 0) mapped = "sending";
+        } else if (typeof rawStatus === "string") {
+          const s = rawStatus.toUpperCase();
+          if (s === "SERVER_ACK" || s === "SENT") mapped = "sent";
+          else if (s === "DELIVERY_ACK" || s === "DELIVERED") mapped = "delivered";
+          else if (s === "READ" || s === "PLAYED") mapped = "read";
+          else if (s === "PENDING") mapped = "sending";
+          else if (s === "ERROR" || s === "FAILED") mapped = "failed";
+        }
+
+        if (!mapped) continue;
+
+        const { error: updErr } = await admin
+          .from("whatsapp_messages")
+          .update({ status: mapped })
+          .eq("store_id", storeId)
+          .eq("message_id", messageId);
+        if (updErr) {
+          console.warn("[whatsapp-webhook] update status erro:", updErr.message, messageId, mapped);
+        } else {
+          console.log("[whatsapp-webhook] status atualizado", messageId, "->", mapped);
+        }
+      }
+      return new Response(JSON.stringify({ ok: true }), {
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
+
       const dataArr = Array.isArray(payload.data) ? payload.data : [
         payload.data
       ];
