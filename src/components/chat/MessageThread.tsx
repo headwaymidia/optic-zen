@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { AlertCircle, Check, CheckCheck, Clock, Reply, X } from "lucide-react";
+import { AlertCircle, Check, CheckCheck, Clock, History, Reply, X } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { AudioPlayer } from "@/components/chat/AudioPlayer";
 
