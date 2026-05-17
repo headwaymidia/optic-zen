@@ -188,7 +188,7 @@ Deno.serve(async (req)=>{
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
-
+    if (event === "messages.upsert" || event === "send.message") {
 
       const dataArr = Array.isArray(payload.data) ? payload.data : [
         payload.data
