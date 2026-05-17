@@ -87,6 +87,39 @@ export function ChatPanel({
   const pendingDef = pendingLevel ? getFollowUpDef(pendingLevel) : null;
   const reachedMax = (lead.follow_up_count ?? 0) >= MAX_FOLLOW_UPS;
 
+  const RETRY_DELAYS_MS = [30_000, 60_000];
+
+  const updateOptimistic = (id: string, patch: Partial<SentMessage>) => {
+    setSentMessages((prev) => prev.map((m) => (m.id === id ? { ...m, ...patch } : m)));
+  };
+
+  const sendWithRetry = async (
+    optimisticId: string,
+    invoke: () => Promise<void>,
+    errorTitle: string,
+  ): Promise<boolean> => {
+    for (let attempt = 0; attempt < 3; attempt++) {
+      try {
+        await invoke();
+        return true;
+      } catch (err: any) {
+        const isLast = attempt === 2;
+        if (isLast) {
+          updateOptimistic(optimisticId, { status: "failed" });
+          toast({
+            title: errorTitle,
+            description: `${humanizeError(err)} (após 3 tentativas)`,
+            variant: "destructive",
+          });
+          return false;
+        }
+        updateOptimistic(optimisticId, { status: "sending" });
+        await new Promise((r) => setTimeout(r, RETRY_DELAYS_MS[attempt]));
+      }
+    }
+    return false;
+  };
+
   const handleSend = async () => {
     if (isSending) return;
     const raw = message.trim();
@@ -119,35 +152,33 @@ export function ChatPanel({
       from: "us",
       text,
       time: now.toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" }),
+      status: "sending",
     };
     setSentMessages((prev) => [...prev, optimistic]);
 
-    try {
-      const { data, error } = await supabase.functions.invoke(waFunction, {
-        body: {
-          action: "sendMessage",
-          store_id: currentStoreId,
-          lead_id: lead.id,
-          phone: lead.phone,
-          message: text,
-        },
-      });
-      if (error) throw error;
-      if (data?.error) throw new Error(data.error);
+    const ok = await sendWithRetry(
+      optimisticId,
+      async () => {
+        const { data, error } = await supabase.functions.invoke(waFunction, {
+          body: {
+            action: "sendMessage",
+            store_id: currentStoreId,
+            lead_id: lead.id,
+            phone: lead.phone,
+            message: text,
+          },
+        });
+        if (error) throw error;
+        if (data?.error) throw new Error(data.error);
+      },
+      "Falha ao enviar mensagem",
+    );
 
+    if (ok) {
       await refetchMessages();
       setSentMessages((prev) => prev.filter((m) => m.id !== optimisticId));
-    } catch (err: any) {
-      setSentMessages((prev) => prev.filter((m) => m.id !== optimisticId));
-      toast({
-        title: "Falha ao enviar mensagem",
-        description: humanizeError(err),
-        variant: "destructive",
-      });
-      setMessage(raw);
-    } finally {
-      setIsSending(false);
     }
+    setIsSending(false);
   };
 
   const handleSendAudio = async (blob: Blob) => {
@@ -183,33 +214,30 @@ export function ChatPanel({
         time: now.toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" }),
         media_type: "audio",
         media_url: audioUrl,
+        status: "sending",
       },
     ]);
 
-    try {
-      const { data, error } = await supabase.functions.invoke(waFunction, {
-        body: {
-          action: "sendMessage",
-          store_id: currentStoreId,
-          lead_id: lead.id,
-          phone: lead.phone,
-          audioMessage: {
-            base64,
-            mimetype: "audio/ogg; codecs=opus",
+    const ok = await sendWithRetry(
+      optimisticId,
+      async () => {
+        const { data, error } = await supabase.functions.invoke(waFunction, {
+          body: {
+            action: "sendMessage",
+            store_id: currentStoreId,
+            lead_id: lead.id,
+            phone: lead.phone,
+            audioMessage: { base64, mimetype: "audio/ogg; codecs=opus" },
           },
-        },
-      });
-      if (error) throw error;
-      if (data?.error) throw new Error(data.error);
+        });
+        if (error) throw error;
+        if (data?.error) throw new Error(data.error);
+      },
+      "Falha ao enviar áudio",
+    );
+    if (ok) {
       await refetchMessages();
       setSentMessages((prev) => prev.filter((m) => m.id !== optimisticId));
-    } catch (err: any) {
-      setSentMessages((prev) => prev.filter((m) => m.id !== optimisticId));
-      toast({
-        title: "Falha ao enviar áudio",
-        description: humanizeError(err),
-        variant: "destructive",
-      });
     }
   };
 
@@ -242,44 +270,46 @@ export function ChatPanel({
         time: now.toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" }),
         media_type: isImage ? "image" : "video",
         media_url: localUrl,
+        status: "sending",
       },
     ]);
 
-    try {
-      const safeName = file.name.replace(/[^a-zA-Z0-9._-]/g, "_");
-      const path = `${currentStoreId}/${Date.now()}-${safeName}`;
-      const { error: upErr } = await supabase.storage
-        .from("whatsapp-media")
-        .upload(path, file, { contentType: file.type, upsert: false });
-      if (upErr) throw upErr;
-      const { data: signed, error: signErr } = await supabase.storage
-        .from("whatsapp-media")
-        .createSignedUrl(path, 60 * 60 * 24 * 365 * 5); // 5 anos
-      if (signErr || !signed?.signedUrl) throw signErr ?? new Error("Falha ao gerar URL");
-      const publicUrl = signed.signedUrl;
-
-      const { data, error } = await supabase.functions.invoke(waFunction, {
-        body: {
-          action: "sendMessage",
-          store_id: currentStoreId,
-          lead_id: lead.id,
-          phone: lead.phone,
-          mediaUrl: publicUrl,
-          mediaType: isImage ? "image" : "video",
-          caption: "",
-        },
-      });
-      if (error) throw error;
-      if (data?.error) throw new Error(data.error);
+    let publicUrl: string | null = null;
+    const ok = await sendWithRetry(
+      optimisticId,
+      async () => {
+        if (!publicUrl) {
+          const safeName = file.name.replace(/[^a-zA-Z0-9._-]/g, "_");
+          const path = `${currentStoreId}/${Date.now()}-${safeName}`;
+          const { error: upErr } = await supabase.storage
+            .from("whatsapp-media")
+            .upload(path, file, { contentType: file.type, upsert: false });
+          if (upErr) throw upErr;
+          const { data: signed, error: signErr } = await supabase.storage
+            .from("whatsapp-media")
+            .createSignedUrl(path, 60 * 60 * 24 * 365 * 5);
+          if (signErr || !signed?.signedUrl) throw signErr ?? new Error("Falha ao gerar URL");
+          publicUrl = signed.signedUrl;
+        }
+        const { data, error } = await supabase.functions.invoke(waFunction, {
+          body: {
+            action: "sendMessage",
+            store_id: currentStoreId,
+            lead_id: lead.id,
+            phone: lead.phone,
+            mediaUrl: publicUrl,
+            mediaType: isImage ? "image" : "video",
+            caption: "",
+          },
+        });
+        if (error) throw error;
+        if (data?.error) throw new Error(data.error);
+      },
+      isImage ? "Falha ao enviar imagem" : "Falha ao enviar vídeo",
+    );
+    if (ok) {
       await refetchMessages();
       setSentMessages((prev) => prev.filter((m) => m.id !== optimisticId));
-    } catch (err: any) {
-      setSentMessages((prev) => prev.filter((m) => m.id !== optimisticId));
-      toast({
-        title: isImage ? "Falha ao enviar imagem" : "Falha ao enviar vídeo",
-        description: humanizeError(err),
-        variant: "destructive",
-      });
     }
   };
 

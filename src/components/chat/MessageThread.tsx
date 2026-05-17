@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { Check, CheckCheck, Reply, X } from "lucide-react";
+import { AlertCircle, Check, CheckCheck, Clock, Reply, X } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { AudioPlayer } from "@/components/chat/AudioPlayer";
 
@@ -63,6 +63,8 @@ function MessageContent({ media_type, media_url, text, onImageClick }: { media_t
 }
 
 function StatusTicks({ status }: { status?: string | null }) {
+  if (status === "sending") return <Clock className="h-3 w-3 text-muted-foreground animate-pulse" />;
+  if (status === "failed") return <AlertCircle className="h-3 w-3 text-red-500" />;
   if (status === "read") return <CheckCheck className="h-3 w-3 text-sky-500" />;
   if (status === "delivered") return <CheckCheck className="h-3 w-3 text-muted-foreground" />;
   return <Check className="h-3 w-3 text-muted-foreground" />;
