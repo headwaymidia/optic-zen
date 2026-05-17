@@ -87,6 +87,39 @@ export function ChatPanel({
   const pendingDef = pendingLevel ? getFollowUpDef(pendingLevel) : null;
   const reachedMax = (lead.follow_up_count ?? 0) >= MAX_FOLLOW_UPS;
 
+  const RETRY_DELAYS_MS = [30_000, 60_000];
+
+  const updateOptimistic = (id: string, patch: Partial<SentMessage>) => {
+    setSentMessages((prev) => prev.map((m) => (m.id === id ? { ...m, ...patch } : m)));
+  };
+
+  const sendWithRetry = async (
+    optimisticId: string,
+    invoke: () => Promise<void>,
+    errorTitle: string,
+  ): Promise<boolean> => {
+    for (let attempt = 0; attempt < 3; attempt++) {
+      try {
+        await invoke();
+        return true;
+      } catch (err: any) {
+        const isLast = attempt === 2;
+        if (isLast) {
+          updateOptimistic(optimisticId, { status: "failed" });
+          toast({
+            title: errorTitle,
+            description: `${humanizeError(err)} (após 3 tentativas)`,
+            variant: "destructive",
+          });
+          return false;
+        }
+        updateOptimistic(optimisticId, { status: "sending" });
+        await new Promise((r) => setTimeout(r, RETRY_DELAYS_MS[attempt]));
+      }
+    }
+    return false;
+  };
+
   const handleSend = async () => {
     if (isSending) return;
     const raw = message.trim();
@@ -119,35 +152,33 @@ export function ChatPanel({
       from: "us",
       text,
       time: now.toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" }),
+      status: "sending",
     };
     setSentMessages((prev) => [...prev, optimistic]);
 
-    try {
-      const { data, error } = await supabase.functions.invoke(waFunction, {
-        body: {
-          action: "sendMessage",
-          store_id: currentStoreId,
-          lead_id: lead.id,
-          phone: lead.phone,
-          message: text,
-        },
-      });
-      if (error) throw error;
-      if (data?.error) throw new Error(data.error);
+    const ok = await sendWithRetry(
+      optimisticId,
+      async () => {
+        const { data, error } = await supabase.functions.invoke(waFunction, {
+          body: {
+            action: "sendMessage",
+            store_id: currentStoreId,
+            lead_id: lead.id,
+            phone: lead.phone,
+            message: text,
+          },
+        });
+        if (error) throw error;
+        if (data?.error) throw new Error(data.error);
+      },
+      "Falha ao enviar mensagem",
+    );
 
+    if (ok) {
       await refetchMessages();
       setSentMessages((prev) => prev.filter((m) => m.id !== optimisticId));
-    } catch (err: any) {
-      setSentMessages((prev) => prev.filter((m) => m.id !== optimisticId));
-      toast({
-        title: "Falha ao enviar mensagem",
-        description: humanizeError(err),
-        variant: "destructive",
-      });
-      setMessage(raw);
-    } finally {
-      setIsSending(false);
     }
+    setIsSending(false);
   };
 
   const handleSendAudio = async (blob: Blob) => {
