@@ -316,6 +316,7 @@ export function ChatPanel({
     const ok = await sendWithRetry(
       optimisticId,
       async () => {
+        await ensureWhatsAppConnected();
         if (!publicUrl) {
           const safeName = file.name.replace(/[^a-zA-Z0-9._-]/g, "_");
           const path = `${currentStoreId}/${Date.now()}-${safeName}`;
