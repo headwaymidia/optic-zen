@@ -214,33 +214,30 @@ export function ChatPanel({
         time: now.toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" }),
         media_type: "audio",
         media_url: audioUrl,
+        status: "sending",
       },
     ]);
 
-    try {
-      const { data, error } = await supabase.functions.invoke(waFunction, {
-        body: {
-          action: "sendMessage",
-          store_id: currentStoreId,
-          lead_id: lead.id,
-          phone: lead.phone,
-          audioMessage: {
-            base64,
-            mimetype: "audio/ogg; codecs=opus",
+    const ok = await sendWithRetry(
+      optimisticId,
+      async () => {
+        const { data, error } = await supabase.functions.invoke(waFunction, {
+          body: {
+            action: "sendMessage",
+            store_id: currentStoreId,
+            lead_id: lead.id,
+            phone: lead.phone,
+            audioMessage: { base64, mimetype: "audio/ogg; codecs=opus" },
           },
-        },
-      });
-      if (error) throw error;
-      if (data?.error) throw new Error(data.error);
+        });
+        if (error) throw error;
+        if (data?.error) throw new Error(data.error);
+      },
+      "Falha ao enviar áudio",
+    );
+    if (ok) {
       await refetchMessages();
       setSentMessages((prev) => prev.filter((m) => m.id !== optimisticId));
-    } catch (err: any) {
-      setSentMessages((prev) => prev.filter((m) => m.id !== optimisticId));
-      toast({
-        title: "Falha ao enviar áudio",
-        description: humanizeError(err),
-        variant: "destructive",
-      });
     }
   };
 
