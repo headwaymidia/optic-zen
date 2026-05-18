@@ -293,15 +293,14 @@ Deno.serve(async (req) => {
       const audioMessage = body.audioMessage as
         | { base64?: string; mimetype?: string }
         | undefined;
-      const inMediaBase64 = body.mediaBase64 ? String(body.mediaBase64) : "";
-      const storedMediaUrl = body.storedMediaUrl ? String(body.storedMediaUrl) : "";
+      const inMediaUrl = body.mediaUrl ? String(body.mediaUrl) : "";
       const inMediaType = body.mediaType ? String(body.mediaType) : "";
       const caption = body.caption ? String(body.caption) : "";
       const isAudio = !!audioMessage?.base64;
-      const isMedia = !!inMediaBase64 && (inMediaType === "image" || inMediaType === "video");
+      const isMedia = !!inMediaUrl && (inMediaType === "image" || inMediaType === "video");
 
       if (!phone) throw new Error("phone é obrigatório");
-      if (!isAudio && !isMedia && !inMediaBase64 && !storedMediaUrl && !message.trim()) {
+      if (!isAudio && !isMedia && !message.trim()) {
         throw new Error("message é obrigatório");
       }
 
@@ -321,14 +320,13 @@ Deno.serve(async (req) => {
           : "video/mp4";
         const fileName = body.fileName ? String(body.fileName) : undefined;
 
-        // Envia o base64 puro diretamente para a Evolution (evita problemas de 403 ao
-        // baixar de URLs do Storage).
+        // Envia a URL pública diretamente para a Evolution.
         send = await evo(`/message/sendMedia/${instance}`, {
           method: "POST",
           body: JSON.stringify({
             number: phoneDigits,
             mediatype: inMediaType,
-            media: inMediaBase64,
+            media: inMediaUrl,
             mimetype,
             ...(fileName ? { fileName } : {}),
             caption: caption || "",
@@ -336,9 +334,9 @@ Deno.serve(async (req) => {
         });
         if (send.status < 400) {
           mediaType = inMediaType;
-          // Persiste a URL do Storage (já enviada pelo frontend) para exibição no histórico.
-          mediaUrl = storedMediaUrl || null;
+          mediaUrl = inMediaUrl;
         }
+
       } else if (isAudio) {
         send = await evo(`/message/sendWhatsAppAudio/${instance}`, {
           method: "POST",
