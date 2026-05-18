@@ -291,7 +291,7 @@ function FuTabTrigger({
   return (
     <TabsTrigger
       value={value}
-      className="relative gap-1.5 data-[state=active]:bg-white dark:data-[state=active]:bg-slate-800 dark:text-slate-300 dark:data-[state=active]:text-white data-[state=active]:shadow-sm"
+      className="relative gap-1.5 min-h-[44px] px-3 whitespace-nowrap data-[state=active]:bg-white dark:data-[state=active]:bg-slate-800 dark:text-slate-300 dark:data-[state=active]:text-white data-[state=active]:shadow-sm"
     >
       <span className="font-semibold">{label}</span>
       <span
