@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { usePageTitle } from "@/hooks/usePageTitle";
 import { Lead, LEAD_SOURCES, INTEREST_TAGS } from "@/integrations/supabase/client";
 import { useStoreMembers } from "@/hooks/useStoreMembers";
