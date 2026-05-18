@@ -225,9 +225,9 @@ export default function Funil() {
           </div>
 
           {/* Central de Cadência — filtros por etapa de Follow-up */}
-          <div className="rounded-xl border border-slate-100 dark:border-slate-700 bg-white dark:bg-slate-800 px-3 py-2 shadow-[0_1px_2px_rgba(0,0,0,0.02)] dark:shadow-none">
+          <div className="rounded-xl border border-slate-100 dark:border-slate-700 bg-white dark:bg-slate-800 px-2 py-2 shadow-[0_1px_2px_rgba(0,0,0,0.02)] dark:shadow-none overflow-x-auto thin-scrollbar">
             <Tabs value={String(cadence)} onValueChange={(v) => setCadence(v === "all" ? "all" : (Number(v) as CadenceFilter))}>
-              <TabsList className="bg-slate-50 dark:bg-slate-900/50 h-auto flex-wrap gap-1 p-1">
+              <TabsList className="bg-slate-50 dark:bg-slate-900/50 h-auto min-h-[44px] inline-flex w-max gap-1 p-1">
                 <FuTabTrigger value="all" label="Geral" count={fuTotalPending} isAll />
                 {([1, 2, 3, 4, 5] as const).map((n) => (
                   <FuTabTrigger
