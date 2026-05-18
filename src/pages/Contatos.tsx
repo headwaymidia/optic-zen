@@ -11,9 +11,10 @@ import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { LeadDialog } from "@/components/LeadDialog";
 import { PhoneLink } from "@/components/PhoneLink";
-import { Plus, MessageCircle, ChevronLeft, ChevronRight, Users } from "lucide-react";
+import { Plus, MessageCircle, ChevronLeft, ChevronRight, Users, Upload } from "lucide-react";
 import { DataSkeleton } from "@/components/ui/DataSkeleton";
 import { EmptyState } from "@/components/ui/EmptyState";
+import { ImportLeadsDialog } from "@/components/ImportLeadsDialog";
 
 const PAGE_SIZE = 10;
 const ALL = "__all__";
