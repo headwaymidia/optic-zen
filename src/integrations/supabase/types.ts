@@ -201,6 +201,39 @@ export type Database = {
           },
         ]
       }
+      logs: {
+        Row: {
+          created_at: string
+          event: string | null
+          function_name: string | null
+          id: string
+          level: string
+          message: string | null
+          metadata: Json | null
+          store_id: string | null
+        }
+        Insert: {
+          created_at?: string
+          event?: string | null
+          function_name?: string | null
+          id?: string
+          level?: string
+          message?: string | null
+          metadata?: Json | null
+          store_id?: string | null
+        }
+        Update: {
+          created_at?: string
+          event?: string | null
+          function_name?: string | null
+          id?: string
+          level?: string
+          message?: string | null
+          metadata?: Json | null
+          store_id?: string | null
+        }
+        Relationships: []
+      }
       notifications: {
         Row: {
           body: string | null
