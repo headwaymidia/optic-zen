@@ -588,7 +588,7 @@ export function KanbanBoard({
         onDragCancel={() => setActiveId(null)}
       >
         <div
-          className="flex h-full gap-3 overflow-x-auto overflow-y-hidden px-4 pb-6 snap-x snap-proximity md:snap-none scroll-smooth kanban-scroll overscroll-x-contain"
+          className="flex h-full gap-3 overflow-x-auto overflow-y-hidden px-4 pb-6 snap-x snap-mandatory sm:snap-none scroll-smooth kanban-scroll overscroll-x-contain"
           style={{ WebkitOverflowScrolling: "touch" }}
         >
           {LEAD_STATUSES.map((status) => {
