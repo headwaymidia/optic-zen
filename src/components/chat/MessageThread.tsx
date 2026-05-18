@@ -2,7 +2,6 @@ import { useEffect, useRef, useState } from "react";
 import { AlertCircle, Check, CheckCheck, Clock, History, Reply, X } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { AudioPlayer } from "@/components/chat/AudioPlayer";
-import { useResolvedMediaUrl } from "@/lib/whatsapp-media";
 
 /** Splits a markdown-style quote prefix ("> ...\n\n...") from the body. */
 function parseQuote(text: string): { quote: string | null; body: string } {
@@ -41,18 +40,17 @@ function MediaPlaceholder({ label }: { label: string }) {
 }
 
 function MessageContent({ media_type, media_url, text, onImageClick }: { media_type?: string | null; media_url?: string | null; text: string; onImageClick?: (url: string) => void }) {
-  const resolvedUrl = useResolvedMediaUrl(media_url);
   if (media_type === "audio") {
-    return resolvedUrl ? <AudioPlayer src={resolvedUrl} /> : <MediaPlaceholder label="🎵 Áudio indisponível" />;
+    return media_url ? <AudioPlayer src={media_url} /> : <MediaPlaceholder label="🎵 Áudio indisponível" />;
   }
   if (media_type === "image") {
-    if (!resolvedUrl) return <MediaPlaceholder label="📷 Carregando imagem…" />;
+    if (!media_url) return <MediaPlaceholder label="📷 Imagem indisponível" />;
     return (
       <img
-        src={resolvedUrl}
+        src={media_url}
         alt="imagem"
         loading="lazy"
-        onClick={() => onImageClick?.(resolvedUrl)}
+        onClick={() => onImageClick?.(media_url)}
         onError={(e) => {
           (e.currentTarget as HTMLImageElement).style.display = "none";
         }}
@@ -61,18 +59,18 @@ function MessageContent({ media_type, media_url, text, onImageClick }: { media_t
     );
   }
   if (media_type === "video") {
-    if (!resolvedUrl) return <MediaPlaceholder label="🎬 Carregando vídeo…" />;
+    if (!media_url) return <MediaPlaceholder label="🎬 Vídeo indisponível" />;
     return (
       <video
         controls
-        src={resolvedUrl}
+        src={media_url}
         className="rounded-lg w-full h-auto max-w-full sm:max-w-[280px]"
       />
     );
   }
   if (media_type === "document") {
-    return resolvedUrl ? (
-      <a href={resolvedUrl} target="_blank" rel="noreferrer" className="text-xs underline">
+    return media_url ? (
+      <a href={media_url} target="_blank" rel="noreferrer" className="text-xs underline">
         📎 Documento
       </a>
     ) : (

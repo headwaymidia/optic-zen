@@ -87,25 +87,12 @@ Deno.serve(async (req) => {
         let send: { status: number; data: any };
         if (msg.media_type === "image" || msg.media_type === "video") {
           if (!msg.media_url) { result.skipped++; continue; }
-          // Se media_url é path relativo (novo formato), gera signed URL para Evolution
-          let mediaUrl = msg.media_url;
-          if (!/^https?:\/\//i.test(mediaUrl)) {
-            const { data: signed, error: signErr } = await admin.storage
-              .from("whatsapp-media")
-              .createSignedUrl(mediaUrl, 60 * 60 * 24);
-            if (signErr || !signed?.signedUrl) {
-              result.failed++;
-              console.warn("[queue-worker] falha ao assinar", mediaUrl, signErr);
-              continue;
-            }
-            mediaUrl = signed.signedUrl;
-          }
           send = await evo(`/message/sendMedia/${instance}`, {
             method: "POST",
             body: JSON.stringify({
               number: phoneDigits,
               mediatype: msg.media_type,
-              media: mediaUrl,
+              media: msg.media_url,
               caption: msg.body ?? "",
             }),
           });
