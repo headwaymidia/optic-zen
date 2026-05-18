@@ -85,8 +85,20 @@ export function useWhatsAppMessages(leadId: string | undefined) {
         { event: "*", schema: "public", table: "whatsapp_messages" },
         (payload) => {
           const row = (payload.new ?? payload.old) as Partial<WhatsAppMessageRow> | undefined;
-          if (!row?.lead_id || row.lead_id !== leadId) return;
-          if (currentStoreId && row?.store_id && row.store_id !== currentStoreId) return;
+          if (!row) return;
+          // Aceita tanto mensagens recebidas quanto enviadas (from_me=true).
+          // Match por lead_id quando presente; quando ausente (edge function pode
+          // inserir sem lead_id), faz fallback de refetch para garantir consistência.
+          const matchesLead = row.lead_id && row.lead_id === leadId;
+          const matchesStore = !currentStoreId || !row.store_id || row.store_id === currentStoreId;
+          if (!matchesStore) return;
+          if (!matchesLead) {
+            // Pode ser uma linha sem lead_id ainda — agenda refetch curto.
+            if (row.store_id === currentStoreId && payload.eventType === "INSERT") {
+              setTimeout(() => fetchMessages(), 600);
+            }
+            return;
+          }
 
           setMessages((old) => {
             if (payload.eventType === "DELETE") {
