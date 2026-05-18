@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { usePageTitle } from "@/hooks/usePageTitle";
 import { Lead, LEAD_SOURCES, INTEREST_TAGS } from "@/integrations/supabase/client";
 import { useStoreMembers } from "@/hooks/useStoreMembers";
@@ -38,7 +38,7 @@ function formatRelative(dateStr: string): string {
 
 export default function Contatos() {
   usePageTitle("Contatos");
-  const { leads, loading, refetch } = useLeads();
+  const { leads, loading, refetch, hasMore, loadMore, loadAll, isFetchingMore, total } = useLeads();
   const { members, nameById } = useStoreMembers();
   const [search, setSearch] = useState("");
   const [sourceFilter, setSourceFilter] = useState<string>(ALL);
@@ -62,9 +62,26 @@ export default function Contatos() {
     [leads, search, sourceFilter, tagFilter, salesFilter]
   );
 
+  const hasActiveFilter =
+    search.trim() !== "" || sourceFilter !== ALL || tagFilter !== ALL || salesFilter !== ALL;
+
+  // Quando há filtro ativo, carrega todos os leads para garantir resultados completos.
+  useEffect(() => {
+    if (hasActiveFilter && hasMore && !isFetchingMore) {
+      loadAll();
+    }
+  }, [hasActiveFilter, hasMore, isFetchingMore, loadAll]);
+
   const totalPages = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE));
   const currentPage = Math.min(page, totalPages);
   const paginated = filtered.slice((currentPage - 1) * PAGE_SIZE, currentPage * PAGE_SIZE);
+
+  // Quando o usuário chega na última página local, busca a próxima página do servidor.
+  useEffect(() => {
+    if (!hasActiveFilter && currentPage >= totalPages && hasMore && !isFetchingMore) {
+      loadMore();
+    }
+  }, [hasActiveFilter, currentPage, totalPages, hasMore, isFetchingMore, loadMore]);
 
   function openWhatsApp(phone: string | null) {
     if (!phone) return;
@@ -191,8 +208,13 @@ export default function Contatos() {
       </Card>
 
       <div className="flex items-center justify-between text-sm">
-        <span className="text-muted-foreground">
+        <span className="text-muted-foreground flex items-center gap-2">
           {filtered.length === 0 ? "0 contatos" : `${(currentPage - 1) * PAGE_SIZE + 1}–${Math.min(currentPage * PAGE_SIZE, filtered.length)} de ${filtered.length}`}
+          {hasMore && (
+            <span className="text-xs opacity-70">
+              {isFetchingMore ? "carregando mais..." : `(+ ${total} carregados)`}
+            </span>
+          )}
         </span>
         <div className="flex items-center gap-2">
           <Button variant="outline" size="sm" disabled={currentPage <= 1} onClick={() => setPage((p) => p - 1)}>

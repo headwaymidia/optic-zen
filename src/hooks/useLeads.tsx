@@ -1,13 +1,19 @@
-import { createContext, useCallback, useContext, useEffect, useState, ReactNode } from "react";
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { createContext, useCallback, useContext, useEffect, useRef, ReactNode } from "react";
+import {
+  useInfiniteQuery,
+  useMutation,
+  useQueryClient,
+  InfiniteData,
+} from "@tanstack/react-query";
 import { Lead, LeadStatus, supabase } from "@/integrations/supabase/client";
 import { useStores } from "@/hooks/useStores";
 import { toast } from "@/components/ui/use-toast";
 import { humanizeError } from "@/lib/error-handler";
 
-const INITIAL_PAGE_SIZE = 50;
-const PAGE_INCREMENT = 50;
-const LOAD_ALL_LIMIT = 5000;
+const PAGE_SIZE = 50;
+const MAX_AUTO_PAGES = 200; // safety cap for loadAll (10k leads)
+
+type LeadsPages = InfiniteData<Lead[]>;
 
 interface LeadsContextValue {
   leads: Lead[];
@@ -43,52 +49,95 @@ function getMessagePreview(row: { body?: string | null; media_type?: string | nu
   return (row.body ?? "").slice(0, 100);
 }
 
+function mapPages(
+  data: LeadsPages | undefined,
+  fn: (leads: Lead[]) => Lead[],
+): LeadsPages | undefined {
+  if (!data) return data;
+  return { ...data, pages: data.pages.map(fn) };
+}
+
 export function LeadsProvider({ children }: { children: ReactNode }) {
   const { currentStoreId } = useStores();
   const queryClient = useQueryClient();
-  const [limit, setLimit] = useState<number>(INITIAL_PAGE_SIZE);
-  const queryKey = ["leads", currentStoreId, limit] as const;
+  const queryKey = ["leads", currentStoreId] as const;
 
-  useEffect(() => {
-    setLimit(INITIAL_PAGE_SIZE);
-  }, [currentStoreId]);
-
-  const { data, isLoading, isFetching, refetch: rqRefetch } = useQuery<Lead[]>({
+  const {
+    data,
+    isLoading,
+    isFetching,
+    isFetchingNextPage,
+    hasNextPage,
+    fetchNextPage,
+    refetch: rqRefetch,
+  } = useInfiniteQuery<Lead[], Error, LeadsPages, typeof queryKey, number>({
     queryKey,
     enabled: !!currentStoreId,
-    queryFn: async () => {
+    initialPageParam: 0,
+    queryFn: async ({ pageParam = 0 }) => {
+      const from = pageParam;
+      const to = pageParam + PAGE_SIZE - 1;
       const { data, error } = await supabase
         .from("leads")
         .select("*")
         .eq("store_id", currentStoreId!)
         .order("last_message_at", { ascending: false, nullsFirst: false })
-        .limit(limit);
+        .range(from, to);
       if (error) {
         toast({ title: "Erro ao carregar leads", description: humanizeError(error), variant: "destructive" });
         throw error;
       }
-      return sortByLastMessage((data ?? []) as unknown as Lead[]);
+      return (data ?? []) as unknown as Lead[];
     },
-    placeholderData: (prev) => prev,
-  } as any);
+    getNextPageParam: (lastPage, allPages) =>
+      lastPage.length < PAGE_SIZE ? undefined : allPages.length * PAGE_SIZE,
+  });
 
-  const leads: Lead[] = data ?? [];
-  const hasMore = leads.length >= limit;
-  const isFetchingMore = isFetching && !isLoading;
+  // Flatten + sort (newest activity first). Dedup defensively by id.
+  const flat: Lead[] = (() => {
+    const all = (data?.pages ?? []).flat();
+    const seen = new Set<string>();
+    const out: Lead[] = [];
+    for (const l of all) {
+      if (!seen.has(l.id)) {
+        seen.add(l.id);
+        out.push(l);
+      }
+    }
+    return sortByLastMessage(out);
+  })();
+
+  const hasMore = !!hasNextPage;
+  const isFetchingMore = isFetchingNextPage || (isFetching && !isLoading);
 
   const loadMore = useCallback(() => {
-    setLimit((l) => l + PAGE_INCREMENT);
-  }, []);
+    if (hasNextPage && !isFetchingNextPage) fetchNextPage();
+  }, [hasNextPage, isFetchingNextPage, fetchNextPage]);
 
-  const loadAll = useCallback(() => {
-    setLimit((l) => (l >= LOAD_ALL_LIMIT ? l : LOAD_ALL_LIMIT));
-  }, []);
+  // loadAll: fetch pages sequentially until exhausted (capped).
+  const loadingAllRef = useRef(false);
+  const loadAll = useCallback(async () => {
+    if (loadingAllRef.current) return;
+    loadingAllRef.current = true;
+    try {
+      let i = 0;
+      while (i < MAX_AUTO_PAGES) {
+        const res = await fetchNextPage();
+        const pages = (res.data as LeadsPages | undefined)?.pages ?? [];
+        const last = pages[pages.length - 1];
+        if (!last || last.length < PAGE_SIZE) break;
+        i++;
+      }
+    } finally {
+      loadingAllRef.current = false;
+    }
+  }, [fetchNextPage]);
 
   const refetch = useCallback(async () => {
     await rqRefetch();
   }, [rqRefetch]);
 
-  // Realtime subscription scoped to this store -> invalidate query
+  // Realtime: leads table changes -> patch pages in place.
   useEffect(() => {
     if (!currentStoreId) return;
     const channel = supabase
@@ -98,24 +147,39 @@ export function LeadsProvider({ children }: { children: ReactNode }) {
         { event: "*", schema: "public", table: "leads", filter: `store_id=eq.${currentStoreId}` },
         (payload) => {
           const row = (payload.new ?? payload.old) as Lead | undefined;
-          if (row?.id) {
-            queryClient.setQueriesData<Lead[]>({ queryKey: ["leads", currentStoreId] }, (old = []) => {
-              if (payload.eventType === "DELETE") return sortByLastMessage(old.filter((l) => l.id !== row.id));
-              const idx = old.findIndex((l) => l.id === row.id);
-              const next = idx >= 0
-                ? old.map((l) => (l.id === row.id ? { ...l, ...row } : l))
-                : [...old, row];
-              return sortByLastMessage(next);
-            });
-          }
-          queryClient.invalidateQueries({ queryKey: ["leads", currentStoreId] });
+          if (!row?.id) return;
+          queryClient.setQueryData<LeadsPages>(queryKey, (old) => {
+            if (!old) return old;
+            if (payload.eventType === "DELETE") {
+              return mapPages(old, (page) => page.filter((l) => l.id !== row.id))!;
+            }
+            // UPDATE or INSERT: patch existing across any page; if not present, append to last page.
+            let found = false;
+            const next = mapPages(old, (page) =>
+              page.map((l) => {
+                if (l.id === row.id) {
+                  found = true;
+                  return { ...l, ...row };
+                }
+                return l;
+              })
+            )!;
+            if (!found && payload.eventType === "INSERT") {
+              const pages = [...next.pages];
+              const idx = pages.length - 1;
+              if (idx >= 0) pages[idx] = [...pages[idx], row];
+              else pages.push([row]);
+              return { ...next, pages };
+            }
+            return next;
+          });
         }
       )
       .subscribe();
     return () => { supabase.removeChannel(channel); };
   }, [currentStoreId, queryClient]);
 
-  // Realtime: novas mensagens de WhatsApp -> invalida lista de leads (preview/ordem)
+  // Realtime: novas mensagens de WhatsApp -> atualiza preview/ordem.
   useEffect(() => {
     if (!currentStoreId) return;
     const channel = supabase
@@ -129,26 +193,21 @@ export function LeadsProvider({ children }: { children: ReactNode }) {
           filter: `store_id=eq.${currentStoreId}`,
         },
         (payload) => {
-          if (import.meta.env.DEV) console.log("[Realtime] whatsapp_messages -> invalidando leads", payload);
           const row = payload.new as { lead_id?: string | null; timestamp?: string | null; created_at?: string | null; body?: string | null; media_type?: string | null } | undefined;
           if (payload.eventType === "INSERT" && row?.lead_id) {
             const lastMessageAt = row.timestamp ?? row.created_at ?? new Date().toISOString();
-            queryClient.setQueriesData<Lead[]>({ queryKey: ["leads", currentStoreId] }, (old = []) =>
-              sortByLastMessage(
-                old.map((lead) =>
+            queryClient.setQueryData<LeadsPages>(queryKey, (old) =>
+              mapPages(old, (page) =>
+                page.map((lead) =>
                   lead.id === row.lead_id
-                    ? {
-                        ...lead,
-                        last_message_at: lastMessageAt,
-                        last_message_preview: getMessagePreview(row),
-                      }
+                    ? { ...lead, last_message_at: lastMessageAt, last_message_preview: getMessagePreview(row) }
                     : lead
                 )
               )
             );
             return;
           }
-          queryClient.invalidateQueries({ queryKey: ["leads", currentStoreId] });
+          queryClient.invalidateQueries({ queryKey });
         }
       )
       .subscribe();
@@ -162,9 +221,9 @@ export function LeadsProvider({ children }: { children: ReactNode }) {
     },
     onMutate: async ({ leadId, status }) => {
       await queryClient.cancelQueries({ queryKey });
-      const prev = queryClient.getQueryData<Lead[]>(queryKey);
-      queryClient.setQueryData<Lead[]>(queryKey, (old = []) =>
-        old.map((l) => (l.id === leadId ? { ...l, status } : l))
+      const prev = queryClient.getQueryData<LeadsPages>(queryKey);
+      queryClient.setQueryData<LeadsPages>(queryKey, (old) =>
+        mapPages(old, (page) => page.map((l) => (l.id === leadId ? { ...l, status } : l)))
       );
       return { prev };
     },
@@ -185,9 +244,9 @@ export function LeadsProvider({ children }: { children: ReactNode }) {
     },
     onMutate: async ({ leadId, patch }) => {
       await queryClient.cancelQueries({ queryKey });
-      const prev = queryClient.getQueryData<Lead[]>(queryKey);
-      queryClient.setQueryData<Lead[]>(queryKey, (old = []) =>
-        old.map((l) => (l.id === leadId ? { ...l, ...patch } : l))
+      const prev = queryClient.getQueryData<LeadsPages>(queryKey);
+      queryClient.setQueryData<LeadsPages>(queryKey, (old) =>
+        mapPages(old, (page) => page.map((l) => (l.id === leadId ? { ...l, ...patch } : l)))
       );
       return { prev };
     },
@@ -215,14 +274,14 @@ export function LeadsProvider({ children }: { children: ReactNode }) {
   );
 
   const countByStatus = useCallback(
-    (status: LeadStatus) => leads.filter((l) => l.status === status).length,
-    [leads]
+    (status: LeadStatus) => flat.filter((l) => l.status === status).length,
+    [flat]
   );
 
   const loading = !!currentStoreId && isLoading;
 
   return (
-    <LeadsContext.Provider value={{ leads, loading, refetch, updateStatus, updateLead, countByStatus, total: leads.length, hasMore, loadMore, loadAll, isFetchingMore }}>
+    <LeadsContext.Provider value={{ leads: flat, loading, refetch, updateStatus, updateLead, countByStatus, total: flat.length, hasMore, loadMore, loadAll, isFetchingMore }}>
       {children}
     </LeadsContext.Provider>
   );
