@@ -362,21 +362,24 @@ export function ChatPanel({
       },
     ]);
 
-    // Converte o arquivo para base64 (sem o prefixo data:...;base64,)
-    let base64: string | null = null;
+    // Faz upload direto do arquivo para o bucket whatsapp-media e obtém URL assinada de longa duração.
+    let mediaUrl: string | null = null;
     try {
-      base64 = await new Promise<string>((resolve, reject) => {
-        const reader = new FileReader();
-        reader.onload = () => {
-          const result = reader.result as string;
-          const idx = result.indexOf("base64,");
-          resolve(idx >= 0 ? result.slice(idx + 7) : result);
-        };
-        reader.onerror = () => reject(reader.error ?? new Error("Falha ao ler arquivo"));
-        reader.readAsDataURL(file);
-      });
+      const ext = file.name.includes(".") ? file.name.split(".").pop() : (isImage ? "jpg" : "mp4");
+      const path = `${currentStoreId}/${Date.now()}-${crypto.randomUUID()}.${ext}`;
+      const { error: upErr } = await supabase.storage
+        .from("whatsapp-media")
+        .upload(path, file, { contentType: file.type, upsert: false });
+      if (upErr) throw upErr;
+      const { data: signed, error: signErr } = await supabase.storage
+        .from("whatsapp-media")
+        .createSignedUrl(path, 60 * 60 * 24 * 365 * 5);
+      if (signErr) throw signErr;
+      mediaUrl = signed?.signedUrl ?? null;
+      if (!mediaUrl) throw new Error("URL da mídia indisponível");
     } catch (e) {
-      toast({ title: "Falha ao processar arquivo", variant: "destructive" });
+      console.error("[handleSendMedia] upload error:", e);
+      toast({ title: "Falha ao enviar mídia para o storage", variant: "destructive" });
       setSentMessages((prev) => prev.filter((m) => m.id !== optimisticId));
       return;
     }
@@ -391,7 +394,7 @@ export function ChatPanel({
             store_id: currentStoreId,
             lead_id: lead.id,
             phone: lead.phone,
-            mediaUrl: base64,
+            mediaUrl,
             mediaType: isImage ? "image" : "video",
             mimetype: file.type,
             fileName: file.name,
