@@ -3,6 +3,7 @@ import { usePageTitle } from "@/hooks/usePageTitle";
 import { useSearchParams } from "react-router-dom";
 import { useLeads } from "@/hooks/useLeads";
 import { Input } from "@/components/ui/input";
+import { supabase } from "@/integrations/supabase/client";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { ChatPanel } from "@/components/ChatPanel";
 import { Search, MessageSquarePlus, MessageCircle, CalendarRange } from "lucide-react";
@@ -286,7 +287,7 @@ export default function WhatsAppPage() {
                 onClick={async () => {
                   setSelectedId(lead.id);
                   if ((lead.unread_count ?? 0) > 0) {
-                    await updateLead(lead.id, { unread_count: 0 });
+                    await supabase.rpc("reset_unread", { p_lead_id: lead.id });
                   }
                 }}
                 className={cn(
