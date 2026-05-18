@@ -74,7 +74,8 @@ export function useWhatsAppMessages(leadId: string | undefined) {
     };
   }, [fetchMessages]);
 
-  // Realtime: aplica patches locais sem refazer fetch.
+  // Realtime: escuta TODOS os inserts/updates/deletes em whatsapp_messages
+  // (sem filtro por from_me — mensagens enviadas pelo CRM também precisam aparecer).
   useEffect(() => {
     if (!leadId) return;
     const channelName = `wa-msgs-${currentStoreId ?? "no-store"}-${leadId}`;
@@ -86,15 +87,13 @@ export function useWhatsAppMessages(leadId: string | undefined) {
         (payload) => {
           const row = (payload.new ?? payload.old) as Partial<WhatsAppMessageRow> | undefined;
           if (!row) return;
-          // Aceita tanto mensagens recebidas quanto enviadas (from_me=true).
-          // Match por lead_id quando presente; quando ausente (edge function pode
-          // inserir sem lead_id), faz fallback de refetch para garantir consistência.
-          const matchesLead = row.lead_id && row.lead_id === leadId;
           const matchesStore = !currentStoreId || !row.store_id || row.store_id === currentStoreId;
           if (!matchesStore) return;
+          // Match pelo lead_id da conversa atual. Quando o lead_id ainda não foi
+          // preenchido pela edge function, faz fallback de refetch curto.
+          const matchesLead = row.lead_id && row.lead_id === leadId;
           if (!matchesLead) {
-            // Pode ser uma linha sem lead_id ainda — agenda refetch curto.
-            if (row.store_id === currentStoreId && payload.eventType === "INSERT") {
+            if (payload.eventType === "INSERT") {
               setTimeout(() => fetchMessages(), 600);
             }
             return;
@@ -108,7 +107,13 @@ export function useWhatsAppMessages(leadId: string | undefined) {
             }
             const newMessage = payload.new as WhatsAppMessageRow | undefined;
             if (!newMessage?.id) return old;
-            const idx = old.findIndex((m) => m.id === newMessage.id);
+            // Dedup por id OU message_id (evita duplicar quando a row real chega
+            // após um insert otimista já persistido com mesmo message_id).
+            const idx = old.findIndex(
+              (m) =>
+                m.id === newMessage.id ||
+                (!!newMessage.message_id && m.message_id === newMessage.message_id)
+            );
             if (idx >= 0) {
               const next = [...old];
               next[idx] = { ...next[idx], ...newMessage };
