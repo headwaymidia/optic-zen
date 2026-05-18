@@ -187,6 +187,7 @@ export default function Contatos() {
             )}
           </TableBody>
         </Table>
+        </div>
       </Card>
 
       <div className="flex items-center justify-between text-sm">
