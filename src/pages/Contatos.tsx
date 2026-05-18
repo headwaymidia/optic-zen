@@ -83,9 +83,14 @@ export default function Contatos() {
           <h1 className="text-2xl font-semibold tracking-tight">Contatos</h1>
           <p className="text-sm text-muted-foreground">Lista completa de leads da sua ótica.</p>
         </div>
-        <Button onClick={() => { setEditingLead(null); setDialogOpen(true); }}>
-          <Plus className="h-4 w-4 mr-2" /> Novo lead
-        </Button>
+        <div className="flex items-center gap-2">
+          <Button variant="outline" onClick={() => setImportOpen(true)}>
+            <Upload className="h-4 w-4 mr-2" /> Importar CSV
+          </Button>
+          <Button onClick={() => { setEditingLead(null); setDialogOpen(true); }}>
+            <Plus className="h-4 w-4 mr-2" /> Novo lead
+          </Button>
+        </div>
       </div>
 
       <div className="flex flex-wrap gap-2 items-center">
