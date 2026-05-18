@@ -344,11 +344,12 @@ export function ChatPanel({
       toast({ title: "Formato não suportado", variant: "destructive" });
       return;
     }
-    const MAX_BYTES = 2 * 1024 * 1024;
+    const MAX_BYTES = isImage ? 2 * 1024 * 1024 : 50 * 1024 * 1024;
     if (file.size > MAX_BYTES) {
+      const limitLabel = isImage ? "2MB" : "50MB";
       toast({
         title: "Arquivo muito grande",
-        description: "O tamanho máximo é 2MB. Comprima a mídia e tente novamente.",
+        description: `O tamanho máximo para ${isImage ? "imagens" : "vídeos"} é ${limitLabel}.`,
         variant: "destructive",
       });
       return;
