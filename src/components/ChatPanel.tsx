@@ -422,25 +422,36 @@ export function ChatPanel({
       optimisticId,
       async () => {
         await ensureWhatsAppConnected();
-        const { data, error } = await supabase.functions.invoke(waFunction, {
-          body: {
-            action: "sendMessage",
-            store_id: currentStoreId,
-            lead_id: lead.id,
-            phone: lead.phone,
-            mediaBase64: base64,
-            storedMediaUrl,
-            mediaType: isImage ? "image" : "video",
-            mimetype: file.type,
-            fileName: file.name,
-            caption: "",
-          },
+        const payload = {
+          action: "sendMessage",
+          store_id: currentStoreId,
+          lead_id: lead.id,
+          phone: lead.phone,
+          mediaBase64: base64,
+          storedMediaUrl,
+          mediaType: isImage ? "image" : "video",
+          mimetype: file.type,
+          fileName: file.name,
+          caption: "",
+        };
+        console.log("[handleSendMedia] chamando evolution", {
+          ...payload,
+          mediaBase64: `<${base64?.length ?? 0} chars>`,
         });
-        if (error) throw error;
-        if (data?.error) throw new Error(data.error);
+        const { data, error } = await supabase.functions.invoke(waFunction, { body: payload });
+        if (error) {
+          console.error("[handleSendMedia] evolution erro", error);
+          throw error;
+        }
+        if (data?.error) {
+          console.error("[handleSendMedia] evolution erro", data.error);
+          throw new Error(data.error);
+        }
+        console.log("[handleSendMedia] evolution response", data);
       },
       isImage ? "Falha ao enviar imagem" : "Falha ao enviar vídeo",
     );
+
     if (ok) {
       await refetchMessages();
       setSentMessages((prev) => prev.filter((m) => m.id !== optimisticId));
