@@ -301,7 +301,9 @@ Deno.serve(async (req) => {
       const isMedia = !!inMediaBase64 && (inMediaType === "image" || inMediaType === "video");
 
       if (!phone) throw new Error("phone é obrigatório");
-      if (!isAudio && !isMedia && !message.trim()) throw new Error("message é obrigatório");
+      if (!isAudio && !isMedia && !inMediaBase64 && !storedMediaUrl && !message.trim()) {
+        throw new Error("message é obrigatório");
+      }
 
       let phoneDigits = phone.replace(/\D/g, "");
       if (!phoneDigits.startsWith("55")) phoneDigits = `55${phoneDigits}`;
