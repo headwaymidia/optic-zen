@@ -286,7 +286,7 @@ export default function WhatsAppPage() {
                 onClick={async () => {
                   setSelectedId(lead.id);
                   if ((lead.unread_count ?? 0) > 0) {
-                    await updateLead(lead.id, { unread_count: 0 });
+                    await supabase.rpc("reset_unread", { p_lead_id: lead.id });
                   }
                 }}
                 className={cn(
