@@ -128,6 +128,16 @@ export default function WhatsAppPage() {
     }
   }, [leads, searchParams, setSearchParams]);
 
+  // Mobile: when a chat is open, hide BottomNav + main pb-20 for true fullscreen chat
+  useEffect(() => {
+    if (selectedId) {
+      document.body.setAttribute("data-chat-fullscreen", "true");
+    } else {
+      document.body.removeAttribute("data-chat-fullscreen");
+    }
+    return () => document.body.removeAttribute("data-chat-fullscreen");
+  }, [selectedId]);
+
   const filtered = useMemo(() => {
     const range = getPeriodRange(period, customRange);
     const ts = (l: typeof leads[number]) => {
