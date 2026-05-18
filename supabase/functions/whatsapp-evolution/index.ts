@@ -293,11 +293,12 @@ Deno.serve(async (req) => {
       const audioMessage = body.audioMessage as
         | { base64?: string; mimetype?: string }
         | undefined;
-      const inMediaUrl = body.mediaUrl ? String(body.mediaUrl) : "";
+      const inMediaBase64 = body.mediaBase64 ? String(body.mediaBase64) : "";
+      const storedMediaUrl = body.storedMediaUrl ? String(body.storedMediaUrl) : "";
       const inMediaType = body.mediaType ? String(body.mediaType) : "";
       const caption = body.caption ? String(body.caption) : "";
       const isAudio = !!audioMessage?.base64;
-      const isMedia = !!inMediaUrl && (inMediaType === "image" || inMediaType === "video");
+      const isMedia = !!inMediaBase64 && (inMediaType === "image" || inMediaType === "video");
 
       if (!phone) throw new Error("phone é obrigatório");
       if (!isAudio && !isMedia && !message.trim()) throw new Error("message é obrigatório");
@@ -311,8 +312,6 @@ Deno.serve(async (req) => {
       let mediaType: string | null = null;
 
       if (isMedia) {
-        // mediaUrl pode ser uma URL http(s) OU um base64 puro (sem prefixo data:).
-        const isBase64 = !/^https?:\/\//i.test(inMediaUrl);
         const mimetype = body.mimetype
           ? String(body.mimetype)
           : inMediaType === "image"
@@ -320,12 +319,14 @@ Deno.serve(async (req) => {
           : "video/mp4";
         const fileName = body.fileName ? String(body.fileName) : undefined;
 
+        // Envia o base64 puro diretamente para a Evolution (evita problemas de 403 ao
+        // baixar de URLs do Storage).
         send = await evo(`/message/sendMedia/${instance}`, {
           method: "POST",
           body: JSON.stringify({
             number: phoneDigits,
             mediatype: inMediaType,
-            media: inMediaUrl, // base64 puro ou URL — Evolution aceita ambos
+            media: inMediaBase64,
             mimetype,
             ...(fileName ? { fileName } : {}),
             caption: caption || "",
@@ -333,31 +334,8 @@ Deno.serve(async (req) => {
         });
         if (send.status < 400) {
           mediaType = inMediaType;
-          if (isBase64) {
-            // Faz upload do base64 para o Storage e usa a signed URL persistente.
-            try {
-              const bin = Uint8Array.from(atob(inMediaUrl), (c) => c.charCodeAt(0));
-              const ext = inMediaType === "image"
-                ? (mimetype.includes("png") ? "png" : mimetype.includes("webp") ? "webp" : "jpg")
-                : (mimetype.includes("webm") ? "webm" : "mp4");
-              const path = `${storeId}/${Date.now()}-${crypto.randomUUID()}.${ext}`;
-              const { error: upErr } = await admin.storage
-                .from("whatsapp-media")
-                .upload(path, bin, { contentType: mimetype, upsert: false });
-              if (upErr) {
-                console.error("[sendMessage] media storage upload error:", upErr);
-              } else {
-                const { data: signed } = await admin.storage
-                  .from("whatsapp-media")
-                  .createSignedUrl(path, 60 * 60 * 24 * 365 * 5);
-                mediaUrl = signed?.signedUrl ?? null;
-              }
-            } catch (e) {
-              console.error("[sendMessage] media storage exception:", e);
-            }
-          } else {
-            mediaUrl = inMediaUrl;
-          }
+          // Persiste a URL do Storage (já enviada pelo frontend) para exibição no histórico.
+          mediaUrl = storedMediaUrl || null;
         }
       } else if (isAudio) {
         send = await evo(`/message/sendWhatsAppAudio/${instance}`, {

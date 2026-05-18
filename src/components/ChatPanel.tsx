@@ -344,6 +344,15 @@ export function ChatPanel({
       toast({ title: "Formato não suportado", variant: "destructive" });
       return;
     }
+    const MAX_BYTES = 2 * 1024 * 1024;
+    if (file.size > MAX_BYTES) {
+      toast({
+        title: "Arquivo muito grande",
+        description: "O tamanho máximo é 2MB. Comprima a mídia e tente novamente.",
+        variant: "destructive",
+      });
+      return;
+    }
     promoteToInAttendance();
 
     const optimisticId = crypto.randomUUID();
@@ -362,8 +371,8 @@ export function ChatPanel({
       },
     ]);
 
-    // Faz upload direto do arquivo para o bucket whatsapp-media e obtém URL assinada de longa duração.
-    let mediaUrl: string | null = null;
+    // 1) Upload para o Storage e obtenção da URL assinada (usada apenas para persistência no banco).
+    let storedMediaUrl: string | null = null;
     try {
       const ext = file.name.includes(".") ? file.name.split(".").pop() : (isImage ? "jpg" : "mp4");
       const path = `${currentStoreId}/${Date.now()}-${crypto.randomUUID()}.${ext}`;
@@ -375,11 +384,30 @@ export function ChatPanel({
         .from("whatsapp-media")
         .createSignedUrl(path, 60 * 60 * 24 * 365 * 5);
       if (signErr) throw signErr;
-      mediaUrl = signed?.signedUrl ?? null;
-      if (!mediaUrl) throw new Error("URL da mídia indisponível");
+      storedMediaUrl = signed?.signedUrl ?? null;
+      if (!storedMediaUrl) throw new Error("URL da mídia indisponível");
     } catch (e) {
       console.error("[handleSendMedia] upload error:", e);
       toast({ title: "Falha ao enviar mídia para o storage", variant: "destructive" });
+      setSentMessages((prev) => prev.filter((m) => m.id !== optimisticId));
+      return;
+    }
+
+    // 2) Converte para base64 puro (sem prefixo data:...;base64,) — enviado à Evolution via Edge Function.
+    let base64: string | null = null;
+    try {
+      base64 = await new Promise<string>((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = () => {
+          const result = reader.result as string;
+          const idx = result.indexOf("base64,");
+          resolve(idx >= 0 ? result.slice(idx + 7) : result);
+        };
+        reader.onerror = () => reject(reader.error ?? new Error("Falha ao ler arquivo"));
+        reader.readAsDataURL(file);
+      });
+    } catch (e) {
+      toast({ title: "Falha ao processar arquivo", variant: "destructive" });
       setSentMessages((prev) => prev.filter((m) => m.id !== optimisticId));
       return;
     }
@@ -394,7 +422,8 @@ export function ChatPanel({
             store_id: currentStoreId,
             lead_id: lead.id,
             phone: lead.phone,
-            mediaUrl,
+            mediaBase64: base64,
+            storedMediaUrl,
             mediaType: isImage ? "image" : "video",
             mimetype: file.type,
             fileName: file.name,
