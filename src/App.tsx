@@ -24,6 +24,7 @@ import Ranking from "@/pages/Ranking";
 import Planos from "@/pages/Planos";
 import Parceiro from "@/pages/Parceiro";
 import Ajuda from "@/pages/Ajuda";
+import Logs from "@/pages/Logs";
 import NotFound from "@/pages/NotFound";
 
 // Auth-only pages: lazy (logged users never revisit them)
