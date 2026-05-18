@@ -363,6 +363,7 @@ export function ChatPanel({
     ]);
 
     let publicUrl: string | null = null;
+    let storagePath: string | null = null;
     const ok = await sendWithRetry(
       optimisticId,
       async () => {
@@ -376,9 +377,10 @@ export function ChatPanel({
           if (upErr) throw upErr;
           const { data: signed, error: signErr } = await supabase.storage
             .from("whatsapp-media")
-            .createSignedUrl(path, 60 * 60 * 24 * 365 * 5);
+            .createSignedUrl(path, 60 * 60 * 24 * 7);
           if (signErr || !signed?.signedUrl) throw signErr ?? new Error("Falha ao gerar URL");
           publicUrl = signed.signedUrl;
+          storagePath = path;
         }
         const { data, error } = await supabase.functions.invoke(waFunction, {
           body: {
@@ -396,11 +398,11 @@ export function ChatPanel({
       },
       isImage ? "Falha ao enviar imagem" : "Falha ao enviar vídeo",
       async () => {
-        if (!publicUrl) return; // sem URL não dá pra enfileirar
+        if (!storagePath) return; // sem upload concluído não dá pra enfileirar
         await enqueueMessage({
           body: null,
           media_type: isImage ? "image" : "video",
-          media_url: publicUrl,
+          media_url: storagePath,
         });
       },
     );
