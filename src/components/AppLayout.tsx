@@ -86,11 +86,13 @@ export default function AppLayout() {
                     <ThemeToggle />
                   </div>
                 </header>
-                <main className="flex-1 min-h-0 overflow-auto pb-20 lg:pb-0">
+                <main className="flex-1 min-h-0 overflow-auto pb-20 lg:pb-0 [body[data-chat-fullscreen]_&]:pb-0">
                   <Outlet />
                 </main>
               </div>
-              <BottomNav />
+              <div className="[body[data-chat-fullscreen]_&]:hidden lg:[body[data-chat-fullscreen]_&]:block">
+                <BottomNav />
+              </div>
             </div>
           </SidebarProvider>
         </TrialGuard>
