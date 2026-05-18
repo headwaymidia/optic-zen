@@ -284,18 +284,13 @@ export function MessageInput({
           </span>
         </div>
       ) : (
-        <Input
+        <AutoResizeTextarea
           value={value}
-          onChange={(e) => onChange(e.target.value)}
-          onKeyDown={(e) => {
-            if (e.key === "Enter" && !e.shiftKey) {
-              e.preventDefault();
-              if (!isSending && value.trim()) onSend();
-            }
+          onChange={onChange}
+          onEnter={() => {
+            if (!isSending && value.trim()) onSend();
           }}
-          placeholder="Digite sua mensagem..."
           disabled={isSending}
-          className="flex-1 bg-muted/50 border-0 h-9 disabled:opacity-60"
         />
       )}
       <Button
