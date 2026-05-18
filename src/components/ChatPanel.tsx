@@ -362,32 +362,39 @@ export function ChatPanel({
       },
     ]);
 
-    let publicUrl: string | null = null;
+    // Converte o arquivo para base64 (sem o prefixo data:...;base64,)
+    let base64: string | null = null;
+    try {
+      base64 = await new Promise<string>((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = () => {
+          const result = reader.result as string;
+          const idx = result.indexOf("base64,");
+          resolve(idx >= 0 ? result.slice(idx + 7) : result);
+        };
+        reader.onerror = () => reject(reader.error ?? new Error("Falha ao ler arquivo"));
+        reader.readAsDataURL(file);
+      });
+    } catch (e) {
+      toast({ title: "Falha ao processar arquivo", variant: "destructive" });
+      setSentMessages((prev) => prev.filter((m) => m.id !== optimisticId));
+      return;
+    }
+
     const ok = await sendWithRetry(
       optimisticId,
       async () => {
         await ensureWhatsAppConnected();
-        if (!publicUrl) {
-          const safeName = file.name.replace(/[^a-zA-Z0-9._-]/g, "_");
-          const path = `${currentStoreId}/${Date.now()}-${safeName}`;
-          const { error: upErr } = await supabase.storage
-            .from("whatsapp-media")
-            .upload(path, file, { contentType: file.type, upsert: false });
-          if (upErr) throw upErr;
-          const { data: signed, error: signErr } = await supabase.storage
-            .from("whatsapp-media")
-            .createSignedUrl(path, 60 * 60 * 24 * 365 * 5);
-          if (signErr || !signed?.signedUrl) throw signErr ?? new Error("Falha ao gerar URL");
-          publicUrl = signed.signedUrl;
-        }
         const { data, error } = await supabase.functions.invoke(waFunction, {
           body: {
             action: "sendMessage",
             store_id: currentStoreId,
             lead_id: lead.id,
             phone: lead.phone,
-            mediaUrl: publicUrl,
+            mediaUrl: base64,
             mediaType: isImage ? "image" : "video",
+            mimetype: file.type,
+            fileName: file.name,
             caption: "",
           },
         });
@@ -395,14 +402,6 @@ export function ChatPanel({
         if (data?.error) throw new Error(data.error);
       },
       isImage ? "Falha ao enviar imagem" : "Falha ao enviar vídeo",
-      async () => {
-        if (!publicUrl) return; // sem URL não dá pra enfileirar
-        await enqueueMessage({
-          body: null,
-          media_type: isImage ? "image" : "video",
-          media_url: publicUrl,
-        });
-      },
     );
     if (ok) {
       await refetchMessages();

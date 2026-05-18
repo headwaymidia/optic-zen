@@ -311,18 +311,53 @@ Deno.serve(async (req) => {
       let mediaType: string | null = null;
 
       if (isMedia) {
+        // mediaUrl pode ser uma URL http(s) OU um base64 puro (sem prefixo data:).
+        const isBase64 = !/^https?:\/\//i.test(inMediaUrl);
+        const mimetype = body.mimetype
+          ? String(body.mimetype)
+          : inMediaType === "image"
+          ? "image/jpeg"
+          : "video/mp4";
+        const fileName = body.fileName ? String(body.fileName) : undefined;
+
         send = await evo(`/message/sendMedia/${instance}`, {
           method: "POST",
           body: JSON.stringify({
             number: phoneDigits,
             mediatype: inMediaType,
-            media: inMediaUrl,
+            media: inMediaUrl, // base64 puro ou URL — Evolution aceita ambos
+            mimetype,
+            ...(fileName ? { fileName } : {}),
             caption: caption || "",
           }),
         });
         if (send.status < 400) {
-          mediaUrl = inMediaUrl;
           mediaType = inMediaType;
+          if (isBase64) {
+            // Faz upload do base64 para o Storage e usa a signed URL persistente.
+            try {
+              const bin = Uint8Array.from(atob(inMediaUrl), (c) => c.charCodeAt(0));
+              const ext = inMediaType === "image"
+                ? (mimetype.includes("png") ? "png" : mimetype.includes("webp") ? "webp" : "jpg")
+                : (mimetype.includes("webm") ? "webm" : "mp4");
+              const path = `${storeId}/${Date.now()}-${crypto.randomUUID()}.${ext}`;
+              const { error: upErr } = await admin.storage
+                .from("whatsapp-media")
+                .upload(path, bin, { contentType: mimetype, upsert: false });
+              if (upErr) {
+                console.error("[sendMessage] media storage upload error:", upErr);
+              } else {
+                const { data: signed } = await admin.storage
+                  .from("whatsapp-media")
+                  .createSignedUrl(path, 60 * 60 * 24 * 365 * 5);
+                mediaUrl = signed?.signedUrl ?? null;
+              }
+            } catch (e) {
+              console.error("[sendMessage] media storage exception:", e);
+            }
+          } else {
+            mediaUrl = inMediaUrl;
+          }
         }
       } else if (isAudio) {
         send = await evo(`/message/sendWhatsAppAudio/${instance}`, {
