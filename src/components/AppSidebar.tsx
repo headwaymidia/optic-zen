@@ -45,6 +45,7 @@ import { cn } from "@/lib/utils";
 import { getUserInitials } from "@/lib/profile-helpers";
 import { useStores } from "@/hooks/useStores";
 import { useWhatsAppConnection } from "@/hooks/useWhatsAppConnection";
+import { supabase } from "@/integrations/supabase/client";
 
 const items = [
   { title: "Dashboard", url: "/", icon: LayoutDashboard },
