@@ -15,6 +15,7 @@ import {
   Crown,
   Calendar as CalendarIcon,
   Smartphone,
+  Terminal,
 } from "lucide-react";
 import {
   Sidebar,
