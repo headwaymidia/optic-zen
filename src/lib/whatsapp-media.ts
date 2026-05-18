@@ -17,10 +17,16 @@ export function extractStoragePath(raw: string): string | null {
   if (!/^https?:\/\//i.test(raw)) return raw; // já é path
   const idx = raw.indexOf(STORAGE_MARKER);
   if (idx === -1) return null;
-  const after = raw.slice(idx + STORAGE_MARKER.length);
-  const re = new RegExp(`^(?:public|sign|authenticated)\\/${BUCKET}\\/([^?]+)`);
-  const m = after.match(re);
-  return m ? decodeURIComponent(m[1]) : null;
+  // after = "public/whatsapp-media/image/abc123.jpg" ou "sign/.../..." ou "authenticated/.../..."
+  let after = raw.slice(idx + STORAGE_MARKER.length).split("?")[0];
+  after = after.replace(/^(public|sign|authenticated)\//, "");
+  if (!after.startsWith(`${BUCKET}/`)) return null;
+  const path = after.slice(BUCKET.length + 1);
+  try {
+    return decodeURIComponent(path);
+  } catch {
+    return path;
+  }
 }
 
 /**
