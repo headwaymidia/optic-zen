@@ -209,6 +209,7 @@ export default function Contatos() {
         lead={editingLead}
         onSaved={refetch}
       />
+      <ImportLeadsDialog open={importOpen} onOpenChange={setImportOpen} onImported={refetch} />
     </div>
   );
 }
