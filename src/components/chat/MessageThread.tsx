@@ -31,26 +31,35 @@ export interface SentMessage {
   media_url?: string | null;
 }
 
+function MediaPlaceholder({ label }: { label: string }) {
+  return (
+    <span className="inline-flex items-center gap-1 text-xs italic text-muted-foreground">
+      {label}
+    </span>
+  );
+}
+
 function MessageContent({ media_type, media_url, text, onImageClick }: { media_type?: string | null; media_url?: string | null; text: string; onImageClick?: (url: string) => void }) {
   if (media_type === "audio") {
-    return media_url ? (
-      <AudioPlayer src={media_url} />
-    ) : (
-      <span>🎵 Áudio</span>
-    );
+    return media_url ? <AudioPlayer src={media_url} /> : <MediaPlaceholder label="🎵 Áudio indisponível" />;
   }
-  if (media_type === "image" && media_url) {
+  if (media_type === "image") {
+    if (!media_url) return <MediaPlaceholder label="📷 Imagem indisponível" />;
     return (
       <img
         src={media_url}
         alt="imagem"
         loading="lazy"
         onClick={() => onImageClick?.(media_url)}
+        onError={(e) => {
+          (e.currentTarget as HTMLImageElement).style.display = "none";
+        }}
         className="rounded-lg w-full h-auto max-w-full sm:max-w-[280px] cursor-zoom-in"
       />
     );
   }
-  if (media_type === "video" && media_url) {
+  if (media_type === "video") {
+    if (!media_url) return <MediaPlaceholder label="🎬 Vídeo indisponível" />;
     return (
       <video
         controls
@@ -58,6 +67,18 @@ function MessageContent({ media_type, media_url, text, onImageClick }: { media_t
         className="rounded-lg w-full h-auto max-w-full sm:max-w-[280px]"
       />
     );
+  }
+  if (media_type === "document") {
+    return media_url ? (
+      <a href={media_url} target="_blank" rel="noreferrer" className="text-xs underline">
+        📎 Documento
+      </a>
+    ) : (
+      <MediaPlaceholder label="📎 Documento indisponível" />
+    );
+  }
+  if (!text && media_type) {
+    return <MediaPlaceholder label="Mensagem sem conteúdo" />;
   }
   return <p className="whitespace-pre-wrap break-words">{text ?? ""}</p>;
 }
