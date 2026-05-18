@@ -1,0 +1,1 @@
+ALTER TABLE public.stores ADD COLUMN IF NOT EXISTS disconnected_at TIMESTAMP WITH TIME ZONE;
