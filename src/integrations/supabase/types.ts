@@ -493,6 +493,7 @@ export type Database = {
         Row: {
           city: string | null
           created_at: string
+          disconnected_at: string | null
           id: string
           name: string
           owner_id: string
@@ -503,6 +504,7 @@ export type Database = {
         Insert: {
           city?: string | null
           created_at?: string
+          disconnected_at?: string | null
           id?: string
           name: string
           owner_id: string
@@ -513,6 +515,7 @@ export type Database = {
         Update: {
           city?: string | null
           created_at?: string
+          disconnected_at?: string | null
           id?: string
           name?: string
           owner_id?: string

@@ -45,6 +45,7 @@ import { cn } from "@/lib/utils";
 import { getUserInitials } from "@/lib/profile-helpers";
 import { useStores } from "@/hooks/useStores";
 import { useWhatsAppConnection } from "@/hooks/useWhatsAppConnection";
+import { supabase } from "@/integrations/supabase/client";
 
 const items = [
   { title: "Dashboard", url: "/", icon: LayoutDashboard },
@@ -303,11 +304,46 @@ export function AppSidebar() {
 function WhatsAppStatusBadge({ collapsed }: { collapsed: boolean }) {
   const { currentStoreId } = useStores();
   const { connection } = useWhatsAppConnection(currentStoreId);
+  const [disconnectedAt, setDisconnectedAt] = useState<string | null>(null);
+  const [now, setNow] = useState(() => Date.now());
+
+  // Busca disconnected_at da loja atual e revalida a cada 30s
+  useEffect(() => {
+    if (!currentStoreId) {
+      setDisconnectedAt(null);
+      return;
+    }
+    let cancelled = false;
+    const fetchDisconnectedAt = async () => {
+      const { data } = await supabase
+        .from("stores")
+        .select("disconnected_at")
+        .eq("id", currentStoreId)
+        .maybeSingle();
+      if (cancelled) return;
+      setDisconnectedAt((data as { disconnected_at: string | null } | null)?.disconnected_at ?? null);
+      setNow(Date.now());
+    };
+    fetchDisconnectedAt();
+    const id = setInterval(fetchDisconnectedAt, 30_000);
+    return () => {
+      cancelled = true;
+      clearInterval(id);
+    };
+  }, [currentStoreId]);
 
   // Não mostrar badge se nunca configurou
   if (!connection) return null;
 
   const connected = connection.status === "connected";
+
+  // Banner de "desconectado" só aparece se disconnected_at > 2 min atrás
+  if (!connected) {
+    if (!disconnectedAt) return null;
+    const diffMin = (now - new Date(disconnectedAt).getTime()) / 60_000;
+    if (diffMin <= 2) return null;
+  }
+
   const label = connected ? "WhatsApp conectado" : "WhatsApp desconectado";
   const dotClass = connected ? "bg-emerald-500" : "bg-red-500";
 
