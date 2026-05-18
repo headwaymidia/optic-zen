@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import { AlertCircle, Check, CheckCheck, Clock, History, Reply, X } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { AudioPlayer } from "@/components/chat/AudioPlayer";
+import { useResolvedMediaUrl } from "@/lib/whatsapp-media";
 
 /** Splits a markdown-style quote prefix ("> ...\n\n...") from the body. */
 function parseQuote(text: string): { quote: string | null; body: string } {
