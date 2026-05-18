@@ -24,6 +24,7 @@ import Ranking from "@/pages/Ranking";
 import Planos from "@/pages/Planos";
 import Parceiro from "@/pages/Parceiro";
 import Ajuda from "@/pages/Ajuda";
+import Logs from "@/pages/Logs";
 import NotFound from "@/pages/NotFound";
 
 // Auth-only pages: lazy (logged users never revisit them)
@@ -120,6 +121,7 @@ const App = () => (
                   <Route path="/planos" element={<Planos />} />
                   <Route path="/parceiro" element={<Parceiro />} />
                   <Route path="/ajuda" element={<Ajuda />} />
+                  <Route path="/logs" element={<Logs />} />
                   <Route
                     path="/admin"
                     element={

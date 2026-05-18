@@ -15,6 +15,7 @@ import {
   Crown,
   Calendar as CalendarIcon,
   Smartphone,
+  Terminal,
 } from "lucide-react";
 import {
   Sidebar,
@@ -59,6 +60,7 @@ const items = [
 const secondaryItems = [
   { title: "Configurações", url: "/configuracoes", icon: Settings },
   { title: "WhatsApp", url: "/whatsapp-config", icon: Smartphone, requireRole: ["Dono", "Gerente"] as string[] },
+  { title: "Logs", url: "/logs", icon: Terminal, requireRole: ["Dono", "Gerente"] as string[] },
   { title: "Meu plano", url: "/planos", icon: Crown },
   { title: "Ajuda", url: "/ajuda", icon: HelpCircle },
   { title: "Seja um parceiro", url: "/parceiro", icon: Handshake },
