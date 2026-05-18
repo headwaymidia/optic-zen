@@ -62,9 +62,26 @@ export default function Contatos() {
     [leads, search, sourceFilter, tagFilter, salesFilter]
   );
 
+  const hasActiveFilter =
+    search.trim() !== "" || sourceFilter !== ALL || tagFilter !== ALL || salesFilter !== ALL;
+
+  // Quando há filtro ativo, carrega todos os leads para garantir resultados completos.
+  useEffect(() => {
+    if (hasActiveFilter && hasMore && !isFetchingMore) {
+      loadAll();
+    }
+  }, [hasActiveFilter, hasMore, isFetchingMore, loadAll]);
+
   const totalPages = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE));
   const currentPage = Math.min(page, totalPages);
   const paginated = filtered.slice((currentPage - 1) * PAGE_SIZE, currentPage * PAGE_SIZE);
+
+  // Quando o usuário chega na última página local, busca a próxima página do servidor.
+  useEffect(() => {
+    if (!hasActiveFilter && currentPage >= totalPages && hasMore && !isFetchingMore) {
+      loadMore();
+    }
+  }, [hasActiveFilter, currentPage, totalPages, hasMore, isFetchingMore, loadMore]);
 
   function openWhatsApp(phone: string | null) {
     if (!phone) return;
