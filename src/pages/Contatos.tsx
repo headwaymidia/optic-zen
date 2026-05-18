@@ -208,8 +208,13 @@ export default function Contatos() {
       </Card>
 
       <div className="flex items-center justify-between text-sm">
-        <span className="text-muted-foreground">
+        <span className="text-muted-foreground flex items-center gap-2">
           {filtered.length === 0 ? "0 contatos" : `${(currentPage - 1) * PAGE_SIZE + 1}–${Math.min(currentPage * PAGE_SIZE, filtered.length)} de ${filtered.length}`}
+          {hasMore && (
+            <span className="text-xs opacity-70">
+              {isFetchingMore ? "carregando mais..." : `(+ ${total} carregados)`}
+            </span>
+          )}
         </span>
         <div className="flex items-center gap-2">
           <Button variant="outline" size="sm" disabled={currentPage <= 1} onClick={() => setPage((p) => p - 1)}>
