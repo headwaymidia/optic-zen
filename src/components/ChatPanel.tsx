@@ -255,8 +255,15 @@ export function ChatPanel({
     );
 
     if (ok) {
+      // Refetch imediato + retries para cobrir atraso entre invoke() retornar
+      // e a Edge Function persistir a linha no banco.
       await refetchMessages();
-      setSentMessages((prev) => prev.filter((m) => m.id !== optimisticId));
+      setTimeout(() => { refetchMessages(); }, 800);
+      setTimeout(() => { refetchMessages(); }, 2000);
+      // Remove otimista só depois do segundo refetch — evita flicker de sumiço.
+      setTimeout(() => {
+        setSentMessages((prev) => prev.filter((m) => m.id !== optimisticId));
+      }, 2200);
     }
     setIsSending(false);
   };
