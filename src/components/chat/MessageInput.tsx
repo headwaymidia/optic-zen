@@ -100,7 +100,7 @@ export function MessageInput({
     `${String(Math.floor(s / 60)).padStart(2, "0")}:${String(s % 60).padStart(2, "0")}`;
 
   return (
-    <footer className="shrink-0 border-t bg-card p-2 flex items-center gap-1">
+    <footer className="shrink-0 border-t bg-card p-2 pb-[max(0.5rem,env(safe-area-inset-bottom))] flex items-center gap-1">
       {isMobile ? (
         <Sheet open={emojiOpen} onOpenChange={setEmojiOpen}>
           <SheetTrigger asChild>

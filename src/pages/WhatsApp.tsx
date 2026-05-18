@@ -128,6 +128,16 @@ export default function WhatsAppPage() {
     }
   }, [leads, searchParams, setSearchParams]);
 
+  // Mobile: when a chat is open, hide BottomNav + main pb-20 for true fullscreen chat
+  useEffect(() => {
+    if (selectedId) {
+      document.body.setAttribute("data-chat-fullscreen", "true");
+    } else {
+      document.body.removeAttribute("data-chat-fullscreen");
+    }
+    return () => document.body.removeAttribute("data-chat-fullscreen");
+  }, [selectedId]);
+
   const filtered = useMemo(() => {
     const range = getPeriodRange(period, customRange);
     const ts = (l: typeof leads[number]) => {
@@ -154,7 +164,7 @@ export default function WhatsAppPage() {
   const selected = leads.find((l) => l.id === selectedId) ?? null;
 
   return (
-    <div className="flex h-[calc(100dvh-3.5rem-5rem)] lg:h-[calc(100dvh-3.5rem)] w-full overflow-hidden bg-background">
+    <div className="flex h-[calc(100dvh-3.5rem-5rem)] md:h-[calc(100dvh-3.5rem-5rem)] lg:h-[calc(100dvh-3.5rem)] data-[chat=open]:h-[100dvh] md:data-[chat=open]:h-[calc(100dvh-3.5rem-5rem)] lg:data-[chat=open]:h-[calc(100dvh-3.5rem)] w-full overflow-hidden bg-background" data-chat={selected ? "open" : "closed"}>
       <aside
         className={cn(
           "w-full md:w-[320px] md:shrink-0 border-r flex flex-col bg-card min-h-0",
