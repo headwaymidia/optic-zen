@@ -371,8 +371,8 @@ export function ChatPanel({
       },
     ]);
 
-    // 1) Upload para o Storage e obtenção da URL assinada (usada apenas para persistência no banco).
-    let storedMediaUrl: string | null = null;
+    // 1) Upload para o Storage e obtenção da URL pública.
+    let publicMediaUrl: string | null = null;
     try {
       const ext = file.name.includes(".") ? file.name.split(".").pop() : (isImage ? "jpg" : "mp4");
       const path = `${currentStoreId}/${Date.now()}-${crypto.randomUUID()}.${ext}`;
@@ -385,35 +385,12 @@ export function ChatPanel({
         throw upErr;
       }
       console.log("[handleSendMedia] upload ok", path);
-      const { data: signed, error: signErr } = await supabase.storage
-        .from("whatsapp-media")
-        .createSignedUrl(path, 60 * 60 * 24 * 365 * 5);
-      if (signErr) throw signErr;
-      storedMediaUrl = signed?.signedUrl ?? null;
-      if (!storedMediaUrl) throw new Error("URL da mídia indisponível");
+      const { data: pub } = supabase.storage.from("whatsapp-media").getPublicUrl(path);
+      publicMediaUrl = pub?.publicUrl ?? null;
+      if (!publicMediaUrl) throw new Error("URL pública indisponível");
     } catch (e) {
       console.error("[handleSendMedia] upload error:", e);
       toast({ title: "Falha ao enviar mídia para o storage", variant: "destructive" });
-      setSentMessages((prev) => prev.filter((m) => m.id !== optimisticId));
-      return;
-    }
-
-
-    // 2) Converte para base64 puro (sem prefixo data:...;base64,) — enviado à Evolution via Edge Function.
-    let base64: string | null = null;
-    try {
-      base64 = await new Promise<string>((resolve, reject) => {
-        const reader = new FileReader();
-        reader.onload = () => {
-          const result = reader.result as string;
-          const idx = result.indexOf("base64,");
-          resolve(idx >= 0 ? result.slice(idx + 7) : result);
-        };
-        reader.onerror = () => reject(reader.error ?? new Error("Falha ao ler arquivo"));
-        reader.readAsDataURL(file);
-      });
-    } catch (e) {
-      toast({ title: "Falha ao processar arquivo", variant: "destructive" });
       setSentMessages((prev) => prev.filter((m) => m.id !== optimisticId));
       return;
     }
@@ -427,17 +404,13 @@ export function ChatPanel({
           store_id: currentStoreId,
           lead_id: lead.id,
           phone: lead.phone,
-          mediaBase64: base64,
-          storedMediaUrl,
+          mediaUrl: publicMediaUrl,
           mediaType: isImage ? "image" : "video",
           mimetype: file.type,
           fileName: file.name,
           caption: "",
         };
-        console.log("[handleSendMedia] chamando evolution", {
-          ...payload,
-          mediaBase64: `<${base64?.length ?? 0} chars>`,
-        });
+        console.log("[handleSendMedia] chamando evolution", payload);
         const { data, error } = await supabase.functions.invoke(waFunction, { body: payload });
         if (error) {
           console.error("[handleSendMedia] evolution erro", error);
@@ -451,6 +424,7 @@ export function ChatPanel({
       },
       isImage ? "Falha ao enviar imagem" : "Falha ao enviar vídeo",
     );
+
 
     if (ok) {
       await refetchMessages();
