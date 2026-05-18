@@ -1,8 +1,8 @@
-import { useRef, useState } from "react";
+import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import { Loader2, Mic, Paperclip, Send, Smile, Square, Zap } from "lucide-react";
 import EmojiPicker, { EmojiStyle, Theme } from "emoji-picker-react";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
@@ -284,18 +284,13 @@ export function MessageInput({
           </span>
         </div>
       ) : (
-        <Input
+        <AutoResizeTextarea
           value={value}
-          onChange={(e) => onChange(e.target.value)}
-          onKeyDown={(e) => {
-            if (e.key === "Enter" && !e.shiftKey) {
-              e.preventDefault();
-              if (!isSending && value.trim()) onSend();
-            }
+          onChange={onChange}
+          onEnter={() => {
+            if (!isSending && value.trim()) onSend();
           }}
-          placeholder="Digite sua mensagem..."
           disabled={isSending}
-          className="flex-1 bg-muted/50 border-0 h-9 disabled:opacity-60"
         />
       )}
       <Button
@@ -314,5 +309,48 @@ export function MessageInput({
         {pendingDef && <span className="text-xs font-semibold">Enviar FU{pendingLevel}</span>}
       </Button>
     </footer>
+  );
+}
+
+function AutoResizeTextarea({
+  value,
+  onChange,
+  onEnter,
+  disabled,
+}: {
+  value: string;
+  onChange: (v: string) => void;
+  onEnter: () => void;
+  disabled?: boolean;
+}) {
+  const ref = useRef<HTMLTextAreaElement | null>(null);
+  // ~20px line-height * 5 lines + padding
+  const MAX_HEIGHT = 116;
+
+  useLayoutEffect(() => {
+    const el = ref.current;
+    if (!el) return;
+    el.style.height = "auto";
+    const next = Math.min(el.scrollHeight, MAX_HEIGHT);
+    el.style.height = `${next}px`;
+    el.style.overflowY = el.scrollHeight > MAX_HEIGHT ? "auto" : "hidden";
+  }, [value]);
+
+  return (
+    <Textarea
+      ref={ref}
+      value={value}
+      onChange={(e) => onChange(e.target.value)}
+      onKeyDown={(e) => {
+        if (e.key === "Enter" && !e.shiftKey) {
+          e.preventDefault();
+          onEnter();
+        }
+      }}
+      rows={1}
+      placeholder="Digite sua mensagem..."
+      disabled={disabled}
+      className="flex-1 bg-muted/50 border-0 min-h-9 py-2 px-3 resize-none leading-5 text-base sm:text-sm disabled:opacity-60"
+    />
   );
 }
