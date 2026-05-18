@@ -121,6 +121,7 @@ const App = () => (
                   <Route path="/planos" element={<Planos />} />
                   <Route path="/parceiro" element={<Parceiro />} />
                   <Route path="/ajuda" element={<Ajuda />} />
+                  <Route path="/logs" element={<Logs />} />
                   <Route
                     path="/admin"
                     element={
