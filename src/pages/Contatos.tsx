@@ -46,6 +46,7 @@ export default function Contatos() {
   const [salesFilter, setSalesFilter] = useState<string>(ALL);
   const [page, setPage] = useState(1);
   const [dialogOpen, setDialogOpen] = useState(false);
+  const [importOpen, setImportOpen] = useState(false);
   const [editingLead, setEditingLead] = useState<Lead | null>(null);
 
   const filtered = useMemo(
