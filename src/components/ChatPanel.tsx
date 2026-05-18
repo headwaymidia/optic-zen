@@ -376,10 +376,15 @@ export function ChatPanel({
     try {
       const ext = file.name.includes(".") ? file.name.split(".").pop() : (isImage ? "jpg" : "mp4");
       const path = `${currentStoreId}/${Date.now()}-${crypto.randomUUID()}.${ext}`;
+      console.log("[handleSendMedia] iniciando upload", { name: file.name, size: file.size, type: file.type, path });
       const { error: upErr } = await supabase.storage
         .from("whatsapp-media")
         .upload(path, file, { contentType: file.type, upsert: false });
-      if (upErr) throw upErr;
+      if (upErr) {
+        console.error("[handleSendMedia] upload erro", upErr);
+        throw upErr;
+      }
+      console.log("[handleSendMedia] upload ok", path);
       const { data: signed, error: signErr } = await supabase.storage
         .from("whatsapp-media")
         .createSignedUrl(path, 60 * 60 * 24 * 365 * 5);
@@ -392,6 +397,7 @@ export function ChatPanel({
       setSentMessages((prev) => prev.filter((m) => m.id !== optimisticId));
       return;
     }
+
 
     // 2) Converte para base64 puro (sem prefixo data:...;base64,) — enviado à Evolution via Edge Function.
     let base64: string | null = null;
