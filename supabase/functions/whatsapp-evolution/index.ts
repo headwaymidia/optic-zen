@@ -205,7 +205,7 @@ Deno.serve(async (req) => {
         if (!/integration/i.test(msg)) break;
       }
 
-      // 2) ✅ Configura webhook automaticamente para esta instância
+      // 2) ✅ Configura webhook automaticamente para esta instância (sempre, inclusive na reconexão)
       const webhookUrl = `${SUPABASE_URL}/functions/v1/whatsapp-webhook`;
       const webhookResult = await evo(`/webhook/set/${instance}`, {
         method: "POST",
@@ -215,12 +215,17 @@ Deno.serve(async (req) => {
             byEvents: false,
             base64: false,
             enabled: true,
+            headers: {
+              Authorization: `Bearer ${SUPABASE_ANON}`,
+            },
             events: ["MESSAGES_UPSERT", "MESSAGES_UPDATE", "CONNECTION_UPDATE"],
           }
         }),
       });
       if (webhookResult.status >= 400) {
         console.error("[connect] webhook config error:", webhookResult.data);
+      } else {
+        console.log("[connect] webhook configurado com Authorization header:", instance);
       }
 
       // 3) Pega QR code
