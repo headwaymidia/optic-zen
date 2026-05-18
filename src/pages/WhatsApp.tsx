@@ -164,7 +164,7 @@ export default function WhatsAppPage() {
   const selected = leads.find((l) => l.id === selectedId) ?? null;
 
   return (
-    <div className="flex h-[100dvh] md:h-[calc(100dvh-3.5rem-5rem)] lg:h-[calc(100dvh-3.5rem)] w-full overflow-hidden bg-background data-[chat=open]:fixed data-[chat=open]:inset-0 data-[chat=open]:z-50" data-chat={selected ? "open" : "closed"}>
+    <div className="flex h-[calc(100dvh-3.5rem-5rem)] md:h-[calc(100dvh-3.5rem-5rem)] lg:h-[calc(100dvh-3.5rem)] data-[chat=open]:h-[100dvh] md:data-[chat=open]:h-[calc(100dvh-3.5rem-5rem)] lg:data-[chat=open]:h-[calc(100dvh-3.5rem)] w-full overflow-hidden bg-background" data-chat={selected ? "open" : "closed"}>
       <aside
         className={cn(
           "w-full md:w-[320px] md:shrink-0 border-r flex flex-col bg-card min-h-0",
