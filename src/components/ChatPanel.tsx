@@ -376,10 +376,15 @@ export function ChatPanel({
     try {
       const ext = file.name.includes(".") ? file.name.split(".").pop() : (isImage ? "jpg" : "mp4");
       const path = `${currentStoreId}/${Date.now()}-${crypto.randomUUID()}.${ext}`;
+      console.log("[handleSendMedia] iniciando upload", { name: file.name, size: file.size, type: file.type, path });
       const { error: upErr } = await supabase.storage
         .from("whatsapp-media")
         .upload(path, file, { contentType: file.type, upsert: false });
-      if (upErr) throw upErr;
+      if (upErr) {
+        console.error("[handleSendMedia] upload erro", upErr);
+        throw upErr;
+      }
+      console.log("[handleSendMedia] upload ok", path);
       const { data: signed, error: signErr } = await supabase.storage
         .from("whatsapp-media")
         .createSignedUrl(path, 60 * 60 * 24 * 365 * 5);
@@ -392,6 +397,7 @@ export function ChatPanel({
       setSentMessages((prev) => prev.filter((m) => m.id !== optimisticId));
       return;
     }
+
 
     // 2) Converte para base64 puro (sem prefixo data:...;base64,) — enviado à Evolution via Edge Function.
     let base64: string | null = null;
@@ -416,25 +422,36 @@ export function ChatPanel({
       optimisticId,
       async () => {
         await ensureWhatsAppConnected();
-        const { data, error } = await supabase.functions.invoke(waFunction, {
-          body: {
-            action: "sendMessage",
-            store_id: currentStoreId,
-            lead_id: lead.id,
-            phone: lead.phone,
-            mediaBase64: base64,
-            storedMediaUrl,
-            mediaType: isImage ? "image" : "video",
-            mimetype: file.type,
-            fileName: file.name,
-            caption: "",
-          },
+        const payload = {
+          action: "sendMessage",
+          store_id: currentStoreId,
+          lead_id: lead.id,
+          phone: lead.phone,
+          mediaBase64: base64,
+          storedMediaUrl,
+          mediaType: isImage ? "image" : "video",
+          mimetype: file.type,
+          fileName: file.name,
+          caption: "",
+        };
+        console.log("[handleSendMedia] chamando evolution", {
+          ...payload,
+          mediaBase64: `<${base64?.length ?? 0} chars>`,
         });
-        if (error) throw error;
-        if (data?.error) throw new Error(data.error);
+        const { data, error } = await supabase.functions.invoke(waFunction, { body: payload });
+        if (error) {
+          console.error("[handleSendMedia] evolution erro", error);
+          throw error;
+        }
+        if (data?.error) {
+          console.error("[handleSendMedia] evolution erro", data.error);
+          throw new Error(data.error);
+        }
+        console.log("[handleSendMedia] evolution response", data);
       },
       isImage ? "Falha ao enviar imagem" : "Falha ao enviar vídeo",
     );
+
     if (ok) {
       await refetchMessages();
       setSentMessages((prev) => prev.filter((m) => m.id !== optimisticId));
