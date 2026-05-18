@@ -287,7 +287,9 @@ export default function WhatsAppPage() {
                 onClick={async () => {
                   setSelectedId(lead.id);
                   if ((lead.unread_count ?? 0) > 0) {
-                    await supabase.rpc("reset_unread", { p_lead_id: lead.id });
+                    // Zera localmente de imediato para o badge sumir sem esperar o realtime
+                    updateLead({ leadId: lead.id, patch: { unread_count: 0 } });
+                    supabase.rpc("reset_unread", { p_lead_id: lead.id }).then(() => {});
                   }
                 }}
                 className={cn(

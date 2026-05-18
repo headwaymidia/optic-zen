@@ -99,6 +99,15 @@ export function useWhatsAppMessages(leadId: string | undefined) {
             return;
           }
 
+          // Se chegou mensagem recebida (not from_me) enquanto a conversa está aberta,
+          // zera o unread automaticamente — sem precisar clicar de novo.
+          if (payload.eventType === "INSERT") {
+            const newMsg = payload.new as Partial<WhatsAppMessageRow> | undefined;
+            if (newMsg && newMsg.from_me === false) {
+              supabase.rpc("reset_unread", { p_lead_id: leadId }).then(() => {});
+            }
+          }
+
           setMessages((old) => {
             if (payload.eventType === "DELETE") {
               const oldRow = payload.old as Partial<WhatsAppMessageRow> | undefined;
