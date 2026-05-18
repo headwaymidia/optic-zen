@@ -123,7 +123,8 @@ export default function Contatos() {
         </Select>
       </div>
 
-      <Card>
+      <Card className="overflow-hidden">
+        <div className="overflow-x-auto">
         <Table>
           <TableHeader>
             <TableRow>
