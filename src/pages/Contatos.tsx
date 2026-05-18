@@ -11,9 +11,10 @@ import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { LeadDialog } from "@/components/LeadDialog";
 import { PhoneLink } from "@/components/PhoneLink";
-import { Plus, MessageCircle, ChevronLeft, ChevronRight, Users } from "lucide-react";
+import { Plus, MessageCircle, ChevronLeft, ChevronRight, Users, Upload } from "lucide-react";
 import { DataSkeleton } from "@/components/ui/DataSkeleton";
 import { EmptyState } from "@/components/ui/EmptyState";
+import { ImportLeadsDialog } from "@/components/ImportLeadsDialog";
 
 const PAGE_SIZE = 10;
 const ALL = "__all__";
@@ -45,6 +46,7 @@ export default function Contatos() {
   const [salesFilter, setSalesFilter] = useState<string>(ALL);
   const [page, setPage] = useState(1);
   const [dialogOpen, setDialogOpen] = useState(false);
+  const [importOpen, setImportOpen] = useState(false);
   const [editingLead, setEditingLead] = useState<Lead | null>(null);
 
   const filtered = useMemo(
@@ -81,9 +83,14 @@ export default function Contatos() {
           <h1 className="text-2xl font-semibold tracking-tight">Contatos</h1>
           <p className="text-sm text-muted-foreground">Lista completa de leads da sua ótica.</p>
         </div>
-        <Button onClick={() => { setEditingLead(null); setDialogOpen(true); }}>
-          <Plus className="h-4 w-4 mr-2" /> Novo lead
-        </Button>
+        <div className="flex items-center gap-2">
+          <Button variant="outline" onClick={() => setImportOpen(true)}>
+            <Upload className="h-4 w-4 mr-2" /> Importar CSV
+          </Button>
+          <Button onClick={() => { setEditingLead(null); setDialogOpen(true); }}>
+            <Plus className="h-4 w-4 mr-2" /> Novo lead
+          </Button>
+        </div>
       </div>
 
       <div className="flex flex-wrap gap-2 items-center">
@@ -202,6 +209,7 @@ export default function Contatos() {
         lead={editingLead}
         onSaved={refetch}
       />
+      <ImportLeadsDialog open={importOpen} onOpenChange={setImportOpen} onImported={refetch} />
     </div>
   );
 }
