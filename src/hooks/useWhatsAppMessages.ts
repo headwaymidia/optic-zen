@@ -126,7 +126,7 @@ export function useWhatsAppMessages(leadId: string | undefined) {
     return () => {
       supabase.removeChannel(channel);
     };
-  }, [leadId, currentStoreId]);
+  }, [leadId, currentStoreId, fetchMessages]);
 
   const refetch = useCallback(() => fetchMessages(), [fetchMessages]);
 
