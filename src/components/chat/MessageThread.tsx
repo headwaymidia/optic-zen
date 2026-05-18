@@ -41,17 +41,18 @@ function MediaPlaceholder({ label }: { label: string }) {
 }
 
 function MessageContent({ media_type, media_url, text, onImageClick }: { media_type?: string | null; media_url?: string | null; text: string; onImageClick?: (url: string) => void }) {
+  const resolvedUrl = useResolvedMediaUrl(media_url);
   if (media_type === "audio") {
-    return media_url ? <AudioPlayer src={media_url} /> : <MediaPlaceholder label="🎵 Áudio indisponível" />;
+    return resolvedUrl ? <AudioPlayer src={resolvedUrl} /> : <MediaPlaceholder label="🎵 Áudio indisponível" />;
   }
   if (media_type === "image") {
-    if (!media_url) return <MediaPlaceholder label="📷 Imagem indisponível" />;
+    if (!resolvedUrl) return <MediaPlaceholder label="📷 Carregando imagem…" />;
     return (
       <img
-        src={media_url}
+        src={resolvedUrl}
         alt="imagem"
         loading="lazy"
-        onClick={() => onImageClick?.(media_url)}
+        onClick={() => onImageClick?.(resolvedUrl)}
         onError={(e) => {
           (e.currentTarget as HTMLImageElement).style.display = "none";
         }}
@@ -60,18 +61,18 @@ function MessageContent({ media_type, media_url, text, onImageClick }: { media_t
     );
   }
   if (media_type === "video") {
-    if (!media_url) return <MediaPlaceholder label="🎬 Vídeo indisponível" />;
+    if (!resolvedUrl) return <MediaPlaceholder label="🎬 Carregando vídeo…" />;
     return (
       <video
         controls
-        src={media_url}
+        src={resolvedUrl}
         className="rounded-lg w-full h-auto max-w-full sm:max-w-[280px]"
       />
     );
   }
   if (media_type === "document") {
-    return media_url ? (
-      <a href={media_url} target="_blank" rel="noreferrer" className="text-xs underline">
+    return resolvedUrl ? (
+      <a href={resolvedUrl} target="_blank" rel="noreferrer" className="text-xs underline">
         📎 Documento
       </a>
     ) : (
