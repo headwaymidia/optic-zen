@@ -1,5 +1,4 @@
-import { useEffect } from "react";
-import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useStores } from "@/hooks/useStores";
 
@@ -20,76 +19,90 @@ export interface WhatsAppMessageRow {
 }
 
 export function useWhatsAppMessages(leadId: string | undefined) {
-  const queryClient = useQueryClient();
   const { currentStoreId } = useStores();
-  const queryKey = ["messages", leadId] as const;
+  const [messages, setMessages] = useState<WhatsAppMessageRow[]>([]);
+  const [loading, setLoading] = useState<boolean>(false);
+  const [error, setError] = useState<Error | null>(null);
+  // Token de geração para evitar race conditions ao trocar de conversa rapidamente.
+  const reqIdRef = useRef(0);
 
-  const { data: messages = [], isLoading, refetch } = useQuery({
-    queryKey,
-    enabled: !!leadId && !!currentStoreId,
-    queryFn: async () => {
-      if (import.meta.env.DEV) console.log("[useWhatsAppMessages] querying with lead_id =", leadId);
-      const { data, error } = await supabase
-        .from("whatsapp_messages")
-        .select("*")
-        .eq("lead_id", leadId!)
-        .eq("store_id", currentStoreId!)
-        .order("timestamp", { ascending: true });
-      if (import.meta.env.DEV) console.log("[useWhatsAppMessages] leadId:", leadId, "result:", data, "error:", error);
-      if (error) throw error;
-      return (data ?? []) as WhatsAppMessageRow[];
+  const fetchMessages = useCallback(
+    async (signal?: AbortSignal) => {
+      // Sem leadId/storeId não há o que buscar — garantimos loading=false.
+      if (!leadId || !currentStoreId) {
+        setMessages([]);
+        setLoading(false);
+        setError(null);
+        return;
+      }
+      const myReq = ++reqIdRef.current;
+      setLoading(true);
+      setError(null);
+      try {
+        const query = supabase
+          .from("whatsapp_messages")
+          .select("*")
+          .eq("lead_id", leadId)
+          .eq("store_id", currentStoreId)
+          .order("timestamp", { ascending: true });
+        const { data, error: qErr } = signal
+          ? await (query as any).abortSignal(signal)
+          : await query;
+        if (signal?.aborted || myReq !== reqIdRef.current) return;
+        if (qErr) throw qErr;
+        setMessages((data ?? []) as WhatsAppMessageRow[]);
+      } catch (err: any) {
+        if (signal?.aborted || myReq !== reqIdRef.current) return;
+        if (err?.name === "AbortError") return;
+        console.error("[useWhatsAppMessages] erro ao buscar", err);
+        setError(err instanceof Error ? err : new Error(String(err)));
+        setMessages([]);
+      } finally {
+        // Sempre desliga o loading — sucesso, erro ou abort tardio do request atual.
+        if (myReq === reqIdRef.current) setLoading(false);
+      }
     },
-  });
+    [leadId, currentStoreId]
+  );
 
+  // Fetch inicial + cleanup (cancela request anterior ao trocar de lead/loja).
+  useEffect(() => {
+    const controller = new AbortController();
+    fetchMessages(controller.signal);
+    return () => {
+      controller.abort();
+    };
+  }, [fetchMessages]);
+
+  // Realtime: aplica patches locais sem refazer fetch.
   useEffect(() => {
     if (!leadId) return;
-    // Canal único por (store, lead). Realtime aceita apenas 1 expressão de filtro,
-    // então filtramos por lead_id e validamos store_id no handler.
     const channelName = `wa-msgs-${currentStoreId ?? "no-store"}-${leadId}`;
-    if (import.meta.env.DEV) {
-      console.log("[useWhatsAppMessages] subscribing channel", channelName, {
-        storeId: currentStoreId,
-        leadId,
-      });
-    }
     const channel = supabase
       .channel(channelName)
       .on(
         "postgres_changes",
-        {
-          event: "*",
-          schema: "public",
-          table: "whatsapp_messages",
-          // Sem filtro server-side: filtros do Realtime falham silenciosamente em
-          // alguns cenários (reconnect, múltiplos canais na mesma tabela).
-          // Filtramos no handler para garantir entrega.
-        },
+        { event: "*", schema: "public", table: "whatsapp_messages" },
         (payload) => {
           const row = (payload.new ?? payload.old) as Partial<WhatsAppMessageRow> | undefined;
           if (!row?.lead_id || row.lead_id !== leadId) return;
-          if (currentStoreId && row?.store_id && row.store_id !== currentStoreId) {
-            if (import.meta.env.DEV) {
-              console.log("[useWhatsAppMessages] payload de outra loja ignorado", row.store_id);
-            }
-            return;
-          }
-          if (import.meta.env.DEV) {
-            console.log("[useWhatsAppMessages] realtime payload", payload.eventType, row);
-          }
+          if (currentStoreId && row?.store_id && row.store_id !== currentStoreId) return;
 
-          // IMPORTANTE: usar a MESMA query key do useQuery acima como fonte única.
-          // Nunca substituir o array inteiro — apenas remover, ignorar duplicados ou anexar.
-          queryClient.setQueryData<WhatsAppMessageRow[]>(queryKey, (old) => {
+          setMessages((old) => {
             if (payload.eventType === "DELETE") {
               const oldRow = payload.old as Partial<WhatsAppMessageRow> | undefined;
-              if (!oldRow?.id) return old ?? [];
-              return (old ?? []).filter((m) => m.id !== oldRow.id);
+              if (!oldRow?.id) return old;
+              return old.filter((m) => m.id !== oldRow.id);
             }
             const newMessage = payload.new as WhatsAppMessageRow | undefined;
-            if (!newMessage?.id) return old ?? [];
-            const exists = old?.find((m) => m.id === newMessage.id);
-            if (exists) return old ?? [];
-            const next = [...(old ?? []), newMessage];
+            if (!newMessage?.id) return old;
+            const idx = old.findIndex((m) => m.id === newMessage.id);
+            if (idx >= 0) {
+              const next = [...old];
+              next[idx] = { ...next[idx], ...newMessage };
+              return next;
+            }
+            const next = [...old, newMessage];
             next.sort(
               (a, b) => new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime()
             );
@@ -97,15 +110,13 @@ export function useWhatsAppMessages(leadId: string | undefined) {
           });
         }
       )
-      .subscribe((status) => {
-        if (import.meta.env.DEV) {
-          console.log("[useWhatsAppMessages] subscription status:", status, channelName);
-        }
-      });
+      .subscribe();
     return () => {
       supabase.removeChannel(channel);
     };
-  }, [leadId, currentStoreId, queryClient]);
+  }, [leadId, currentStoreId]);
 
-  return { messages, loading: isLoading, refetch };
+  const refetch = useCallback(() => fetchMessages(), [fetchMessages]);
+
+  return { messages, loading, error, refetch };
 }
