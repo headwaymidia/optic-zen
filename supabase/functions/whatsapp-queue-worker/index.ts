@@ -14,6 +14,13 @@ const SUPABASE_URL = Deno.env.get("SUPABASE_URL")!;
 const SERVICE_ROLE = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
 const MAX_RETRIES = 10; // Após 10 tentativas, marca como failed
 
+// Throttle — protege contra ban do WhatsApp
+const DELAY_BETWEEN_MSGS_MS = 1200;  // 1.2s entre mensagens da mesma instância
+const MAX_PER_INSTANCE = 20;          // Máximo 20 por instância por rodada (2min)
+const MAX_TOTAL = 40;                 // Máximo total por rodada
+
+const sleep = (ms: number) => new Promise((res) => setTimeout(res, ms));
+
 
 // Fetch com timeout para evitar travamentos esperando Evolution API
 async function fetchWithTimeout(url: string, init: RequestInit = {}, timeoutMs = 10000): Promise<Response> {
@@ -59,43 +66,64 @@ Deno.serve(async (req) => {
       .select("*")
       .eq("status", "queued")
       .eq("from_me", true)
-      .lt("retry_count", MAX_RETRIES) // Ignorar mensagens que esgotaram tentativas
+      .lt("retry_count", MAX_RETRIES)
       .order("created_at", { ascending: true })
-      .limit(50);
+      .limit(MAX_TOTAL);
     if (qErr) throw qErr;
 
     result.picked = queued?.length ?? 0;
 
+    // Agrupar por instância para aplicar throttle correto
+    const byInstance = new Map<string, typeof queued>();
     for (const msg of queued ?? []) {
+      const key = msg.store_id;
+      if (!byInstance.has(key)) byInstance.set(key, []);
+      byInstance.get(key)!.push(msg);
+    }
+
+    for (const [storeId, msgs] of byInstance) {
+      // Verificar conexão uma vez por loja (não por mensagem)
+      const { data: conn } = await admin
+        .from("whatsapp_connections")
+        .select("*")
+        .eq("store_id", storeId)
+        .maybeSingle();
+
+      if (!conn || conn.provider !== "evolution") {
+        result.skipped += msgs.length;
+        continue;
+      }
+
+      const instance = conn.evolution_instance_name ?? `loja-${storeId}`;
+
+      // Verificar estado da Evolution uma vez por loja
+      const state = await evo(`/instance/connectionState/${instance}`);
+      const evoState = state.data?.instance?.state ?? state.data?.state;
+      if (evoState !== "open") {
+        result.skipped += msgs.length;
+        continue;
+      }
+
+      // Limitar a MAX_PER_INSTANCE mensagens por loja por rodada
+      const batch = msgs.slice(0, MAX_PER_INSTANCE);
+      if (msgs.length > MAX_PER_INSTANCE) {
+        console.warn(`[queue-worker] throttle: loja ${storeId} tem ${msgs.length} mensagens, processando apenas ${MAX_PER_INSTANCE}`);
+      }
+
+      let sentThisBatch = 0;
+
+      for (const msg of batch) {
       try {
-        // Verifica conexão da loja
-        const { data: conn } = await admin
-          .from("whatsapp_connections")
-          .select("*")
-          .eq("store_id", msg.store_id)
-          .maybeSingle();
-
-        if (!conn || conn.provider !== "evolution") {
-          result.skipped++;
-          continue;
-        }
-
-        const instance =
-          conn.evolution_instance_name ?? `loja-${msg.store_id}`;
-
-        // Confirma estado real na Evolution
-        const state = await evo(`/instance/connectionState/${instance}`);
-        const evoState = state.data?.instance?.state ?? state.data?.state;
-        if (evoState !== "open") {
-          result.skipped++;
-          continue;
-        }
-
         const remoteJid: string = msg.remote_jid ?? "";
         const phoneDigits = remoteJid.replace(/\D/g, "");
         if (!phoneDigits) {
           result.skipped++;
           continue;
+        }
+
+        // ⏱ Throttle: aguardar entre mensagens da mesma instância
+        if (sentThisBatch > 0) {
+          await sleep(DELAY_BETWEEN_MSGS_MS);
         }
 
         let send: { status: number; data: any };
@@ -170,12 +198,14 @@ Deno.serve(async (req) => {
             .eq("id", msg.lead_id);
         }
 
+        sentThisBatch++;
         result.sent++;
       } catch (e) {
         result.failed++;
         console.error("[queue-worker] erro msg", msg.id, e);
       }
-    }
+      } // end for msg
+    } // end for instance
 
     return new Response(JSON.stringify({ ok: true, ...result }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
