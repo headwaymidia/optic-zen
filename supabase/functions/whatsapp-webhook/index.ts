@@ -286,6 +286,29 @@ Deno.serve(async (req)=>{
               _preview: previewText,
               _ts: timestamp
             });
+
+            // Enviar push notification para os dispositivos da loja (best-effort)
+            if (storeId) {
+              const { data: leadData } = await admin
+                .from("leads")
+                .select("name")
+                .eq("id", leadId)
+                .maybeSingle();
+              const senderName = leadData?.name ?? "Cliente";
+              fetch(`${SUPABASE_URL}/functions/v1/send-push-notification`, {
+                method: "POST",
+                headers: {
+                  "Content-Type": "application/json",
+                  "Authorization": `Bearer ${SERVICE_ROLE}`,
+                },
+                body: JSON.stringify({
+                  store_id: storeId,
+                  title: senderName,
+                  body: previewText || "Nova mensagem",
+                  lead_id: leadId,
+                }),
+              }).catch(() => {}); // Nunca bloqueia o webhook
+            }
             if (rpcErr) {
               const { data: leadCur } = await admin.from("leads").select("unread_count").eq("id", leadId).maybeSingle();
               const next = (leadCur?.unread_count ?? 0) + 1;

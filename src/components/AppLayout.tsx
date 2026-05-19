@@ -4,6 +4,7 @@ import { AppSidebar } from "./AppSidebar";
 import { BottomNav } from "./BottomNav";
 import { ThemeToggle } from "./ThemeToggle";
 import { NotificationBell } from "./NotificationBell";
+import { PushNotificationBell } from "./PushNotificationBell";
 import { TrialBanner } from "./TrialBanner";
 import { useAuth } from "@/hooks/useAuth";
 import { LeadsProvider } from "@/hooks/useLeads";
@@ -72,6 +73,7 @@ export default function AppLayout() {
                   </div>
                   <div className="flex items-center gap-1">
                     <NotificationBell />
+                    <PushNotificationBell />
                     <ThemeToggle />
                   </div>
                 </header>

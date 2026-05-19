@@ -97,6 +97,7 @@ interface Props {
   sentMessages: SentMessage[];
   isTyping: boolean;
   onReply?: (m: ChatMessage) => void;
+  onRetry?: (m: SentMessage) => void;
   leadId?: string;
 }
 
@@ -108,7 +109,7 @@ function QuoteBlock({ text }: { text: string }) {
   );
 }
 
-export function MessageThread({ messages, sentMessages, isTyping, onReply, leadId }: Props) {
+export function MessageThread({ messages, sentMessages, isTyping, onReply, onRetry, leadId }: Props) {
   const endRef = useRef<HTMLDivElement | null>(null);
   const [lightbox, setLightbox] = useState<string | null>(null);
 
@@ -184,9 +185,15 @@ export function MessageThread({ messages, sentMessages, isTyping, onReply, leadI
       })}
       {sentMessages.map((m, i) => {
         const { quote, body } = parseQuote(m.text ?? "");
+        const isFailed = m.status === "failed";
         return (
-          <div key={`sent-${i}`} className="flex justify-end">
-            <div className="max-w-[80%] rounded-2xl px-3 py-1.5 shadow-sm text-sm bg-green-100 text-foreground rounded-br-sm dark:bg-green-900/40">
+          <div key={`sent-${i}`} className="flex justify-end flex-col items-end gap-0.5">
+            <div className={cn(
+              "max-w-[80%] rounded-2xl px-3 py-1.5 shadow-sm text-sm rounded-br-sm",
+              isFailed
+                ? "bg-red-50 dark:bg-red-900/20 ring-1 ring-red-300 dark:ring-red-700"
+                : "bg-green-100 text-foreground dark:bg-green-900/40"
+            )}>
               {quote && <QuoteBlock text={quote} />}
               <MessageContent media_type={m.media_type} media_url={m.media_url} text={body} onImageClick={setLightbox} />
               <p className="text-[10px] text-muted-foreground mt-0.5 text-right flex items-center justify-end gap-1">
@@ -194,6 +201,20 @@ export function MessageThread({ messages, sentMessages, isTyping, onReply, leadI
                 <StatusTicks status={m.status ?? "sent"} />
               </p>
             </div>
+            {isFailed && (
+              <div className="flex items-center gap-2 pr-1">
+                <span className="text-[10px] text-red-500 font-medium">Falha no envio</span>
+                {onRetry && (
+                  <button
+                    type="button"
+                    onClick={() => onRetry(m)}
+                    className="text-[10px] text-primary underline hover:no-underline font-medium"
+                  >
+                    Tentar novamente
+                  </button>
+                )}
+              </div>
+            )}
           </div>
         );
       })}

@@ -612,6 +612,36 @@ export function ChatPanel({
               sentMessages={searchQuery ? [] : sentMessages}
               isTyping={searchQuery ? false : isTyping}
               onReply={(m) => setReplyTo({ from: m.from, text: m.text })}
+              onRetry={async (m) => {
+                if (!m.id) return;
+                updateOptimistic(m.id, { status: "sending" });
+                const textToSend = m.text ?? "";
+                const ok = await sendWithRetry(
+                  m.id,
+                  async () => {
+                    await ensureWhatsAppConnected();
+                    const { data, error } = await supabase.functions.invoke(waFunction, {
+                      body: {
+                        action: "sendMessage",
+                        store_id: currentStoreId,
+                        lead_id: lead.id,
+                        phone: lead.phone,
+                        message: textToSend,
+                      },
+                    });
+                    if (error) throw error;
+                    if (data?.error) throw new Error(data.error);
+                  },
+                  "Falha ao reenviar mensagem",
+                  async () => enqueueMessage({ body: textToSend }),
+                );
+                if (ok) {
+                  await refetchMessages();
+                  setTimeout(() => {
+                    setSentMessages((prev) => prev.filter((msg) => msg.id !== m.id));
+                  }, 2000);
+                }
+              }}
               leadId={lead.id}
             />
           </div>
