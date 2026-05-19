@@ -12,6 +12,7 @@ import { cn } from "@/lib/utils";
 import type { FollowUpDef, FollowUpLevel } from "@/lib/followUpScripts";
 import { useQuickTemplates } from "@/hooks/useQuickTemplates";
 import { QuickTemplatesManager } from "@/components/chat/QuickTemplatesManager";
+import { METODO_OD } from "@/lib/metodoOD";
 
 interface Props {
   value: string;
@@ -50,6 +51,8 @@ export function MessageInput({
   const isMobile = useIsMobile();
   const [isRecording, setIsRecording] = useState(false);
   const [managerOpen, setManagerOpen] = useState(false);
+  const [activeTab, setActiveTab] = useState<"templates" | "metodo">("templates");
+  const [activeEtapa, setActiveEtapa] = useState<string | null>(null);
   const { templates, applyTemplate } = useQuickTemplates(storeId);
   const [elapsed, setElapsed] = useState(0);
   const recorderRef = useRef<MediaRecorder | null>(null);
@@ -239,58 +242,134 @@ export function MessageInput({
             </TooltipTrigger>
             <TooltipContent side="top">Respostas Rápidas</TooltipContent>
           </Tooltip>
-          <PopoverContent side="top" align="start" className="w-72 p-2">
-            <div className="flex items-center justify-between px-2 py-1.5">
-              <span className="text-[11px] font-medium text-muted-foreground uppercase tracking-wide">
-                Respostas Rápidas
-              </span>
-              {canEdit && (
-                <Button
-                  size="icon"
-                  variant="ghost"
-                  className="h-5 w-5"
-                  onClick={() => { setScriptsOpen(false); setManagerOpen(true); }}
-                  title="Gerenciar templates"
-                >
-                  <Settings2 className="h-3 w-3" />
-                </Button>
-              )}
+          <PopoverContent side="top" align="start" className="w-80 p-0 overflow-hidden">
+            {/* Abas */}
+            <div className="flex border-b">
+              <button
+                type="button"
+                onClick={() => setActiveTab("templates")}
+                className={cn(
+                  "flex-1 px-3 py-2 text-xs font-semibold transition-colors",
+                  activeTab === "templates"
+                    ? "bg-background text-foreground border-b-2 border-primary"
+                    : "text-muted-foreground hover:text-foreground"
+                )}
+              >
+                ⚡ Meus Templates
+              </button>
+              <button
+                type="button"
+                onClick={() => { setActiveTab("metodo"); setActiveEtapa(null); }}
+                className={cn(
+                  "flex-1 px-3 py-2 text-xs font-semibold transition-colors",
+                  activeTab === "metodo"
+                    ? "bg-background text-foreground border-b-2 border-primary"
+                    : "text-muted-foreground hover:text-foreground"
+                )}
+              >
+                🎯 Método OD
+              </button>
             </div>
-            <div className="space-y-1 max-h-64 overflow-y-auto">
-              {templates.length === 0 ? (
-                <p className="text-xs text-muted-foreground px-2 py-3 text-center">
-                  Nenhum template ainda.{canEdit ? " Clique em ⚙ para criar." : ""}
-                </p>
-              ) : (
-                templates.map((t) => (
-                  <button
-                    key={t.id}
-                    type="button"
-                    onClick={() => {
-                      const resolved = applyTemplate(t.body, { nome: leadName ?? "cliente" });
-                      onChange(resolved);
-                      setScriptsOpen(false);
-                    }}
-                    className="w-full text-left rounded-md px-2 py-2 text-sm hover:bg-accent hover:text-accent-foreground transition-colors"
-                  >
-                    <div className="font-medium">{t.title}</div>
-                    <div className="text-[11px] text-muted-foreground line-clamp-2 mt-0.5">
-                      {t.body.replace(/\{nome\}/g, leadName ?? "cliente")}
+
+            {/* Aba: Meus Templates */}
+            {activeTab === "templates" && (
+              <div>
+                <div className="space-y-0.5 max-h-64 overflow-y-auto p-1.5">
+                  {templates.length === 0 ? (
+                    <p className="text-xs text-muted-foreground px-2 py-4 text-center">
+                      Nenhum template ainda.{canEdit ? " Clique em ⚙ para criar." : ""}
+                    </p>
+                  ) : (
+                    templates.map((t) => (
+                      <button
+                        key={t.id}
+                        type="button"
+                        onClick={() => {
+                          const resolved = applyTemplate(t.body, { nome: leadName ?? "cliente" });
+                          onChange(resolved);
+                          setScriptsOpen(false);
+                        }}
+                        className="w-full text-left rounded-md px-2 py-2 text-sm hover:bg-accent hover:text-accent-foreground transition-colors"
+                      >
+                        <div className="font-medium text-xs">{t.title}</div>
+                        <div className="text-[11px] text-muted-foreground line-clamp-1 mt-0.5">
+                          {t.body.replace(/\{nome\}/g, leadName ?? "cliente")}
+                        </div>
+                      </button>
+                    ))
+                  )}
+                </div>
+                {canEdit && (
+                  <div className="border-t p-1">
+                    <button
+                      type="button"
+                      onClick={() => { setScriptsOpen(false); setManagerOpen(true); }}
+                      className="w-full text-left rounded-md px-2 py-1.5 text-xs text-muted-foreground hover:bg-accent hover:text-accent-foreground transition-colors flex items-center gap-1.5"
+                    >
+                      <Settings2 className="h-3 w-3" />
+                      Gerenciar templates
+                    </button>
+                  </div>
+                )}
+              </div>
+            )}
+
+            {/* Aba: Método OD */}
+            {activeTab === "metodo" && (
+              <div className="max-h-72 overflow-y-auto">
+                {activeEtapa === null ? (
+                  /* Lista de etapas */
+                  <div className="p-1.5 space-y-0.5">
+                    {METODO_OD.map((etapa) => (
+                      <button
+                        key={etapa.id}
+                        type="button"
+                        onClick={() => setActiveEtapa(etapa.id)}
+                        className="w-full text-left rounded-md px-3 py-2.5 text-sm hover:bg-accent hover:text-accent-foreground transition-colors flex items-center justify-between gap-2"
+                      >
+                        <span className="flex items-center gap-2 font-medium text-xs">
+                          <span>{etapa.emoji}</span>
+                          {etapa.title}
+                        </span>
+                        <span className="text-[10px] text-muted-foreground">{etapa.scripts.length} roteiros →</span>
+                      </button>
+                    ))}
+                  </div>
+                ) : (
+                  /* Scripts da etapa selecionada */
+                  <div>
+                    <button
+                      type="button"
+                      onClick={() => setActiveEtapa(null)}
+                      className="flex items-center gap-1.5 px-3 py-2 text-xs text-muted-foreground hover:text-foreground border-b w-full transition-colors"
+                    >
+                      ← Voltar
+                    </button>
+                    <div className="p-1.5 space-y-0.5">
+                      {METODO_OD.find(e => e.id === activeEtapa)?.scripts.map((s) => (
+                        <button
+                          key={s.id}
+                          type="button"
+                          onClick={() => {
+                            const resolved = s.body
+                              .replace(/\{nome\}/g, leadName ?? "cliente")
+                              .replace(/\{vendedora\}/g, "")
+                              .replace(/\{loja\}/g, "");
+                            onChange(resolved);
+                            setScriptsOpen(false);
+                            setActiveEtapa(null);
+                          }}
+                          className="w-full text-left rounded-md px-2 py-2 text-sm hover:bg-accent hover:text-accent-foreground transition-colors"
+                        >
+                          <div className="font-medium text-xs">{s.label}</div>
+                          <div className="text-[11px] text-muted-foreground line-clamp-2 mt-0.5">
+                            {s.body.replace(/\{nome\}/g, leadName ?? "cliente").replace(/\{vendedora\}/g, "").replace(/\{loja\}/g, "")}
+                          </div>
+                        </button>
+                      ))}
                     </div>
-                  </button>
-                ))
-              )}
-            </div>
-            {canEdit && (
-              <div className="border-t mt-1 pt-1">
-                <button
-                  type="button"
-                  onClick={() => { setScriptsOpen(false); setManagerOpen(true); }}
-                  className="w-full text-left rounded-md px-2 py-1.5 text-xs text-muted-foreground hover:bg-accent hover:text-accent-foreground transition-colors flex items-center gap-1.5"
-                >
-                  <Settings2 className="h-3 w-3" />
-                  Gerenciar respostas rápidas
-                </button>
+                  </div>
+                )}
               </div>
             )}
           </PopoverContent>
