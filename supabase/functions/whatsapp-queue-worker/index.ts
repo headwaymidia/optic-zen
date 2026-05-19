@@ -15,9 +15,9 @@ const SERVICE_ROLE = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
 const MAX_RETRIES = 10; // Após 10 tentativas, marca como failed
 
 // Throttle — protege contra ban do WhatsApp
-const DELAY_BETWEEN_MSGS_MS = 1200;  // 1.2s entre mensagens da mesma instância
-const MAX_PER_INSTANCE = 20;          // Máximo 20 por instância por rodada (2min)
-const MAX_TOTAL = 40;                 // Máximo total por rodada
+// 1.2s entre mensagens da MESMA instância é a taxa segura
+// Não há limite de volume — cada loja processa tudo em fila ordenada
+const DELAY_BETWEEN_MSGS_MS = 1200;
 
 const sleep = (ms: number) => new Promise((res) => setTimeout(res, ms));
 
@@ -68,7 +68,7 @@ Deno.serve(async (req) => {
       .eq("from_me", true)
       .lt("retry_count", MAX_RETRIES)
       .order("created_at", { ascending: true })
-      .limit(MAX_TOTAL);
+      .limit(200);
     if (qErr) throw qErr;
 
     result.picked = queued?.length ?? 0;
@@ -81,54 +81,54 @@ Deno.serve(async (req) => {
       byInstance.get(key)!.push(msg);
     }
 
-    for (const [storeId, msgs] of byInstance) {
-      // Verificar conexão uma vez por loja (não por mensagem)
-      const { data: conn } = await admin
-        .from("whatsapp_connections")
-        .select("*")
-        .eq("store_id", storeId)
-        .maybeSingle();
+    // Processar lojas em paralelo — cada loja tem seu próprio throttle
+    // Isso garante que loja A não bloqueia loja B
+    const storeResults = await Promise.all(
+      Array.from(byInstance.entries()).map(async ([storeId, msgs]) => {
+        const storeResult = { sent: 0, skipped: 0, failed: 0 };
 
-      if (!conn || conn.provider !== "evolution") {
-        result.skipped += msgs.length;
-        continue;
-      }
+        // Verificar conexão uma vez por loja
+        const { data: conn } = await admin
+          .from("whatsapp_connections")
+          .select("*")
+          .eq("store_id", storeId)
+          .maybeSingle();
 
-      const instance = conn.evolution_instance_name ?? `loja-${storeId}`;
-
-      // Verificar estado da Evolution uma vez por loja
-      const state = await evo(`/instance/connectionState/${instance}`);
-      const evoState = state.data?.instance?.state ?? state.data?.state;
-      if (evoState !== "open") {
-        result.skipped += msgs.length;
-        continue;
-      }
-
-      // Limitar a MAX_PER_INSTANCE mensagens por loja por rodada
-      const batch = msgs.slice(0, MAX_PER_INSTANCE);
-      if (msgs.length > MAX_PER_INSTANCE) {
-        console.warn(`[queue-worker] throttle: loja ${storeId} tem ${msgs.length} mensagens, processando apenas ${MAX_PER_INSTANCE}`);
-      }
-
-      let sentThisBatch = 0;
-
-      for (const msg of batch) {
-      try {
-        const remoteJid: string = msg.remote_jid ?? "";
-        const phoneDigits = remoteJid.replace(/\D/g, "");
-        if (!phoneDigits) {
-          result.skipped++;
-          continue;
+        if (!conn || conn.provider !== "evolution") {
+          storeResult.skipped += msgs.length;
+          return storeResult;
         }
 
-        // ⏱ Throttle: aguardar entre mensagens da mesma instância
-        if (sentThisBatch > 0) {
-          await sleep(DELAY_BETWEEN_MSGS_MS);
+        const instance = conn.evolution_instance_name ?? `loja-${storeId}`;
+
+        // Verificar estado da Evolution uma vez por loja
+        const state = await evo(`/instance/connectionState/${instance}`);
+        const evoState = state.data?.instance?.state ?? state.data?.state;
+        if (evoState !== "open") {
+          storeResult.skipped += msgs.length;
+          return storeResult;
         }
+
+        console.log(`[queue-worker] loja ${storeId}: ${msgs.length} mensagens`);
+        let sentThisBatch = 0;
+
+        for (const msg of msgs) {
+        try {
+          const remoteJid: string = msg.remote_jid ?? "";
+          const phoneDigits = remoteJid.replace(/\D/g, "");
+          if (!phoneDigits) {
+            storeResult.skipped++;
+            continue;
+          }
+
+          // ⏱ Throttle: 1.2s entre mensagens da mesma instância
+          if (sentThisBatch > 0) {
+            await sleep(DELAY_BETWEEN_MSGS_MS);
+          }
 
         let send: { status: number; data: any };
         if (msg.media_type === "image" || msg.media_type === "video") {
-          if (!msg.media_url) { result.skipped++; continue; }
+          if (!msg.media_url) { storeResult.skipped++; continue; }
           send = await evo(`/message/sendMedia/${instance}`, {
             method: "POST",
             body: JSON.stringify({
@@ -140,10 +140,10 @@ Deno.serve(async (req) => {
           });
         } else if (msg.media_type === "audio") {
           // Áudio enfileirado sem base64 não é suportado — pula
-          result.skipped++;
+          storeResult.skipped++;
           continue;
         } else {
-          if (!msg.body) { result.skipped++; continue; }
+          if (!msg.body) { storeResult.skipped++; continue; }
           send = await evo(`/message/sendText/${instance}`, {
             method: "POST",
             body: JSON.stringify({ number: phoneDigits, text: msg.body }),
@@ -151,7 +151,7 @@ Deno.serve(async (req) => {
         }
 
         if (send.status >= 400) {
-          result.failed++;
+          storeResult.failed++;
           const newRetryCount = (msg.retry_count ?? 0) + 1;
           if (newRetryCount >= MAX_RETRIES) {
             // Dead letter: esgotou tentativas — marca como failed definitivamente
@@ -198,14 +198,23 @@ Deno.serve(async (req) => {
             .eq("id", msg.lead_id);
         }
 
-        sentThisBatch++;
-        result.sent++;
-      } catch (e) {
-        result.failed++;
-        console.error("[queue-worker] erro msg", msg.id, e);
-      }
-      } // end for msg
-    } // end for instance
+          sentThisBatch++;
+          storeResult.sent++;
+        } catch (e) {
+          storeResult.failed++;
+          console.error("[queue-worker] erro msg", msg.id, e);
+        }
+        } // end for msg
+        return storeResult;
+      }) // end map
+    ); // end Promise.all
+
+    // Consolidar resultados
+    for (const sr of storeResults) {
+      result.sent += sr.sent;
+      result.skipped += sr.skipped;
+      result.failed += sr.failed;
+    }
 
     return new Response(JSON.stringify({ ok: true, ...result }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
