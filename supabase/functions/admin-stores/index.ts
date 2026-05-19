@@ -23,14 +23,46 @@ Deno.serve(async (req)=>{
     const body = await req.json().catch(()=>({}));
     const { action, store_id, days } = body;
     if (action === "list") {
-      const { data: stores } = await admin.from("stores").select("id, name, created_at, owner_id").order("created_at", {
-        ascending: false
-      });
+      const { data: stores } = await admin.from("stores").select("id, name, created_at, owner_id").order("created_at", { ascending: false });
+
+      // Buscar dados agregados em paralelo para performance
+      const sevenDaysAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString();
+
+      const [subsRes, connectionsRes, messagesRes, leadsRes, membersRes] = await Promise.all([
+        admin.from("subscriptions").select("store_id, status, trial_ends_at, plan, billing_cycle"),
+        admin.from("whatsapp_connections").select("store_id, status, evolution_instance_name, updated_at"),
+        admin.from("whatsapp_messages").select("store_id, created_at").gte("created_at", sevenDaysAgo),
+        admin.from("leads").select("store_id, created_at").gte("created_at", sevenDaysAgo),
+        admin.from("store_members").select("store_id"),
+      ]);
+
+      // Última mensagem por loja (para detectar inatividade)
+      const { data: lastMsgs } = await admin
+        .from("whatsapp_messages")
+        .select("store_id, created_at")
+        .order("created_at", { ascending: false })
+        .limit(1000);
+
+      // Indexar por store_id
+      const subsMap = Object.fromEntries((subsRes.data || []).map(s => [s.store_id, s]));
+      const connMap = Object.fromEntries((connectionsRes.data || []).map(c => [c.store_id, c]));
+      const msgs7d = (messagesRes.data || []).reduce((acc, m) => { acc[m.store_id] = (acc[m.store_id] || 0) + 1; return acc; }, {});
+      const leads7d = (leadsRes.data || []).reduce((acc, l) => { acc[l.store_id] = (acc[l.store_id] || 0) + 1; return acc; }, {});
+      const membersCount = (membersRes.data || []).reduce((acc, m) => { acc[m.store_id] = (acc[m.store_id] || 0) + 1; return acc; }, {});
+      const lastActivityMap = (lastMsgs || []).reduce((acc, m) => { if (!acc[m.store_id]) acc[m.store_id] = m.created_at; return acc; }, {});
+
       const result = [];
-      for (const store of stores || []){
-        const { data: sub } = await admin.from("subscriptions").select("status, trial_ends_at, plan, billing_cycle").eq("store_id", store.id).maybeSingle();
+      for (const store of stores || []) {
+        const sub = subsMap[store.id];
+        const conn = connMap[store.id];
         const { data: u } = await admin.auth.admin.getUserById(store.owner_id);
         const { data: profile } = await admin.from("profiles").select("whatsapp, full_name").eq("id", store.owner_id).maybeSingle();
+
+        const lastActivity = lastActivityMap[store.id] || null;
+        const daysSinceActivity = lastActivity
+          ? Math.floor((Date.now() - new Date(lastActivity).getTime()) / (1000 * 60 * 60 * 24))
+          : null;
+
         result.push({
           id: store.id,
           name: store.name,
@@ -41,16 +73,21 @@ Deno.serve(async (req)=>{
           status: sub?.status || "—",
           trial_ends_at: sub?.trial_ends_at || null,
           plan_type: sub?.plan || "—",
-          billing_cycle: sub?.billing_cycle || "—"
+          billing_cycle: sub?.billing_cycle || "—",
+          // Métricas novas
+          whatsapp_status: conn?.status || "disconnected",
+          whatsapp_instance: conn?.evolution_instance_name || null,
+          messages_7d: msgs7d[store.id] || 0,
+          leads_7d: leads7d[store.id] || 0,
+          members_count: membersCount[store.id] || 0,
+          last_activity: lastActivity,
+          days_since_activity: daysSinceActivity,
+          is_inactive: daysSinceActivity === null || daysSinceActivity > 7,
         });
       }
-      return new Response(JSON.stringify({
-        data: result
-      }), {
-        headers: {
-          ...corsHeaders,
-          "Content-Type": "application/json"
-        }
+
+      return new Response(JSON.stringify({ data: result }), {
+        headers: { ...corsHeaders, "Content-Type": "application/json" }
       });
     }
     if (action === "activate") {
