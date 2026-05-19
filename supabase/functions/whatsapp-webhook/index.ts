@@ -8,6 +8,7 @@ const SUPABASE_URL = Deno.env.get("SUPABASE_URL");
 const SERVICE_ROLE = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
 const EVOLUTION_URL = Deno.env.get("EVOLUTION_API_URL");
 const EVOLUTION_KEY = Deno.env.get("EVOLUTION_API_KEY");
+const SUPABASE_ANON = Deno.env.get("ANON_KEY") ?? Deno.env.get("SUPABASE_ANON_KEY") ?? "";
 const admin = createClient(SUPABASE_URL, SERVICE_ROLE);
 function digitsOnly(s) {
   return (s ?? "").replace(/\D/g, "");
@@ -121,6 +122,30 @@ Deno.serve(async (req)=>{
         status: mapped,
         connected_at: mapped === "connected" ? new Date().toISOString() : null
       }).eq("store_id", storeId);
+
+      // Quando conecta com sucesso: reconfigura webhook com Authorization header imediatamente
+      if (mapped === "connected" && instance && EVOLUTION_URL && EVOLUTION_KEY && SUPABASE_ANON) {
+        try {
+          const webhookUrl = `${SUPABASE_URL}/functions/v1/whatsapp-webhook`;
+          await fetch(`${EVOLUTION_URL}/webhook/set/${instance}`, {
+            method: "POST",
+            headers: { "apikey": EVOLUTION_KEY, "Content-Type": "application/json" },
+            body: JSON.stringify({
+              webhook: {
+                url: webhookUrl,
+                byEvents: false,
+                base64: false,
+                enabled: true,
+                headers: { Authorization: `Bearer ${SUPABASE_ANON}` },
+                events: ["MESSAGES_UPSERT", "MESSAGES_UPDATE", "CONNECTION_UPDATE"],
+              }
+            })
+          });
+          console.log("[whatsapp-webhook] webhook reconfigurado on-connect:", instance);
+        } catch (e) {
+          console.warn("[whatsapp-webhook] falha ao reconfigurar webhook on-connect:", e);
+        }
+      }
 
       // Auto-reconexão: se a instância caiu, dispara /instance/connect/{instance}
       if (mapped === "disconnected" && instance && EVOLUTION_URL && EVOLUTION_KEY) {
