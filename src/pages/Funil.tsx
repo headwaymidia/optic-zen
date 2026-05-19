@@ -145,7 +145,7 @@ export default function Funil() {
           </div>
 
           {/* Toolbar: busca + filtro de vendedora */}
-          <div className="flex flex-col sm:flex-row gap-2 sm:items-center">
+          <div className="flex flex-col sm:flex-row gap-2 sm:items-center min-w-0">
             <div className="relative flex-1 min-w-0">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400 pointer-events-none" />
               <Input
@@ -155,6 +155,7 @@ export default function Funil() {
                 className="pl-9 h-9 bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 dark:text-white dark:placeholder:text-slate-400"
               />
             </div>
+            <div className="hidden sm:flex gap-2 flex-1">
             <Select value={salesFilter} onValueChange={setSalesFilter}>
               <SelectTrigger className="h-9 w-full sm:w-56 bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 dark:text-white">
                 <SelectValue placeholder="Vendedora" />
@@ -185,6 +186,7 @@ export default function Funil() {
                 <SelectItem value="custom">Data personalizada</SelectItem>
               </SelectContent>
             </Select>
+            </div>
             {period === "custom" && (
               <Popover open={customOpen} onOpenChange={setCustomOpen}>
                 <PopoverTrigger asChild>
@@ -202,7 +204,7 @@ export default function Funil() {
                     mode="range"
                     selected={customRange}
                     onSelect={setCustomRange}
-                    numberOfMonths={2}
+                    numberOfMonths={isMobile ? 1 : 2}
                     locale={ptBR}
                     initialFocus
                     className={cn("p-3 pointer-events-auto")}

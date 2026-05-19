@@ -441,7 +441,7 @@ function DroppableColumn({
     <div
       ref={setNodeRef}
       className={cn(
-        "flex w-[85vw] min-w-[85vw] max-w-[85vw] sm:w-[250px] sm:min-w-[250px] sm:max-w-[250px] shrink-0 snap-start flex-col h-full rounded-2xl bg-slate-50/70 dark:bg-slate-900/50 border border-slate-100 dark:border-slate-800 transition-all duration-200 overflow-hidden",
+        "flex w-[88vw] min-w-[88vw] max-w-[88vw] sm:w-[260px] sm:min-w-[260px] sm:max-w-[260px] shrink-0 snap-start flex-col h-full rounded-2xl bg-slate-50/70 dark:bg-slate-900/50 border border-slate-100 dark:border-slate-800 transition-all duration-200 overflow-hidden",
         isOver && "bg-primary/5 border-primary/40 border-dashed ring-2 ring-primary/30 scale-[1.01]"
       )}
     >
@@ -495,8 +495,8 @@ export function KanbanBoard({
   const [gateStatus, setGateStatus] = useState<StageGate | null>(null);
 
   const sensors = useSensors(
-    useSensor(MouseSensor, { activationConstraint: { distance: 6 } }),
-    useSensor(TouchSensor, { activationConstraint: { delay: 180, tolerance: 6 } })
+    useSensor(MouseSensor, { activationConstraint: { distance: 8 } }),
+    useSensor(TouchSensor, { activationConstraint: { delay: 250, tolerance: 10 } })
   );
 
   function openNew(status: LeadStatus) {
