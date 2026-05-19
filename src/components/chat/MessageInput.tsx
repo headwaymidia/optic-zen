@@ -1,4 +1,5 @@
 import { useEffect, useLayoutEffect, useRef, useState } from "react";
+import { Settings2 } from "lucide-react";
 import { Loader2, Mic, Paperclip, Send, Smile, Square, Zap } from "lucide-react";
 import EmojiPicker, { EmojiStyle, Theme } from "emoji-picker-react";
 import { Button } from "@/components/ui/button";
@@ -9,6 +10,8 @@ import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip
 import { useIsMobile } from "@/hooks/use-mobile";
 import { cn } from "@/lib/utils";
 import type { FollowUpDef, FollowUpLevel } from "@/lib/followUpScripts";
+import { useQuickTemplates } from "@/hooks/useQuickTemplates";
+import { QuickTemplatesManager } from "@/components/chat/QuickTemplatesManager";
 
 interface Props {
   value: string;
@@ -21,6 +24,9 @@ interface Props {
   onSendAudio?: (blob: Blob) => Promise<void> | void;
   onSendMedia?: (file: File) => Promise<void> | void;
   isSending?: boolean;
+  storeId?: string | null;
+  leadName?: string | null;
+  canEdit?: boolean;
 }
 
 export function MessageInput({
@@ -34,12 +40,17 @@ export function MessageInput({
   onSendAudio,
   onSendMedia,
   isSending = false,
+  storeId = null,
+  leadName = null,
+  canEdit = false,
 }: Props) {
   const fileInputRef = useRef<HTMLInputElement | null>(null);
   const [scriptsOpen, setScriptsOpen] = useState(false);
   const [emojiOpen, setEmojiOpen] = useState(false);
   const isMobile = useIsMobile();
   const [isRecording, setIsRecording] = useState(false);
+  const [managerOpen, setManagerOpen] = useState(false);
+  const { templates, applyTemplate } = useQuickTemplates(storeId);
   const [elapsed, setElapsed] = useState(0);
   const recorderRef = useRef<MediaRecorder | null>(null);
   const chunksRef = useRef<Blob[]>([]);
@@ -210,72 +221,89 @@ export function MessageInput({
           {isRecording ? "Parar e enviar" : "Gravar áudio"}
         </TooltipContent>
       </Tooltip>
-      <Popover open={scriptsOpen} onOpenChange={setScriptsOpen}>
-        <Tooltip>
-          <TooltipTrigger asChild>
-            <PopoverTrigger asChild>
-              <Button
-                variant="ghost"
-                size="icon"
-                type="button"
-                className="h-8 w-8"
-                aria-label="Respostas Rápidas"
-                title="Ações rápidas"
-              >
-                <Zap className="h-4 w-4 text-muted-foreground" />
-              </Button>
-            </PopoverTrigger>
-          </TooltipTrigger>
-          <TooltipContent side="top">Respostas Rápidas</TooltipContent>
-        </Tooltip>
-        <PopoverContent side="top" align="start" className="w-72 p-2">
-          <div className="px-2 py-1.5 text-[11px] font-medium text-muted-foreground uppercase tracking-wide">
-            Respostas Rápidas
-          </div>
-          <div className="space-y-1">
-            <button
-              type="button"
-              onClick={() => handleApply("agendar")}
-              className="w-full text-left rounded-md px-2 py-2 text-sm hover:bg-accent hover:text-accent-foreground transition-colors"
-            >
-              <div className="font-medium">Agendar Exame</div>
-              <div className="text-[11px] text-muted-foreground line-clamp-2 mt-0.5">
-                Oferecer horários para exame de vista esta semana.
+      <>
+        <Popover open={scriptsOpen} onOpenChange={setScriptsOpen}>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <PopoverTrigger asChild>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  type="button"
+                  className="h-8 w-8"
+                  aria-label="Respostas Rápidas"
+                >
+                  <Zap className="h-4 w-4 text-muted-foreground" />
+                </Button>
+              </PopoverTrigger>
+            </TooltipTrigger>
+            <TooltipContent side="top">Respostas Rápidas</TooltipContent>
+          </Tooltip>
+          <PopoverContent side="top" align="start" className="w-72 p-2">
+            <div className="flex items-center justify-between px-2 py-1.5">
+              <span className="text-[11px] font-medium text-muted-foreground uppercase tracking-wide">
+                Respostas Rápidas
+              </span>
+              {canEdit && (
+                <Button
+                  size="icon"
+                  variant="ghost"
+                  className="h-5 w-5"
+                  onClick={() => { setScriptsOpen(false); setManagerOpen(true); }}
+                  title="Gerenciar templates"
+                >
+                  <Settings2 className="h-3 w-3" />
+                </Button>
+              )}
+            </div>
+            <div className="space-y-1 max-h-64 overflow-y-auto">
+              {templates.length === 0 ? (
+                <p className="text-xs text-muted-foreground px-2 py-3 text-center">
+                  Nenhum template ainda.{canEdit ? " Clique em ⚙ para criar." : ""}
+                </p>
+              ) : (
+                templates.map((t) => (
+                  <button
+                    key={t.id}
+                    type="button"
+                    onClick={() => {
+                      const resolved = applyTemplate(t.body, { nome: leadName ?? "cliente" });
+                      onChange(resolved);
+                      setScriptsOpen(false);
+                    }}
+                    className="w-full text-left rounded-md px-2 py-2 text-sm hover:bg-accent hover:text-accent-foreground transition-colors"
+                  >
+                    <div className="font-medium">{t.title}</div>
+                    <div className="text-[11px] text-muted-foreground line-clamp-2 mt-0.5">
+                      {t.body.replace(/\{nome\}/g, leadName ?? "cliente")}
+                    </div>
+                  </button>
+                ))
+              )}
+            </div>
+            {canEdit && (
+              <div className="border-t mt-1 pt-1">
+                <button
+                  type="button"
+                  onClick={() => { setScriptsOpen(false); setManagerOpen(true); }}
+                  className="w-full text-left rounded-md px-2 py-1.5 text-xs text-muted-foreground hover:bg-accent hover:text-accent-foreground transition-colors flex items-center gap-1.5"
+                >
+                  <Settings2 className="h-3 w-3" />
+                  Gerenciar respostas rápidas
+                </button>
               </div>
-            </button>
-            <button
-              type="button"
-              onClick={() => handleApply("receita")}
-              className="w-full text-left rounded-md px-2 py-2 text-sm hover:bg-accent hover:text-accent-foreground transition-colors"
-            >
-              <div className="font-medium">Pedir Receita</div>
-              <div className="text-[11px] text-muted-foreground line-clamp-2 mt-0.5">
-                Solicitar foto da receita para orçamento preciso.
-              </div>
-            </button>
-            <button
-              type="button"
-              onClick={() => handleApply("resgate")}
-              className="w-full text-left rounded-md px-2 py-2 text-sm hover:bg-accent hover:text-accent-foreground transition-colors"
-            >
-              <div className="font-medium">Resgate de Orçamento</div>
-              <div className="text-[11px] text-muted-foreground line-clamp-2 mt-0.5">
-                Repescagem com condição especial do gerente.
-              </div>
-            </button>
-            <button
-              type="button"
-              onClick={() => handleApply("confirmar")}
-              className="w-full text-left rounded-md px-2 py-2 text-sm hover:bg-accent hover:text-accent-foreground transition-colors"
-            >
-              <div className="font-medium">Confirmar Exame</div>
-              <div className="text-[11px] text-muted-foreground line-clamp-2 mt-0.5">
-                Combate ao no-show: confirma presença na consulta.
-              </div>
-            </button>
-          </div>
-        </PopoverContent>
-      </Popover>
+            )}
+          </PopoverContent>
+        </Popover>
+        {storeId && (
+          <QuickTemplatesManager
+            storeId={storeId}
+            canEdit={canEdit}
+            open={managerOpen}
+            onOpenChange={setManagerOpen}
+          />
+        )}
+      </>
       {isRecording ? (
         <div className="flex-1 flex items-center gap-2 px-3 h-9 rounded-md bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800">
           <span className="h-2 w-2 rounded-full bg-red-500 animate-pulse" />
