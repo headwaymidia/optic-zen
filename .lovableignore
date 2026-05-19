@@ -1,0 +1,5 @@
+# Arquivos que o Lovable NÃO deve editar automaticamente
+# Edge Functions do Supabase — qualquer alteração aqui deve ser feita manualmente
+supabase/functions/
+supabase/migrations/
+scripts/
