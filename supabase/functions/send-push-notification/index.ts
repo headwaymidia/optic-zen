@@ -9,7 +9,7 @@ const SERVICE_ROLE = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
 // VAPID keys — devem ser as mesmas do frontend
 const VAPID_PRIVATE_KEY = Deno.env.get("VAPID_PRIVATE_KEY") ?? "";
 const VAPID_PUBLIC_KEY = Deno.env.get("VAPID_PUBLIC_KEY") ??
-  "BEl62iUYgUivxIkv69yViEuiBIa-Ib9-SkvMeAtA3LFgDzkrxZJjSgSnfckjBJuBkr3qBUYIHBQFLXYp5Nksh8U";
+  "BM5V_XFoV7RwQjtQFSKPUT6n6wrgCv_ulJhWa5rW7kuqVSzehPYYPc5VAVjX0Aw8F0dl1EnxQkQyKAsqZQGekrE";
 const VAPID_SUBJECT = "mailto:felipe@headwaymidia.com.br";
 
 const admin = createClient(SUPABASE_URL, SERVICE_ROLE);
