@@ -58,10 +58,9 @@ export default function AppLayout() {
                   <div className="flex items-center gap-2 min-w-0">
                     <SidebarTrigger className="hidden lg:inline-flex hover:bg-muted" />
                     <div className="min-w-0 leading-tight">
-                      {profile?.full_name ? (
-                        <>
+                      <>
                           <p className="text-sm font-semibold text-foreground truncate">
-                            {profile.full_name}
+                            {profile?.full_name || (profile?.email || user?.email || "Usuário").split("@")[0]}
                           </p>
                           {currentStore?.role && (
                             <p className="text-[11px] text-muted-foreground truncate">
@@ -69,16 +68,6 @@ export default function AppLayout() {
                             </p>
                           )}
                         </>
-                      ) : (
-                        <Link to="/configuracoes" className="block">
-                          <p className="text-sm font-semibold text-foreground truncate">
-                            {profile?.email || user?.email || "Usuário"}
-                          </p>
-                          <p className="text-[11px] text-amber-600 dark:text-amber-400 truncate">
-                            Complete seu perfil
-                          </p>
-                        </Link>
-                      )}
                     </div>
                   </div>
                   <div className="flex items-center gap-1">

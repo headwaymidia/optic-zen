@@ -84,6 +84,14 @@ export default function AuthPage() {
 
   async function handleRegister(e: React.FormEvent) {
     e.preventDefault();
+    if (!name.trim()) {
+      toast({
+        title: "Nome obrigatório",
+        description: "Informe seu nome completo para continuar.",
+        variant: "destructive",
+      });
+      return;
+    }
     const phoneDigits = phone.replace(/\D/g, "");
     if (phoneDigits.length !== 11) {
       toast({
