@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { Navigate, useNavigate } from "react-router-dom";
-import { ArrowLeft, ArrowRight, CheckCircle2, Eye, Loader2, LayoutDashboard, Users, Target } from "lucide-react";
+import { ArrowLeft, ArrowRight, CheckCircle2, Eye, Loader2, LayoutDashboard, Users, Target, Smartphone, MessageCircle } from "lucide-react";
+import { WhatsAppPanel } from "@/components/WhatsAppPanel";
 import { useAuth } from "@/hooks/useAuth";
 import { useStores } from "@/hooks/useStores";
 import { Button } from "@/components/ui/button";
@@ -49,7 +50,7 @@ export default function OnboardingPage() {
   const { stores, loading: storesLoading, addStore } = useStores();
   const navigate = useNavigate();
 
-  const [step, setStep] = useState<1 | 2 | 3>(1);
+  const [step, setStep] = useState<1 | 2 | 3 | 4>(1);
   const [submitting, setSubmitting] = useState(false);
   const [checkingSession, setCheckingSession] = useState(true);
   const [hasActiveSession, setHasActiveSession] = useState<boolean | null>(null);
@@ -145,7 +146,7 @@ export default function OnboardingPage() {
         .update({ city: city.trim(), state: stateUf, team_size: teamSize })
         .eq("id", created.id);
 
-      try { localStorage.setItem(ONBOARDING_KEY, "1"); } catch {}
+      // Não marca onboarding como completo ainda — cliente precisa conectar WhatsApp
 
       // Disparar email de boas-vindas (best-effort: nunca bloqueia o fluxo)
       try {
@@ -223,16 +224,17 @@ export default function OnboardingPage() {
         <div className="mb-8">
           <div className="flex items-center justify-between mb-2">
             <p className="text-xs font-semibold text-zinc-500 uppercase tracking-wider">
-              Etapa {step} de 3
+              Etapa {step} de 4
             </p>
             <p className="text-xs font-medium text-zinc-400">
               {step === 1 && "Sobre você"}
               {step === 2 && "Sua loja"}
-              {step === 3 && "Tudo pronto!"}
+              {step === 3 && "WhatsApp"}
+              {step === 4 && "Tudo pronto!"}
             </p>
           </div>
           <div className="flex gap-2">
-            {[1,2,3].map((i) => (
+            {[1,2,3,4].map((i) => (
               <div
                 key={i}
                 className={cn(
@@ -474,14 +476,55 @@ export default function OnboardingPage() {
           </form>
         )}
 
-        {step === 3 && (
+        {step === 3 && stores.length > 0 && (
+          <div className="space-y-5">
+            <div className="space-y-2 text-center">
+              <div className="flex h-14 w-14 items-center justify-center rounded-full bg-emerald-100 mx-auto">
+                <Smartphone className="h-7 w-7 text-emerald-600" strokeWidth={2} />
+              </div>
+              <h1 className="text-2xl font-extrabold tracking-tight text-zinc-900 leading-tight">
+                Conecte seu WhatsApp
+              </h1>
+              <p className="text-sm text-zinc-500">
+                Este é o passo mais importante — sem ele, nenhuma mensagem chega ao CRM.
+              </p>
+            </div>
+
+            <WhatsAppPanel storeId={stores[0].id} role="Dono" />
+
+            <div className="flex gap-3">
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => setStep(2)}
+                className="h-11 rounded-xl px-5 border-zinc-200 text-zinc-700"
+              >
+                <ArrowLeft className="h-4 w-4 mr-1" />
+                Voltar
+              </Button>
+              <Button
+                type="button"
+                onClick={() => {
+                  try { localStorage.setItem(ONBOARDING_KEY, "1"); } catch {}
+                  setStep(4);
+                }}
+                className="flex-1 h-11 rounded-xl bg-emerald-500 hover:bg-emerald-600 text-white font-semibold gap-2 group"
+              >
+                {stores[0] ? "Continuar" : "Pular por agora"}
+                <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5" />
+              </Button>
+            </div>
+          </div>
+        )}
+
+        {step === 4 && (
           <div className="space-y-6">
             <div className="flex flex-col items-center text-center space-y-4">
               <div className="flex h-20 w-20 items-center justify-center rounded-full bg-emerald-100">
                 <CheckCircle2 className="h-12 w-12 text-emerald-500" strokeWidth={2.5} />
               </div>
               <h1 className="text-3xl font-extrabold tracking-tight text-zinc-900 leading-[1.1]">
-                Sua loja foi criada com sucesso!
+                Tudo pronto!
               </h1>
               <p className="text-base text-zinc-500 max-w-sm">
                 Seu período de teste de 14 dias começou agora.
@@ -491,25 +534,25 @@ export default function OnboardingPage() {
             <div className="space-y-3 pt-2">
               {[
                 {
+                  icon: MessageCircle,
+                  title: "Veja seus atendimentos",
+                  desc: "Mensagens do WhatsApp aparecem aqui em tempo real.",
+                  cta: "Atendimentos",
+                  to: "/whatsapp",
+                },
+                {
                   icon: Target,
                   title: "Adicione seu primeiro lead",
                   desc: "Comece a registrar atendimentos no Funil.",
-                  cta: "Ir para o Funil",
+                  cta: "Funil",
                   to: "/funil",
                 },
                 {
                   icon: Users,
                   title: "Convide sua equipe",
                   desc: "Adicione vendedores e gerentes à loja.",
-                  cta: "Ir para Configurações",
+                  cta: "Configurações",
                   to: "/configuracoes",
-                },
-                {
-                  icon: LayoutDashboard,
-                  title: "Conheça o Dashboard",
-                  desc: "Veja métricas em tempo real do seu negócio.",
-                  cta: "Ir para o Dashboard",
-                  to: "/",
                 },
               ].map((card) => (
                 <div

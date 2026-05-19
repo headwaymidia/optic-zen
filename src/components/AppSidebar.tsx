@@ -368,24 +368,24 @@ function WhatsAppStatusBadge({ collapsed }: { collapsed: boolean }) {
     );
   }
 
-  const content = (
-    <div
-      className={cn(
-        "mt-2 mx-3 flex items-center gap-2 rounded-lg border px-2.5 py-1.5 text-xs",
-        connected
-          ? "border-emerald-500/30 bg-emerald-500/10 text-emerald-700 dark:text-emerald-300"
-          : "border-red-500/30 bg-red-500/10 text-red-700 dark:text-red-300"
-      )}
-    >
-      <span className={cn("h-2 w-2 rounded-full", dotClass)} />
-      <span className="font-medium truncate">{label}</span>
-    </div>
-  );
+  if (connected) {
+    return (
+      <div className="mt-2 mx-3 flex items-center gap-2 rounded-lg border border-emerald-500/30 bg-emerald-500/10 px-2.5 py-1.5 text-xs text-emerald-700 dark:text-emerald-300">
+        <span className="h-2 w-2 rounded-full bg-emerald-500" />
+        <span className="font-medium truncate">WhatsApp conectado</span>
+      </div>
+    );
+  }
 
-  if (connected) return content;
   return (
-    <NavLink to="/whatsapp-config" className="block">
-      {content}
+    <NavLink to="/whatsapp-config" className="block group">
+      <div className="mt-2 mx-3 flex items-center gap-2 rounded-lg border border-red-500/40 bg-red-500/10 px-2.5 py-2 text-xs text-red-700 dark:text-red-300 hover:bg-red-500/20 transition-colors">
+        <span className="h-2 w-2 rounded-full bg-red-500 animate-pulse shrink-0" />
+        <div className="flex-1 min-w-0">
+          <p className="font-semibold truncate">WhatsApp desconectado</p>
+          <p className="text-[10px] opacity-80 truncate">Toque para reconectar →</p>
+        </div>
+      </div>
     </NavLink>
   );
 }
