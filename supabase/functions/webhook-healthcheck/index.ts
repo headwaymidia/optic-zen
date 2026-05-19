@@ -89,7 +89,9 @@ Deno.serve(async (req) => {
       const authHeader = headers?.Authorization ?? headers?.authorization ?? null;
       const webhookUrl = webhookData?.url ?? "";
 
-      const hasCorrectAuth = authHeader && authHeader.startsWith(EXPECTED_AUTH_PREFIX);
+      // headers: null OU headers: {} (objeto vazio) sao ambos invalidos
+      const headersEmpty = !headers || Object.keys(headers).length === 0;
+      const hasCorrectAuth = !headersEmpty && !!authHeader && authHeader.startsWith(EXPECTED_AUTH_PREFIX);
       const hasCorrectUrl = webhookUrl === EXPECTED_WEBHOOK_URL;
 
       if (hasCorrectAuth && hasCorrectUrl) {
