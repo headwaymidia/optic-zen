@@ -9,6 +9,17 @@ const SERVICE_ROLE = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
 const EVOLUTION_URL = Deno.env.get("EVOLUTION_API_URL");
 const EVOLUTION_KEY = Deno.env.get("EVOLUTION_API_KEY");
 const SUPABASE_ANON = Deno.env.get("ANON_KEY") ?? Deno.env.get("SUPABASE_ANON_KEY") ?? "";
+
+// Fetch com timeout para evitar Edge Function travada esperando Evolution
+async function fetchWithTimeout(url: string, init: RequestInit = {}, timeoutMs = 10000): Promise<Response> {
+  const controller = new AbortController();
+  const id = setTimeout(() => controller.abort(), timeoutMs);
+  try {
+    return await fetch(url, { ...init, signal: controller.signal });
+  } finally {
+    clearTimeout(id);
+  }
+}
 const admin = createClient(SUPABASE_URL, SERVICE_ROLE);
 function digitsOnly(s) {
   return (s ?? "").replace(/\D/g, "");

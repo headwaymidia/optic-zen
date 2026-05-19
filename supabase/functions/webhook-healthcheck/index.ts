@@ -12,8 +12,20 @@ const SERVICE_ROLE = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
 const EXPECTED_WEBHOOK_URL = `${SUPABASE_URL}/functions/v1/whatsapp-webhook`;
 const EXPECTED_AUTH_PREFIX = "Bearer ";
 
+
+// Fetch com timeout para evitar travamentos esperando Evolution API
+async function fetchWithTimeout(url: string, init: RequestInit = {}, timeoutMs = 10000): Promise<Response> {
+  const controller = new AbortController();
+  const id = setTimeout(() => controller.abort(), timeoutMs);
+  try {
+    return await fetch(url, { ...init, signal: controller.signal });
+  } finally {
+    clearTimeout(id);
+  }
+}
+
 async function evo(path: string, init: RequestInit = {}) {
-  const res = await fetch(`${EVO_URL}${path}`, {
+  const res = await fetchWithTimeout(`${EVO_URL}${path}`, {
     ...init,
     headers: {
       apikey: EVO_KEY,

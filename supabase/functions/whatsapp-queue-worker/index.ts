@@ -12,9 +12,22 @@ const EVO_URL = (Deno.env.get("EVOLUTION_API_URL") ?? "").replace(/\/+$/, "");
 const EVO_KEY = Deno.env.get("EVOLUTION_API_KEY") ?? "";
 const SUPABASE_URL = Deno.env.get("SUPABASE_URL")!;
 const SERVICE_ROLE = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
+const MAX_RETRIES = 10; // Após 10 tentativas, marca como failed
+
+
+// Fetch com timeout para evitar travamentos esperando Evolution API
+async function fetchWithTimeout(url: string, init: RequestInit = {}, timeoutMs = 10000): Promise<Response> {
+  const controller = new AbortController();
+  const id = setTimeout(() => controller.abort(), timeoutMs);
+  try {
+    return await fetch(url, { ...init, signal: controller.signal });
+  } finally {
+    clearTimeout(id);
+  }
+}
 
 async function evo(path: string, init: RequestInit = {}) {
-  const res = await fetch(`${EVO_URL}${path}`, {
+  const res = await fetchWithTimeout(`${EVO_URL}${path}`, {
     ...init,
     headers: {
       apikey: EVO_KEY,
@@ -46,6 +59,7 @@ Deno.serve(async (req) => {
       .select("*")
       .eq("status", "queued")
       .eq("from_me", true)
+      .lt("retry_count", MAX_RETRIES) // Ignorar mensagens que esgotaram tentativas
       .order("created_at", { ascending: true })
       .limit(50);
     if (qErr) throw qErr;
@@ -109,11 +123,23 @@ Deno.serve(async (req) => {
         }
 
         if (send.status >= 400) {
-          // Mantém na fila para próxima rodada
           result.failed++;
-          console.warn("[queue-worker] send falhou, mantendo queued", {
-            id: msg.id, status: send.status, data: send.data,
-          });
+          const newRetryCount = (msg.retry_count ?? 0) + 1;
+          if (newRetryCount >= MAX_RETRIES) {
+            // Dead letter: esgotou tentativas — marca como failed definitivamente
+            await admin.from("whatsapp_messages").update({
+              status: "failed",
+              retry_count: newRetryCount,
+              failed_at: new Date().toISOString(),
+            }).eq("id", msg.id);
+            console.error("[queue-worker] dead letter após", MAX_RETRIES, "tentativas:", msg.id);
+          } else {
+            // Incrementa contador e mantém na fila
+            await admin.from("whatsapp_messages").update({
+              retry_count: newRetryCount,
+            }).eq("id", msg.id);
+            console.warn("[queue-worker] send falhou, tentativa", newRetryCount, "de", MAX_RETRIES, { id: msg.id, status: send.status });
+          }
           continue;
         }
 

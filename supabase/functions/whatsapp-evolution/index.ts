@@ -23,7 +23,7 @@ async function evo(
   path: string,
   init: RequestInit = {},
 ): Promise<{ status: number; data: any }> {
-  const res = await fetch(`${EVO_URL}${path}`, {
+  const res = await fetchWithTimeout(`${EVO_URL}${path}`, {
     ...init,
     headers: {
       apikey: EVO_KEY,
