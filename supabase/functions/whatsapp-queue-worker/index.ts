@@ -153,8 +153,38 @@ Deno.serve(async (req) => {
         if (send.status >= 400) {
           storeResult.failed++;
           const newRetryCount = (msg.retry_count ?? 0) + 1;
+
+          // Detectar número inválido / não cadastrado no WhatsApp
+          const errorMsg = JSON.stringify(send.data ?? "").toLowerCase();
+          const isInvalidNumber =
+            send.status === 400 && (
+              errorMsg.includes("not on whatsapp") ||
+              errorMsg.includes("phone number does not exist") ||
+              errorMsg.includes("invalid phone") ||
+              errorMsg.includes("jid inválido") ||
+              errorMsg.includes("bad jid")
+            );
+
+          if (isInvalidNumber) {
+            // Número não existe no WhatsApp — não adianta tentar de novo
+            await admin.from("whatsapp_messages").update({
+              status: "failed",
+              retry_count: newRetryCount,
+              failed_at: new Date().toISOString(),
+            }).eq("id", msg.id);
+
+            // Marcar o lead com aviso de número inválido
+            if (msg.lead_id) {
+              await admin.from("leads").update({
+                notes: "⚠️ Número não encontrado no WhatsApp. Verifique o contato.",
+              }).eq("id", msg.lead_id).is("notes", null); // Só atualiza se não tiver nota
+            }
+
+            console.warn("[queue-worker] número inválido no WhatsApp:", phoneDigits, "lead:", msg.lead_id);
+            continue;
+          }
+
           if (newRetryCount >= MAX_RETRIES) {
-            // Dead letter: esgotou tentativas — marca como failed definitivamente
             await admin.from("whatsapp_messages").update({
               status: "failed",
               retry_count: newRetryCount,
@@ -162,7 +192,6 @@ Deno.serve(async (req) => {
             }).eq("id", msg.id);
             console.error("[queue-worker] dead letter após", MAX_RETRIES, "tentativas:", msg.id);
           } else {
-            // Incrementa contador e mantém na fila
             await admin.from("whatsapp_messages").update({
               retry_count: newRetryCount,
             }).eq("id", msg.id);

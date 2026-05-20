@@ -396,12 +396,22 @@ Deno.serve(async (req) => {
       }
 
       if (send.status >= 400) {
-        const errMsg =
-          send.data?.message ||
-          send.data?.error ||
-          JSON.stringify(send.data ?? {});
+        const rawErr = JSON.stringify(send.data ?? "").toLowerCase();
+        const isInvalidNumber =
+          send.status === 400 && (
+            rawErr.includes("not on whatsapp") ||
+            rawErr.includes("phone number does not exist") ||
+            rawErr.includes("invalid phone") ||
+            rawErr.includes("jid inválido") ||
+            rawErr.includes("bad jid")
+          );
+
+        const errMsg = isInvalidNumber
+          ? "Número não encontrado no WhatsApp. Verifique se o contato tem WhatsApp ativo."
+          : send.data?.message || send.data?.error || JSON.stringify(send.data ?? {});
+
         return new Response(
-          JSON.stringify({ error: `Falha ao enviar: ${errMsg}` }),
+          JSON.stringify({ error: errMsg, invalid_number: isInvalidNumber }),
           { status: send.status, headers: { ...corsHeaders, "Content-Type": "application/json" } },
         );
       }

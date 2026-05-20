@@ -11,6 +11,56 @@ const SERVICE_ROLE = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
 
 const EXPECTED_WEBHOOK_URL = `${SUPABASE_URL}/functions/v1/whatsapp-webhook`;
 const EXPECTED_AUTH_PREFIX = "Bearer ";
+const ADMIN_EMAIL = "headwaymidia@gmail.com";
+
+// Envia notificação interna quando loja desconecta
+async function notifyDisconnection(admin: any, storeId: string, storeName: string, instance: string) {
+  try {
+    // Verificar se já existe notificação recente (última hora) para evitar spam
+    const oneHourAgo = new Date(Date.now() - 60 * 60 * 1000).toISOString();
+    const { data: existing } = await admin
+      .from("notifications")
+      .select("id")
+      .eq("store_id", storeId)
+      .eq("type", "whatsapp_disconnected")
+      .gte("created_at", oneHourAgo)
+      .maybeSingle();
+
+    if (existing) return; // Já notificou na última hora
+
+    // Buscar donos/gerentes da loja para notificar
+    const { data: members } = await admin
+      .from("store_members")
+      .select("user_id")
+      .eq("store_id", storeId)
+      .in("role", ["Dono", "Gerente"]);
+
+    // Inserir notificação para cada membro responsável
+    if (members && members.length > 0) {
+      await admin.from("notifications").insert(
+        members.map((m: any) => ({
+          user_id: m.user_id,
+          store_id: storeId,
+          type: "whatsapp_disconnected",
+          title: "⚠️ WhatsApp desconectado",
+          body: `A loja "${storeName}" está com WhatsApp desconectado. Acesse as configurações para reconectar.`,
+          read: false,
+        }))
+      );
+    }
+
+    // Inserir no log centralizado
+    await admin.from("logs").insert({
+      store_id: storeId,
+      level: "warn",
+      message: `[healthcheck] WhatsApp desconectado: ${instance}`,
+    });
+
+    console.warn(`[healthcheck] ⚠️ desconexão detectada: ${storeName} (${instance})`);
+  } catch (e) {
+    console.error("[healthcheck] erro ao notificar desconexão:", e);
+  }
+}
 
 
 // Fetch com timeout para evitar travamentos esperando Evolution API
@@ -86,6 +136,27 @@ Deno.serve(async (req) => {
 
     for (const conn of connections) {
       const instance = conn.evolution_instance_name ?? `loja-${conn.store_id}`;
+
+      // Verificar estado de conexão da instância
+      const { status: stateStatus, data: stateData } = await evo(`/instance/connectionState/${instance}`);
+      if (stateStatus < 400) {
+        const evoState = stateData?.instance?.state ?? stateData?.state ?? "";
+        const isDisconnected = evoState !== "open" && evoState !== "connecting";
+        if (isDisconnected && conn.status === "connected") {
+          // Buscar nome da loja para a notificação
+          const { data: store } = await admin
+            .from("stores")
+            .select("name")
+            .eq("id", conn.store_id)
+            .maybeSingle();
+          await notifyDisconnection(admin, conn.store_id, store?.name ?? conn.store_id, instance);
+          // Atualizar status no banco
+          await admin
+            .from("whatsapp_connections")
+            .update({ status: "disconnected" })
+            .eq("store_id", conn.store_id);
+        }
+      }
 
       // Verifica webhook atual
       const { status: findStatus, data: webhookData } = await evo(`/webhook/find/${instance}`);
