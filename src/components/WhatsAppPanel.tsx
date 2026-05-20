@@ -50,6 +50,8 @@ export function WhatsAppPanel({ storeId, role }: Props) {
 
   const [qrCode, setQrCode] = useState<string | null>(null);
   const [busy, setBusy] = useState<"connect" | "disconnect" | null>(null);
+  const [lastConnectAt, setLastConnectAt] = useState<number>(0);
+  const CONNECT_COOLDOWN_MS = 30000; // 30s entre tentativas de conexão
   const [localStatus, setLocalStatus] = useState<LocalWhatsAppStatus>("checking");
   const [localPhone, setLocalPhone] = useState<string | null>(null);
   const pollRef = useRef<number | null>(null);
@@ -266,6 +268,18 @@ export function WhatsAppPanel({ storeId, role }: Props) {
 
   async function handleConnect() {
     if (!canEdit) return;
+    // Cooldown: evita múltiplas tentativas em sequência que causam ban
+    const now = Date.now();
+    if (now - lastConnectAt < CONNECT_COOLDOWN_MS) {
+      const secsLeft = Math.ceil((CONNECT_COOLDOWN_MS - (now - lastConnectAt)) / 1000);
+      toast({
+        title: "Aguarde antes de tentar novamente",
+        description: `Tente novamente em ${secsLeft} segundos para evitar bloqueio do WhatsApp.`,
+        variant: "destructive",
+      });
+      return;
+    }
+    setLastConnectAt(now);
     setBusy("connect");
     try {
       // 1) Verifica se já está conectado na Evolution API
