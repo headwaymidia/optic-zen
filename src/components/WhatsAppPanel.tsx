@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -130,22 +130,41 @@ export function WhatsAppPanel({ storeId, role }: Props) {
     return state === "open" || state === "connected";
   }
 
-  // Polling enquanto conectando. Não para quando o QR some (race condition).
+  // Polling enquanto conectando — intervalo seguro para não causar ban do WhatsApp.
   const shouldPoll = isConnecting;
+  const pollAttemptsRef = React.useRef(0);
+  const MAX_POLL_ATTEMPTS = 40; // ~5 minutos com intervalo de 8s
   useEffect(() => {
     if (!shouldPoll || isConnected) {
       if (pollRef.current) {
         window.clearInterval(pollRef.current);
         pollRef.current = null;
       }
+      pollAttemptsRef.current = 0;
       return;
     }
 
     const tick = async () => {
+      pollAttemptsRef.current += 1;
+
+      // Para de tentar após MAX_POLL_ATTEMPTS para evitar ban
+      if (pollAttemptsRef.current > MAX_POLL_ATTEMPTS) {
+        if (pollRef.current) {
+          window.clearInterval(pollRef.current);
+          pollRef.current = null;
+        }
+        setLocalStatus("disconnected");
+        toast({
+          title: "Tempo esgotado",
+          description: "Não foi possível conectar. Aguarde alguns minutos e tente novamente.",
+          variant: "destructive",
+        });
+        return;
+      }
+
       try {
         const st = await callEvo("status");
         if (isConnectedResponse(st)) {
-          // Atualiza UI imediatamente (otimista)
           setQrCode(null);
           setLocalPhone(st?.phone_number ?? null);
           setLocalStatus("connected");
@@ -153,7 +172,7 @@ export function WhatsAppPanel({ storeId, role }: Props) {
             window.clearInterval(pollRef.current);
             pollRef.current = null;
           }
-          // A Edge Function (action: 'status') já fez o upsert server-side com service_role.
+          pollAttemptsRef.current = 0;
           await syncConnection();
           toast({ title: "WhatsApp conectado!", description: "Loja vinculada com sucesso." });
           return;
@@ -170,7 +189,8 @@ export function WhatsAppPanel({ storeId, role }: Props) {
     };
 
     tick();
-    pollRef.current = window.setInterval(tick, 3000) as unknown as number;
+    // 8 segundos entre verificações — seguro para o WhatsApp
+    pollRef.current = window.setInterval(tick, 8000) as unknown as number;
     return () => {
       if (pollRef.current) window.clearInterval(pollRef.current);
       pollRef.current = null;
