@@ -158,10 +158,25 @@ Deno.serve(async (req)=>{
         }
       }
 
-      // Auto-reconexão removida — causava loop de ban no WhatsApp.
-      // A reconexão é responsabilidade do usuário via botão no CRM.
-      if (mapped === "disconnected") {
-        console.log("[whatsapp-webhook] instância desconectada:", instance, "— aguardando reconexão manual.");
+      // Auto-reconexão controlada: só tenta reconectar se não foi device_removed
+      // (device_removed = WhatsApp bloqueou ou usuário desconectou manualmente)
+      if (mapped === "disconnected" && instance && EVOLUTION_URL && EVOLUTION_KEY) {
+        const isDeviceRemoved = JSON.stringify(payload).includes("device_removed");
+        if (!isDeviceRemoved) {
+          // Queda técnica — aguarda 10s e tenta reconectar uma única vez
+          await new Promise(r => setTimeout(r, 10000));
+          try {
+            await fetchWithTimeout(`${EVOLUTION_URL}/instance/connect/${instance}`, {
+              method: "GET",
+              headers: { "apikey": EVOLUTION_KEY }
+            }, 10000);
+            console.log("[whatsapp-webhook] auto-reconnect após queda técnica:", instance);
+          } catch (e) {
+            console.warn("[whatsapp-webhook] falha auto-reconnect:", e);
+          }
+        } else {
+          console.log("[whatsapp-webhook] device_removed — reconexão manual necessária:", instance);
+        }
       }
 
       return new Response(JSON.stringify({
