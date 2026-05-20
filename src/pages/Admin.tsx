@@ -31,6 +31,7 @@ interface AdminStoreRow {
   trial_ends_at: string | null;
   plan_type: string | null;
   billing_cycle: string | null;
+  current_period_end: string | null;
   whatsapp_status: string;
   whatsapp_instance: string | null;
   messages_7d: number;
@@ -44,6 +45,13 @@ interface AdminStoreRow {
 function formatDate(value: string | null) {
   if (!value) return "—";
   try { return new Date(value).toLocaleDateString("pt-BR"); } catch { return "—"; }
+}
+
+function daysRemaining(value: string | null): number | null {
+  if (!value) return null;
+  const diff = new Date(value).getTime() - Date.now();
+  if (diff <= 0) return 0;
+  return Math.ceil(diff / (1000 * 60 * 60 * 24));
 }
 
 function formatRelative(value: string | null) {
@@ -211,7 +219,7 @@ export default function Admin() {
                     <TableHead>Leads 7d</TableHead>
                     <TableHead>Última ativ.</TableHead>
                     <TableHead>Status</TableHead>
-                    <TableHead>Trial expira</TableHead>
+                    <TableHead>Renovação / Expira</TableHead>
                     <TableHead className="text-right">Ações</TableHead>
                   </TableRow>
                 </TableHeader>
@@ -258,10 +266,25 @@ export default function Admin() {
                           </span>
                         </TableCell>
                         <TableCell>{statusBadge(r.status)}</TableCell>
-                        <TableCell className="text-xs text-muted-foreground">{formatDate(r.trial_ends_at)}</TableCell>
+                        <TableCell className="text-xs">
+                          {r.status === "active" && r.current_period_end ? (
+                            <div>
+                              <p className="text-emerald-600 font-medium">{formatDate(r.current_period_end)}</p>
+                              <p className="text-muted-foreground">{daysRemaining(r.current_period_end)}d restantes</p>
+                            </div>
+                          ) : r.status === "trial" && r.trial_ends_at ? (
+                            <div>
+                              <p className="text-amber-500 font-medium">{formatDate(r.trial_ends_at)}</p>
+                              <p className="text-muted-foreground">{daysRemaining(r.trial_ends_at)}d restantes</p>
+                            </div>
+                          ) : (
+                            <span className="text-muted-foreground">—</span>
+                          )}
+                        </TableCell>
                         <TableCell className="text-right" onClick={e => e.stopPropagation()}>
                           <div className="flex flex-wrap justify-end gap-1.5">
-                            <Button size="sm" className="h-7 text-xs" disabled={actingId === r.id + "activate"} onClick={() => runAction(r.id, "activate", "Loja ativada")}>Ativar</Button>
+                            <Button size="sm" className="h-7 text-xs bg-emerald-600 hover:bg-emerald-700 text-white" disabled={actingId === r.id + "activate_monthly"} onClick={() => runAction(r.id, "activate_monthly", "Ativado — Mensal")}>Mensal</Button>
+                            <Button size="sm" className="h-7 text-xs bg-blue-600 hover:bg-blue-700 text-white" disabled={actingId === r.id + "activate_yearly"} onClick={() => runAction(r.id, "activate_yearly", "Ativado — Anual")}>Anual</Button>
                             <Button size="sm" variant="destructive" className="h-7 text-xs" disabled={actingId === r.id + "block"} onClick={() => runAction(r.id, "block", "Loja bloqueada")}>Bloquear</Button>
                             <Button size="sm" variant="outline" className="h-7 text-xs" disabled={actingId === r.id + "extend_trial"} onClick={() => runAction(r.id, "extend_trial", "Trial +30 dias")}>+30d</Button>
                           </div>

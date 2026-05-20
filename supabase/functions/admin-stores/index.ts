@@ -29,7 +29,7 @@ Deno.serve(async (req)=>{
       const sevenDaysAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString();
 
       const [subsRes, connectionsRes, messagesRes, leadsRes, membersRes] = await Promise.all([
-        admin.from("subscriptions").select("store_id, status, trial_ends_at, plan, billing_cycle"),
+        admin.from("subscriptions").select("store_id, status, trial_ends_at, plan, billing_cycle, current_period_end"),
         admin.from("whatsapp_connections").select("store_id, status, evolution_instance_name, updated_at"),
         admin.from("whatsapp_messages").select("store_id, created_at").gte("created_at", sevenDaysAgo),
         admin.from("leads").select("store_id, created_at").gte("created_at", sevenDaysAgo),
@@ -74,6 +74,7 @@ Deno.serve(async (req)=>{
           trial_ends_at: sub?.trial_ends_at || null,
           plan_type: sub?.plan || "—",
           billing_cycle: sub?.billing_cycle || "—",
+          current_period_end: sub?.current_period_end || null,
           // Métricas novas
           whatsapp_status: conn?.status || "disconnected",
           whatsapp_instance: conn?.evolution_instance_name || null,
@@ -90,10 +91,21 @@ Deno.serve(async (req)=>{
         headers: { ...corsHeaders, "Content-Type": "application/json" }
       });
     }
-    if (action === "activate") {
+    if (action === "activate" || action === "activate_monthly" || action === "activate_yearly") {
+      const isYearly = action === "activate_yearly";
+      const isMonthly = action === "activate_monthly";
+      const now = new Date();
+      let periodEnd: string | null = null;
+      if (isYearly) {
+        periodEnd = new Date(now.setFullYear(now.getFullYear() + 1)).toISOString();
+      } else if (isMonthly) {
+        periodEnd = new Date(now.setMonth(now.getMonth() + 1)).toISOString();
+      }
       await admin.from("subscriptions").update({
         status: "active",
-        trial_ends_at: null
+        trial_ends_at: null,
+        billing_cycle: isYearly ? "yearly" : isMonthly ? "monthly" : undefined,
+        current_period_end: periodEnd,
       }).eq("store_id", store_id);
       return new Response(JSON.stringify({
         ok: true
