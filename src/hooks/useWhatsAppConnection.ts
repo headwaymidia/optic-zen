@@ -61,6 +61,10 @@ export function useWhatsAppConnection(storeId?: string | null) {
   const query = useQuery({
     queryKey: ["whatsapp-connection", storeId],
     enabled: !!storeId,
+    // React Query deduplica: mesmo que 3 componentes usem este hook,
+    // só 1 request é feito a cada intervalo.
+    refetchInterval: 30000,
+    refetchIntervalInBackground: false, // Não pollar quando aba está escondida
     queryFn: async (): Promise<WhatsAppConnection | null> => {
       const { data, error } = await supabase
         .from("whatsapp_connections")
@@ -87,77 +91,24 @@ export function useWhatsAppConnection(storeId?: string | null) {
     [storeId, queryClient]
   );
 
-  // Health check: poll Evolution status a cada 30s e tenta auto-reconectar se cair.
+  // Detecção de queda: avisa quando status muda de connected para outro.
+  // Sem auto-reconexão — evita loop de ban no WhatsApp.
   const prevStatusRef = useRef<WhatsAppStatus | null>(null);
-  const reconnectingRef = useRef(false);
   const provider = query.data?.provider;
+  const currentStatus = query.data?.status ?? null;
 
   useEffect(() => {
-    if (!storeId) return;
-    // Só para Evolution (provider Meta não tem QR/reconnect deste tipo)
-    if (provider && provider !== "evolution") return;
-
-    let cancelled = false;
-
-    const tick = async () => {
-      if (cancelled || document.hidden) return;
-      try {
-        const res = await callEvolution("status", storeId);
-        const connected = isConnectedResponse(res);
-        const newStatus: WhatsAppStatus = connected ? "connected" : "disconnected";
-        const prev = prevStatusRef.current;
-
-        // Atualiza cache do React Query (server-side já fez upsert via service_role).
-        await queryClient.invalidateQueries({ queryKey: ["whatsapp-connection", storeId] });
-
-        // Detecta queda: estava connected e agora não está.
-        if (prev === "connected" && newStatus !== "connected" && !reconnectingRef.current) {
-          reconnectingRef.current = true;
-          toast({
-            title: "WhatsApp desconectado",
-            description: "Detectamos queda da conexão. Tentando reconectar automaticamente…",
-            variant: "destructive",
-          });
-          try {
-            await callEvolution("connect", storeId);
-            await queryClient.invalidateQueries({ queryKey: ["whatsapp-connection", storeId] });
-          } catch (e) {
-            console.error("[whatsapp health] auto-reconnect falhou", e);
-          } finally {
-            reconnectingRef.current = false;
-          }
-        }
-
-        // Reconexão bem-sucedida
-        if (prev && prev !== "connected" && newStatus === "connected") {
-          toast({
-            title: "WhatsApp reconectado",
-            description: "Conexão restaurada com sucesso.",
-          });
-        }
-
-        prevStatusRef.current = newStatus;
-      } catch (e) {
-        // Silencioso — falha de rede pontual não deve poluir UI
-        if (import.meta.env.DEV) console.warn("[whatsapp health] tick error", e);
-      }
-    };
-
-    // Primeiro tick imediato para popular prevStatusRef e depois a cada 30s
-    tick();
-    const id = window.setInterval(tick, 30000);
-
-    const onVisibility = () => {
-      if (!document.hidden) tick();
-    };
-    document.addEventListener("visibilitychange", onVisibility);
-
-    return () => {
-      cancelled = true;
-      window.clearInterval(id);
-      document.removeEventListener("visibilitychange", onVisibility);
-    };
-  }, [storeId, provider, queryClient]);
+    if (!currentStatus) return;
+    const prev = prevStatusRef.current;
+    if (prev === "connected" && currentStatus !== "connected") {
+      toast({
+        title: "WhatsApp desconectado",
+        description: "Acesse Configurações → WhatsApp para reconectar.",
+        variant: "destructive",
+      });
+    }
+    prevStatusRef.current = currentStatus;
+  }, [currentStatus]);
 
   return { connection: query.data ?? null, loading: query.isLoading, refetch: query.refetch, upsert };
 }
