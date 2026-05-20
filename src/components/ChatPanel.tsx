@@ -7,6 +7,7 @@ import { humanizeError } from "@/lib/error-handler";
 import { validatePhoneBR } from "@/lib/validators";
 import { Lead, LeadStatus, supabase } from "@/integrations/supabase/client";
 import { useLeads } from "@/hooks/useLeads";
+import { useAuth } from "@/hooks/useAuth";
 import { useStores } from "@/hooks/useStores";
 import { ERPTransferCard } from "@/components/ERPTransferCard";
 import { StageGateDialog, isGatedStatus, type StageGate } from "@/components/StageGateDialog";
@@ -53,6 +54,7 @@ export function ChatPanel({
   }, [lead?.id]);
   const { updateStatus, updateLead } = useLeads();
   const { currentStoreId, currentStore } = useStores();
+  const { profile } = useAuth();
   const { connection } = useWhatsAppConnection(currentStoreId);
   const waFunction = connection?.provider === "meta" ? "whatsapp-meta-send" : "whatsapp-evolution";
   const [message, setMessage] = useState(initialMessage ?? "");
@@ -721,6 +723,8 @@ export function ChatPanel({
             storeId={currentStoreId}
             leadName={lead.name?.split(" ")[0] ?? null}
             canEdit={currentStore?.role === "Dono" || currentStore?.role === "Gerente"}
+            vendedorName={profile?.full_name?.split(" ")[0] ?? null}
+            storeName={currentStore?.name ?? null}
           />
         </div>
 

@@ -28,6 +28,8 @@ interface Props {
   storeId?: string | null;
   leadName?: string | null;
   canEdit?: boolean;
+  vendedorName?: string | null;
+  storeName?: string | null;
 }
 
 export function MessageInput({
@@ -44,6 +46,8 @@ export function MessageInput({
   storeId = null,
   leadName = null,
   canEdit = false,
+  vendedorName = null,
+  storeName = null,
 }: Props) {
   const fileInputRef = useRef<HTMLInputElement | null>(null);
   const [scriptsOpen, setScriptsOpen] = useState(false);
@@ -285,7 +289,7 @@ export function MessageInput({
                         key={t.id}
                         type="button"
                         onClick={() => {
-                          const resolved = applyTemplate(t.body, { nome: leadName ?? "cliente" });
+                          const resolved = applyTemplate(t.body, { nome: leadName ?? "cliente", vendedora: vendedorName ?? "", loja: storeName ?? "" });
                           onChange(resolved);
                           setScriptsOpen(false);
                         }}
@@ -293,7 +297,7 @@ export function MessageInput({
                       >
                         <div className="font-medium text-xs">{t.title}</div>
                         <div className="text-[11px] text-muted-foreground line-clamp-1 mt-0.5">
-                          {t.body.replace(/\{nome\}/g, leadName ?? "cliente")}
+                          {t.body.replace(/\{nome\}/g, leadName ?? "cliente").replace(/\{vendedora\}/g, vendedorName ?? "").replace(/\{loja\}/g, storeName ?? "")}
                         </div>
                       </button>
                     ))
@@ -353,8 +357,8 @@ export function MessageInput({
                           onClick={() => {
                             const resolved = s.body
                               .replace(/\{nome\}/g, leadName ?? "cliente")
-                              .replace(/\{vendedora\}/g, "")
-                              .replace(/\{loja\}/g, "");
+                              .replace(/\{vendedora\}/g, vendedorName ?? "")
+                              .replace(/\{loja\}/g, storeName ?? "");
                             onChange(resolved);
                             setScriptsOpen(false);
                             setActiveEtapa(null);
@@ -363,7 +367,7 @@ export function MessageInput({
                         >
                           <div className="font-medium text-xs">{s.label}</div>
                           <div className="text-[11px] text-muted-foreground line-clamp-2 mt-0.5">
-                            {s.body.replace(/\{nome\}/g, leadName ?? "cliente").replace(/\{vendedora\}/g, "").replace(/\{loja\}/g, "")}
+                            {s.body.replace(/\{nome\}/g, leadName ?? "cliente").replace(/\{vendedora\}/g, vendedorName ?? "").replace(/\{loja\}/g, storeName ?? "")}
                           </div>
                         </button>
                       ))}
