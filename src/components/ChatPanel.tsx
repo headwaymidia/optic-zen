@@ -31,18 +31,31 @@ export function ChatPanel({
   onBack,
   onClose,
   chatOnly = false,
+  initialMessage = "",
+  onDraftConsumed,
 }: {
   lead: Lead;
   onBack?: () => void;
   onClose?: () => void;
   chatOnly?: boolean;
+  initialMessage?: string;
+  onDraftConsumed?: () => void;
 }) {
   if (import.meta.env.DEV) console.log("[ChatPanel] lead.id:", lead?.id);
+
+  // Aplicar mensagem inicial quando lead muda (ex: vindo do Kanban com lembrete)
+  useEffect(() => {
+    if (initialMessage) {
+      setMessage(initialMessage);
+      onDraftConsumed?.();
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [lead?.id]);
   const { updateStatus, updateLead } = useLeads();
   const { currentStoreId, currentStore } = useStores();
   const { connection } = useWhatsAppConnection(currentStoreId);
   const waFunction = connection?.provider === "meta" ? "whatsapp-meta-send" : "whatsapp-evolution";
-  const [message, setMessage] = useState("");
+  const [message, setMessage] = useState(initialMessage ?? "");
   const [gateStatus, setGateStatus] = useState<StageGate | null>(null);
   const [isTyping, setIsTyping] = useState(false);
   const [sentMessages, setSentMessages] = useState<SentMessage[]>([]);

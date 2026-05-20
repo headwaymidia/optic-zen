@@ -6,7 +6,7 @@ import { useLeads } from "@/hooks/useLeads";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Plus, Phone, MessageCircle, Pencil, Flame, Tag, User, CalendarClock, Calendar, Clock, Info, AlarmClock, BellRing, Filter } from "lucide-react";
+import { Plus, Phone, MessageCircle, Pencil, Flame, Tag, User, CalendarClock, Calendar, Clock, Info, AlarmClock, BellRing, Filter , Bell } from "lucide-react";
 import { DataSkeleton } from "@/components/ui/DataSkeleton";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -385,6 +385,41 @@ function LeadCardContent({ lead, onEdit, dragging, selected, cadenceHighlight, m
               </span>
             );
           })()}
+          {lead.status === "Agendou Exame" && lead.exam_date && (
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button
+                  type="button"
+                  size="icon"
+                  variant="outline"
+                  className="h-9 w-9 md:h-7 md:w-7 rounded-full shrink-0 border-purple-300 text-purple-600 hover:bg-purple-50"
+                  onPointerDown={(e) => e.stopPropagation()}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    const firstName = (lead.name || "cliente").split(" ")[0];
+                    const examDate = new Date(lead.exam_date!);
+                    const now = new Date();
+                    const diffMin = Math.round((examDate.getTime() - now.getTime()) / 60000);
+                    let timeRef = "";
+                    if (diffMin <= 60 && diffMin > 0) timeRef = `daqui ${diffMin} minutos`;
+                    else if (diffMin <= 0) timeRef = "agora";
+                    else {
+                      const h = examDate.getHours().toString().padStart(2, "0");
+                      const m = examDate.getMinutes().toString().padStart(2, "0");
+                      timeRef = `às ${h}h${m}`;
+                    }
+                    const msg = `Oi ${firstName}, tudo bem? 😊 Só passando para lembrar que seu exame de vista é ${timeRef}. Consegue comparecer?`;
+                    const encoded = encodeURIComponent(msg);
+                    navigate(`/whatsapp?leadId=${lead.id}&message=${encoded}`);
+                  }}
+                  aria-label="Enviar lembrete de exame"
+                >
+                  <Bell className="h-4 w-4 md:h-3.5 md:w-3.5" />
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent side="top">Lembrete de exame</TooltipContent>
+            </Tooltip>
+          )}
           <Tooltip>
             <TooltipTrigger asChild>
               <Button

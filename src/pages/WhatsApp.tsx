@@ -113,6 +113,7 @@ export default function WhatsAppPage() {
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [searchParams, setSearchParams] = useSearchParams();
   const [newChatOpen, setNewChatOpen] = useState(false);
+  const [draftMessage, setDraftMessage] = useState<string>("");
   const [newChatSearch, setNewChatSearch] = useState("");
   const [period, setPeriod] = useState<PeriodKey>("all");
   const [customRange, setCustomRange] = useState<DateRange | undefined>(undefined);
@@ -345,7 +346,7 @@ export default function WhatsAppPage() {
             Selecione um contato para iniciar a conversa
           </div>
         ) : (
-          <ChatPanel lead={selected} onBack={() => setSelectedId(null)} chatOnly />
+          <ChatPanel lead={selected} onBack={() => setSelectedId(null)} chatOnly initialMessage={draftMessage} onDraftConsumed={() => setDraftMessage("")} />
         )}
       </section>
 
