@@ -158,17 +158,10 @@ Deno.serve(async (req)=>{
         }
       }
 
-      // Auto-reconexão: se a instância caiu, dispara /instance/connect/{instance}
-      if (mapped === "disconnected" && instance && EVOLUTION_URL && EVOLUTION_KEY) {
-        try {
-          const reconnectRes = await fetch(`${EVOLUTION_URL}/instance/connect/${instance}`, {
-            method: "GET",
-            headers: { "apikey": EVOLUTION_KEY }
-          });
-          console.log("[whatsapp-webhook] auto-reconnect", instance, reconnectRes.status);
-        } catch (e) {
-          console.warn("[whatsapp-webhook] falha auto-reconnect:", e);
-        }
+      // Auto-reconexão removida — causava loop de ban no WhatsApp.
+      // A reconexão é responsabilidade do usuário via botão no CRM.
+      if (mapped === "disconnected") {
+        console.log("[whatsapp-webhook] instância desconectada:", instance, "— aguardando reconexão manual.");
       }
 
       return new Response(JSON.stringify({
