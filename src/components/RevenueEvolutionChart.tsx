@@ -205,7 +205,7 @@ function RevenueEvolutionChartImpl({ leads }: Props) {
       {/* Legenda interativa (checkbox style) + Ver Escala Total */}
       <div className="flex items-center justify-between flex-wrap gap-3 mb-5">
         <div
-          className="inline-flex items-center gap-1.5 p-1 rounded-lg bg-muted/60 border border-border"
+          className="inline-flex flex-wrap items-center gap-1.5 p-1 rounded-lg bg-muted/60 border border-border"
           role="group"
           aria-label="Séries do gráfico"
         >
