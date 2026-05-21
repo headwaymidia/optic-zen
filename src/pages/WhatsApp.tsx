@@ -124,16 +124,22 @@ export default function WhatsAppPage() {
     const leadIdFromUrl = searchParams.get("leadId");
     if (leadIdFromUrl && leads.some((l) => l.id === leadIdFromUrl)) {
       setSelectedId(leadIdFromUrl);
-      // Verificar mensagem de lembrete salva (vinda do Kanban)
-      const savedLeadId = localStorage.getItem("od_draft_lead_id");
-      const savedMsg = localStorage.getItem("od_draft_message");
-      if (savedLeadId === leadIdFromUrl && savedMsg) {
-        setDraftMessage(savedMsg);
-        localStorage.removeItem("od_draft_message");
-        localStorage.removeItem("od_draft_lead_id");
+      // Mensagem de lembrete via URL params ou localStorage
+      const messageFromUrl = searchParams.get("message");
+      if (messageFromUrl) {
+        setDraftMessage(decodeURIComponent(messageFromUrl));
+      } else {
+        const savedLeadId = localStorage.getItem("od_draft_lead_id");
+        const savedMsg = localStorage.getItem("od_draft_message");
+        if (savedLeadId === leadIdFromUrl && savedMsg) {
+          setDraftMessage(savedMsg);
+          localStorage.removeItem("od_draft_message");
+          localStorage.removeItem("od_draft_lead_id");
+        }
       }
       // Clean the URL so refresh doesn't keep re-selecting
       searchParams.delete("leadId");
+      searchParams.delete("message");
       setSearchParams(searchParams, { replace: true });
     }
   }, [leads, searchParams, setSearchParams]);
