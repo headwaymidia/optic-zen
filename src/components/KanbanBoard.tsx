@@ -409,8 +409,9 @@ function LeadCardContent({ lead, onEdit, dragging, selected, cadenceHighlight, m
                       timeRef = `às ${h}h${m}`;
                     }
                     const msg = `Oi ${firstName}, tudo bem? 😊 Só passando para lembrar que seu exame de vista é ${timeRef}. Consegue comparecer?`;
-                    const encoded = encodeURIComponent(msg);
-                    navigate(`/whatsapp?leadId=${lead.id}&message=${encoded}`);
+                    localStorage.setItem("od_draft_message", msg);
+                    localStorage.setItem("od_draft_lead_id", lead.id);
+                    navigate(`/whatsapp?leadId=${lead.id}`);
                   }}
                   aria-label="Enviar lembrete de exame"
                 >
