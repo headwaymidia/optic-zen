@@ -124,8 +124,13 @@ export default function WhatsAppPage() {
     const leadIdFromUrl = searchParams.get("leadId");
     if (leadIdFromUrl && leads.some((l) => l.id === leadIdFromUrl)) {
       setSelectedId(leadIdFromUrl);
+      const messageFromUrl = searchParams.get("message");
+      if (messageFromUrl) {
+        setDraftMessage(decodeURIComponent(messageFromUrl));
+      }
       // Clean the URL so refresh doesn't keep re-selecting
       searchParams.delete("leadId");
+      searchParams.delete("message");
       setSearchParams(searchParams, { replace: true });
     }
   }, [leads, searchParams, setSearchParams]);
