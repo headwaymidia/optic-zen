@@ -4,6 +4,7 @@ import { Card } from "@/components/ui/card";
 import { Lead, supabase } from "@/integrations/supabase/client";
 import { useStores } from "@/hooks/useStores";
 import { Zap } from "lucide-react";
+import { businessMinutesBetween, DEFAULT_BUSINESS_HOURS, type BusinessHours } from "@/lib/businessHours";
 
 interface Props {
   leads: Lead[];
@@ -41,6 +42,26 @@ export function ResponseSpeedCard({ leads }: Props) {
     staleTime: 60_000,
   });
 
+  const { data: storeSettings } = useQuery({
+    queryKey: ["store-settings-bh", currentStoreId],
+    enabled: !!currentStoreId,
+    queryFn: async () => {
+      const { data } = await supabase
+        .from("stores")
+        .select("business_hours_start, business_hours_end, business_days")
+        .eq("id", currentStoreId!)
+        .maybeSingle();
+      return data;
+    },
+    staleTime: 300_000,
+  });
+
+  const businessHours: BusinessHours = {
+    start: storeSettings?.business_hours_start ?? DEFAULT_BUSINESS_HOURS.start,
+    end: storeSettings?.business_hours_end ?? DEFAULT_BUSINESS_HOURS.end,
+    days: storeSettings?.business_days ?? DEFAULT_BUSINESS_HOURS.days,
+  };
+
   const { avg, badge, under5, under15, awaiting, avgFollowUps } = useMemo(() => {
     // Para cada lead: primeira inbound (from_me=false) e primeira outbound (from_me=true)
     const firstIn = new Map<string, number>();
@@ -66,7 +87,7 @@ export function ResponseSpeedCard({ leads }: Props) {
     firstIn.forEach((inT, leadId) => {
       const outT = firstOut.get(leadId);
       if (outT && outT >= inT) {
-        const diffMin = (outT - inT) / 60000;
+        const diffMin = businessMinutesBetween(new Date(inT), new Date(outT), businessHours);
         diffs.push(diffMin);
         if (diffMin < 5) under5++;
         else if (diffMin < 15) under15++;
@@ -93,7 +114,7 @@ export function ResponseSpeedCard({ leads }: Props) {
       : 0;
 
     return { avg, badge, under5, under15, awaiting, avgFollowUps };
-  }, [messages, leads]);
+  }, [messages, leads, businessHours]);
 
   const totalDist = under5 + under15 + awaiting || 1;
 

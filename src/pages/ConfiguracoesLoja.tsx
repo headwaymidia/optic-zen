@@ -174,12 +174,109 @@ export default function ConfiguracoesLoja() {
 
 /* ---------- GERAL ---------- */
 function GeneralPanel({ store }: { store: { id: string; name: string; role: string } }) {
+  const [bhStart, setBhStart] = useState<number>(8);
+  const [bhEnd, setBhEnd] = useState<number>(18);
+  const [bhDays, setBhDays] = useState<number[]>([1,2,3,4,5,6]);
+  const [savingBh, setSavingBh] = useState(false);
+  const canEdit = store.role === "Dono" || store.role === "Gerente";
+
+  useEffect(() => {
+    supabase.from("stores").select("business_hours_start,business_hours_end,business_days")
+      .eq("id", store.id).maybeSingle().then(({ data }) => {
+        if (data) {
+          setBhStart(data.business_hours_start ?? 8);
+          setBhEnd(data.business_hours_end ?? 18);
+          setBhDays(data.business_days ?? [1,2,3,4,5,6]);
+        }
+      });
+  }, [store.id]);
+
+  const dayNames = ["Dom","Seg","Ter","Qua","Qui","Sex","Sáb"];
+
+  async function saveBh() {
+    setSavingBh(true);
+    await supabase.from("stores").update({
+      business_hours_start: bhStart,
+      business_hours_end: bhEnd,
+      business_days: bhDays,
+    }).eq("id", store.id);
+    setSavingBh(false);
+    toast({ title: "Horário salvo com sucesso" });
+  }
+
   return (
-    <SectionCard title="Informações da filial" description="Dados básicos exibidos no dashboard.">
-      <Field label="Nome da loja" value={store.name} />
-      <Field label="ID da loja" value={store.id} mono />
-      <Field label="Sua permissão" value={store.role} />
-    </SectionCard>
+    <div className="space-y-4">
+      <SectionCard title="Informações da filial" description="Dados básicos exibidos no dashboard.">
+        <Field label="Nome da loja" value={store.name} />
+        <Field label="ID da loja" value={store.id} mono />
+        <Field label="Sua permissão" value={store.role} />
+      </SectionCard>
+
+      <SectionCard title="Horário de Atendimento" description="Usado para calcular velocidade de resposta corretamente. Mensagens fora deste horário não contam como atraso.">
+        <div className="space-y-4">
+          <div className="flex flex-wrap gap-4 items-end">
+            <div className="space-y-1">
+              <label className="text-xs font-medium text-muted-foreground">Abertura</label>
+              <select
+                value={bhStart}
+                onChange={e => setBhStart(Number(e.target.value))}
+                disabled={!canEdit}
+                className="h-9 rounded-md border border-input bg-background px-3 text-sm"
+              >
+                {Array.from({length: 24}, (_,i) => (
+                  <option key={i} value={i}>{String(i).padStart(2,"0")}h00</option>
+                ))}
+              </select>
+            </div>
+            <div className="space-y-1">
+              <label className="text-xs font-medium text-muted-foreground">Fechamento</label>
+              <select
+                value={bhEnd}
+                onChange={e => setBhEnd(Number(e.target.value))}
+                disabled={!canEdit}
+                className="h-9 rounded-md border border-input bg-background px-3 text-sm"
+              >
+                {Array.from({length: 24}, (_,i) => (
+                  <option key={i} value={i}>{String(i).padStart(2,"0")}h00</option>
+                ))}
+              </select>
+            </div>
+          </div>
+          <div className="space-y-1.5">
+            <label className="text-xs font-medium text-muted-foreground">Dias de atendimento</label>
+            <div className="flex gap-2 flex-wrap">
+              {dayNames.map((d, i) => (
+                <button
+                  key={i}
+                  type="button"
+                  disabled={!canEdit}
+                  onClick={() => setBhDays(prev =>
+                    prev.includes(i) ? prev.filter(x => x !== i) : [...prev, i].sort()
+                  )}
+                  className={`h-8 w-10 rounded-md text-xs font-medium border transition-colors ${
+                    bhDays.includes(i)
+                      ? "bg-emerald-500 text-white border-emerald-500"
+                      : "bg-background text-muted-foreground border-input"
+                  }`}
+                >
+                  {d}
+                </button>
+              ))}
+            </div>
+          </div>
+          {canEdit && (
+            <button
+              type="button"
+              onClick={saveBh}
+              disabled={savingBh}
+              className="h-9 px-4 rounded-md bg-emerald-500 hover:bg-emerald-600 text-white text-sm font-medium transition-colors disabled:opacity-50"
+            >
+              {savingBh ? "Salvando..." : "Salvar horário"}
+            </button>
+          )}
+        </div>
+      </SectionCard>
+    </div>
   );
 }
 
