@@ -44,14 +44,29 @@ export function ChatPanel({
 }) {
   if (import.meta.env.DEV) console.log("[ChatPanel] lead.id:", lead?.id);
 
-  // Aplicar mensagem inicial quando lead muda OU quando initialMessage chega
+  // Aplicar mensagem inicial quando lead muda
+  // Lê diretamente do localStorage para evitar race condition com props
   useEffect(() => {
+    if (!lead?.id) return;
+
+    // 1. Verificar localStorage (vindo do botão de lembrete no Kanban)
+    const savedLeadId = localStorage.getItem("od_draft_lead_id");
+    const savedMsg = localStorage.getItem("od_draft_message");
+    if (savedLeadId === lead.id && savedMsg) {
+      setMessage(savedMsg);
+      localStorage.removeItem("od_draft_message");
+      localStorage.removeItem("od_draft_lead_id");
+      onDraftConsumed?.();
+      return;
+    }
+
+    // 2. Fallback: usar prop initialMessage
     if (initialMessage) {
       setMessage(initialMessage);
       onDraftConsumed?.();
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [lead?.id, initialMessage]);
+  }, [lead?.id]);
   const { updateStatus, updateLead } = useLeads();
   const { currentStoreId, currentStore } = useStores();
   const { profile } = useAuth();
