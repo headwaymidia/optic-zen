@@ -158,24 +158,77 @@ Deno.serve(async (req)=>{
         }
       }
 
-      // Auto-reconexão controlada: só tenta reconectar se não foi device_removed
-      // (device_removed = WhatsApp bloqueou ou usuário desconectou manualmente)
+      // Auto-reconexão com exponential backoff
+      // device_removed = WhatsApp bloqueou ou usuário desconectou → reconexão manual
+      // Queda técnica → tenta até 3x com delays crescentes (10s, 30s, 120s)
       if (mapped === "disconnected" && instance && EVOLUTION_URL && EVOLUTION_KEY) {
         const isDeviceRemoved = JSON.stringify(payload).includes("device_removed");
-        if (!isDeviceRemoved) {
-          // Queda técnica — aguarda 10s e tenta reconectar uma única vez
-          await new Promise(r => setTimeout(r, 10000));
-          try {
-            await fetchWithTimeout(`${EVOLUTION_URL}/instance/connect/${instance}`, {
-              method: "GET",
-              headers: { "apikey": EVOLUTION_KEY }
-            }, 10000);
-            console.log("[whatsapp-webhook] auto-reconnect após queda técnica:", instance);
-          } catch (e) {
-            console.warn("[whatsapp-webhook] falha auto-reconnect:", e);
-          }
-        } else {
+        if (isDeviceRemoved) {
           console.log("[whatsapp-webhook] device_removed — reconexão manual necessária:", instance);
+        } else {
+          // Buscar contagem de tentativas recentes no banco (última hora)
+          const oneHourAgo = new Date(Date.now() - 60 * 60 * 1000).toISOString();
+          const { count: recentAttempts } = await admin
+            .from("logs")
+            .select("id", { count: "exact", head: true })
+            .eq("message", `auto-reconnect:${instance}`)
+            .gte("created_at", oneHourAgo);
+
+          const attempts = recentAttempts ?? 0;
+
+          if (attempts >= 3) {
+            // Esgotou tentativas — notificar para reconexão manual
+            console.warn("[whatsapp-webhook] 3 tentativas falharam — notificando:", instance);
+            // Buscar store_id da instância
+            const { data: conn } = await admin
+              .from("whatsapp_connections")
+              .select("store_id")
+              .eq("evolution_instance_name", instance)
+              .maybeSingle();
+            if (conn?.store_id) {
+              const { data: members } = await admin
+                .from("store_members")
+                .select("user_id")
+                .eq("store_id", conn.store_id)
+                .in("role", ["Dono", "Gerente"]);
+              if (members?.length) {
+                await admin.from("notifications").insert(
+                  members.map((m: any) => ({
+                    user_id: m.user_id,
+                    store_id: conn.store_id,
+                    type: "whatsapp_disconnected",
+                    title: "⚠️ WhatsApp precisa de reconexão manual",
+                    body: "O WhatsApp tentou reconectar 3 vezes sem sucesso. Acesse Configurações → WhatsApp para reconectar.",
+                    read: false,
+                  }))
+                );
+              }
+            }
+          } else {
+            // Exponential backoff: 10s, 30s, 120s
+            const delays = [10000, 30000, 120000];
+            const delay = delays[attempts] ?? 120000;
+
+            console.log(`[whatsapp-webhook] auto-reconnect tentativa ${attempts + 1}/3 em ${delay/1000}s:`, instance);
+
+            // Registrar tentativa
+            await admin.from("logs").insert({
+              store_id: null,
+              level: "info",
+              message: `auto-reconnect:${instance}`,
+            });
+
+            await new Promise(r => setTimeout(r, delay));
+            try {
+              await fetchWithTimeout(`${EVOLUTION_URL}/instance/connect/${instance}`, {
+                method: "GET",
+                headers: { "apikey": EVOLUTION_KEY }
+              }, 15000);
+              console.log("[whatsapp-webhook] auto-reconnect disparado:", instance);
+            } catch (e) {
+              console.warn("[whatsapp-webhook] falha auto-reconnect:", e);
+            }
+          }
         }
       }
 
