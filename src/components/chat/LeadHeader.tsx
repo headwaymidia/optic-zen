@@ -33,7 +33,7 @@ export function LeadHeader({ lead, onBack, onClose, onStatusChange }: Props) {
   return (
     <div className="flex items-center gap-2">
       {onBack && (
-        <Button variant="ghost" size="icon" className="md:hidden" onClick={onBack}>
+        <Button variant="ghost" size="icon" className="lg:hidden" onClick={onBack}>
           <ArrowLeft className="h-5 w-5" />
         </Button>
       )}
