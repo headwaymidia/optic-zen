@@ -44,14 +44,14 @@ export function ChatPanel({
 }) {
   if (import.meta.env.DEV) console.log("[ChatPanel] lead.id:", lead?.id);
 
-  // Aplicar mensagem inicial quando lead muda (ex: vindo do Kanban com lembrete)
+  // Aplicar mensagem inicial quando lead muda OU quando initialMessage chega
   useEffect(() => {
     if (initialMessage) {
       setMessage(initialMessage);
       onDraftConsumed?.();
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [lead?.id]);
+  }, [lead?.id, initialMessage]);
   const { updateStatus, updateLead } = useLeads();
   const { currentStoreId, currentStore } = useStores();
   const { profile } = useAuth();
