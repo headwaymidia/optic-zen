@@ -12,6 +12,8 @@ import {
   HelpCircle,
   Handshake,
   LogOut,
+  CalendarDays,
+  Users,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
@@ -32,6 +34,8 @@ const ITEMS = [
 ];
 
 const SECONDARY = [
+  { title: "Agenda", url: "/agenda", icon: CalendarDays },
+  { title: "Contatos", url: "/contatos", icon: Users },
   { title: "Configurações", url: "/configuracoes", icon: Settings },
   { title: "WhatsApp", url: "/whatsapp-config", icon: Smartphone, requireRole: ["Dono", "Gerente"] as string[] },
   { title: "Meu plano", url: "/planos", icon: Crown },
