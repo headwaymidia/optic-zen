@@ -24,28 +24,42 @@ export function useStoreMembers(storeId?: string | null) {
     enabled: !!sid,
     staleTime: 1000 * 60 * 5, // 5 minutos
     queryFn: async (): Promise<StoreMember[]> => {
-      const { data: rows, error } = await supabase
-        .from("store_members")
-        .select("user_id, role")
-        .eq("store_id", sid!);
-      if (error || !rows || rows.length === 0) return [];
-      const ids = Array.from(new Set(rows.map((r: any) => r.user_id)));
-      const { data: profs } = await supabase
-        .from("profiles")
-        .select("id, full_name, email, avatar_url")
-        .in("id", ids);
-      const pMap = new Map<string, any>((profs ?? []).map((p: any) => [p.id, p]));
-      return rows.map((r: any) => {
-        const p = pMap.get(r.user_id);
-        const nm = (p?.full_name ?? "").trim();
-        return {
-          id: r.user_id,
-          full_name: nm || p?.email || "Membro",
-          email: p?.email ?? null,
-          avatar_url: p?.avatar_url ?? null,
-          role: r.role,
-        };
+      // Busca membros reais (com conta) + vendedoras simples (sem conta)
+      const [{ data: rows, error }, { data: sellers }] = await Promise.all([
+        supabase.from("store_members").select("user_id, role").eq("store_id", sid!),
+        supabase.from("store_sellers").select("id, name").eq("store_id", sid!).eq("active", true),
+      ]);
+
+      const result: StoreMember[] = [];
+
+      if (!error && rows && rows.length > 0) {
+        const ids = Array.from(new Set(rows.map((r: any) => r.user_id)));
+        const { data: profs } = await supabase
+          .from("profiles")
+          .select("id, full_name, email, avatar_url")
+          .in("id", ids);
+        const pMap = new Map<string, any>((profs ?? []).map((p: any) => [p.id, p]));
+        rows.forEach((r: any) => {
+          const p = pMap.get(r.user_id);
+          const nm = (p?.full_name ?? "").trim();
+          result.push({
+            id: r.user_id,
+            full_name: nm || p?.email || "Membro",
+            email: p?.email ?? null,
+            avatar_url: p?.avatar_url ?? null,
+            role: r.role,
+          });
+        });
+      }
+
+      // Vendedoras simples (sem conta)
+      (sellers ?? []).forEach((s: any) => {
+        if (!result.find((m) => m.id === s.id)) {
+          result.push({ id: s.id, full_name: s.name, email: null, avatar_url: null, role: "Vendedor" });
+        }
       });
+
+      return result;
     },
   });
 

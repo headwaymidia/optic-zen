@@ -43,10 +43,12 @@ export function LeadDropdowns({ lead }: Props) {
 
     let cancelled = false;
     (async () => {
-      const { data: members, error } = await supabase
-        .from("store_members")
-        .select("user_id, role")
-        .eq("store_id", currentStoreId);
+      const { data, error } = await supabase
+        .from("store_sellers")
+        .select("id, name")
+        .eq("store_id", currentStoreId)
+        .eq("active", true)
+        .order("name", { ascending: true });
 
       if (cancelled) return;
       if (error) {
@@ -55,26 +57,7 @@ export function LeadDropdowns({ lead }: Props) {
         return;
       }
 
-      const userIds = Array.from(new Set((members ?? []).map((m: any) => m.user_id).filter(Boolean)));
-      if (userIds.length === 0) {
-        setSalespeople([]);
-        return;
-      }
-
-      const { data: profiles } = await supabase
-        .from("profiles")
-        .select("id, full_name, email")
-        .in("id", userIds);
-
-      if (cancelled) return;
-      const profileById = new Map((profiles ?? []).map((p: any) => [p.id, p]));
-      setSalespeople(
-        userIds.map((id) => {
-          const profile: any = profileById.get(id);
-          const name = String(profile?.full_name ?? profile?.email ?? id).trim();
-          return { id, name: name || id };
-        })
-      );
+      setSalespeople((data ?? []).map((s: any) => ({ id: s.id, name: s.name })));
     })();
 
     return () => {

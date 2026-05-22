@@ -28,6 +28,7 @@ import {
   Loader2,
 } from "lucide-react";
 import { WhatsAppPanel } from "@/components/WhatsAppPanel";
+import { StoreSellersManager } from "@/components/StoreSellersManager";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
   DropdownMenu,
@@ -140,6 +141,7 @@ export default function ConfiguracoesLoja() {
 
       <GeneralPanel store={currentStore} />
       <TeamPanel storeId={currentStore.id} storesCount={stores.length} />
+      <StoreSellersManager storeId={currentStore.id} />
     </div>
   );
 }

@@ -26,7 +26,7 @@ const BAR_STYLE = [
 export function SalesRanking({ leads }: { leads: Lead[] }) {
   const [nameMap, setNameMap] = useState<Record<string, string>>({});
 
-  // Resolve responsible_id (UUID) → nome via profiles
+  // Resolve responsible_id (UUID) → nome via store_sellers
   useEffect(() => {
     const ids = Array.from(
       new Set(
@@ -42,15 +42,12 @@ export function SalesRanking({ leads }: { leads: Lead[] }) {
     let cancelled = false;
     (async () => {
       const { data } = await supabase
-        .from("profiles")
-        .select("id, full_name, email")
+        .from("store_sellers")
+        .select("id, name")
         .in("id", ids);
       if (cancelled) return;
       const map: Record<string, string> = {};
-      (data ?? []).forEach((p: any) => {
-        const fn = (p.full_name ?? "").trim();
-        map[p.id] = fn || p.email || p.id;
-      });
+      (data ?? []).forEach((s: any) => { map[s.id] = s.name; });
       setNameMap(map);
     })();
     return () => {
