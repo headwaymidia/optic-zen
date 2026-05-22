@@ -392,71 +392,7 @@ export default function Configuracoes() {
         </CardContent>
       </Card>
 
-      {canEditStore && (
-        <Card>
-          <CardHeader><CardTitle className="text-base">Configurações da Loja</CardTitle></CardHeader>
-          <CardContent className="space-y-4">
-            <div className="space-y-2">
-              <Label htmlFor="store-name">Nome da loja</Label>
-              <Input
-                id="store-name"
-                value={storeName}
-                onChange={(e) => setStoreName(e.target.value)}
-                placeholder="Nome da loja"
-              />
-            </div>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-              <div className="space-y-2">
-                <Label htmlFor="store-city">Cidade</Label>
-                <Input
-                  id="store-city"
-                  value={storeCity}
-                  onChange={(e) => setStoreCity(e.target.value)}
-                  placeholder="Cidade"
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="store-state">Estado</Label>
-                <Input
-                  id="store-state"
-                  value={storeState}
-                  onChange={(e) => setStoreState(e.target.value)}
-                  placeholder="UF"
-                />
-              </div>
-            </div>
-            <div className="space-y-2">
-              <Label>Tamanho da equipe</Label>
-              <Select value={storeTeamSize || undefined} onValueChange={setStoreTeamSize}>
-                <SelectTrigger>
-                  <SelectValue placeholder="Selecione" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="1">1</SelectItem>
-                  <SelectItem value="2 a 5">2 a 5</SelectItem>
-                  <SelectItem value="6 a 10">6 a 10</SelectItem>
-                  <SelectItem value="Mais de 10">Mais de 10</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-            <div className="flex justify-end">
-              <Button onClick={handleSaveStore} disabled={!storeDirty || savingStore}>
-                {savingStore && <Loader2 className="h-4 w-4 animate-spin" />}
-                Salvar configurações da loja
-              </Button>
-            </div>
-          </CardContent>
-        </Card>
-      )}
 
-      {canEditStore && currentStoreId && (
-        <Card>
-          <CardHeader><CardTitle className="text-base">Equipe</CardTitle></CardHeader>
-          <CardContent>
-            <TeamPanel storeId={currentStoreId} storesCount={1} />
-          </CardContent>
-        </Card>
-      )}
     </div>
   );
 }
