@@ -121,7 +121,7 @@ Deno.serve(async (req) => {
       description: plan.description,
       externalReference: `${store_id}:${plan_type}:${user.id}`,
       callback: {
-        successUrl: `https://optic-zen.lovable.app/planos?status=success`,
+        successUrl: `https://www.oticadominante.com.br/planos?status=success`,
         autoRedirect: true,
       },
     };
@@ -144,7 +144,7 @@ Deno.serve(async (req) => {
         description: plan.description,
         externalReference: `${store_id}:monthly:${user.id}`,
         callback: {
-          successUrl: `https://optic-zen.lovable.app/planos?status=success`,
+          successUrl: `https://www.oticadominante.com.br/planos?status=success`,
           autoRedirect: true,
         },
       };
