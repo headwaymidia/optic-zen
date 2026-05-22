@@ -121,7 +121,7 @@ export default function ConfiguracoesLoja() {
   }
 
   return (
-    <div className="p-6 sm:p-8">
+    <div className="p-6 space-y-6 max-w-2xl">
       {/* Abas: Configurações pessoais / Configurações da loja */}
       <div className="flex rounded-lg overflow-hidden border border-border mb-6">
         <a

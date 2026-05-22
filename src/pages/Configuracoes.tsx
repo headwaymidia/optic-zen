@@ -229,7 +229,7 @@ export default function Configuracoes() {
         <p className="text-sm text-muted-foreground">Informações da sua conta e empresa.</p>
       </div>
 
-      {/* Abas: Configurações pessoais / Configurações da loja */}
+      {/* Abas de navegação */}
       {canEditStore && (
         <div className="flex rounded-lg overflow-hidden border border-border">
           <button
