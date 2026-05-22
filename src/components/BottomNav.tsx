@@ -58,7 +58,7 @@ export function BottomNav() {
       role="navigation"
       aria-label="Navegação principal"
       className={cn(
-        "lg:hidden fixed bottom-0 inset-x-0 z-50",
+        "md:hidden fixed bottom-0 inset-x-0 z-50",
         "bg-background/85 backdrop-blur-xl",
         "border-t border-border",
         "pb-safe"
