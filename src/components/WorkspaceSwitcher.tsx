@@ -108,8 +108,7 @@ function SwitcherMenuContent({
       align="start"
       side="bottom"
       sideOffset={6}
-      className="w-64 p-1 z-[100]"
-      avoidCollisions={false}
+      className="w-64 p-1"
     >
       <DropdownMenuLabel className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground px-2 py-1.5">
         Suas lojas
