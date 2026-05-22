@@ -121,7 +121,7 @@ export default function ConfiguracoesLoja() {
   }
 
   return (
-    <div className="p-6 space-y-6 max-w-2xl">
+    <div className="p-4 sm:p-6 space-y-6 max-w-2xl">
       {/* Abas: Configurações pessoais / Configurações da loja */}
       <div className="flex rounded-lg overflow-hidden border border-border mb-6">
         <a
@@ -186,7 +186,7 @@ function GeneralPanel({ store }: { store: { id: string; name: string; role: stri
 
       <SectionCard title="Horário de Atendimento" description="Usado para calcular velocidade de resposta corretamente. Mensagens fora deste horário não contam como atraso.">
         <div className="space-y-4">
-          <div className="flex flex-wrap gap-4 items-end">
+          <div className="grid grid-cols-2 gap-3 sm:flex sm:flex-wrap sm:gap-4 sm:items-end">
             <div className="space-y-1">
               <label className="text-xs font-medium text-muted-foreground">Abertura</label>
               <select

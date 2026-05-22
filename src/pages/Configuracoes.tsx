@@ -225,7 +225,7 @@ export default function Configuracoes() {
     (storeTeamSize ?? "") !== (initialStore.team_size ?? "");
 
   return (
-    <div className="p-6 space-y-6 max-w-2xl">
+    <div className="p-4 sm:p-6 space-y-6 max-w-2xl">
       <div>
         <h1 className="text-2xl font-semibold tracking-tight">Configurações</h1>
         <p className="text-sm text-muted-foreground">Informações da sua conta e empresa.</p>
@@ -449,7 +449,7 @@ function GeneralPanelInline({ store }: { store: { id: string; name: string; role
       <Card>
         <CardHeader><CardTitle className="text-base">Horário de Atendimento</CardTitle></CardHeader>
         <CardContent className="space-y-4">
-          <div className="flex flex-wrap gap-4 items-end">
+          <div className="grid grid-cols-2 gap-3 sm:flex sm:flex-wrap sm:gap-4 sm:items-end">
             <div className="space-y-1">
               <label className="text-xs font-medium text-muted-foreground">Abertura</label>
               <select value={bhStart} onChange={e => setBhStart(Number(e.target.value))} disabled={!canEdit}

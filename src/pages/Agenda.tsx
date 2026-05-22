@@ -209,7 +209,7 @@ function AgendaInner() {
   }
 
   return (
-    <div className="p-4 md:p-6 space-y-4">
+    <div className="p-2 sm:p-4 md:p-6 space-y-4">
       {/* Header */}
       <div className="flex flex-wrap items-center gap-3 justify-between">
         <div className="flex items-center gap-2">
@@ -281,7 +281,7 @@ function AgendaInner() {
       {/* MONTH VIEW */}
       {view === "month" && (
         <div className="rounded-lg border border-border overflow-hidden bg-card">
-          <div className="grid grid-cols-7 bg-muted/50 text-xs font-medium text-muted-foreground">
+          <div className="grid grid-cols-7 bg-muted/50 text-[10px] sm:text-xs font-medium text-muted-foreground">
             {["Dom", "Seg", "Ter", "Qua", "Qui", "Sex", "Sáb"].map((d) => (
               <div key={d} className="px-2 py-2 text-center">
                 {d}
@@ -297,7 +297,7 @@ function AgendaInner() {
                 <div
                   key={key}
                   className={cn(
-                    "border-t border-l border-border p-1.5 flex flex-col gap-1 overflow-hidden",
+                    "border-t border-l border-border p-0.5 sm:p-1.5 flex flex-col gap-1 overflow-hidden",
                     !inMonth && "bg-muted/30 text-muted-foreground"
                   )}
                 >
