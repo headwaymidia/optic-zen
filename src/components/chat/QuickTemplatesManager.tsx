@@ -94,7 +94,7 @@ export function QuickTemplatesManager({ storeId, canEdit, open, onOpenChange }: 
           {/* Instrução de variáveis */}
           <div className="flex items-start gap-2 rounded-lg bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 px-3 py-2 text-xs text-blue-800 dark:text-blue-200">
             <Info className="h-3.5 w-3.5 shrink-0 mt-0.5" />
-            <span>Use <code className="font-mono bg-blue-100 dark:bg-blue-800 px-1 rounded">{"{nome}"}</code> para inserir o nome do contato automaticamente.</span>
+            <span>Variáveis disponíveis: <code className="font-mono bg-blue-100 dark:bg-blue-800 px-1 rounded">{"{nome}"}</code> (contato), <code className="font-mono bg-blue-100 dark:bg-blue-800 px-1 rounded">{"{vendedora}"}</code> (responsável), <code className="font-mono bg-blue-100 dark:bg-blue-800 px-1 rounded">{"{loja}"}</code> (filial).</span>
           </div>
 
           {loading ? (

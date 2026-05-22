@@ -20,6 +20,7 @@ import { MessageInput } from "@/components/chat/MessageInput";
 import { LeadActivities } from "@/components/chat/LeadActivities";
 import { useWhatsAppMessages } from "@/hooks/useWhatsAppMessages";
 import { useWhatsAppConnection } from "@/hooks/useWhatsAppConnection";
+import { useSellerNames } from "@/hooks/useSellerNames";
 import { cn } from "@/lib/utils";
 import {
   getFollowUpDef,
@@ -70,6 +71,7 @@ export function ChatPanel({
   const { updateStatus, updateLead } = useLeads();
   const { currentStoreId, currentStore } = useStores();
   const { profile } = useAuth();
+  const sellerNameById = useSellerNames();
   const { connection } = useWhatsAppConnection(currentStoreId);
   const waFunction = connection?.provider === "meta" ? "whatsapp-meta-send" : "whatsapp-evolution";
   const [message, setMessage] = useState(initialMessage ?? "");
@@ -738,7 +740,11 @@ export function ChatPanel({
             storeId={currentStoreId}
             leadName={lead.name?.split(" ")[0] ?? null}
             canEdit={currentStore?.role === "Dono" || currentStore?.role === "Gerente"}
-            vendedorName={profile?.full_name?.split(" ")[0] ?? null}
+            vendedorName={(
+              lead.responsible_id
+                ? sellerNameById.get(lead.responsible_id)?.split(" ")[0]
+                : profile?.full_name?.split(" ")[0]
+            ) ?? null}
             storeName={currentStore?.name ?? null}
           />
         </div>
