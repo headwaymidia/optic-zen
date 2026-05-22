@@ -427,15 +427,9 @@ Deno.serve(async (req)=>{
               }).catch(() => {}); // Nunca bloqueia o webhook
             }
             if (rpcErr) {
-              const { data: leadCur } = await admin.from("leads").select("unread_count").eq("id", leadId).maybeSingle();
-              const next = (leadCur?.unread_count ?? 0) + 1;
-              await admin.from("leads").update({
-                unread_count: next,
-                last_message_at: timestamp,
-                last_inbound_at: timestamp,
-                last_message_preview: previewText,
-                updated_at: new Date().toISOString()
-              }).eq("id", leadId);
+              // Fallback apenas se o RPC falhar por razão inesperada
+              console.warn("[whatsapp-webhook] increment_lead_unread falhou, usando fallback:", rpcErr);
+              await admin.rpc("increment_lead_unread", { _lead_id: leadId, _preview: previewText, _ts: timestamp });
             }
           } else {
             await admin.from("leads").update({
