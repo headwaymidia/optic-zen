@@ -138,52 +138,8 @@ export default function ConfiguracoesLoja() {
         </button>
       </div>
 
-      {/* Cabeçalho */}
-      <div className="mb-6">
-        <p className="text-[11px] font-medium uppercase tracking-wider text-muted-foreground">
-          Configurações da filial
-        </p>
-        <h1 className="text-xl sm:text-2xl font-semibold tracking-tight text-foreground mt-1">
-          {currentStore.name}
-        </h1>
-        <p className="text-xs text-muted-foreground mt-1">
-          As alterações abaixo afetam apenas esta filial.
-        </p>
-      </div>
-
-      {/* Layout: sidebar interna + conteúdo */}
-      <div className="grid grid-cols-1 md:grid-cols-[200px_1fr] gap-6">
-        <nav className="md:sticky md:top-4 h-max">
-          <ul className="flex md:flex-col gap-1 border border-border rounded-xl p-1 bg-card">
-            {TABS.map((t) => {
-              const active = tab === t.key;
-              return (
-                <li key={t.key} className="flex-1 md:flex-none">
-                  <button
-                    type="button"
-                    onClick={() => handleTab(t.key)}
-                    className={cn(
-                      "w-full flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium transition-colors",
-                      active
-                        ? "bg-accent text-foreground"
-                        : "text-muted-foreground hover:text-foreground hover:bg-accent/50"
-                    )}
-                  >
-                    <t.icon className="h-4 w-4" />
-                    {t.label}
-                  </button>
-                </li>
-              );
-            })}
-          </ul>
-        </nav>
-
-        <div className="min-w-0 space-y-4">
-          {tab === "geral" && <GeneralPanel store={currentStore} />}
-          {tab === "equipe" && <TeamPanel storeId={currentStore.id} storesCount={stores.length} />}
-
-        </div>
-      </div>
+      <GeneralPanel store={currentStore} />
+      <TeamPanel storeId={currentStore.id} storesCount={stores.length} />
     </div>
   );
 }
