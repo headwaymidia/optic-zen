@@ -955,7 +955,7 @@ function IntegrationsPanel({ storeId, storeName }: { storeId: string; storeName:
     phoneNumberId.trim() && wabaId.trim() && accessToken.trim()
   );
 
-  function handleSave() {
+  async function handleSave() {
     if (!isConfigured) {
       toast({
         title: "Preencha todas as credenciais",
@@ -964,7 +964,18 @@ function IntegrationsPanel({ storeId, storeName }: { storeId: string; storeName:
       });
       return;
     }
-    // TODO: persistir em colunas dedicadas na tabela `stores` quando disponíveis.
+    const { error } = await supabase
+      .from("stores")
+      .update({
+        meta_phone_number_id: phoneNumberId.trim(),
+        meta_waba_id: wabaId.trim(),
+        meta_access_token: accessToken.trim(),
+      })
+      .eq("id", storeId);
+    if (error) {
+      toast({ title: "Erro ao salvar credenciais", description: error.message, variant: "destructive" });
+      return;
+    }
     toast({
       title: "Credenciais salvas",
       description: `Configurações de "${storeName}" atualizadas.`,
