@@ -20,7 +20,6 @@ interface Props {
 export function WorkspaceSwitcher({ collapsed = false }: Props) {
   const { stores, currentStore, setCurrentStoreId } = useStores();
   const [createOpen, setCreateOpen] = useState(false);
-  const [open, setOpen] = useState(false);
 
 
   if (!currentStore) return null;
@@ -57,13 +56,7 @@ export function WorkspaceSwitcher({ collapsed = false }: Props) {
 
   return (
     <>
-      {open && (
-        <div
-          className="fixed inset-0 z-40 bg-black/40 backdrop-blur-sm"
-          onClick={() => setOpen(false)}
-        />
-      )}
-      <DropdownMenu open={open} onOpenChange={setOpen}>
+      <DropdownMenu>
         <DropdownMenuTrigger asChild>
           <button
             type="button"
@@ -115,7 +108,8 @@ function SwitcherMenuContent({
       align="start"
       side="bottom"
       sideOffset={6}
-      className="w-64 p-1"
+      className="w-64 p-1 z-[100]"
+      avoidCollisions={false}
     >
       <DropdownMenuLabel className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground px-2 py-1.5">
         Suas lojas
