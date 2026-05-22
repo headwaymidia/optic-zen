@@ -22,7 +22,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { useStores } from "@/hooks/useStores";
 import { toast } from "@/components/ui/use-toast";
 import { humanizeError } from "@/lib/error-handler";
-import { Copy, Sparkles, MapPin, IdCard, Cake, Eye   CalendarClock,
+import { Copy, Sparkles, MapPin, IdCard, Cake, Eye, CalendarClock,
   X,
 } from "lucide-react";
 import { maskCPF } from "@/lib/masks";
