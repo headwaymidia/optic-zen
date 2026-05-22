@@ -23,11 +23,13 @@ import {
   ArrowRight,
   CalendarClock,
   Search,
+  X,
 } from "lucide-react";
 import { LeadsProvider, useLeads } from "@/hooks/useLeads";
 import { Lead } from "@/integrations/supabase/client";
 import { useStoreMembers } from "@/hooks/useStoreMembers";
 import { Button } from "@/components/ui/button";
+import { toast } from "@/components/ui/use-toast";
 import { Input } from "@/components/ui/input";
 import {
   Dialog,
@@ -480,7 +482,22 @@ function AgendaInner() {
                   </div>
                 )}
               </div>
-              <DialogFooter className="gap-2 sm:gap-2">
+              <DialogFooter className="gap-2 sm:gap-2 flex-wrap">
+                <Button
+                  variant="outline"
+                  className="text-destructive hover:text-destructive border-destructive/30 hover:bg-destructive/10"
+                  onClick={async () => {
+                    if (!confirm("Cancelar o agendamento deste exame? O contato não será apagado.")) return;
+                    await updateLead(selectedEvent.lead.id, {
+                      exam_date: null,
+                      status: "Em Atendimento",
+                    });
+                    setSelectedEvent(null);
+                    toast({ title: "Agendamento cancelado", description: "O exame foi removido. Lead voltou para Em Atendimento." });
+                  }}
+                >
+                  <X className="h-4 w-4 mr-1" /> Cancelar exame
+                </Button>
                 <Button variant="outline" onClick={() => setReschedOpen(true)}>
                   <CalendarClock className="h-4 w-4 mr-1" /> Remarcar
                 </Button>
