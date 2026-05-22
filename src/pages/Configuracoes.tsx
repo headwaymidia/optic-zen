@@ -18,6 +18,7 @@ import { validateName } from "@/lib/validators";
 import { cn } from "@/lib/utils";
 import { getUserInitials, translateRole } from "@/lib/profile-helpers";
 import { TeamPanel } from "@/pages/ConfiguracoesLoja";
+import ConfiguracoesLojaContent from "@/pages/ConfiguracoesLojaContent";
 
 const ROLE_OPTIONS = ["Dono", "Gerente", "Vendedor"] as const;
 function normalizeRole(value?: string | null): string | null {
@@ -31,6 +32,7 @@ function normalizeRole(value?: string | null): string | null {
 
 export default function Configuracoes() {
   usePageTitle("Configurações");
+  const [activeTab, setActiveTab] = useState<"pessoal" | "loja">("pessoal");
   const { user } = useAuth();
   const { currentStoreId, currentStore, loading: storesLoading, refetch: refetchStores } = useStores();
   const { theme, setTheme } = useTheme();
@@ -229,23 +231,26 @@ export default function Configuracoes() {
         <p className="text-sm text-muted-foreground">Informações da sua conta e empresa.</p>
       </div>
 
-      {/* Abas de navegação */}
       {canEditStore && (
         <div className="flex rounded-lg overflow-hidden border border-border">
           <button
             type="button"
-            className="flex-1 flex items-center justify-center gap-2 py-2.5 text-sm font-semibold bg-primary text-primary-foreground"
+            onClick={() => setActiveTab("pessoal")}
+            className={`flex-1 py-2.5 text-sm font-semibold transition-colors ${activeTab === "pessoal" ? "bg-primary text-primary-foreground" : "text-muted-foreground bg-background hover:bg-muted"}`}
           >
             Configurações
           </button>
-          <a
-            href="/configuracoes-loja"
-            className="flex-1 flex items-center justify-center gap-2 py-2.5 text-sm font-semibold text-muted-foreground bg-background hover:bg-muted transition-colors border-l border-border"
+          <button
+            type="button"
+            onClick={() => setActiveTab("loja")}
+            className={`flex-1 py-2.5 text-sm font-semibold transition-colors border-l border-border ${activeTab === "loja" ? "bg-primary text-primary-foreground" : "text-muted-foreground bg-background hover:bg-muted"}`}
           >
             Configurações da loja
-          </a>
+          </button>
         </div>
       )}
+
+      {activeTab === "pessoal" && <>
 
       {/* Aparência */}
       <Card>
@@ -393,6 +398,123 @@ export default function Configuracoes() {
       </Card>
 
 
+    </> /* fim aba pessoal */}
+
+      {/* Aba: Configurações da loja */}
+      {activeTab === "loja" && canEditStore && currentStoreId && (
+        <LojaInlineContent storeId={currentStoreId} store={currentStore!} />
+      )}
+
     </div>
   );
 }
+
+function LojaInlineContent({ storeId, store }: { storeId: string; store: { id: string; name: string; role: string } }) {
+  return (
+    <div className="space-y-6">
+      <GeneralPanelInline store={store} />
+      <TeamPanel storeId={storeId} storesCount={1} />
+    </div>
+  );
+}
+
+function GeneralPanelInline({ store }: { store: { id: string; name: string; role: string } }) {
+  const [bhStart, setBhStart] = useState<number>(8);
+  const [bhEnd, setBhEnd] = useState<number>(18);
+  const [bhDays, setBhDays] = useState<number[]>([1,2,3,4,5,6]);
+  const [savingBh, setSavingBh] = useState(false);
+  const [pixelId, setPixelId] = useState("");
+  const [accessToken, setAccessToken] = useState("");
+  const [savingPixel, setSavingPixel] = useState(false);
+  const canEdit = store.role === "Dono" || store.role === "Gerente";
+
+  useEffect(() => {
+    supabase.from("stores")
+      .select("business_hours_start,business_hours_end,business_days,meta_pixel_id,meta_access_token")
+      .eq("id", store.id).maybeSingle().then(({ data }) => {
+        if (data) {
+          setBhStart((data as any).business_hours_start ?? 8);
+          setBhEnd((data as any).business_hours_end ?? 18);
+          setBhDays((data as any).business_days ?? [1,2,3,4,5,6]);
+          setPixelId((data as any).meta_pixel_id ?? "");
+          setAccessToken((data as any).meta_access_token ?? "");
+        }
+      });
+  }, [store.id]);
+
+  const dayNames = ["Dom","Seg","Ter","Qua","Qui","Sex","Sáb"];
+
+  return (
+    <div className="space-y-4">
+      <Card>
+        <CardHeader><CardTitle className="text-base">Horário de Atendimento</CardTitle></CardHeader>
+        <CardContent className="space-y-4">
+          <div className="flex flex-wrap gap-4 items-end">
+            <div className="space-y-1">
+              <label className="text-xs font-medium text-muted-foreground">Abertura</label>
+              <select value={bhStart} onChange={e => setBhStart(Number(e.target.value))} disabled={!canEdit}
+                className="h-9 rounded-md border border-input bg-background px-3 text-sm">
+                {Array.from({length:24},(_,i)=><option key={i} value={i}>{String(i).padStart(2,"0")}h00</option>)}
+              </select>
+            </div>
+            <div className="space-y-1">
+              <label className="text-xs font-medium text-muted-foreground">Fechamento</label>
+              <select value={bhEnd} onChange={e => setBhEnd(Number(e.target.value))} disabled={!canEdit}
+                className="h-9 rounded-md border border-input bg-background px-3 text-sm">
+                {Array.from({length:24},(_,i)=><option key={i} value={i}>{String(i).padStart(2,"0")}h00</option>)}
+              </select>
+            </div>
+          </div>
+          <div className="space-y-1.5">
+            <label className="text-xs font-medium text-muted-foreground">Dias de atendimento</label>
+            <div className="flex gap-2 flex-wrap">
+              {dayNames.map((d,i) => (
+                <button key={i} type="button" disabled={!canEdit}
+                  onClick={() => setBhDays(prev => prev.includes(i) ? prev.filter(x=>x!==i) : [...prev,i].sort())}
+                  className={`h-8 w-10 rounded-md text-xs font-medium border transition-colors ${bhDays.includes(i) ? "bg-emerald-500 text-white border-emerald-500" : "bg-background text-muted-foreground border-input"}`}>
+                  {d}
+                </button>
+              ))}
+            </div>
+          </div>
+          {canEdit && (
+            <button type="button" disabled={savingBh}
+              onClick={async () => { setSavingBh(true); await supabase.from("stores").update({business_hours_start:bhStart,business_hours_end:bhEnd,business_days:bhDays} as any).eq("id",store.id); setSavingBh(false); toast({title:"Horário salvo"}); }}
+              className="h-9 px-4 rounded-md bg-emerald-500 hover:bg-emerald-600 text-white text-sm font-medium disabled:opacity-50">
+              {savingBh ? "Salvando..." : "Salvar horário"}
+            </button>
+          )}
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardHeader><CardTitle className="text-base">Meta Pixel / Conversions API</CardTitle></CardHeader>
+        <CardContent className="space-y-3">
+          <div className="space-y-1.5">
+            <label className="text-xs font-medium text-muted-foreground">Pixel ID</label>
+            <input type="text" placeholder="Ex: 1234567890123456" value={pixelId} onChange={e=>setPixelId(e.target.value)} disabled={!canEdit}
+              className="w-full h-9 rounded-md border border-input bg-background px-3 text-sm disabled:opacity-50"/>
+            <p className="text-[10px] text-muted-foreground">Gerenciador de Negócios → Fontes de Dados → Pixels</p>
+          </div>
+          <div className="space-y-1.5">
+            <label className="text-xs font-medium text-muted-foreground">Token de Acesso (Conversions API)</label>
+            <input type="password" placeholder="EAAxxxxxxxx..." value={accessToken} onChange={e=>setAccessToken(e.target.value)} disabled={!canEdit}
+              className="w-full h-9 rounded-md border border-input bg-background px-3 text-sm disabled:opacity-50"/>
+          </div>
+          <div className="rounded-lg bg-muted/50 p-3 text-xs text-muted-foreground space-y-1">
+            <p className="font-medium text-foreground">Eventos disparados:</p>
+            <p>• <strong>Lead</strong> — novo lead chega • <strong>Schedule</strong> — agenda exame • <strong>Purchase</strong> — compra</p>
+          </div>
+          {canEdit && (
+            <button type="button" disabled={savingPixel}
+              onClick={async () => { setSavingPixel(true); await supabase.from("stores").update({meta_pixel_id:pixelId||null,meta_access_token:accessToken||null} as any).eq("id",store.id); setSavingPixel(false); toast({title:"Pixel salvo"}); }}
+              className="h-9 px-4 rounded-md bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium disabled:opacity-50">
+              {savingPixel ? "Salvando..." : "Salvar configuração"}
+            </button>
+          )}
+        </CardContent>
+      </Card>
+    </div>
+  );
+}
+
