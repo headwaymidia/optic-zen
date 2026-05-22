@@ -18,6 +18,7 @@ import { validateName } from "@/lib/validators";
 import { cn } from "@/lib/utils";
 import { getUserInitials, translateRole } from "@/lib/profile-helpers";
 import { TeamPanel } from "@/pages/ConfiguracoesLoja";
+import { StoreSellersManager } from "@/components/StoreSellersManager";
 import ConfiguracoesLojaContent from "@/pages/ConfiguracoesLojaContent";
 
 const ROLE_OPTIONS = ["Dono", "Gerente", "Vendedor"] as const;
@@ -414,6 +415,7 @@ function LojaInlineContent({ storeId, store }: { storeId: string; store: { id: s
     <div className="space-y-6">
       <GeneralPanelInline store={store} />
       <TeamPanel storeId={storeId} storesCount={1} />
+      <StoreSellersManager storeId={storeId} />
     </div>
   );
 }
