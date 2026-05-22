@@ -276,6 +276,86 @@ function GeneralPanel({ store }: { store: { id: string; name: string; role: stri
           )}
         </div>
       </SectionCard>
+
+      <SectionCard title="Meta Pixel / Conversions API" description="Rastreie conversões dos seus anúncios do Facebook e Instagram. Os eventos são enviados pelo servidor — mais preciso que pixel no browser.">
+        <div className="space-y-4">
+          <div className="space-y-1.5">
+            <label className="text-xs font-medium text-muted-foreground">Pixel ID</label>
+            <MetaPixelInput store={store} canEdit={canEdit} />
+          </div>
+          <div className="rounded-lg bg-muted/50 p-3 text-xs text-muted-foreground space-y-1">
+            <p className="font-medium text-foreground">Eventos disparados automaticamente:</p>
+            <p>• <strong>Lead</strong> — novo lead chega</p>
+            <p>• <strong>Schedule</strong> — lead agenda exame</p>
+            <p>• <strong>Purchase</strong> — lead compra</p>
+          </div>
+        </div>
+      </SectionCard>
+    </div>
+  );
+}
+
+function MetaPixelInput({ store, canEdit }: { store: { id: string; role: string }; canEdit: boolean }) {
+  const [pixelId, setPixelId] = useState("");
+  const [accessToken, setAccessToken] = useState("");
+  const [saving, setSaving] = useState(false);
+
+  useEffect(() => {
+    supabase.from("stores").select("meta_pixel_id, meta_access_token")
+      .eq("id", store.id).maybeSingle().then(({ data }) => {
+        if (data) {
+          setPixelId((data as any).meta_pixel_id ?? "");
+          setAccessToken((data as any).meta_access_token ?? "");
+        }
+      });
+  }, [store.id]);
+
+  async function save() {
+    setSaving(true);
+    await supabase.from("stores").update({
+      meta_pixel_id: pixelId || null,
+      meta_access_token: accessToken || null,
+    } as any).eq("id", store.id);
+    setSaving(false);
+    toast({ title: "Pixel salvo com sucesso" });
+  }
+
+  return (
+    <div className="space-y-3">
+      <div className="space-y-1.5">
+        <label className="text-xs font-medium text-muted-foreground">Pixel ID</label>
+        <input
+          type="text"
+          placeholder="Ex: 1234567890123456"
+          value={pixelId}
+          onChange={e => setPixelId(e.target.value)}
+          disabled={!canEdit}
+          className="w-full h-9 rounded-md border border-input bg-background px-3 text-sm disabled:opacity-50"
+        />
+        <p className="text-[10px] text-muted-foreground">Gerenciador de Negócios → Fontes de Dados → Pixels</p>
+      </div>
+      <div className="space-y-1.5">
+        <label className="text-xs font-medium text-muted-foreground">Token de Acesso (Conversions API)</label>
+        <input
+          type="password"
+          placeholder="EAAxxxxxxxx..."
+          value={accessToken}
+          onChange={e => setAccessToken(e.target.value)}
+          disabled={!canEdit}
+          className="w-full h-9 rounded-md border border-input bg-background px-3 text-sm disabled:opacity-50"
+        />
+        <p className="text-[10px] text-muted-foreground">Pixels → Configurações → Token de Acesso da API de Conversões</p>
+      </div>
+      {canEdit && (
+        <button
+          type="button"
+          onClick={save}
+          disabled={saving}
+          className="h-9 px-4 rounded-md bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium transition-colors disabled:opacity-50"
+        >
+          {saving ? "Salvando..." : "Salvar configuração"}
+        </button>
+      )}
     </div>
   );
 }

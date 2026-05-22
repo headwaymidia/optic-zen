@@ -7,6 +7,30 @@ import {
 } from "@tanstack/react-query";
 import { Lead, LeadStatus, supabase } from "@/integrations/supabase/client";
 import { useStores } from "@/hooks/useStores";
+
+// Dispara evento para Meta Conversions API de forma silenciosa
+async function fireMetaEvent(storeId: string, eventName: string, lead?: { phone?: string | null; name?: string | null; value?: number }) {
+  try {
+    await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/meta-conversions`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": `Bearer ${import.meta.env.VITE_SUPABASE_ANON_KEY}`,
+      },
+      body: JSON.stringify({
+        store_id: storeId,
+        event_name: eventName,
+        lead_phone: lead?.phone,
+        lead_name: lead?.name,
+        value: lead?.value,
+        currency: "BRL",
+        event_id: `${storeId}-${eventName}-${Date.now()}`,
+      }),
+    });
+  } catch {
+    // Falha silenciosa — não impacta o CRM
+  }
+}
 import { toast } from "@/components/ui/use-toast";
 import { humanizeError } from "@/lib/error-handler";
 
@@ -230,6 +254,17 @@ export function LeadsProvider({ children }: { children: ReactNode }) {
     onError: (error, _vars, ctx) => {
       if (ctx?.prev) queryClient.setQueryData(queryKey, ctx.prev);
       toast({ title: "Erro ao mover lead", description: humanizeError(error), variant: "destructive" });
+    },
+    onSuccess: (_data, { leadId, status }) => {
+      // Disparar evento Meta conforme o novo status
+      if (!currentStoreId) return;
+      const lead = queryClient.getQueryData<any>(queryKey);
+      const leadData = lead?.pages?.flat()?.find((l: any) => l.id === leadId);
+      if (status === "Agendou Exame") {
+        fireMetaEvent(currentStoreId, "Schedule", { phone: leadData?.phone, name: leadData?.name });
+      } else if (status === "Compareceu e Comprou") {
+        fireMetaEvent(currentStoreId, "Purchase", { phone: leadData?.phone, name: leadData?.name });
+      }
     },
     onSettled: () => {
       queryClient.invalidateQueries({ queryKey });
