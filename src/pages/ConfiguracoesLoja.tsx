@@ -122,6 +122,22 @@ export default function ConfiguracoesLoja() {
 
   return (
     <div className="p-6 sm:p-8">
+      {/* Abas: Configurações pessoais / Configurações da loja */}
+      <div className="flex rounded-lg overflow-hidden border border-border mb-6">
+        <a
+          href="/configuracoes"
+          className="flex-1 flex items-center justify-center gap-2 py-2.5 text-sm font-semibold text-muted-foreground bg-background hover:bg-muted transition-colors border-r border-border"
+        >
+          Configurações
+        </a>
+        <button
+          type="button"
+          className="flex-1 flex items-center justify-center gap-2 py-2.5 text-sm font-semibold bg-primary text-primary-foreground"
+        >
+          Configurações da loja
+        </button>
+      </div>
+
       {/* Cabeçalho */}
       <div className="mb-6">
         <p className="text-[11px] font-medium uppercase tracking-wider text-muted-foreground">
