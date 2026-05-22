@@ -227,6 +227,24 @@ export default function Configuracoes() {
         <p className="text-sm text-muted-foreground">Informações da sua conta e empresa.</p>
       </div>
 
+      {/* Atalho para Configurações da loja — destaque no topo */}
+      {canEditStore && (
+        <div className="flex rounded-xl overflow-hidden border border-border shadow-sm">
+          <a
+            href="/configuracoes-loja"
+            className="flex-1 flex items-center justify-center gap-2 py-3 text-sm font-semibold bg-primary text-primary-foreground hover:bg-primary/90 transition-colors"
+          >
+            ⚙️ Configurações da loja
+          </a>
+          <a
+            href="/configuracoes-loja?tab=equipe"
+            className="flex-1 flex items-center justify-center gap-2 py-3 text-sm font-semibold text-foreground bg-muted hover:bg-accent transition-colors border-l border-border"
+          >
+            👥 Equipe
+          </a>
+        </div>
+      )}
+
       {/* Aparência */}
       <Card>
         <CardHeader>
