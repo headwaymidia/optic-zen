@@ -303,7 +303,7 @@ export default function WhatsAppPage() {
                   setSelectedId(lead.id);
                   if ((lead.unread_count ?? 0) > 0) {
                     // Zera localmente de imediato para o badge sumir sem esperar o realtime
-                    updateLead({ leadId: lead.id, patch: { unread_count: 0 } });
+                    updateLead(lead.id, { unread_count: 0 });
                     supabase.rpc("reset_unread", { p_lead_id: lead.id }).then(() => {});
                   }
                 }}
