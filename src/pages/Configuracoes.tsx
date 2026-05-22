@@ -356,16 +356,8 @@ export default function Configuracoes() {
       </Card>
 
       <Card>
-        <CardHeader className="flex flex-row items-center justify-between">
+        <CardHeader>
           <CardTitle className="text-base">Empresa</CardTitle>
-          {canEditStore && (
-            <a
-              href="/configuracoes-loja"
-              className="text-xs text-primary hover:underline flex items-center gap-1"
-            >
-              Configurações da loja →
-            </a>
-          )}
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="space-y-2">
@@ -376,6 +368,22 @@ export default function Configuracoes() {
             <Label>ID da empresa</Label>
             <Input value={currentStoreId ?? ""} readOnly className="font-mono text-xs" />
           </div>
+          {canEditStore && (
+            <div className="flex rounded-lg overflow-hidden border border-border mt-2">
+              <a
+                href="/configuracoes-loja"
+                className="flex-1 flex items-center justify-center gap-2 py-2.5 text-sm font-medium bg-primary text-primary-foreground hover:bg-primary/90 transition-colors"
+              >
+                ⚙️ Configurações da loja
+              </a>
+              <a
+                href="/configuracoes-loja?tab=equipe"
+                className="flex-1 flex items-center justify-center gap-2 py-2.5 text-sm font-medium text-muted-foreground hover:bg-accent hover:text-foreground transition-colors"
+              >
+                👥 Equipe
+              </a>
+            </div>
+          )}
         </CardContent>
       </Card>
 
