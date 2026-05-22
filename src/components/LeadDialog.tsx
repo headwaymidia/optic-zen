@@ -91,7 +91,7 @@ export function LeadDialog({ open, onOpenChange, lead, defaultStatus, onSaved }:
       priority,
       notes: notes || null,
       store_id: currentStoreId,
-      responsible_id: responsibleId || lead?.responsible_id || user.id,
+      responsible_id: responsibleId || lead?.responsible_id || null,
       sale_value: showSaleValue && saleValue ? Number(saleValue) : null,
       lead_source: leadSource || null,
       interest_tag: interestTag || null,
