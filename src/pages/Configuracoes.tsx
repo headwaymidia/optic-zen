@@ -356,7 +356,17 @@ export default function Configuracoes() {
       </Card>
 
       <Card>
-        <CardHeader><CardTitle className="text-base">Empresa</CardTitle></CardHeader>
+        <CardHeader className="flex flex-row items-center justify-between">
+          <CardTitle className="text-base">Empresa</CardTitle>
+          {canEditStore && (
+            <a
+              href="/configuracoes-loja"
+              className="text-xs text-primary hover:underline flex items-center gap-1"
+            >
+              Configurações da loja →
+            </a>
+          )}
+        </CardHeader>
         <CardContent className="space-y-4">
           <div className="space-y-2">
             <Label>Nome da empresa</Label>

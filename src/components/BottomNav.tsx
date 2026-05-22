@@ -37,7 +37,6 @@ const SECONDARY = [
   { title: "Agenda", url: "/agenda", icon: CalendarDays },
   { title: "Contatos", url: "/contatos", icon: Users },
   { title: "Configurações", url: "/configuracoes", icon: Settings },
-  { title: "Config. da loja", url: "/configuracoes-loja", icon: Settings, requireRole: ["Dono", "Gerente"] as string[] },
   { title: "WhatsApp", url: "/whatsapp-config", icon: Smartphone, requireRole: ["Dono", "Gerente"] as string[] },
   { title: "Meu plano", url: "/planos", icon: Crown },
   { title: "Ajuda", url: "/ajuda", icon: HelpCircle },
