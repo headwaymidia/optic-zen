@@ -32,7 +32,7 @@ function normalizeRole(value?: string | null): string | null {
 export default function Configuracoes() {
   usePageTitle("Configurações");
   const { user } = useAuth();
-  const { currentStoreId, currentStore, refetch: refetchStores } = useStores();
+  const { currentStoreId, currentStore, loading: storesLoading, refetch: refetchStores } = useStores();
   const { theme, setTheme } = useTheme();
 
   const [fullName, setFullName] = useState("");
@@ -214,8 +214,8 @@ export default function Configuracoes() {
   const initials = getUserInitials(fullName, user?.email);
   const normalizedRole = (role ?? "").toLowerCase();
   const storeRole = (currentStore?.role ?? "").toLowerCase();
-  const canEditStore = ["dono", "owner", "proprietário", "proprietario", "gerente", "manager"].includes(normalizedRole)
-    || ["dono", "owner", "proprietário", "proprietario", "gerente", "manager"].includes(storeRole);
+  const editRoles = ["dono", "owner", "proprietário", "proprietario", "gerente", "manager"];
+  const canEditStore = !storesLoading && (editRoles.includes(normalizedRole) || editRoles.includes(storeRole));
   const storeDirty =
     storeName.trim() !== initialStore.name.trim() ||
     storeCity.trim() !== (initialStore.city ?? "").trim() ||
