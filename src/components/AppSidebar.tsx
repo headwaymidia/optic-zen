@@ -59,7 +59,7 @@ const items = [
 
 const secondaryItems = [
   { title: "Configurações", url: "/configuracoes", icon: Settings },
-  { title: "Configurações da loja", url: "/configuracoes-loja", icon: Building2, requireRole: ["Dono", "Gerente"] as string[] },
+  { title: "Configurações da loja", url: "/configuracoes-loja", icon: Settings, requireRole: ["Dono", "Gerente"] as string[] },
   { title: "WhatsApp", url: "/whatsapp-config", icon: Smartphone, requireRole: ["Dono", "Gerente"] as string[] },
   { title: "Logs", url: "/logs", icon: Terminal, requireRole: ["Dono", "Gerente"] as string[] },
   { title: "Meu plano", url: "/planos", icon: Crown },
