@@ -43,6 +43,7 @@ Deno.serve(async (req) => {
       value,        // valor da venda (só para Purchase)
       currency,     // "BRL"
       event_id,     // ID único do evento (para deduplicação)
+      ctwa_clid,    // parâmetro de rastreamento Click-to-WhatsApp
     } = await req.json();
 
     if (!store_id || !event_name) {
@@ -85,6 +86,11 @@ Deno.serve(async (req) => {
       event_id: event_id || `${store_id}-${event_name}-${Date.now()}`,
       user_data: userData,
     };
+
+    // ctwa_clid melhora muito a atribuição de anúncios Click-to-WhatsApp
+    if (ctwa_clid) {
+      eventData.user_data.ctwa_clid = ctwa_clid;
+    }
 
     // Dados customizados para Purchase
     if (event_name === "Purchase" && value) {

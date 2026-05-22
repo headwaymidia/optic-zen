@@ -319,6 +319,22 @@ Deno.serve(async (req)=>{
           });
           leadId = leadRow ?? null;
         }
+        // Detectar ctwaClid — identifica leads vindos de anúncios Click-to-WhatsApp
+        const contextInfo = msg.message?.extendedTextMessage?.contextInfo
+          || msg.message?.imageMessage?.contextInfo
+          || msg.message?.videoMessage?.contextInfo
+          || msg.message?.documentMessage?.contextInfo
+          || null;
+        const ctwaClid = contextInfo?.externalAdReply?.ctwaClid ?? null;
+        const adSource = contextInfo?.externalAdReply?.mediaType === 1 ? "instagram"
+          : contextInfo?.externalAdReply?.mediaType === 2 ? "facebook"
+          : ctwaClid ? "meta" : null;
+        const adCreativeName = contextInfo?.externalAdReply?.title ?? null;
+
+        if (ctwaClid) {
+          console.log("[whatsapp-webhook] lead via anúncio detectado:", ctwaClid, adSource, adCreativeName);
+        }
+
         // Auto-criar lead se não existir e mensagem for recebida
         if (!leadId && last10 && !fromMe) {
           const fullPhone = phoneDigits.startsWith("55") ? phoneDigits : `55${phoneDigits}`;
@@ -328,12 +344,41 @@ Deno.serve(async (req)=>{
             name: pushName || `+${fullPhone}`,
             phone: fullPhone,
             status: "Novo Lead",
-            lead_source: "WhatsApp",
+            lead_source: ctwaClid ? "Anúncio WhatsApp" : "WhatsApp",
+            ctwa_clid: ctwaClid,
+            ad_source: adSource,
+            ad_creative_name: adCreativeName,
             created_at: new Date().toISOString(),
             updated_at: new Date().toISOString()
           }).select("id").single();
           leadId = newLead?.id ?? null;
-          console.log("[whatsapp-webhook] lead auto-criado:", leadId, fullPhone, pushName);
+          console.log("[whatsapp-webhook] lead auto-criado:", leadId, fullPhone, pushName, ctwaClid ? "(via anúncio)" : "");
+
+          // Disparar evento Lead no pixel do Meta se veio de anúncio
+          if (ctwaClid && newLead?.id) {
+            await fetch(`${Deno.env.get("SUPABASE_URL")}/functions/v1/meta-conversions`, {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+                "Authorization": `Bearer ${Deno.env.get("SUPABASE_ANON_KEY")}`,
+              },
+              body: JSON.stringify({
+                store_id: storeId,
+                event_name: "Lead",
+                lead_phone: phoneDigits,
+                lead_name: pushName,
+                ctwa_clid: ctwaClid,
+                event_id: `lead-${newLead.id}`,
+              }),
+            }).catch(e => console.warn("[whatsapp-webhook] meta pixel error:", e));
+          }
+        } else if (leadId && ctwaClid) {
+          // Lead existente — atualizar com ctwaClid se ainda não tiver
+          await admin.from("leads").update({
+            ctwa_clid: ctwaClid,
+            ad_source: adSource,
+            ad_creative_name: adCreativeName,
+          }).eq("id", leadId).is("ctwa_clid", null);
         }
         await admin.from("whatsapp_messages").upsert({
           store_id: storeId,
