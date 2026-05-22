@@ -213,7 +213,9 @@ export default function Configuracoes() {
     (role ?? "") !== (initialRole ?? "");
   const initials = getUserInitials(fullName, user?.email);
   const normalizedRole = (role ?? "").toLowerCase();
-  const canEditStore = ["dono", "owner", "proprietário", "proprietario", "gerente", "manager"].includes(normalizedRole);
+  const storeRole = (currentStore?.role ?? "").toLowerCase();
+  const canEditStore = ["dono", "owner", "proprietário", "proprietario", "gerente", "manager"].includes(normalizedRole)
+    || ["dono", "owner", "proprietário", "proprietario", "gerente", "manager"].includes(storeRole);
   const storeDirty =
     storeName.trim() !== initialStore.name.trim() ||
     storeCity.trim() !== (initialStore.city ?? "").trim() ||
