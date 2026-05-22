@@ -22,7 +22,9 @@ import { useAuth } from "@/hooks/useAuth";
 import { useStores } from "@/hooks/useStores";
 import { toast } from "@/components/ui/use-toast";
 import { humanizeError } from "@/lib/error-handler";
-import { Copy, Sparkles, MapPin, IdCard, Cake, Eye } from "lucide-react";
+import { Copy, Sparkles, MapPin, IdCard, Cake, Eye   CalendarClock,
+  X,
+} from "lucide-react";
 import { maskCPF } from "@/lib/masks";
 
 interface Props {
@@ -304,11 +306,58 @@ export function LeadDialog({ open, onOpenChange, lead, defaultStatus, onSaved }:
                 <Label htmlFor="notes">Observações</Label>
                 <Textarea id="notes" value={notes} onChange={(e) => setNotes(e.target.value)} rows={3} />
               </div>
-              <DialogFooter className="gap-2 sm:gap-2">
+              <DialogFooter className="flex-wrap gap-2 sm:gap-2">
                 {lead && (
                   <Button type="button" variant="destructive" onClick={() => setConfirmDelete(true)}>
                     Excluir
                   </Button>
+                )}
+                {/* Botões de exame — só aparecem quando lead está em Agendou Exame */}
+                {lead?.status === "Agendou Exame" && (
+                  <>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      className="text-destructive hover:text-destructive border-destructive/30 hover:bg-destructive/10"
+                      onClick={async () => {
+                        if (!confirm("Cancelar o agendamento deste exame? O contato não será apagado.")) return;
+                        const { error } = await supabase
+                          .from("leads")
+                          .update({ exam_date: null, status: "Em Atendimento" })
+                          .eq("id", lead.id);
+                        if (error) {
+                          toast({ title: "Erro ao cancelar", description: error.message, variant: "destructive" });
+                        } else {
+                          toast({ title: "Agendamento cancelado", description: "Lead voltou para Em Atendimento." });
+                          onOpenChange(false);
+                        }
+                      }}
+                    >
+                      <X className="h-4 w-4 mr-1" /> Cancelar exame
+                    </Button>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      onClick={() => {
+                        const dateStr = prompt("Nova data do exame (DD/MM/AAAA HH:MM):", "");
+                        if (!dateStr) return;
+                        const [datePart, timePart] = dateStr.split(" ");
+                        const [d, m, y] = datePart.split("/");
+                        const [h, min] = (timePart || "00:00").split(":");
+                        const newDate = new Date(+y, +m - 1, +d, +h, +min);
+                        if (isNaN(newDate.getTime())) {
+                          toast({ title: "Data inválida", variant: "destructive" });
+                          return;
+                        }
+                        supabase.from("leads").update({ exam_date: newDate.toISOString() }).eq("id", lead.id).then(({ error }) => {
+                          if (error) toast({ title: "Erro ao remarcar", description: error.message, variant: "destructive" });
+                          else { toast({ title: "Exame remarcado com sucesso" }); onOpenChange(false); }
+                        });
+                      }}
+                    >
+                      <CalendarClock className="h-4 w-4 mr-1" /> Remarcar
+                    </Button>
+                  </>
                 )}
                 <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
                   Cancelar
