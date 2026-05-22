@@ -108,7 +108,7 @@ export default function Admin() {
 
   useEffect(() => { if (isAdmin) load(); }, [isAdmin]);
 
-  async function runAction(storeId: string, action: "activate" | "block" | "extend_trial", label: string) {
+  async function runAction(storeId: string, action: "activate" | "activate_monthly" | "activate_yearly" | "block" | "extend_trial", label: string) {
     setActingId(storeId + action);
     const { data, error } = await supabase.functions.invoke("admin-stores", { body: { action, store_id: storeId } });
     setActingId(null);
