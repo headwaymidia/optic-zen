@@ -6,6 +6,8 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { toast } from "@/components/ui/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { useStores } from "@/hooks/useStores";
+import { useStoreMembers } from "@/hooks/useStoreMembers";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Upload, FileText, CheckCircle2, AlertCircle } from "lucide-react";
 
 interface Props {
@@ -78,12 +80,14 @@ function last10(phone: string | null): string | null {
 
 export function ImportLeadsDialog({ open, onOpenChange, onImported }: Props) {
   const { currentStoreId } = useStores();
+  const { members } = useStoreMembers(currentStoreId ?? undefined);
   const inputRef = useRef<HTMLInputElement>(null);
   const [rows, setRows] = useState<ParsedRow[]>([]);
   const [fileName, setFileName] = useState("");
   const [progress, setProgress] = useState(0);
   const [running, setRunning] = useState(false);
   const [report, setReport] = useState<Report | null>(null);
+  const [responsibleId, setResponsibleId] = useState<string>("");
 
   function reset() {
     setRows([]); setFileName(""); setProgress(0); setRunning(false); setReport(null);
@@ -194,6 +198,7 @@ export function ImportLeadsDialog({ open, onOpenChange, onImported }: Props) {
         phone: r.phone,
         status: r.status,
         lead_source: r.lead_source,
+        responsible_id: responsibleId || null,
         ...(r.email ? { notes: `Email: ${r.email}` } : {}),
       });
     }
@@ -243,6 +248,21 @@ export function ImportLeadsDialog({ open, onOpenChange, onImported }: Props) {
                 {rows.length >= MAX_ROWS && <span className="text-amber-600">(limite de {MAX_ROWS} aplicado)</span>}
               </div>
             )}
+
+            <div className="space-y-1.5">
+              <label className="text-xs font-medium text-muted-foreground">Vendedora responsável <span className="text-muted-foreground/60">(opcional)</span></label>
+              <Select value={responsibleId} onValueChange={setResponsibleId}>
+                <SelectTrigger className="h-9">
+                  <SelectValue placeholder="— Sem responsável —" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="">— Sem responsável —</SelectItem>
+                  {members.map((m) => (
+                    <SelectItem key={m.id} value={m.id}>{m.full_name}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
 
             {preview.length > 0 && (
               <div className="border rounded-md overflow-hidden">
