@@ -9,6 +9,7 @@ const SERVICE_ROLE = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
 const EVOLUTION_URL = Deno.env.get("EVOLUTION_API_URL");
 const EVOLUTION_KEY = Deno.env.get("EVOLUTION_API_KEY");
 const SUPABASE_ANON = Deno.env.get("ANON_KEY") ?? Deno.env.get("SUPABASE_ANON_KEY") ?? "";
+const WEBHOOK_SECRET = Deno.env.get("WEBHOOK_SECRET") ?? "";
 
 // Fetch com timeout para evitar Edge Function travada esperando Evolution
 async function fetchWithTimeout(url: string, init: RequestInit = {}, timeoutMs = 10000): Promise<Response> {
@@ -103,6 +104,19 @@ Deno.serve(async (req)=>{
     return new Response(null, {
       headers: corsHeaders
     });
+  }
+  // Validação de origem — rejeita requisições sem o token correto
+  if (WEBHOOK_SECRET) {
+    const incomingSecret =
+      req.headers.get("x-webhook-secret") ??
+      req.headers.get("x-evolution-secret") ??
+      "";
+    if (incomingSecret !== WEBHOOK_SECRET) {
+      return new Response(JSON.stringify({ error: "Unauthorized" }), {
+        status: 401,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
   }
   try {
     const payload = await req.json().catch(()=>({}));
