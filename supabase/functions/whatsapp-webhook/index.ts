@@ -9,7 +9,7 @@ const SERVICE_ROLE = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
 const EVOLUTION_URL = Deno.env.get("EVOLUTION_API_URL");
 const EVOLUTION_KEY = Deno.env.get("EVOLUTION_API_KEY");
 const SUPABASE_ANON = Deno.env.get("ANON_KEY") ?? Deno.env.get("SUPABASE_ANON_KEY") ?? "";
-const WEBHOOK_SECRET = Deno.env.get("WEBHOOK_SECRET") ?? "";
+const WEBHOOK_SECRET = ""; // temporariamente desabilitado para debug
 
 // Fetch com timeout para evitar Edge Function travada esperando Evolution
 async function fetchWithTimeout(url: string, init: RequestInit = {}, timeoutMs = 10000): Promise<Response> {
