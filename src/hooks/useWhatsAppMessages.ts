@@ -67,9 +67,6 @@ export function useWhatsAppMessages(leadId: string | undefined) {
 
   // Fetch inicial + cleanup (cancela request anterior ao trocar de lead/loja).
   useEffect(() => {
-    // Limpa mensagens imediatamente ao trocar de lead — evita flash de conversa errada
-    // e o bug de "conversa some ao voltar para lead anterior".
-    setMessages([]);
     const controller = new AbortController();
     fetchMessages(controller.signal);
     return () => {

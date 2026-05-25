@@ -360,7 +360,7 @@ export default function WhatsAppPage() {
             Selecione um contato para iniciar a conversa
           </div>
         ) : (
-          <ChatPanel lead={selected} onBack={() => setSelectedId(null)} chatOnly initialMessage={draftMessage} onDraftConsumed={() => setDraftMessage("")} />
+          <ChatPanel key={selected?.id} lead={selected} onBack={() => setSelectedId(null)} chatOnly initialMessage={draftMessage} onDraftConsumed={() => setDraftMessage("")} />
         )}
       </section>
 
