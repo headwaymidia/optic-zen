@@ -104,8 +104,8 @@ export function AppSidebar() {
           className={cn("flex items-center border-b border-sidebar-border", collapsed ? "p-3 justify-center" : "py-4 gap-2.5")}
           style={!collapsed ? { width: "100%", paddingLeft: 16, paddingRight: 20 } : undefined}
         >
-          <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-emerald-500 text-white shadow-sm">
-            <Eye className="h-[18px] w-[18px]" strokeWidth={2.5} />
+          <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl overflow-hidden shadow-sm">
+            <img src="/icon-192.png" alt="Ótica Dominante" className="h-9 w-9 object-cover" />
           </div>
           {!collapsed && (
             <div className="leading-tight" style={{ overflow: "visible" }}>
