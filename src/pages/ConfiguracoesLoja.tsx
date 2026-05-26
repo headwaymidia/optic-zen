@@ -444,8 +444,8 @@ export function TeamPanel({ storeId, storesCount }: { storeId: string; storesCou
   }, [storeId]);
 
   async function handleRemoveMember(member: TeamMember) {
-    if (member.role === "Dono") {
-      toast({ title: "Não é possível remover o Dono.", variant: "destructive" });
+    if (member.id === user?.id) {
+      toast({ title: "Você não pode remover a si mesmo.", variant: "destructive" });
       return;
     }
     setMemberToRemove(member);
