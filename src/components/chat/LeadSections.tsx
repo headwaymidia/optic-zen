@@ -142,7 +142,12 @@ export function ExamScheduler({ lead }: { lead: Lead }) {
       return;
     }
     setSaving(true);
-    const iso = new Date(value).toISOString();
+    // Força parse como horário local (evita shift de UTC ao usar new Date("YYYY-MM-DDTHH:mm"))
+    const [datePart, timePart = "00:00"] = value.split("T");
+    const [year, month, day] = datePart.split("-").map(Number);
+    const [hours, minutes] = timePart.split(":").map(Number);
+    const localDate = new Date(year, month - 1, day, hours, minutes, 0, 0);
+    const iso = localDate.toISOString();
     await updateLead(lead.id, { exam_date: iso, status: "Agendou Exame" });
     setSaving(false);
     setEditing(false);
