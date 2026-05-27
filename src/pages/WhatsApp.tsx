@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import { usePageTitle } from "@/hooks/usePageTitle";
 import { useSearchParams } from "react-router-dom";
 import { useLeads } from "@/hooks/useLeads";
+import { useStores } from "@/hooks/useStores";
 import { Input } from "@/components/ui/input";
 import { supabase } from "@/integrations/supabase/client";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -109,8 +110,21 @@ function initials(name: string) {
 export default function WhatsAppPage() {
   usePageTitle("Atendimentos");
   const { leads, loading, updateLead, hasMore, loadMore, isFetchingMore } = useLeads();
+  const { currentStoreId } = useStores();
   const [search, setSearch] = useState("");
-  const [selectedId, setSelectedId] = useState<string | null>(null);
+  const STORAGE_KEY = `wa-last-lead-${currentStoreId ?? ""}`;
+  const [selectedId, setSelectedId] = useState<string | null>(() => {
+    try { return localStorage.getItem(STORAGE_KEY) ?? null; } catch { return null; }
+  });
+
+  // Salva último lead aberto no localStorage para restaurar ao voltar
+  const setSelectedIdPersist = (id: string | null) => {
+    setSelectedId(id);
+    try {
+      if (id) localStorage.setItem(STORAGE_KEY, id);
+      else localStorage.removeItem(STORAGE_KEY);
+    } catch {}
+  };
   const [searchParams, setSearchParams] = useSearchParams();
   const [newChatOpen, setNewChatOpen] = useState(false);
   const [draftMessage, setDraftMessage] = useState<string>("");
@@ -123,7 +137,7 @@ export default function WhatsAppPage() {
   useEffect(() => {
     const leadIdFromUrl = searchParams.get("leadId");
     if (leadIdFromUrl && leads.some((l) => l.id === leadIdFromUrl)) {
-      setSelectedId(leadIdFromUrl);
+      setSelectedIdPersist(leadIdFromUrl);
       // Mensagem de lembrete via URL params ou localStorage
       const messageFromUrl = searchParams.get("message");
       if (messageFromUrl) {
@@ -300,7 +314,7 @@ export default function WhatsAppPage() {
               <button
                 key={lead.id}
                 onClick={async () => {
-                  setSelectedId(lead.id);
+                  setSelectedIdPersist(lead.id);
                   if ((lead.unread_count ?? 0) > 0) {
                     // Zera localmente de imediato para o badge sumir sem esperar o realtime
                     updateLead(lead.id, { unread_count: 0 });
@@ -360,7 +374,7 @@ export default function WhatsAppPage() {
             Selecione um contato para iniciar a conversa
           </div>
         ) : (
-          <ChatPanel key={selected?.id} lead={selected} onBack={() => setSelectedId(null)} chatOnly initialMessage={draftMessage} onDraftConsumed={() => setDraftMessage("")} />
+          <ChatPanel key={selected?.id} lead={selected} onBack={() => setSelectedIdPersist(null)} chatOnly initialMessage={draftMessage} onDraftConsumed={() => setDraftMessage("")} />
         )}
       </section>
 
@@ -396,7 +410,7 @@ export default function WhatsAppPage() {
                 <button
                   key={lead.id}
                   onClick={() => {
-                    setSelectedId(lead.id);
+                    setSelectedIdPersist(lead.id);
                     setNewChatOpen(false);
                   }}
                   className="w-full flex items-center gap-3 px-4 py-3 hover:bg-muted/50 transition-colors text-left border-b last:border-b-0"
