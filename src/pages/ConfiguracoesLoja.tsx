@@ -606,7 +606,7 @@ export function TeamPanel({ storeId, storesCount }: { storeId: string; storesCou
                       <DropdownMenuItem
                         onClick={() => handleRemoveMember(m)}
                         className="text-destructive focus:text-destructive"
-                        disabled={m.role === "Dono"}
+                        disabled={m.id === user?.id}
                       >
                         Remover acesso
                       </DropdownMenuItem>
