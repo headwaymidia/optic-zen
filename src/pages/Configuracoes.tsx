@@ -19,7 +19,6 @@ import { cn } from "@/lib/utils";
 import { getUserInitials, translateRole } from "@/lib/profile-helpers";
 import { TeamPanel } from "@/pages/ConfiguracoesLoja";
 import { StoreSellersManager } from "@/components/StoreSellersManager";
-import ConfiguracoesLojaContent from "@/pages/ConfiguracoesLojaContent";
 
 const ROLE_OPTIONS = ["Dono", "Gerente", "Vendedor"] as const;
 function normalizeRole(value?: string | null): string | null {
