@@ -217,6 +217,11 @@ Deno.serve(async (req) => {
 
       // 2) ✅ Configura webhook automaticamente para esta instância (sempre, inclusive na reconexão)
       const webhookUrl = `${SUPABASE_URL}/functions/v1/whatsapp-webhook`;
+      const WEBHOOK_SECRET = Deno.env.get("WEBHOOK_SECRET") ?? "";
+      const webhookHeaders: Record<string, string> = {
+        Authorization: `Bearer ${SUPABASE_ANON}`,
+      };
+      if (WEBHOOK_SECRET) webhookHeaders["x-webhook-secret"] = WEBHOOK_SECRET;
       const webhookResult = await evo(`/webhook/set/${instance}`, {
         method: "POST",
         body: JSON.stringify({
@@ -225,9 +230,7 @@ Deno.serve(async (req) => {
             byEvents: false,
             base64: false,
             enabled: true,
-            headers: {
-              Authorization: `Bearer ${SUPABASE_ANON}`,
-            },
+            headers: webhookHeaders,
             events: ["MESSAGES_UPSERT", "MESSAGES_UPDATE", "CONNECTION_UPDATE"],
           }
         }),
