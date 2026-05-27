@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { useSearchParams } from "react-router-dom";
+import { useAuth } from "@/hooks/useAuth";
 import { useStores } from "@/hooks/useStores";
 import { supabase } from "@/integrations/supabase/client";
 import { Input } from "@/components/ui/input";
@@ -376,6 +377,7 @@ function buildInviteLink(token: string) {
 }
 
 export function TeamPanel({ storeId, storesCount }: { storeId: string; storesCount: number }) {
+  const { user } = useAuth();
   const [inviteOpen, setInviteOpen] = useState(false);
   const [members, setMembers] = useState<TeamMember[]>([]);
   const [invites, setInvites] = useState<PendingInvite[]>([]);
