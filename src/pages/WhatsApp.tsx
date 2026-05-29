@@ -112,10 +112,17 @@ export default function WhatsAppPage() {
   const { leads, loading, updateLead, hasMore, loadMore, isFetchingMore } = useLeads();
   const { currentStoreId } = useStores();
   const [search, setSearch] = useState("");
-  const STORAGE_KEY = `wa-last-lead-${currentStoreId ?? ""}`;
-  const [selectedId, setSelectedId] = useState<string | null>(() => {
-    try { return localStorage.getItem(STORAGE_KEY) ?? null; } catch { return null; }
-  });
+  const STORAGE_KEY = currentStoreId ? `wa-last-lead-${currentStoreId}` : null;
+  const [selectedId, setSelectedId] = useState<string | null>(null);
+
+  // Restaura último lead ao carregar a loja (evita race condition com currentStoreId null)
+  useEffect(() => {
+    if (!STORAGE_KEY) return;
+    try {
+      const saved = localStorage.getItem(STORAGE_KEY);
+      if (saved) setSelectedId(saved);
+    } catch {}
+  }, [STORAGE_KEY]);
 
   // Salva último lead aberto no localStorage para restaurar ao voltar
   const setSelectedIdPersist = (id: string | null) => {

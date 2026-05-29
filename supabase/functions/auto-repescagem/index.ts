@@ -5,7 +5,7 @@
 // (assim aparecem em "Oportunidades" na tela Tarefas).
 
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.0";
-import { corsHeaders } from "https://esm.sh/@supabase/supabase-js@2.95.0/cors";
+const corsHeaders = { "Access-Control-Allow-Origin": "*", "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type, x-cron-secret" };
 
 const MAX_FOLLOW_UPS = 5;
 const COOLDOWN_HOURS = 24;

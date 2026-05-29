@@ -83,6 +83,10 @@ export function LeadDialog({ open, onOpenChange, lead, defaultStatus, onSaved }:
       toast({ title: "Erro", description: "Selecione uma loja antes de salvar.", variant: "destructive" });
       return;
     }
+    if (!name.trim()) {
+      toast({ title: "Nome obrigatório", description: "Informe o nome do contato.", variant: "destructive" });
+      return;
+    }
     setSaving(true);
     const payload: any = {
       name,

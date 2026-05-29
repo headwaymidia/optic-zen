@@ -203,7 +203,10 @@ function AgendaInner() {
 
   async function reschedule() {
     if (!selectedEvent || !reschedDate) return;
-    await updateLead(selectedEvent.lead.id, { exam_date: reschedDate.toISOString() });
+    // Força horário local para evitar shift de UTC-3
+    const d = reschedDate;
+    const localIso = new Date(d.getFullYear(), d.getMonth(), d.getDate(), d.getHours(), d.getMinutes(), 0, 0).toISOString();
+    await updateLead(selectedEvent.lead.id, { exam_date: localIso });
     setReschedOpen(false);
     setSelectedEvent(null);
   }
@@ -540,7 +543,8 @@ function AgendaInner() {
         onOpenChange={setScheduleOpen}
         leads={leads}
         onSchedule={async (leadId, date) => {
-          await updateLead(leadId, { exam_date: date.toISOString() });
+          const localIso = new Date(date.getFullYear(), date.getMonth(), date.getDate(), date.getHours(), date.getMinutes(), 0, 0).toISOString();
+          await updateLead(leadId, { exam_date: localIso });
           setScheduleOpen(false);
         }}
       />
