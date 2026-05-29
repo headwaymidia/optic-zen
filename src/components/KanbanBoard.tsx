@@ -402,7 +402,7 @@ function LeadCardContent({ lead, onEdit, dragging, selected, cadenceHighlight, m
                     const diffMin = Math.round((examDate.getTime() - now.getTime()) / 60000);
                     const h = examDate.getHours().toString().padStart(2, "0");
                     const m = examDate.getMinutes().toString().padStart(2, "0");
-                    const dia = examDate.toLocaleDateString("pt-BR", { day: "2-digit", month: "2-digit" });
+                    const dia = examDate.toLocaleDateString("pt-BR", { weekday: "long", day: "2-digit", month: "2-digit" });
                     // Compara por dia do calendário, não por horas
                     const todayDate = new Date(now.getFullYear(), now.getMonth(), now.getDate());
                     const examDay = new Date(examDate.getFullYear(), examDate.getMonth(), examDate.getDate());
