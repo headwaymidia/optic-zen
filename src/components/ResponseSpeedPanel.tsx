@@ -20,15 +20,14 @@ function fmtDuration(min: number) {
 
 export function ResponseSpeedPanel({ leads }: Props) {
   const { avgResponseMin, badge, followUps, avgFollowUps, awaiting } = useMemo(() => {
-    const paid = leads.filter((l) => l.lead_source && PAID_SOURCES.has(String(l.lead_source)));
-    // tempo de resposta = created_at -> last_follow_up_at (primeiro contato)
-    const responded = paid.filter((l) => l.last_follow_up_at && l.created_at);
+    // Tempo de resposta = created_at -> last_follow_up_at (todos os leads respondidos)
+    const responded = leads.filter((l) => l.last_follow_up_at && l.created_at);
     const diffsMin = responded.map(
       (l) =>
         (new Date(l.last_follow_up_at as string).getTime() -
           new Date(l.created_at).getTime()) /
         60000
-    ).filter((v) => v >= 0);
+    ).filter((v) => v >= 0 && v <= 1440); // ignora leads com >24h (distorcem a média)
     const avgResponseMin =
       diffsMin.length > 0 ? diffsMin.reduce((s, v) => s + v, 0) / diffsMin.length : 0;
 
@@ -92,7 +91,7 @@ export function ResponseSpeedPanel({ leads }: Props) {
       {/* Cronômetro */}
       <div className="mb-6">
         <p className="text-[10px] font-medium uppercase tracking-[0.22em] text-zinc-400 mb-2">
-          Tempo médio · 1º contato (tráfego pago)
+          Tempo médio · 1º contato
         </p>
         <div className="flex items-center gap-3 flex-wrap">
           <p className="text-4xl sm:text-5xl font-bold tracking-tighter tabular-nums text-[#1D1D1F] dark:text-white">
