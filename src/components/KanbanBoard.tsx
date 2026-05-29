@@ -400,15 +400,18 @@ function LeadCardContent({ lead, onEdit, dragging, selected, cadenceHighlight, m
                     const examDate = new Date(lead.exam_date!);
                     const now = new Date();
                     const diffMin = Math.round((examDate.getTime() - now.getTime()) / 60000);
-                    const diffH = Math.round(diffMin / 60);
                     const h = examDate.getHours().toString().padStart(2, "0");
                     const m = examDate.getMinutes().toString().padStart(2, "0");
                     const dia = examDate.toLocaleDateString("pt-BR", { day: "2-digit", month: "2-digit" });
+                    // Compara por dia do calendário, não por horas
+                    const todayDate = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+                    const examDay = new Date(examDate.getFullYear(), examDate.getMonth(), examDate.getDate());
+                    const diffDays = Math.round((examDay.getTime() - todayDate.getTime()) / 86400000);
                     let timeRef = "";
                     if (diffMin <= 0) timeRef = "agora";
                     else if (diffMin < 60) timeRef = `daqui ${diffMin} minutos`;
-                    else if (diffH < 24) timeRef = `hoje às ${h}h${m}`;
-                    else if (diffH < 48) timeRef = `amanhã às ${h}h${m}`;
+                    else if (diffDays === 0) timeRef = `hoje às ${h}h${m}`;
+                    else if (diffDays === 1) timeRef = `amanhã às ${h}h${m}`;
                     else timeRef = `no dia ${dia} às ${h}h${m}`;
                     const msg = `Oi ${firstName}, tudo bem? 😊 Passando para lembrar que seu exame de vista é ${timeRef}. Consegue comparecer?`;
                     localStorage.setItem("od_draft_message", msg);
