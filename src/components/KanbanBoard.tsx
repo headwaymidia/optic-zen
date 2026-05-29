@@ -72,14 +72,15 @@ const AGING_THRESHOLD_MS = 7 * 24 * 60 * 60 * 1000; // 7 dias
 
 function isCooling(lead: Lead): boolean {
   if (!COOLING_STATUSES.includes(lead.status)) return false;
-  const created = new Date(lead.created_at).getTime();
-  return Date.now() - created > COOLING_THRESHOLD_MS;
+  // Usa last_message_at se disponível, senão created_at
+  const ref = lead.last_message_at ?? lead.created_at;
+  return Date.now() - new Date(ref).getTime() > COOLING_THRESHOLD_MS;
 }
 
 function isAging(lead: Lead): boolean {
   if (!COOLING_STATUSES.includes(lead.status)) return false;
-  const created = new Date(lead.created_at).getTime();
-  return Date.now() - created > AGING_THRESHOLD_MS;
+  const ref = lead.last_message_at ?? lead.created_at;
+  return Date.now() - new Date(ref).getTime() > AGING_THRESHOLD_MS;
 }
 
 // === Cadência de Follow-up ===
