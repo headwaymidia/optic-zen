@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { LAB_STATUSES, LabStatus, Lead } from "@/integrations/supabase/client";
 import { useLeads } from "@/hooks/useLeads";
+import { useStores } from "@/hooks/useStores";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
@@ -16,6 +17,8 @@ export function LabOrderForm({
   onApplyScript?: (msg: string) => void;
 }) {
   const { updateLead } = useLeads();
+  const { currentStore } = useStores();
+  const closingHour = currentStore?.business_hours_end ?? 18;
   const [date, setDate] = useState<string>(lead.delivery_prediction ?? "");
   const [labName, setLabName] = useState<string>(lead.lab_name ?? "");
   const [orderNumber, setOrderNumber] = useState<string>(lead.lab_order_number ?? "");
@@ -42,7 +45,7 @@ export function LabOrderForm({
 
   const handleReadyMessage = () => {
     const firstName = lead.name.split(" ")[0];
-    const msg = `Olá ${firstName}, ótimas notícias! 🎉 Seus óculos novos acabaram de chegar do nosso laboratório e passaram na nossa conferência de qualidade. Já estão prontinhos aqui na loja esperando por você! Nosso horário de funcionamento é até às 19h. Nos vemos em breve?`;
+    const msg = `Olá ${firstName}, ótimas notícias! 🎉 Seus óculos novos acabaram de chegar do nosso laboratório e passaram na nossa conferência de qualidade. Já estão prontinhos aqui na loja esperando por você! Nosso horário de funcionamento é até às ${closingHour}h. Nos vemos em breve?`;
     onApplyScript?.(msg);
   };
 

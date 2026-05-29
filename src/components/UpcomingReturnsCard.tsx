@@ -60,7 +60,7 @@ export function UpcomingReturnsCard({ leads }: { leads: Lead[] }) {
             return (
               <li key={l.id}>
                 <button
-                  onClick={() => navigate("/funil")}
+                  onClick={() => navigate(`/whatsapp?leadId=${l.id}`)}
                   className="w-full flex items-center justify-between gap-3 py-2 px-1 hover:bg-zinc-50 dark:hover:bg-zinc-900 rounded-md transition text-left"
                 >
                   <div className="min-w-0 flex-1">

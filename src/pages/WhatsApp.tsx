@@ -3,6 +3,7 @@ import { usePageTitle } from "@/hooks/usePageTitle";
 import { useSearchParams } from "react-router-dom";
 import { useLeads } from "@/hooks/useLeads";
 import { useStores } from "@/hooks/useStores";
+import { useStoreMembers } from "@/hooks/useStoreMembers";
 import { Input } from "@/components/ui/input";
 import { supabase } from "@/integrations/supabase/client";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -137,6 +138,9 @@ export default function WhatsAppPage() {
   const [draftMessage, setDraftMessage] = useState<string>("");
   const [newChatSearch, setNewChatSearch] = useState("");
   const [period, setPeriod] = useState<PeriodKey>("all");
+  const [statusFilter, setStatusFilter] = useState<string>("all");
+  const [sellerFilter, setSellerFilter] = useState<string>("all");
+  const { members } = useStoreMembers(currentStoreId ?? undefined);
   const [customRange, setCustomRange] = useState<DateRange | undefined>(undefined);
   const [customOpen, setCustomOpen] = useState(false);
 
@@ -182,7 +186,11 @@ export default function WhatsAppPage() {
     };
     return leads
       .filter((l) => {
-        if (!l.name.toLowerCase().includes(search.toLowerCase())) return false;
+        const term = search.toLowerCase();
+        const phoneMatch = (l.phone ?? "").replace(/\D/g, "").includes(search.replace(/\D/g, ""));
+        if (term && !l.name.toLowerCase().includes(term) && !phoneMatch) return false;
+        if (statusFilter !== "all" && l.status !== statusFilter) return false;
+        if (sellerFilter !== "all" && (l.responsible_id ?? "") !== sellerFilter) return false;
         if (range) {
           const t = l.created_at ? new Date(l.created_at).getTime() : 0;
           if (t < range.from.getTime() || t > range.to.getTime()) return false;
@@ -235,7 +243,35 @@ export default function WhatsAppPage() {
               <TooltipContent>Nova Conversa</TooltipContent>
             </Tooltip>
           </div>
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 flex-wrap">
+            <Select value={statusFilter} onValueChange={setStatusFilter}>
+              <SelectTrigger className="h-8 text-xs bg-muted/50 border-0 w-[130px]">
+                <SelectValue placeholder="Status" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">Todos os status</SelectItem>
+                <SelectItem value="Novo Lead">Novo Lead</SelectItem>
+                <SelectItem value="Em Atendimento">Em Atendimento</SelectItem>
+                <SelectItem value="Aguardando Resposta">Aguardando Resposta</SelectItem>
+                <SelectItem value="Agendou Exame">Agendou Exame</SelectItem>
+                <SelectItem value="Não Compareceu">Não Compareceu</SelectItem>
+                <SelectItem value="Compareceu e Comprou">Comprou</SelectItem>
+                <SelectItem value="Repescagem">Repescagem</SelectItem>
+              </SelectContent>
+            </Select>
+            {members.length > 0 && (
+              <Select value={sellerFilter} onValueChange={setSellerFilter}>
+                <SelectTrigger className="h-8 text-xs bg-muted/50 border-0 w-[130px]">
+                  <SelectValue placeholder="Vendedora" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">Todas</SelectItem>
+                  {members.map((m) => (
+                    <SelectItem key={m.id} value={m.id}>{m.full_name}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            )}
             <Select
               value={period}
               onValueChange={(v) => {
