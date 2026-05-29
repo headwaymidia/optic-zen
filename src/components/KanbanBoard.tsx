@@ -483,7 +483,7 @@ function DroppableColumn({
     <div
       ref={setNodeRef}
       className={cn(
-        "flex w-[88vw] min-w-[88vw] max-w-[88vw] sm:w-[260px] sm:min-w-[260px] sm:max-w-[260px] shrink-0 snap-start flex-col h-[calc(100vh-180px)] sm:h-full rounded-2xl bg-slate-50/70 dark:bg-slate-900/50 border border-slate-100 dark:border-slate-800 transition-all duration-200 overflow-hidden",
+        "flex w-[88vw] min-w-[88vw] max-w-[88vw] sm:w-[260px] sm:min-w-[260px] sm:max-w-[260px] shrink-0 snap-start flex-col h-[calc(100svh-180px)] sm:h-full rounded-2xl bg-slate-50/70 dark:bg-slate-900/50 border border-slate-100 dark:border-slate-800 transition-all duration-200 overflow-hidden",
         isOver && "bg-primary/5 border-primary/40 border-dashed ring-2 ring-primary/30 scale-[1.01]"
       )}
     >
@@ -503,7 +503,7 @@ function DroppableColumn({
           <Plus className="h-5 w-5 sm:h-4 sm:w-4 text-slate-500 dark:text-slate-300" />
         </Button>
       </div>
-      <div className="flex flex-col gap-1.5 p-2 flex-1 min-h-0 overflow-y-auto thin-scrollbar">
+      <div className="flex flex-col gap-1.5 p-2 flex-1 min-h-0 overflow-y-auto thin-scrollbar" style={{ WebkitOverflowScrolling: "touch", overscrollBehavior: "contain" }}>
         {children}
       </div>
     </div>
