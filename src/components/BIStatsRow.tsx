@@ -44,9 +44,9 @@ export function BIStatsRow({ leads, loading }: BIProps) {
     const pmEnd = endOfMonth(subMonths(now, 1));
 
     const inCurrent = (d?: string | null) =>
-      !!d && isWithinInterval(parseISO(d), { start: cmStart, end: now });
+      !!d && isWithinInterval(new Date(d), { start: cmStart, end: now });
     const inPrev = (d?: string | null) =>
-      !!d && isWithinInterval(parseISO(d), { start: pmStart, end: pmEnd });
+      !!d && isWithinInterval(new Date(d), { start: pmStart, end: pmEnd });
 
     // Métricas mês corrente
     const buyersCM = leads.filter(
@@ -79,17 +79,17 @@ export function BIStatsRow({ leads, loading }: BIProps) {
     // Sparkline 14 dias
     const days = eachDayOfInterval({ start: subDays(now, 13), end: now });
     const spark = days.map((d) => {
-      const dayLeads = leads.filter((l) => l.created_at && isSameDay(parseISO(l.created_at), d));
+      const dayLeads = leads.filter((l) => l.created_at && isSameDay(new Date(l.created_at), d));
       const dayBuyers = leads.filter(
         (l) =>
           l.status === "Compareceu e Comprou" &&
-          isSameDay(parseISO(l.updated_at ?? l.created_at!), d)
+          isSameDay(new Date(l.updated_at ?? l.created_at!), d)
       );
       const dayAgend = leads.filter(
         (l) =>
           ["Agendou Exame", "Compareceu e Comprou", "Compareceu e Não Comprou", "Não Compareceu"].includes(
             l.status
-          ) && isSameDay(parseISO(l.updated_at ?? l.created_at!), d)
+          ) && isSameDay(new Date(l.updated_at ?? l.created_at!), d)
       );
       return {
         leads: dayLeads.length,

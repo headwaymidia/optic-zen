@@ -143,7 +143,7 @@ function LeadsVsSalesTimelineImpl({ leads, embedded = false }: { leads: Lead[]; 
     const today = new Date();
     const days = eachDayOfInterval({ start: subDays(today, 6), end: today });
     return days.map((d) => {
-      const novos = leads.filter((l) => l.created_at && isSameDay(parseISO(l.created_at), d)).length;
+      const novos = leads.filter((l) => l.created_at && isSameDay(new Date(l.created_at), d)).length;
       const vendas = leads.filter((l) => {
         if (l.status !== "Compareceu e Comprou") return false;
         const ref = l.updated_at ?? l.created_at;

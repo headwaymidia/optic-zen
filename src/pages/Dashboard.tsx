@@ -84,7 +84,7 @@ export default function Dashboard() {
       sellerScoped.filter(
         (l) =>
           l.created_at &&
-          isWithinInterval(parseISO(l.created_at), { start: range.from, end: range.to })
+          isWithinInterval(new Date(l.created_at), { start: range.from, end: range.to })
       ),
     [sellerScoped, range]
   );

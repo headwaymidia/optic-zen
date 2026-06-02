@@ -45,7 +45,7 @@ export function LeadsVolumeChart({ leads, from, to, embedded = false }: Props) {
     const days = eachDayOfInterval({ start: from, end: to });
     return days.map((d) => {
       const dayLeads = leads.filter(
-        (l) => l.created_at && isSameDay(parseISO(l.created_at), d)
+        (l) => l.created_at && isSameDay(new Date(l.created_at), d)
       );
       const base: DayDatum = {
         date: format(d, "dd/MM", { locale: ptBR }),

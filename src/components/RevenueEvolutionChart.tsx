@@ -119,19 +119,19 @@ function RevenueEvolutionChartImpl({ leads }: Props) {
         .filter(
           (l) =>
             l.status === "Compareceu e Comprou" &&
-            isSameDay(parseISO(l.updated_at ?? l.created_at!), d)
+            isSameDay(new Date(l.updated_at ?? l.created_at!), d)
         )
         .reduce((s, l) => s + (Number(l.sale_value) || 0), 0);
 
       const leadsCount = leads.filter(
-        (l) => l.created_at && isSameDay(parseISO(l.created_at), d)
+        (l) => l.created_at && isSameDay(new Date(l.created_at), d)
       ).length;
 
       const agendamentos = leads.filter(
         (l) =>
           l.status &&
           SCHEDULED_STATUSES.has(l.status) &&
-          isSameDay(parseISO(l.updated_at ?? l.created_at!), d)
+          isSameDay(new Date(l.updated_at ?? l.created_at!), d)
       ).length;
 
       return {

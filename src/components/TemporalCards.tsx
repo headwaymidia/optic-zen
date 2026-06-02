@@ -12,7 +12,7 @@ import { cn } from "@/lib/utils";
 function countInRange(leads: Lead[], from: Date, to: Date) {
   return leads.filter((l) => {
     if (!l.created_at) return false;
-    const d = parseISO(l.created_at);
+    const d = new Date(l.created_at);
     return isWithinInterval(d, { start: from, end: to });
   }).length;
 }

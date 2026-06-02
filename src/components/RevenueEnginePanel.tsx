@@ -47,7 +47,7 @@ export function RevenueEnginePanel({
     const days = eachDayOfInterval({ start: subDays(today, 13), end: today });
     return days.map((d) => {
       const novos = leads.filter(
-        (l) => l.created_at && isSameDay(parseISO(l.created_at), d)
+        (l) => l.created_at && isSameDay(new Date(l.created_at), d)
       ).length;
       const vendas = leads.filter((l) => {
         if (l.status !== "Compareceu e Comprou") return false;
