@@ -81,11 +81,12 @@ export default function Dashboard() {
 
   const filtered = useMemo(
     () =>
-      sellerScoped.filter(
-        (l) =>
-          l.created_at &&
-          isWithinInterval(new Date(l.created_at), { start: range.from, end: range.to })
-      ),
+      sellerScoped.filter((l) => {
+        // Usa last_message_at (última atividade) para filtrar o período.
+        // Leads criados hoje sem mensagem ainda usam created_at como fallback.
+        const ref = l.last_message_at ?? l.created_at;
+        return !!ref && isWithinInterval(new Date(ref), { start: range.from, end: range.to });
+      }),
     [sellerScoped, range]
   );
 
