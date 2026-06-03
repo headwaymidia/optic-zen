@@ -9,7 +9,7 @@ import {
   YAxis,
   Tooltip,
 } from "recharts";
-import { eachDayOfInterval, format, isSameDay, parseISO, subDays } from "date-fns";
+import { eachDayOfInterval, format, isSameDay, subDays } from "date-fns";
 import { ptBR } from "date-fns/locale";
 
 const ADS_SOURCES = new Set(["Instagram", "Facebook", "Google Ads", "Meta Ads (Instagram/FB)"]);
@@ -52,13 +52,13 @@ export function RevenueEnginePanel({
       const vendas = leads.filter((l) => {
         if (l.status !== "Compareceu e Comprou") return false;
         const ref = l.updated_at ?? l.created_at;
-        return ref && isSameDay(parseISO(ref), d);
+        return ref && isSameDay(new Date(ref), d);
       }).length;
       const valor = leads
         .filter((l) => {
           if (l.status !== "Compareceu e Comprou") return false;
           const ref = l.updated_at ?? l.created_at;
-          return ref && isSameDay(parseISO(ref), d);
+          return ref && isSameDay(new Date(ref), d);
         })
         .reduce((s, l) => s + (Number(l.sale_value) || 0), 0);
       return { date: format(d, "dd MMM", { locale: ptBR }), novos, vendas, valor };

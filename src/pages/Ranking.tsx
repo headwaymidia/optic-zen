@@ -3,7 +3,7 @@ import { usePageTitle } from "@/hooks/usePageTitle";
 import { useLeads } from "@/hooks/useLeads";
 import { useStores } from "@/hooks/useStores";
 import { useSalesRanking } from "@/hooks/useSalesRanking";
-import { isWithinInterval, parseISO } from "date-fns";
+import { isWithinInterval } from "date-fns";
 import { getPeriodRange } from "@/components/PeriodFilter";
 import { Medal, Trophy } from "lucide-react";
 import logoUrl from "@/assets/logo-otica-dominante-white.svg";
@@ -36,7 +36,7 @@ export default function Ranking() {
   const filtered = useMemo(
     () =>
       storeLeads.filter(
-        (l) => l.created_at && isWithinInterval(parseISO(l.created_at), { start: range.from, end: range.to })
+        (l) => l.created_at && isWithinInterval(new Date(l.created_at), { start: range.from, end: range.to })
       ),
     [storeLeads, range]
   );

@@ -1,6 +1,6 @@
 import { useMemo } from "react";
 import { Lead } from "@/integrations/supabase/client";
-import { differenceInMilliseconds, isWithinInterval, parseISO } from "date-fns";
+import { differenceInMilliseconds, isWithinInterval } from "date-fns";
 import { ArrowUp, ArrowDown, Minus } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -33,9 +33,9 @@ export function PeriodKPIRow({ leads, range, inline = false }: Props) {
     const prevFrom = new Date(prevTo.getTime() - ms);
 
     const inCur = (d?: string | null) =>
-      !!d && isWithinInterval(parseISO(d), { start: range.from, end: range.to });
+      !!d && isWithinInterval(new Date(d), { start: range.from, end: range.to });
     const inPrev = (d?: string | null) =>
-      !!d && isWithinInterval(parseISO(d), { start: prevFrom, end: prevTo });
+      !!d && isWithinInterval(new Date(d), { start: prevFrom, end: prevTo });
 
     const totalCur = leads.filter((l) => inCur(l.created_at)).length;
     const totalPrev = leads.filter((l) => inPrev(l.created_at)).length;

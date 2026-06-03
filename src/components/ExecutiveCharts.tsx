@@ -17,7 +17,7 @@ import {
   Legend,
   LabelList,
 } from "recharts";
-import { eachDayOfInterval, format, isSameDay, parseISO, subDays } from "date-fns";
+import { eachDayOfInterval, format, isSameDay, subDays } from "date-fns";
 import { ptBR } from "date-fns/locale";
 
 const WHITE = "#fafafa";
@@ -147,7 +147,7 @@ function LeadsVsSalesTimelineImpl({ leads, embedded = false }: { leads: Lead[]; 
       const vendas = leads.filter((l) => {
         if (l.status !== "Compareceu e Comprou") return false;
         const ref = l.updated_at ?? l.created_at;
-        return ref && isSameDay(parseISO(ref), d);
+        return ref && isSameDay(new Date(ref), d);
       }).length;
       return { date: format(d, "EEE dd", { locale: ptBR }), novos, vendas };
     });

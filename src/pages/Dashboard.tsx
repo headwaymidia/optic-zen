@@ -14,7 +14,7 @@ import { VerticalNeonFunnel } from "@/components/VerticalNeonFunnel";
 import { RevenueEvolutionChart } from "@/components/RevenueEvolutionChart";
 import { UpcomingReturnsCard } from "@/components/UpcomingReturnsCard";
 import { exportMonthlyReport } from "@/lib/exportReport";
-import { isWithinInterval, parseISO, format } from "date-fns";
+import { isWithinInterval, format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { FileDown, Tv } from "lucide-react";
 import { DataSkeleton } from "@/components/ui/DataSkeleton";

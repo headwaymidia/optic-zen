@@ -104,7 +104,7 @@ export function TeamPerformancePanel({ leads }: Props) {
       leads
         .filter((l) => {
           if (l.status !== "Compareceu e Comprou") return false;
-          const d = parseISO(l.updated_at ?? l.created_at);
+          const d = new Date(l.updated_at ?? l.created_at);
           return isWithinInterval(d, { start: from, end: to });
         })
         .reduce((s, l) => s + (Number(l.sale_value) || 0), 0);
@@ -164,8 +164,8 @@ export function TeamPerformancePanel({ leads }: Props) {
     const responseTimes: number[] = [];
     leads.forEach((l) => {
       if (!l.created_at || !l.last_interaction) return;
-      const created = parseISO(l.created_at);
-      const first = parseISO(l.last_interaction);
+      const created = new Date(l.created_at);
+      const first = new Date(l.last_interaction);
       const diff = differenceInMinutes(first, created);
       if (diff >= 0 && diff < 60 * 24 * 7) responseTimes.push(diff);
     });
@@ -182,20 +182,20 @@ export function TeamPerformancePanel({ leads }: Props) {
 
     // --- 4) Alertas automáticos baseados no funil do mês ---
     const monthLeads = leads.filter(
-      (l) => l.created_at && isSameMonth(parseISO(l.created_at), now)
+      (l) => l.created_at && isSameMonth(new Date(l.created_at), now)
     );
     const monthScheduled = leads.filter(
       (l) =>
         l.status &&
         SCHEDULED_STATUSES.has(l.status) &&
         l.updated_at &&
-        isSameMonth(parseISO(l.updated_at), now)
+        isSameMonth(new Date(l.updated_at), now)
     );
     const monthSales = leads.filter(
       (l) =>
         l.status === "Compareceu e Comprou" &&
         l.updated_at &&
-        isSameMonth(parseISO(l.updated_at), now)
+        isSameMonth(new Date(l.updated_at), now)
     );
 
     const schedRate =

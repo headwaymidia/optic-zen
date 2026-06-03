@@ -1,5 +1,5 @@
 import { Lead, LEAD_STATUSES } from "@/integrations/supabase/client";
-import { format, isWithinInterval, parseISO, startOfMonth, endOfMonth } from "date-fns";
+import { format, isWithinInterval, startOfMonth, endOfMonth } from "date-fns";
 import { ptBR } from "date-fns/locale";
 
 function formatBRL(v: number) {
@@ -12,7 +12,7 @@ export function exportMonthlyReport(leads: Lead[], companyName?: string) {
   const to = endOfMonth(now);
   const monthLabel = format(now, "MMMM 'de' yyyy", { locale: ptBR });
 
-  const inMonth = leads.filter((l) => l.created_at && isWithinInterval(parseISO(l.created_at), { start: from, end: to }));
+  const inMonth = leads.filter((l) => l.created_at && isWithinInterval(new Date(l.created_at), { start: from, end: to }));
   const total = inMonth.length;
   const byStatus = LEAD_STATUSES.map((s) => ({ status: s, count: inMonth.filter((l) => l.status === s).length }));
   const sales = inMonth.filter((l) => l.status === "Compareceu e Comprou");
