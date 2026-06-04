@@ -43,7 +43,6 @@ export function ChatPanel({
   initialMessage?: string;
   onDraftConsumed?: () => void;
 }) {
-  if (import.meta.env.DEV) console.log("[ChatPanel] lead.id:", lead?.id);
 
   // Aplicar mensagem inicial quando lead muda
   // Lê diretamente do localStorage para evitar race condition com props

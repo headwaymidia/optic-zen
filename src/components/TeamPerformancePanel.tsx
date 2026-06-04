@@ -165,7 +165,8 @@ export function TeamPerformancePanel({ leads }: Props) {
     leads.forEach((l) => {
       if (!l.created_at || !l.last_interaction) return;
       const created = new Date(l.created_at);
-      const first = new Date(l.last_interaction);
+      const interactionRef = l.last_interaction ?? l.last_follow_up_at ?? l.created_at;
+      const first = new Date(interactionRef);
       const diff = differenceInMinutes(first, created);
       if (diff >= 0 && diff < 60 * 24 * 7) responseTimes.push(diff);
     });
