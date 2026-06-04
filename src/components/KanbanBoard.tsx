@@ -6,7 +6,7 @@ import { useLeads } from "@/hooks/useLeads";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Plus, Phone, MessageCircle, Pencil, Flame, Tag, User, CalendarClock, Calendar, Clock, Info, AlarmClock, BellRing, Filter , Bell } from "lucide-react";
+import { Plus, Phone, MessageCircle, Pencil, Flame, Tag, User, CalendarClock, Calendar, Clock, Info, AlarmClock, BellRing, Filter , Bell, GripVertical} from "lucide-react";
 import { DataSkeleton } from "@/components/ui/DataSkeleton";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -457,11 +457,19 @@ function DraggableLeadCard({ lead, onEdit, onSelect, selected, cadenceHighlight,
   return (
     <div
       ref={setNodeRef}
-      {...listeners}
-      {...attributes}
       onClick={() => onSelect?.(lead)}
-      className={cn("touch-none cursor-pointer active:cursor-grabbing", isDragging && "opacity-40")}
+      className={cn("relative cursor-pointer", isDragging && "opacity-40")}
     >
+      {/* Handle de arrastar — só ativa o drag, não bloqueia scroll do card */}
+      <div
+        {...listeners}
+        {...attributes}
+        onClick={(e) => e.stopPropagation()}
+        className="absolute top-2 right-2 z-10 p-1 rounded cursor-grab active:cursor-grabbing touch-none text-muted-foreground/40 hover:text-muted-foreground transition-colors"
+        title="Arrastar"
+      >
+        <GripVertical className="h-3.5 w-3.5" />
+      </div>
       <LeadCardContent lead={lead} onEdit={onEdit} selected={selected} cadenceHighlight={cadenceHighlight} members={members} nameById={nameById} />
     </div>
   );
@@ -538,7 +546,7 @@ export function KanbanBoard({
 
   const sensors = useSensors(
     useSensor(MouseSensor, { activationConstraint: { distance: 8 } }),
-    useSensor(TouchSensor, { activationConstraint: { delay: 250, tolerance: 10 } })
+    useSensor(TouchSensor, { activationConstraint: { delay: 400, tolerance: 8 } })
   );
 
   function openNew(status: LeadStatus) {
