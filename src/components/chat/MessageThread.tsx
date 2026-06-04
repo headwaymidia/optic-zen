@@ -156,7 +156,7 @@ export function MessageThread({ messages, sentMessages, isTyping, onReply, onRet
             )}
             <div
               className={cn(
-                "max-w-[80%] rounded-2xl px-3 py-1.5 shadow-sm text-sm",
+                "max-w-[85%] sm:max-w-[80%] rounded-2xl px-3 py-1.5 shadow-sm text-sm",
                 m.from === "us"
                   ? "bg-green-100 text-foreground rounded-br-sm dark:bg-green-900/40"
                   : "bg-card text-foreground rounded-bl-sm"
@@ -189,7 +189,7 @@ export function MessageThread({ messages, sentMessages, isTyping, onReply, onRet
         return (
           <div key={`sent-${i}`} className="flex justify-end flex-col items-end gap-0.5">
             <div className={cn(
-              "max-w-[80%] rounded-2xl px-3 py-1.5 shadow-sm text-sm rounded-br-sm",
+              "max-w-[85%] sm:max-w-[80%] rounded-2xl px-3 py-1.5 shadow-sm text-sm rounded-br-sm",
               isFailed
                 ? "bg-red-50 dark:bg-red-900/20 ring-1 ring-red-300 dark:ring-red-700"
                 : "bg-green-100 text-foreground dark:bg-green-900/40"

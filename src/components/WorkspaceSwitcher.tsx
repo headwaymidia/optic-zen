@@ -61,7 +61,7 @@ export function WorkspaceSwitcher({ collapsed = false }: Props) {
           <button
             type="button"
             className={cn(
-              "group flex w-full items-center gap-2 rounded-lg border border-sidebar-border bg-sidebar-accent/40 px-2.5 py-2 text-left transition-colors",
+              "group flex w-full items-center gap-2 rounded-lg border border-sidebar-border bg-sidebar-accent/40 px-2 py-1.5 sm:px-2.5 sm:py-2 text-left transition-colors",
               "hover:bg-sidebar-accent focus:outline-none focus-visible:ring-2 focus-visible:ring-ring"
             )}
             aria-label="Seletor de loja"

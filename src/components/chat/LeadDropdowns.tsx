@@ -108,7 +108,7 @@ export function LeadDropdowns({ lead }: Props) {
   const assignedOk = !!leadFields.responsible_id;
 
   return (
-    <div className="flex items-center gap-2">
+    <div className="flex flex-wrap items-center gap-1.5">
       <Select
         value={leadFields.lead_source || "__none__"}
         onValueChange={(v) =>

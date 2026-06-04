@@ -124,8 +124,8 @@ export default function Dashboard() {
       </div>
 
       {/* 1. Filtro Temporal — minimalista */}
-      <div className="flex flex-wrap items-center justify-between gap-3">
-        <div className="flex flex-wrap items-center gap-2">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+        <div className="flex flex-wrap items-center gap-1.5">
           <PeriodFilter
             value={period}
             customRange={custom}

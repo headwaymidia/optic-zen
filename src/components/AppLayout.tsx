@@ -60,7 +60,7 @@ export default function AppLayout() {
                   <div className="flex items-center gap-2 min-w-0">
                     <SidebarTrigger className="hidden md:inline-flex hover:bg-muted" />
                     {/* Seletor de loja no mobile */}
-                    <div className="md:hidden min-w-0 max-w-[180px]">
+                    <div className="md:hidden min-w-0 max-w-[200px] flex-1">
                       <WorkspaceSwitcher />
                     </div>
                     <div className="hidden md:block min-w-0 leading-tight">

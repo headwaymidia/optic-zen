@@ -150,7 +150,7 @@ export default function Tarefas() {
       </div>
 
       {loading && leads.length === 0 ? (
-        <div className="grid gap-4 lg:grid-cols-2">
+        <div className="grid gap-3 sm:grid-cols-2">
           {Array.from({ length: 2 }).map((_, i) => (
             <div
               key={i}

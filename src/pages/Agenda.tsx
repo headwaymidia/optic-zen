@@ -291,7 +291,7 @@ function AgendaInner() {
               </div>
             ))}
           </div>
-          <div className="grid grid-cols-7 auto-rows-[minmax(110px,1fr)]">
+          <div className="grid grid-cols-7 auto-rows-[minmax(70px,1fr)] sm:auto-rows-[minmax(110px,1fr)]">
             {days.map((day) => {
               const key = format(day, "yyyy-MM-dd");
               const dayEvents = eventsByDay.get(key) ?? [];

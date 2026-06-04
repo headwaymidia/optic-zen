@@ -243,7 +243,7 @@ export default function WhatsAppPage() {
               <TooltipContent>Nova Conversa</TooltipContent>
             </Tooltip>
           </div>
-          <div className="flex items-center gap-2 flex-wrap">
+          <div className="flex items-center gap-1.5 flex-wrap">
             <Select value={statusFilter} onValueChange={setStatusFilter}>
               <SelectTrigger className="h-8 text-xs bg-muted/50 border-0 w-[130px]">
                 <SelectValue placeholder="Status" />
