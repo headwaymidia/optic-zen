@@ -1,6 +1,7 @@
 import { Navigate, Outlet, Link } from "react-router-dom";
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { AppSidebar } from "./AppSidebar";
+import { WorkspaceSwitcher } from "./WorkspaceSwitcher";
 import { BottomNav } from "./BottomNav";
 import { ThemeToggle } from "./ThemeToggle";
 import { NotificationBell } from "./NotificationBell";
@@ -58,7 +59,11 @@ export default function AppLayout() {
                 <header className="h-14 flex items-center justify-between border-b border-border bg-card px-4 gap-3 shadow-[0_1px_3px_rgba(0,0,0,0.02)]">
                   <div className="flex items-center gap-2 min-w-0">
                     <SidebarTrigger className="hidden md:inline-flex hover:bg-muted" />
-                    <div className="min-w-0 leading-tight">
+                    {/* Seletor de loja no mobile */}
+                    <div className="md:hidden min-w-0 max-w-[180px]">
+                      <WorkspaceSwitcher />
+                    </div>
+                    <div className="hidden md:block min-w-0 leading-tight">
                       <>
                           <p className="text-sm font-semibold text-foreground truncate">
                             {profile?.full_name || (profile?.email || user?.email || "Usuário").split("@")[0]}
