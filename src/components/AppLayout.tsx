@@ -6,6 +6,7 @@ import { BottomNav } from "./BottomNav";
 import { ThemeToggle } from "./ThemeToggle";
 import { NotificationBell } from "./NotificationBell";
 import { PushNotificationBell } from "./PushNotificationBell";
+import { useAutoPushPrompt } from "@/hooks/useAutoPushPrompt";
 import { TrialBanner } from "./TrialBanner";
 import { useAuth } from "@/hooks/useAuth";
 import { LeadsProvider } from "@/hooks/useLeads";
