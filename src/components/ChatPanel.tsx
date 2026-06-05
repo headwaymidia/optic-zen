@@ -408,7 +408,6 @@ export function ChatPanel({
     try {
       const ext = file.name.includes(".") ? file.name.split(".").pop() : (isImage ? "jpg" : "mp4");
       const path = `${currentStoreId}/${Date.now()}-${crypto.randomUUID()}.${ext}`;
-      console.log("[handleSendMedia] iniciando upload", { name: file.name, size: file.size, type: file.type, path });
       const { error: upErr } = await supabase.storage
         .from("whatsapp-media")
         .upload(path, file, { contentType: file.type, upsert: false });
@@ -416,7 +415,6 @@ export function ChatPanel({
         console.error("[handleSendMedia] upload erro", upErr);
         throw upErr;
       }
-      console.log("[handleSendMedia] upload ok", path);
       const { data: pub } = supabase.storage.from("whatsapp-media").getPublicUrl(path);
       publicMediaUrl = pub?.publicUrl ?? null;
       if (!publicMediaUrl) throw new Error("URL pública indisponível");
@@ -442,7 +440,6 @@ export function ChatPanel({
           fileName: file.name,
           caption: "",
         };
-        console.log("[handleSendMedia] chamando evolution", payload);
         const { data, error } = await supabase.functions.invoke(waFunction, { body: payload });
         if (error) {
           console.error("[handleSendMedia] evolution erro", error);
@@ -452,7 +449,6 @@ export function ChatPanel({
           console.error("[handleSendMedia] evolution erro", data.error);
           throw new Error(data.error);
         }
-        console.log("[handleSendMedia] evolution response", data);
       },
       isImage ? "Falha ao enviar imagem" : "Falha ao enviar vídeo",
     );

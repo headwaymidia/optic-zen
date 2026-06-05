@@ -68,7 +68,6 @@ export default function Configuracoes() {
         console.error("[Configuracoes] erro ao carregar profile:", error);
         return;
       }
-      console.info("[Configuracoes] profile carregado:", data);
       const n = data?.full_name ?? "";
       const a = (data as { avatar_url?: string | null } | null)?.avatar_url ?? null;
       const r = normalizeRole((data as { role?: string | null } | null)?.role ?? null);

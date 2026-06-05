@@ -263,11 +263,6 @@ export function StoresProvider({ children }: { children: ReactNode }) {
       // Vincula o criador como Dono. CRÍTICO: se isso falhar, a loja fica órfã
       // (RLS bloqueia acesso). Tratamos como erro fatal quando throwOnError=true.
       const role: StoreRole = input.role ?? "Dono";
-      console.info("[useStores.addStore] Inserindo store_members:", {
-        store_id: storeRow.id,
-        user_id: user.id,
-        role,
-      });
       const { error: memberErr } = await supabase.rpc("add_store_owner", {
         p_store_id: storeRow.id,
         p_user_id: user.id,
@@ -301,7 +296,6 @@ export function StoresProvider({ children }: { children: ReactNode }) {
         return null;
       }
 
-      console.info("[useStores.addStore] store_members confirmado:", memberRow);
 
       const created: Store = {
         id: storeRow.id,

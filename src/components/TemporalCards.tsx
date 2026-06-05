@@ -1,6 +1,6 @@
 import {
   startOfDay, endOfDay, startOfWeek, endOfWeek, startOfMonth, endOfMonth,
-  subDays, subWeeks, parseISO, isWithinInterval,
+  subDays, subWeeks, isWithinInterval,
 } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { format } from "date-fns";

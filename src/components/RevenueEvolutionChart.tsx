@@ -15,7 +15,6 @@ import {
   eachDayOfInterval,
   format,
   isSameDay,
-  parseISO,
   subDays,
 } from "date-fns";
 import { ptBR } from "date-fns/locale";
