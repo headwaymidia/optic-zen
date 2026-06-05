@@ -323,7 +323,40 @@ Deno.serve(async (req)=>{
         const timestamp = msg.messageTimestamp ? new Date(Number(msg.messageTimestamp) * 1000).toISOString() : new Date().toISOString();
         let mediaUrl = null;
         if (mediaType) {
-          mediaUrl = await downloadAndStoreMedia(messageId, instance, mediaType);
+          // Tenta usar base64 direto do payload (mais rápido e confiável)
+          const inlineBase64 = msg.message?.imageMessage?.jpegThumbnail
+            || msg.message?.imageMessage?.base64
+            || msg.message?.videoMessage?.base64
+            || msg.message?.audioMessage?.base64
+            || msg.message?.documentMessage?.base64
+            || null;
+
+          if (inlineBase64) {
+            // Salva direto sem precisar chamar a Evolution novamente
+            try {
+              const mimeType = msg.message?.imageMessage?.mimetype
+                || msg.message?.videoMessage?.mimetype
+                || msg.message?.audioMessage?.mimetype
+                || msg.message?.documentMessage?.mimetype
+                || (mediaType === "audio" ? "audio/ogg" : "image/jpeg");
+              const ext = mimeType.split("/")[1]?.split(";")[0] || "bin";
+              const filePath = `${mediaType}/${messageId}.${ext}`;
+              const base64Data = inlineBase64.includes(",") ? inlineBase64.split(",")[1] : inlineBase64;
+              const byteString = atob(base64Data);
+              const byteArray = new Uint8Array(byteString.length);
+              for (let i = 0; i < byteString.length; i++) byteArray[i] = byteString.charCodeAt(i);
+              const { error: upErr } = await admin.storage.from("whatsapp-media").upload(filePath, byteArray, { contentType: mimeType, upsert: true });
+              if (!upErr) {
+                const { data: urlData } = admin.storage.from("whatsapp-media").getPublicUrl(filePath);
+                mediaUrl = urlData?.publicUrl ?? null;
+              }
+            } catch {}
+          }
+
+          // Fallback: buscar base64 via API da Evolution
+          if (!mediaUrl) {
+            mediaUrl = await downloadAndStoreMedia(messageId, instance, mediaType);
+          }
         }
         let leadId = null;
         if (last10) {
