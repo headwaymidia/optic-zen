@@ -118,13 +118,15 @@ export function ChatPanel({
   const pendingDef = pendingLevel ? getFollowUpDef(pendingLevel) : null;
   const reachedMax = (lead.follow_up_count ?? 0) >= MAX_FOLLOW_UPS;
 
-  const RETRY_DELAYS_MS = [30_000, 60_000];
+  const RETRY_DELAYS_MS = [1_500, 3_000];
 
   // Verifica silenciosamente se o WhatsApp (Evolution) está conectado antes de enviar.
   // Se não estiver, dispara connect e aguarda até 5s. Nunca lança erro para a UI.
   const ensureWhatsAppConnected = async (): Promise<void> => {
     if (!currentStoreId) return;
     if (connection?.provider && connection.provider !== "evolution") return;
+    // Se o estado local já diz conectado, não faz chamada extra
+    if (connection?.status === "connected") return;
     try {
       const { data: statusData } = await supabase.functions.invoke("whatsapp-evolution", {
         body: { action: "status", store_id: currentStoreId },
@@ -289,12 +291,11 @@ export function ChatPanel({
       // Refetch imediato + retries para cobrir atraso entre invoke() retornar
       // e a Edge Function persistir a linha no banco.
       await refetchMessages();
-      setTimeout(() => { refetchMessages(); }, 800);
-      setTimeout(() => { refetchMessages(); }, 2000);
-      // Remove otimista só depois do segundo refetch — evita flicker de sumiço.
+      setTimeout(() => { refetchMessages(); }, 1000);
+      // Remove otimista após refetch
       setTimeout(() => {
         setSentMessages((prev) => prev.filter((m) => m.id !== optimisticId));
-      }, 2200);
+      }, 1200);
     }
     setIsSending(false);
   };
@@ -475,7 +476,7 @@ export function ChatPanel({
     setMessage("");
 
     setIsTyping(true);
-    await new Promise((r) => setTimeout(r, 1200));
+    await new Promise((r) => setTimeout(r, 400));
     setIsTyping(false);
 
     setSentMessages((prev) => [...prev, { from: "us", text, time }]);
