@@ -45,16 +45,16 @@ export default function Ajuda() {
   const [activeModule, setActiveModule] = useState<string | null>(null);
 
   return (
-    <div className="container max-w-4xl mx-auto py-8 px-4 space-y-10">
+    <div className="container max-w-4xl mx-auto py-4 sm:py-8 px-3 sm:px-4 space-y-6 sm:space-y-10">
       <header className="space-y-2">
         <div className="flex items-center gap-2 text-primary">
           <LifeBuoy className="h-6 w-6" />
-          <h1 className="text-3xl font-bold tracking-tight text-foreground">Central de Ajuda</h1>
+          <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-foreground">Central de Ajuda</h1>
         </div>
         <p className="text-muted-foreground">Aprenda a usar o CRM e tire suas dúvidas.</p>
       </header>
 
-      <div className="rounded-xl border border-emerald-500/20 bg-emerald-500/10 p-5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+      <div className="rounded-xl border border-emerald-500/20 bg-emerald-500/10 p-4 sm:p-5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
         <div>
           <p className="font-semibold text-foreground">Precisa de ajuda agora?</p>
           <p className="text-sm text-muted-foreground">Nossa equipe responde em poucos minutos.</p>
@@ -66,13 +66,13 @@ export default function Ajuda() {
       </div>
 
       <section className="space-y-4">
-        <h2 className="text-xl font-semibold text-foreground flex items-center gap-2">
+        <h2 className="text-lg sm:text-xl font-semibold text-foreground flex items-center gap-2">
           <Play className="h-5 w-5 text-emerald-500" />
           Primeiros passos
         </h2>
-        <div className="grid gap-3 sm:grid-cols-2">
+        <div className="grid gap-2 sm:gap-3 grid-cols-1 sm:grid-cols-2">
           {PRIMEIRO_PASSOS.map((item) => (
-            <div key={item.step} className="rounded-xl border bg-card p-4 flex gap-3 items-start">
+            <div key={item.step} className="rounded-xl border bg-card p-3 sm:p-4 flex gap-3 items-start">
               <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-emerald-500 text-white text-xs font-bold">{item.step}</div>
               <div>
                 <p className="text-sm font-semibold text-foreground">{item.title}</p>
@@ -84,11 +84,11 @@ export default function Ajuda() {
       </section>
 
       <section className="space-y-4">
-        <h2 className="text-xl font-semibold text-foreground">Como usar cada tela</h2>
-        <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+        <h2 className="text-lg sm:text-xl font-semibold text-foreground">Como usar cada tela</h2>
+        <div className="grid gap-2 sm:gap-3 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
           {MODULES.map((mod) => (
             <button key={mod.title} onClick={() => setActiveModule(activeModule === mod.title ? null : mod.title)}
-              className={cn("rounded-xl border bg-card p-4 text-left transition-all hover:shadow-md", activeModule === mod.title && "ring-2 ring-emerald-500")}>
+              className={cn("rounded-xl border bg-card p-3 sm:p-4 text-left transition-all hover:shadow-md w-full", activeModule === mod.title && "ring-2 ring-emerald-500")}>
               <div className="flex items-center gap-3 mb-2">
                 <div className={cn("flex h-8 w-8 items-center justify-center rounded-lg text-white", mod.color)}>
                   <mod.icon className="h-4 w-4" />
@@ -118,7 +118,7 @@ export default function Ajuda() {
       </section>
 
       <section className="space-y-4">
-        <h2 className="text-xl font-semibold text-foreground">Perguntas frequentes</h2>
+        <h2 className="text-lg sm:text-xl font-semibold text-foreground">Perguntas frequentes</h2>
         <div className="rounded-xl border bg-card px-4">
           <Accordion type="single" collapsible className="w-full">
             {faqs.map((f, i) => (
@@ -131,7 +131,7 @@ export default function Ajuda() {
         </div>
       </section>
 
-      <footer className="rounded-xl border bg-muted/30 p-6 text-center space-y-3">
+      <footer className="rounded-xl border bg-muted/30 p-4 sm:p-6 text-center space-y-3">
         <p className="text-foreground font-medium">Não encontrou o que procurava?</p>
         <Button onClick={() => window.open(WHATSAPP_URL, "_blank", "noopener,noreferrer")} className="bg-emerald-500 hover:bg-emerald-600 text-white">
           <MessageCircle className="h-4 w-4" />
