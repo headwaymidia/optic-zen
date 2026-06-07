@@ -39,8 +39,10 @@ function loadFilters(): PersistedFilters {
 
 export default function Dashboard() {
   usePageTitle("Dashboard");
-  const { leads, loading, loadAll } = useLeads();
-  useEffect(() => { loadAll(); }, [loadAll]);
+  const { leads, loading, loadAll, hasMore } = useLeads();
+  useEffect(() => {
+    if (hasMore) setTimeout(() => loadAll(), 300);
+  }, [hasMore]);
   const { currentStore, filterByCurrentStore } = useStores();
   const { members } = useStoreMembers();
 
