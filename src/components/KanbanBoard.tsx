@@ -512,7 +512,7 @@ function DroppableColumn({
     <div
       ref={setNodeRef}
       className={cn(
-        "flex w-[88vw] min-w-[88vw] max-w-[88vw] sm:w-[260px] sm:min-w-[260px] sm:max-w-[260px] shrink-0 snap-start flex-col h-[calc(100svh-180px)] sm:h-full rounded-2xl bg-slate-50/70 dark:bg-slate-900/50 border border-slate-100 dark:border-slate-800 transition-all duration-200 overflow-hidden",
+        "flex w-[82vw] min-w-[82vw] max-w-[82vw] sm:w-[260px] sm:min-w-[260px] sm:max-w-[260px] shrink-0 snap-start flex-col h-[calc(100svh-180px)] sm:h-full rounded-2xl bg-slate-50/70 dark:bg-slate-900/50 border border-slate-100 dark:border-slate-800 transition-all duration-200 overflow-hidden",
         isOver && "bg-primary/5 border-primary/40 border-dashed ring-2 ring-primary/30 scale-[1.01]"
       )}
     >
@@ -659,7 +659,7 @@ export function KanbanBoard({
         onDragCancel={() => setActiveId(null)}
       >
         <div
-          className="flex h-full gap-3 overflow-x-auto overflow-y-hidden px-4 pb-6 snap-x snap-mandatory sm:snap-none scroll-smooth kanban-scroll overscroll-x-contain"
+          className="flex h-full gap-3 overflow-x-auto overflow-y-hidden px-4 pb-6 snap-x snap-mandatory sm:snap-none scroll-smooth kanban-scroll overscroll-x-contain touch-pan-x"
           style={{ WebkitOverflowScrolling: "touch" }}
         >
           {LEAD_STATUSES.map((status) => {
