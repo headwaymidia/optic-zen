@@ -11,21 +11,21 @@ import AppLayout from "@/components/AppLayout";
 import { LeadsProvider } from "@/hooks/useLeads";
 import { DataSkeleton } from "@/components/ui/DataSkeleton";
 
-import Dashboard from "@/pages/Dashboard";
-import Funil from "@/pages/Funil";
-import WhatsAppPage from "@/pages/WhatsApp";
-import Contatos from "@/pages/Contatos";
-import Configuracoes from "@/pages/Configuracoes";
-import ConfiguracoesLoja from "@/pages/ConfiguracoesLoja";
-import WhatsAppConfig from "@/pages/WhatsAppConfig";
-import Tarefas from "@/pages/Tarefas";
-import Agenda from "@/pages/Agenda";
-import Ranking from "@/pages/Ranking";
-import Planos from "@/pages/Planos";
-import Parceiro from "@/pages/Parceiro";
-import Ajuda from "@/pages/Ajuda";
-import Logs from "@/pages/Logs";
-import NotFound from "@/pages/NotFound";
+const Dashboard = lazy(() => import("@/pages/Dashboard"));
+const Funil = lazy(() => import("@/pages/Funil"));
+const WhatsAppPage = lazy(() => import("@/pages/WhatsApp"));
+const Contatos = lazy(() => import("@/pages/Contatos"));
+const Configuracoes = lazy(() => import("@/pages/Configuracoes"));
+const ConfiguracoesLoja = lazy(() => import("@/pages/ConfiguracoesLoja"));
+const WhatsAppConfig = lazy(() => import("@/pages/WhatsAppConfig"));
+const Tarefas = lazy(() => import("@/pages/Tarefas"));
+const Agenda = lazy(() => import("@/pages/Agenda"));
+const Ranking = lazy(() => import("@/pages/Ranking"));
+const Planos = lazy(() => import("@/pages/Planos"));
+const Parceiro = lazy(() => import("@/pages/Parceiro"));
+const Ajuda = lazy(() => import("@/pages/Ajuda"));
+const Logs = lazy(() => import("@/pages/Logs"));
+const NotFound = lazy(() => import("@/pages/NotFound"));
 
 // Auth-only pages: lazy (logged users never revisit them)
 const AuthPage = lazy(() => import("./pages/Auth"));
@@ -37,8 +37,10 @@ const AdminPage = lazy(() => import("./pages/Admin"));
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
-      staleTime: 1000 * 60,
+      staleTime: 1000 * 60 * 5,
+      gcTime: 1000 * 60 * 10,
       retry: 1,
+      refetchOnWindowFocus: false,
     },
   },
 });
@@ -109,19 +111,19 @@ const App = () => (
                   }
                 />
                 <Route element={<AppLayout />}>
-                  <Route path="/" element={<Dashboard />} />
-                  <Route path="/whatsapp" element={<WhatsAppPage />} />
-                  <Route path="/funil" element={<Funil />} />
-                  <Route path="/tarefas" element={<Tarefas />} />
-                  <Route path="/agenda" element={<Agenda />} />
-                  <Route path="/contatos" element={<Contatos />} />
-                  <Route path="/configuracoes" element={<Configuracoes />} />
-                  <Route path="/configuracoes-loja" element={<ConfiguracoesLoja />} />
-                  <Route path="/whatsapp-config" element={<WhatsAppConfig />} />
-                  <Route path="/planos" element={<Planos />} />
-                  <Route path="/parceiro" element={<Parceiro />} />
-                  <Route path="/ajuda" element={<Ajuda />} />
-                  <Route path="/logs" element={<Logs />} />
+                  <Route path="/" element={<Suspense fallback={<AuthFallback />}><Dashboard /></Suspense>} />
+                  <Route path="/whatsapp" element={<Suspense fallback={<AuthFallback />}><WhatsAppPage /></Suspense>} />
+                  <Route path="/funil" element={<Suspense fallback={<AuthFallback />}><Funil /></Suspense>} />
+                  <Route path="/tarefas" element={<Suspense fallback={<AuthFallback />}><Tarefas /></Suspense>} />
+                  <Route path="/agenda" element={<Suspense fallback={<AuthFallback />}><Agenda /></Suspense>} />
+                  <Route path="/contatos" element={<Suspense fallback={<AuthFallback />}><Contatos /></Suspense>} />
+                  <Route path="/configuracoes" element={<Suspense fallback={<AuthFallback />}><Configuracoes /></Suspense>} />
+                  <Route path="/configuracoes-loja" element={<Suspense fallback={<AuthFallback />}><ConfiguracoesLoja /></Suspense>} />
+                  <Route path="/whatsapp-config" element={<Suspense fallback={<AuthFallback />}><WhatsAppConfig /></Suspense>} />
+                  <Route path="/planos" element={<Suspense fallback={<AuthFallback />}><Planos /></Suspense>} />
+                  <Route path="/parceiro" element={<Suspense fallback={<AuthFallback />}><Parceiro /></Suspense>} />
+                  <Route path="/ajuda" element={<Suspense fallback={<AuthFallback />}><Ajuda /></Suspense>} />
+                  <Route path="/logs" element={<Suspense fallback={<AuthFallback />}><Logs /></Suspense>} />
                   <Route
                     path="/admin"
                     element={

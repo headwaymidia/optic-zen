@@ -15,6 +15,7 @@ import { PhoneLink } from "./PhoneLink";
 import { StageGateDialog, isGatedStatus, type StageGate } from "./StageGateDialog";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { cn } from "@/lib/utils";
+import { memo } from "react";
 import { FOLLOW_UP_INTERVAL_HOURS, MAX_FOLLOW_UPS } from "@/lib/followUpScripts";
 import {
   DndContext,
@@ -167,7 +168,7 @@ interface LeadCardProps {
   nameById?: Map<string, string>;
 }
 
-function LeadCardContent({ lead, onEdit, dragging, selected, cadenceHighlight, members = [], nameById }: LeadCardProps) {
+const LeadCardContent = memo(function LeadCardContent({ lead, onEdit, dragging, selected, cadenceHighlight, members = [], nameById }: LeadCardProps) {
   const { updateLead, updateStatus } = useLeads();
   const navigate = useNavigate();
   const cooling = isCooling(lead);
@@ -450,7 +451,7 @@ function LeadCardContent({ lead, onEdit, dragging, selected, cadenceHighlight, m
       </div>
     </Card>
   );
-}
+});
 
 function DraggableLeadCard({ lead, onEdit, onSelect, selected, cadenceHighlight, members, nameById }: { lead: Lead; onEdit: (l: Lead) => void; onSelect?: (l: Lead) => void; selected?: boolean; cadenceHighlight?: boolean; members?: { id: string; full_name: string }[]; nameById?: Map<string, string> }) {
   const { attributes, listeners, setNodeRef, isDragging } = useDraggable({ id: lead.id });
