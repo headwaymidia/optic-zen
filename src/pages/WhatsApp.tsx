@@ -182,7 +182,8 @@ export default function WhatsAppPage() {
   const filtered = useMemo(() => {
     const range = getPeriodRange(period, customRange);
     const ts = (l: typeof leads[number]) => {
-      return l.last_message_at ? new Date(l.last_message_at).getTime() : -Infinity;
+      const ref = l.last_message_at ?? l.created_at;
+      return ref ? new Date(ref).getTime() : -Infinity;
     };
     return leads
       .filter((l) => {
@@ -192,7 +193,8 @@ export default function WhatsAppPage() {
         if (statusFilter !== "all" && l.status !== statusFilter) return false;
         if (sellerFilter !== "all" && (l.responsible_id ?? "") !== sellerFilter) return false;
         if (range) {
-          const t = l.created_at ? new Date(l.created_at).getTime() : 0;
+          const ref = l.last_message_at ?? l.created_at;
+          const t = ref ? new Date(ref).getTime() : 0;
           if (t < range.from.getTime() || t > range.to.getTime()) return false;
         }
         return true;
