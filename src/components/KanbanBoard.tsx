@@ -203,6 +203,25 @@ const LeadCardContent = memo(function LeadCardContent({ lead, onEdit, dragging, 
                 </span>
               </p>
             )}
+            {lead.status === "Agendou Exame" && lead.exam_date && new Date(lead.exam_date) < new Date() && (
+              <div
+                className="mt-1.5 rounded-lg bg-amber-50 dark:bg-amber-900/30 border border-amber-200 dark:border-amber-700 px-2 py-1.5 flex items-center justify-between gap-1"
+                onPointerDown={(e) => e.stopPropagation()}
+                onClick={(e) => e.stopPropagation()}
+              >
+                <span className="text-[10px] text-amber-700 dark:text-amber-300 font-medium">Compareceu?</span>
+                <div className="flex gap-1">
+                  <button
+                    className="text-[10px] bg-emerald-500 hover:bg-emerald-600 text-white rounded px-1.5 py-0.5 font-semibold"
+                    onClick={(e) => { e.stopPropagation(); updateStatus(lead.id, "Compareceu e Comprou"); }}
+                  >✅ Sim</button>
+                  <button
+                    className="text-[10px] bg-red-500 hover:bg-red-600 text-white rounded px-1.5 py-0.5 font-semibold"
+                    onClick={(e) => { e.stopPropagation(); updateStatus(lead.id, "Não Compareceu"); }}
+                  >❌ Não</button>
+                </div>
+              </div>
+            )}
           </div>
           <div className="flex items-center gap-1 shrink-0">
             {lead.priority && (
