@@ -481,13 +481,17 @@ function DraggableLeadCard({ lead, onEdit, onSelect, selected, cadenceHighlight,
       onClick={() => onSelect?.(lead)}
       className={cn("relative cursor-pointer", isDragging && "opacity-40")}
     >
-      {/* Handle de arrastar — só ativa o drag, não bloqueia scroll do card */}
+      <div
+        {...listeners}
+        {...attributes}
+        className="absolute inset-0 z-0 hidden sm:block cursor-grab active:cursor-grabbing"
+        onClick={(e) => e.stopPropagation()}
+      />
       <div
         {...listeners}
         {...attributes}
         onClick={(e) => e.stopPropagation()}
-        className="absolute top-2 right-2 z-10 p-1 rounded cursor-grab active:cursor-grabbing touch-none text-muted-foreground/40 hover:text-muted-foreground transition-colors"
-        title="Arrastar"
+        className="absolute top-2 left-2 z-10 p-1 rounded cursor-grab active:cursor-grabbing touch-none text-muted-foreground/40 sm:hidden"
       >
         <GripVertical className="h-3.5 w-3.5" />
       </div>
