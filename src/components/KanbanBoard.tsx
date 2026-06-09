@@ -478,8 +478,10 @@ function DraggableLeadCard({ lead, onEdit, onSelect, selected, cadenceHighlight,
   return (
     <div
       ref={setNodeRef}
+      {...listeners}
+      {...attributes}
       onClick={() => onSelect?.(lead)}
-      className={cn("relative cursor-pointer", isDragging && "opacity-40")}
+      className={cn("relative cursor-grab active:cursor-grabbing", isDragging && "opacity-40")}
     >
       <div
         {...listeners}
