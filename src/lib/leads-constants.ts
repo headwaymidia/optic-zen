@@ -6,6 +6,7 @@ export type LeadStatus =
   | "Não Compareceu"
   | "Compareceu e Comprou"
   | "Compareceu e Não Comprou"
+  | "Em Negociação"
   | "Repescagem";
 
 export type LeadPriority = "Baixa" | "Média" | "Alta";
@@ -18,6 +19,7 @@ export const LEAD_STATUSES: LeadStatus[] = [
   "Não Compareceu",
   "Compareceu e Comprou",
   "Compareceu e Não Comprou",
+  "Em Negociação",
   "Repescagem",
 ];
 
