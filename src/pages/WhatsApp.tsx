@@ -400,6 +400,11 @@ export default function WhatsAppPage() {
                         NOVO
                       </Badge>
                     )}
+                    {lead.status === "Novo Lead" && !hasMessages && (
+                      <Badge className="h-5 px-1.5 text-[11px] font-semibold bg-blue-500 hover:bg-blue-500 text-white rounded-full flex items-center justify-center shrink-0">
+                        NOVO
+                      </Badge>
+                    )}
                     {showUnread && (
                       <Badge className="h-5 min-w-5 px-1.5 text-[11px] font-semibold bg-emerald-500 hover:bg-emerald-500 text-white rounded-full flex items-center justify-center shrink-0">
                         {unreadCount > 99 ? "99+" : unreadCount}
