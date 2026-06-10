@@ -168,27 +168,20 @@ interface LeadCardProps {
   nameById?: Map<string, string>;
 }
 
-function ExamConfirmBanner({ lead, updateStatus }: { lead: any; updateStatus: (id: string, status: any) => void }) {
-  const [step, setStep] = useState("main");
+function ExamConfirmBanner({ lead, updateStatus }) {
+  const { updateLead } = useLeads();
+  const [step, setStep] = React.useState("main");
+  const [saleValue, setSaleValue] = React.useState("");
+  async function handleConfirmSale() {
+    const value = parseFloat(saleValue.replace(",", ".")) || 0;
+    await updateLead(lead.id, { sale_value: value });
+    updateStatus(lead.id, "Compareceu e Comprou");
+  }
   return (
     <div className="rounded-lg bg-amber-50 dark:bg-amber-900/30 border border-amber-200 dark:border-amber-700 px-2 py-1.5" onPointerDown={(e) => e.stopPropagation()} onClick={(e) => e.stopPropagation()}>
-      {step === "main" ? (
-        <div className="flex items-center justify-between gap-1">
-          <span className="text-xs text-amber-700 dark:text-amber-300 font-semibold">Compareceu?</span>
-          <div className="flex gap-1.5">
-            <button className="text-xs bg-emerald-500 hover:bg-emerald-600 text-white rounded-lg px-2 py-1 font-semibold" onClick={(e) => { e.stopPropagation(); setStep("bought"); }}>✅ Sim</button>
-            <button className="text-xs bg-red-500 hover:bg-red-600 text-white rounded-lg px-2 py-1 font-semibold" onClick={(e) => { e.stopPropagation(); updateStatus(lead.id, "Não Compareceu"); }}>❌ Não</button>
-          </div>
-        </div>
-      ) : (
-        <div className="flex items-center justify-between gap-1">
-          <span className="text-xs text-amber-700 dark:text-amber-300 font-semibold">Comprou?</span>
-          <div className="flex gap-1.5">
-            <button className="text-xs bg-emerald-500 hover:bg-emerald-600 text-white rounded-lg px-2 py-1 font-semibold" onClick={(e) => { e.stopPropagation(); updateStatus(lead.id, "Compareceu e Comprou"); }}>✅ Sim</button>
-            <button className="text-xs bg-orange-500 hover:bg-orange-600 text-white rounded-lg px-2 py-1 font-semibold" onClick={(e) => { e.stopPropagation(); updateStatus(lead.id, "Compareceu e Não Comprou"); }}>❌ Não</button>
-          </div>
-        </div>
-      )}
+      {step === "main" && (<div className="flex items-center justify-between gap-1"><span className="text-xs text-amber-700 dark:text-amber-300 font-semibold">Compareceu?</span><div className="flex gap-1.5"><button className="text-xs bg-emerald-500 hover:bg-emerald-600 text-white rounded-lg px-2 py-1 font-semibold" onClick={(e) => { e.stopPropagation(); setStep("bought"); }}>✅ Sim</button><button className="text-xs bg-red-500 hover:bg-red-600 text-white rounded-lg px-2 py-1 font-semibold" onClick={(e) => { e.stopPropagation(); updateStatus(lead.id, "Não Compareceu"); }}>❌ Não</button></div></div>)}
+      {step === "bought" && (<div className="flex items-center justify-between gap-1"><span className="text-xs text-amber-700 dark:text-amber-300 font-semibold">Comprou?</span><div className="flex gap-1.5"><button className="text-xs bg-emerald-500 hover:bg-emerald-600 text-white rounded-lg px-2 py-1 font-semibold" onClick={(e) => { e.stopPropagation(); setStep("value"); }}>✅ Sim</button><button className="text-xs bg-orange-500 hover:bg-orange-600 text-white rounded-lg px-2 py-1 font-semibold" onClick={(e) => { e.stopPropagation(); updateStatus(lead.id, "Compareceu e Não Comprou"); }}>❌ Não</button></div></div>)}
+      {step === "value" && (<div className="space-y-1.5"><span className="text-xs text-amber-700 dark:text-amber-300 font-semibold">Valor da venda (R$)</span><div className="flex gap-1.5"><input type="number" placeholder="0,00" value={saleValue} onChange={(e) => setSaleValue(e.target.value)} onClick={(e) => e.stopPropagation()} className="flex-1 text-xs border rounded px-2 py-1 bg-white dark:bg-slate-800 text-foreground" autoFocus /><button className="text-xs bg-emerald-500 hover:bg-emerald-600 text-white rounded-lg px-2 py-1 font-semibold" onClick={(e) => { e.stopPropagation(); handleConfirmSale(); }}>✅ OK</button></div></div>)}
     </div>
   );
 }
