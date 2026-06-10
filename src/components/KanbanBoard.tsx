@@ -15,7 +15,7 @@ import { PhoneLink } from "./PhoneLink";
 import { StageGateDialog, isGatedStatus, type StageGate } from "./StageGateDialog";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { cn } from "@/lib/utils";
-import { memo } from "react";
+import { memo, useState } from "react";
 import { FOLLOW_UP_INTERVAL_HOURS, MAX_FOLLOW_UPS } from "@/lib/followUpScripts";
 import {
   DndContext,
@@ -166,6 +166,31 @@ interface LeadCardProps {
   cadenceHighlight?: boolean;
   members?: { id: string; full_name: string }[];
   nameById?: Map<string, string>;
+}
+
+function ExamConfirmBanner({ lead, updateStatus }: { lead: any; updateStatus: (id: string, status: any) => void }) {
+  const [step, setStep] = useState("main");
+  return (
+    <div className="rounded-lg bg-amber-50 dark:bg-amber-900/30 border border-amber-200 dark:border-amber-700 px-2 py-1.5" onPointerDown={(e) => e.stopPropagation()} onClick={(e) => e.stopPropagation()}>
+      {step === "main" ? (
+        <div className="flex items-center justify-between gap-1">
+          <span className="text-xs text-amber-700 dark:text-amber-300 font-semibold">Compareceu?</span>
+          <div className="flex gap-1.5">
+            <button className="text-xs bg-emerald-500 hover:bg-emerald-600 text-white rounded-lg px-2 py-1 font-semibold" onClick={(e) => { e.stopPropagation(); setStep("bought"); }}>✅ Sim</button>
+            <button className="text-xs bg-red-500 hover:bg-red-600 text-white rounded-lg px-2 py-1 font-semibold" onClick={(e) => { e.stopPropagation(); updateStatus(lead.id, "Não Compareceu"); }}>❌ Não</button>
+          </div>
+        </div>
+      ) : (
+        <div className="flex items-center justify-between gap-1">
+          <span className="text-xs text-amber-700 dark:text-amber-300 font-semibold">Comprou?</span>
+          <div className="flex gap-1.5">
+            <button className="text-xs bg-emerald-500 hover:bg-emerald-600 text-white rounded-lg px-2 py-1 font-semibold" onClick={(e) => { e.stopPropagation(); updateStatus(lead.id, "Compareceu e Comprou"); }}>✅ Sim</button>
+            <button className="text-xs bg-orange-500 hover:bg-orange-600 text-white rounded-lg px-2 py-1 font-semibold" onClick={(e) => { e.stopPropagation(); updateStatus(lead.id, "Compareceu e Não Comprou"); }}>❌ Não</button>
+          </div>
+        </div>
+      )}
+    </div>
+  );
 }
 
 const LeadCardContent = memo(function LeadCardContent({ lead, onEdit, dragging, selected, cadenceHighlight, members = [], nameById }: LeadCardProps) {
@@ -339,25 +364,7 @@ const LeadCardContent = memo(function LeadCardContent({ lead, onEdit, dragging, 
             </SelectContent>
           </Select>
         </div>
-        {lead.status === "Agendou Exame" && lead.exam_date && new Date(lead.exam_date) < new Date() && (
-          <div
-            className="rounded-lg bg-amber-50 dark:bg-amber-900/30 border border-amber-200 dark:border-amber-700 px-2 py-1.5 flex items-center justify-between gap-1"
-            onPointerDown={(e) => e.stopPropagation()}
-            onClick={(e) => e.stopPropagation()}
-          >
-            <span className="text-xs text-amber-700 dark:text-amber-300 font-semibold">Compareceu?</span>
-            <div className="flex gap-1.5">
-              <button
-                className="text-xs bg-emerald-500 hover:bg-emerald-600 text-white rounded-lg px-2 py-1 font-semibold"
-                onClick={(e) => { e.stopPropagation(); updateStatus(lead.id, "Compareceu e Comprou"); }}
-              >✅ Sim</button>
-              <button
-                className="text-xs bg-red-500 hover:bg-red-600 text-white rounded-lg px-2 py-1 font-semibold"
-                onClick={(e) => { e.stopPropagation(); updateStatus(lead.id, "Não Compareceu"); }}
-              >❌ Não</button>
-            </div>
-          </div>
-        )}
+        {lead.status === "Agendou Exame" && lead.exam_date && new Date(lead.exam_date) < new Date() && (<ExamConfirmBanner lead={lead} updateStatus={updateStatus} />)}
         <div className="flex items-center justify-between gap-2 pt-1">
           {lead.phone ? (
             <Button
