@@ -397,6 +397,7 @@ export default function WhatsAppPage() {
                     <p className={cn("text-xs truncate", hasMessages ? "text-muted-foreground" : "text-muted-foreground/70")}>
                       {preview}
                     </p>
+                    {/* badge novo */}
                     {lead.status === "Novo Lead" && !hasMessages && (
                       <Badge className="h-5 px-1.5 text-[11px] font-semibold bg-blue-500 hover:bg-blue-500 text-white rounded-full flex items-center justify-center shrink-0">
                         NOVO
