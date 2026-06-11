@@ -22,6 +22,8 @@ export interface Store {
   /** Iniciais ou emoji curto exibido no avatar. */
   initial?: string;
   owner_id?: string;
+  business_hours_start?: number | null;
+  business_hours_end?: number | null;
 }
 
 interface StoresContextValue {

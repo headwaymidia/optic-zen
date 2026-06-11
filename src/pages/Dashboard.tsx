@@ -86,7 +86,7 @@ export default function Dashboard() {
       sellerScoped.filter((l) => {
         // Usa last_message_at (última atividade) para filtrar o período.
         // Leads criados hoje sem mensagem ainda usam created_at como fallback.
-        const isBuyer = l.status === "Compareceu e Comprou" || l.status === "Compareceu e Nao Comprou";
+        const isBuyer = l.status === "Compareceu e Comprou" || l.status === "Compareceu e Não Comprou";
         const ref = isBuyer ? (l.updated_at ?? l.last_message_at ?? l.created_at) : (l.last_message_at ?? l.created_at);
         return !!ref && isWithinInterval(new Date(ref), { start: range.from, end: range.to });
       }),

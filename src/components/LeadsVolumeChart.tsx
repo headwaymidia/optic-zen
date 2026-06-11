@@ -30,6 +30,7 @@ const STATUS_COLORS: Record<LeadStatus, string> = {
   "Não Compareceu": "hsl(0 75% 60%)", // vermelho
   "Compareceu e Comprou": "hsl(142 71% 42%)", // verde
   "Compareceu e Não Comprou": "hsl(220 9% 55%)", // cinza
+  "Em Negociação": "hsl(290 70% 55%)", // magenta
   Repescagem: "hsl(25 95% 58%)", // laranja
 };
 
