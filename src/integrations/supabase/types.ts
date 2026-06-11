@@ -522,38 +522,6 @@ export type Database = {
           },
         ]
       }
-      store_sellers: {
-        Row: {
-          active: boolean
-          created_at: string
-          id: string
-          name: string
-          store_id: string
-        }
-        Insert: {
-          active?: boolean
-          created_at?: string
-          id?: string
-          name: string
-          store_id: string
-        }
-        Update: {
-          active?: boolean
-          created_at?: string
-          id?: string
-          name?: string
-          store_id?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "store_sellers_store_id_fkey"
-            columns: ["store_id"]
-            isOneToOne: false
-            referencedRelation: "stores"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
       stores: {
         Row: {
           city: string | null
