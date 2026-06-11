@@ -481,7 +481,6 @@ Deno.serve(async (req)=>{
           } else {
             await admin.from("leads").update({
               last_message_at: timestamp,
-              last_message_preview: previewText,
               updated_at: new Date().toISOString()
             }).eq("id", leadId);
           }

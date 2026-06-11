@@ -349,7 +349,7 @@ export default function WhatsAppPage() {
             const previewText = lead.last_message_preview?.trim();
             const hasMessages = Boolean(lastMsgIso);
             const preview = hasMessages
-              ? truncate(previewText || "Mensagem", 40)
+              ? truncate(previewText || "", 40)
               : "Sem mensagens ainda";
             const timeLabel = hasMessages && lastMsgIso
               ? formatRelativeShort(lastMsgIso)
