@@ -185,7 +185,9 @@ export default function WhatsAppPage() {
       const ref = l.last_message_at ?? l.created_at;
       return ref ? new Date(ref).getTime() : -Infinity;
     };
-    return leads
+    const seen = new Set();
+    const uniqueLeads = leads.filter(l => { if (seen.has(l.id)) return false; seen.add(l.id); return true; });
+    return uniqueLeads
       .filter((l) => {
         const term = search.toLowerCase();
         const phoneMatch = (l.phone ?? "").replace(/\D/g, "").includes(search.replace(/\D/g, ""));
