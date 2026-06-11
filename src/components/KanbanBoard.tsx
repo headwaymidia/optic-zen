@@ -1,4 +1,4 @@
-import { useState } from "react";
+import React, { useState, memo } from "react";
 import { useNavigate } from "react-router-dom";
 import { LEAD_STATUSES, Lead, LeadStatus } from "@/integrations/supabase/client";
 import { useStoreMembers } from "@/hooks/useStoreMembers";
@@ -15,7 +15,7 @@ import { PhoneLink } from "./PhoneLink";
 import { StageGateDialog, isGatedStatus, type StageGate } from "./StageGateDialog";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { cn } from "@/lib/utils";
-import { memo, useState } from "react";
+
 import { FOLLOW_UP_INTERVAL_HOURS, MAX_FOLLOW_UPS } from "@/lib/followUpScripts";
 import {
   DndContext,
@@ -38,6 +38,7 @@ const STATUS_COLORS: Record<LeadStatus, string> = {
   "Não Compareceu": "bg-orange-500",
   "Compareceu e Comprou": "bg-emerald-500",
   "Compareceu e Não Comprou": "bg-rose-500",
+  "Em Negociação": "bg-fuchsia-500",
   Repescagem: "bg-indigo-500",
 };
 

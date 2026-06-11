@@ -41,6 +41,7 @@ const STATUS_DOT_COLORS: Record<LeadStatus, string> = {
   "Não Compareceu": "bg-orange-500",
   "Compareceu e Comprou": "bg-emerald-500",
   "Compareceu e Não Comprou": "bg-rose-500",
+  "Em Negociação": "bg-fuchsia-500",
   Repescagem: "bg-indigo-500",
 };
 
