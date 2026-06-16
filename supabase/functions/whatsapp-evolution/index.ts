@@ -215,7 +215,7 @@ Deno.serve(async (req) => {
         if (!/integration/i.test(msg)) break;
       }
 
-      // 2) ✅ Configura webhook automaticamente para esta instância (sempre, inclusive na reconexão)
+      await evo(`/settings/set/${instance}`, { method: "POST", body: JSON.stringify({ rejectCall: false, msgCall: "", groupsIgnore: false, alwaysOnline: false, readMessages: false, readStatus: false, syncFullHistory: true }) }).catch(() => {});
       const webhookUrl = `${SUPABASE_URL}/functions/v1/whatsapp-webhook`;
       const WEBHOOK_SECRET = Deno.env.get("WEBHOOK_SECRET") ?? "";
       const webhookHeaders: Record<string, string> = {

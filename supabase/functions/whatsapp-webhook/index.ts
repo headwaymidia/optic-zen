@@ -382,15 +382,16 @@ Deno.serve(async (req)=>{
           console.log("[whatsapp-webhook] lead via anúncio detectado:", ctwaClid, adSource, adCreativeName);
         }
 
-        // Auto-criar lead se não existir e mensagem for recebida
-        if (!leadId && last10 && !fromMe) {
+        // Auto-criar lead se não existir — para mensagem recebida OU enviada
+        if (!leadId && last10) {
           const fullPhone = phoneDigits.startsWith("55") ? phoneDigits : `55${phoneDigits}`;
           const pushName = msg.pushName || null;
+          const initialStatus = fromMe ? "Em Atendimento" : "Novo Lead";
           const { data: newLead } = await admin.from("leads").insert({
             store_id: storeId,
             name: pushName || `+${fullPhone}`,
             phone: fullPhone,
-            status: "Novo Lead",
+            status: initialStatus,
             lead_source: ctwaClid ? "Anúncio WhatsApp" : "WhatsApp",
             ctwa_clid: ctwaClid,
             ad_source: adSource,
