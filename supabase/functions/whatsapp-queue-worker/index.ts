@@ -200,6 +200,25 @@ Deno.serve(async (req) => {
           continue;
         }
 
+        const sendStatusStr = String(send.data?.status ?? "").toUpperCase();
+        if (sendStatusStr === "PENDING") {
+          storeResult.failed++;
+          const newRetryCount = (msg.retry_count ?? 0) + 1;
+          evo(`/instance/connect/${instance}`, { method: "GET" }).catch(() => {});
+          if (newRetryCount >= MAX_RETRIES) {
+            await admin.from("whatsapp_messages").update({
+              status: "failed", retry_count: newRetryCount, failed_at: new Date().toISOString(),
+            }).eq("id", msg.id);
+            console.error("[queue-worker] PENDING dead letter:", msg.id);
+          } else {
+            await admin.from("whatsapp_messages").update({
+              retry_count: newRetryCount,
+            }).eq("id", msg.id);
+            console.warn("[queue-worker] PENDING mantem na fila, tentativa", newRetryCount);
+          }
+          continue;
+        }
+
         const newMessageId =
           send.data?.key?.id || send.data?.messageId || send.data?.id || msg.message_id;
 

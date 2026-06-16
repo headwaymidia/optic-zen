@@ -419,6 +419,29 @@ Deno.serve(async (req) => {
         );
       }
 
+      // PENDING: Evolution retorna 200 mas status PENDING = sessao corrompida, nao entregue
+      const sendStatus = String(send.data?.status ?? "").toUpperCase();
+      if (sendStatus === "PENDING") {
+        console.error("[sendMessage] PENDING detectado:", instance);
+        evo(`/instance/connect/${instance}`, { method: "GET" }).catch(() => {});
+        try {
+          const { data: members } = await admin
+            .from("store_members").select("user_id").eq("store_id", storeId).in("role", ["Dono", "Gerente"]);
+          if (members?.length) {
+            await admin.from("notifications").insert(members.map((m) => ({
+              user_id: m.user_id, store_id: storeId, type: "whatsapp_pending",
+              title: "WhatsApp reconectando",
+              body: "Sua mensagem esta sendo reenviada automaticamente.",
+              read: false,
+            })));
+          }
+        } catch (_) {}
+        return new Response(
+          JSON.stringify({ error: "Sessao reconectando, mensagem sera reenviada", pending: true, retry: true }),
+          { status: 503, headers: { ...corsHeaders, "Content-Type": "application/json" } },
+        );
+      }
+
       let leadId: string | null = body.lead_id ?? null;
       if (!leadId) {
         const last10 = phoneDigits.slice(-10);
