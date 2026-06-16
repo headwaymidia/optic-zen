@@ -475,15 +475,29 @@ Deno.serve(async (req)=>{
               }).catch(() => {}); // Nunca bloqueia o webhook
             }
             if (rpcErr) {
-              // Fallback apenas se o RPC falhar por razão inesperada
-              console.warn("[whatsapp-webhook] increment_lead_unread falhou, usando fallback:", rpcErr);
-              await admin.rpc("increment_lead_unread", { _lead_id: leadId, _preview: previewText, _ts: timestamp });
+              console.warn("[whatsapp-webhook] increment_lead_unread falhou, update direto:", rpcErr?.code);
+              const { data: cur } = await admin
+                .from("leads").select("unread_count").eq("id", leadId).maybeSingle();
+              await admin.from("leads").update({
+                last_message_at: timestamp,
+                last_message_preview: previewText,
+                unread_count: (cur?.unread_count ?? 0) + 1,
+                updated_at: new Date().toISOString(),
+              }).eq("id", leadId);
             }
           } else {
-            await admin.from("leads").update({
+            const { data: currentLead } = await admin
+              .from("leads").select("status").eq("id", leadId).maybeSingle();
+            const updateData = {
               last_message_at: timestamp,
-              updated_at: new Date().toISOString()
-            }).eq("id", leadId);
+              last_message_preview: `Você: ${previewText}`,
+              unread_count: 0,
+              updated_at: new Date().toISOString(),
+            };
+            if (currentLead?.status === "Novo Lead") {
+              updateData.status = "Em Atendimento";
+            }
+            await admin.from("leads").update(updateData).eq("id", leadId);
           }
         }
       }
