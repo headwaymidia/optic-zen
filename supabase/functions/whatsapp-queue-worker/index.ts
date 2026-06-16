@@ -205,6 +205,13 @@ Deno.serve(async (req) => {
           storeResult.failed++;
           const newRetryCount = (msg.retry_count ?? 0) + 1;
           evo(`/instance/connect/${instance}`, { method: "GET" }).catch(() => {});
+          await admin.from("logs").insert({
+            store_id: msg.store_id ?? null,
+            function_name: "whatsapp-queue-worker",
+            level: newRetryCount >= MAX_RETRIES ? "error" : "warn",
+            event: "pending_recovery",
+            message: `Fila PENDING ${instance} — tentativa ${newRetryCount}/${MAX_RETRIES}. Msg: ${msg.id}`,
+          }).catch(() => {});
           if (newRetryCount >= MAX_RETRIES) {
             await admin.from("whatsapp_messages").update({
               status: "failed", retry_count: newRetryCount, failed_at: new Date().toISOString(),

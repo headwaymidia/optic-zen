@@ -423,6 +423,13 @@ Deno.serve(async (req) => {
       const sendStatus = String(send.data?.status ?? "").toUpperCase();
       if (sendStatus === "PENDING") {
         console.error("[sendMessage] PENDING detectado:", instance);
+        await admin.from("logs").insert({
+          store_id: storeId,
+          function_name: "whatsapp-evolution",
+          level: "warn",
+          event: "pending_recovery",
+          message: `Mensagem PENDING detectada — reconectando ${instance}. Lead: ${body.lead_id ?? "?"}`,
+        }).catch(() => {});
         evo(`/instance/connect/${instance}`, { method: "GET" }).catch(() => {});
         try {
           const { data: members } = await admin

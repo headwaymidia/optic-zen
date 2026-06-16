@@ -60,6 +60,7 @@ export default function Logs() {
   const [loading, setLoading] = useState(true);
   const [levelFilter, setLevelFilter] = useState<string>("all");
   const [storeFilter, setStoreFilter] = useState<string>("all");
+  const [eventFilter, setEventFilter] = useState<string>("all");
 
   const allowed = currentStore?.role === "Dono" || currentStore?.role === "Gerente";
 
@@ -94,9 +95,10 @@ export default function Logs() {
       if (levelFilter !== "all" && (r.level || "info").toLowerCase() !== levelFilter)
         return false;
       if (storeFilter !== "all" && r.store_id !== storeFilter) return false;
+      if (eventFilter === "pending" && r.event !== "pending_recovery") return false;
       return true;
     });
-  }, [rows, levelFilter, storeFilter]);
+  }, [rows, levelFilter, storeFilter, eventFilter]);
 
   if (storesLoading) {
     return (
@@ -127,6 +129,15 @@ export default function Logs() {
               <SelectItem value="info">Info</SelectItem>
               <SelectItem value="warn">Warn</SelectItem>
               <SelectItem value="error">Error</SelectItem>
+            </SelectContent>
+          </Select>
+          <Select value={eventFilter} onValueChange={setEventFilter}>
+            <SelectTrigger className="w-[180px]">
+              <SelectValue placeholder="Evento" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">Todos eventos</SelectItem>
+              <SelectItem value="pending">Reenvio WhatsApp</SelectItem>
             </SelectContent>
           </Select>
           <Select value={storeFilter} onValueChange={setStoreFilter}>
