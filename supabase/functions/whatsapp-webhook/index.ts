@@ -387,7 +387,7 @@ Deno.serve(async (req)=>{
           const fullPhone = phoneDigits.startsWith("55") ? phoneDigits : `55${phoneDigits}`;
           const pushName = msg.pushName || null;
           const initialStatus = fromMe ? "Em Atendimento" : "Novo Lead";
-          const { data: newLead } = await admin.from("leads").insert({
+          const { data: newLead } = await admin.from("leads").upsert({
             store_id: storeId,
             name: pushName || `+${fullPhone}`,
             phone: fullPhone,
@@ -398,7 +398,7 @@ Deno.serve(async (req)=>{
             ad_creative_name: adCreativeName,
             created_at: new Date().toISOString(),
             updated_at: new Date().toISOString()
-          }).select("id").single();
+          }, { onConflict: "store_id,phone", ignoreDuplicates: false }).select("id").single();
           leadId = newLead?.id ?? null;
           console.log("[whatsapp-webhook] lead auto-criado:", leadId, fullPhone, pushName, ctwaClid ? "(via anúncio)" : "");
 
