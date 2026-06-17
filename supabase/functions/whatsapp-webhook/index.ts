@@ -428,22 +428,50 @@ Deno.serve(async (req)=>{
             ad_creative_name: adCreativeName,
           }).eq("id", leadId).is("ctwa_clid", null);
         }
-        await admin.from("whatsapp_messages").upsert({
-          store_id: storeId,
-          lead_id: leadId,
-          instance_name: instance,
-          remote_jid: remoteJid,
-          message_id: messageId,
-          from_me: fromMe,
-          body: body || null,
-          media_type: mediaType,
-          media_url: mediaUrl,
-          timestamp,
-          status: fromMe ? "sent" : "received"
-        }, {
-          onConflict: "message_id"
-        });
-        if (leadId) {
+        // Content-based deduplication: syncFullHistory pode reimportar mensagens antigas com novos message_ids
+        let isDuplicate = false;
+        if (leadId && (body || mediaUrl)) {
+          const tsMs = new Date(timestamp).getTime();
+          const tsBefore = new Date(tsMs - 15000).toISOString();
+          const tsAfter = new Date(tsMs + 15000).toISOString();
+          let dupQuery = admin
+            .from("whatsapp_messages")
+            .select("message_id")
+            .eq("lead_id", leadId)
+            .eq("from_me", fromMe)
+            .neq("message_id", messageId)
+            .gte("timestamp", tsBefore)
+            .lte("timestamp", tsAfter);
+          if (body) {
+            dupQuery = dupQuery.eq("body", body);
+          } else if (mediaUrl) {
+            dupQuery = dupQuery.eq("media_url", mediaUrl);
+          }
+          const { data: dupRows } = await dupQuery.limit(1);
+          if (dupRows && dupRows.length > 0) {
+            isDuplicate = true;
+            console.log("[whatsapp-webhook] duplicata detectada, ignorando:", messageId);
+          }
+        }
+
+        if (!isDuplicate) {
+          await admin.from("whatsapp_messages").upsert({
+            store_id: storeId,
+            lead_id: leadId,
+            instance_name: instance,
+            remote_jid: remoteJid,
+            message_id: messageId,
+            from_me: fromMe,
+            body: body || null,
+            media_type: mediaType,
+            media_url: mediaUrl,
+            timestamp,
+            status: fromMe ? "sent" : "received"
+          }, {
+            onConflict: "message_id"
+          });
+        }
+        if (leadId && !isDuplicate) {
           const previewText = (body || (mediaType ? `[${mediaType}]` : "")).slice(0, 100);
           if (!fromMe) {
             const { error: rpcErr } = await admin.rpc("increment_lead_unread", {
