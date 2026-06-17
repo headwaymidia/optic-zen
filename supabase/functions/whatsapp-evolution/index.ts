@@ -476,7 +476,7 @@ Deno.serve(async (req) => {
         : message.slice(0, 100);
       const messageTimestamp = new Date().toISOString();
 
-      const { error: insErr } = await admin.from("whatsapp_messages").insert({
+      const { error: insErr } = await admin.from("whatsapp_messages").upsert({
         store_id: storeId,
         lead_id: leadId,
         instance_name: instance,
@@ -488,7 +488,7 @@ Deno.serve(async (req) => {
         media_url: mediaUrl,
         timestamp: messageTimestamp,
         status: "sent",
-      });
+      }, { onConflict: "message_id" });
       if (insErr) console.error("[sendMessage] insert error:", insErr);
 
       if (leadId) {
