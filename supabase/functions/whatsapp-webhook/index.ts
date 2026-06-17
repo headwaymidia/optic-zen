@@ -432,8 +432,8 @@ Deno.serve(async (req)=>{
         let isDuplicate = false;
         if (leadId && (body || mediaUrl)) {
           const tsMs = new Date(timestamp).getTime();
-          const tsBefore = new Date(tsMs - 15000).toISOString();
-          const tsAfter = new Date(tsMs + 15000).toISOString();
+          const tsBefore = new Date(tsMs - 1000).toISOString();
+          const tsAfter = new Date(tsMs + 1000).toISOString();
           let dupQuery = admin
             .from("whatsapp_messages")
             .select("message_id")
