@@ -389,7 +389,7 @@ Deno.serve(async (req)=>{
           const initialStatus = fromMe ? "Em Atendimento" : "Novo Lead";
           const { data: newLead } = await admin.from("leads").upsert({
             store_id: storeId,
-            name: pushName || `+${fullPhone}`,
+            name: (!fromMe && pushName) ? pushName : `+${fullPhone}`,
             phone: fullPhone,
             status: initialStatus,
             lead_source: ctwaClid ? "Anúncio WhatsApp" : "WhatsApp",
