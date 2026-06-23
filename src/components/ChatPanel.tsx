@@ -196,39 +196,23 @@ export function ChatPanel({
     errorTitle: string,
     onQueue?: () => Promise<void>,
   ): Promise<boolean> => {
-    for (let attempt = 0; attempt < 3; attempt++) {
-      try {
-        await invoke();
-        return true;
-      } catch (err: any) {
-        const isLast = attempt === 2;
-        if (isLast) {
-          if (onQueue) {
-            try {
-              await onQueue();
-              updateOptimistic(optimisticId, { status: "queued" });
-              // Remove o optimistic — a row real (queued) virá pelo realtime
-              setTimeout(() => {
-                setSentMessages((prev) => prev.filter((m) => m.id !== optimisticId));
-              }, 800);
-              return false;
-            } catch (qErr) {
-              console.error("[sendWithRetry] falha ao enfileirar", qErr);
-            }
-          }
-          updateOptimistic(optimisticId, { status: "failed" });
-          toast({
-            title: errorTitle,
-            description: `${humanizeError(err)} (após 3 tentativas)`,
-            variant: "destructive",
-          });
-          return false;
-        }
-        updateOptimistic(optimisticId, { status: "sending" });
-        await new Promise((r) => setTimeout(r, RETRY_DELAYS_MS[attempt]));
-      }
+    // ENVIO UNICO — nunca reenviar no cliente. Um erro de RESPOSTA nao significa
+    // que a mensagem nao saiu; reenviar duplicava (cliente recebia 2-3x).
+    try {
+      await invoke();
+      return true;
+    } catch (err: any) {
+      // A mensagem PODE ter saido mesmo com erro. NAO reenviar.
+      // Marcar como enviada-com-aviso e deixar o realtime trazer a row real se existir.
+      console.error("[sendWithRetry] invoke lancou erro (mensagem pode ter saido):", err);
+      updateOptimistic(optimisticId, { status: "failed" });
+      toast({
+        title: errorTitle,
+        description: `${humanizeError(err)} — verifique se chegou antes de reenviar.`,
+        variant: "destructive",
+      });
+      return false;
     }
-    return false;
   };
 
   const handleSend = async () => {
