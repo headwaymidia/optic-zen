@@ -419,33 +419,22 @@ Deno.serve(async (req) => {
         );
       }
 
-      // PENDING: Evolution retorna 200 mas status PENDING = sessao corrompida, nao entregue
+      // PENDING: Evolution retorna 200 = mensagem JA SAIU. PENDING e so o ack pendente,
+      // NAO significa falha. NAO sinalizar retry (causava envio 3x). Religar sessao em background.
       const sendStatus = String(send.data?.status ?? "").toUpperCase();
       if (sendStatus === "PENDING") {
-        console.error("[sendMessage] PENDING detectado:", instance);
+        console.warn("[sendMessage] PENDING — tratado como enviado, sem reenvio:", instance);
         await admin.from("logs").insert({
           store_id: storeId,
           function_name: "whatsapp-evolution",
           level: "warn",
           event: "pending_recovery",
-          message: `Mensagem PENDING detectada — reconectando ${instance}. Lead: ${body.lead_id ?? "?"}`,
+          message: `Mensagem PENDING — marcada como enviada (sem reenvio). Religando ${instance}. Lead: ${body.lead_id ?? "?"}`,
         }).catch(() => {});
         evo(`/instance/connect/${instance}`, { method: "GET" }).catch(() => {});
-        try {
-          const { data: members } = await admin
-            .from("store_members").select("user_id").eq("store_id", storeId).in("role", ["Dono", "Gerente"]);
-          if (members?.length) {
-            await admin.from("notifications").insert(members.map((m) => ({
-              user_id: m.user_id, store_id: storeId, type: "whatsapp_pending",
-              title: "WhatsApp reconectando",
-              body: "Sua mensagem esta sendo reenviada automaticamente.",
-              read: false,
-            })));
-          }
-        } catch (_) {}
         return new Response(
-          JSON.stringify({ error: "Sessao reconectando, mensagem sera reenviada", pending: true, retry: true }),
-          { status: 503, headers: { ...corsHeaders, "Content-Type": "application/json" } },
+          JSON.stringify({ success: true, pending: true, retry: false, data: send.data }),
+          { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } },
         );
       }
 

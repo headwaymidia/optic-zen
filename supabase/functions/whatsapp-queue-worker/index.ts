@@ -202,27 +202,20 @@ Deno.serve(async (req) => {
 
         const sendStatusStr = String(send.data?.status ?? "").toUpperCase();
         if (sendStatusStr === "PENDING") {
-          storeResult.failed++;
-          const newRetryCount = (msg.retry_count ?? 0) + 1;
+          // PENDING = mensagem JA SAIU (HTTP 200), apenas o ack nao voltou.
+          // NAO reenviar — marcar como enviada e religar a sessao em background.
+          storeResult.sent++;
           evo(`/instance/connect/${instance}`, { method: "GET" }).catch(() => {});
           await admin.from("logs").insert({
             store_id: msg.store_id ?? null,
             function_name: "whatsapp-queue-worker",
-            level: newRetryCount >= MAX_RETRIES ? "error" : "warn",
+            level: "warn",
             event: "pending_recovery",
-            message: `Fila PENDING ${instance} — tentativa ${newRetryCount}/${MAX_RETRIES}. Msg: ${msg.id}`,
+            message: `Fila PENDING ${instance} — marcada como enviada (sem reenvio). Msg: ${msg.id}`,
           }).catch(() => {});
-          if (newRetryCount >= MAX_RETRIES) {
-            await admin.from("whatsapp_messages").update({
-              status: "failed", retry_count: newRetryCount, failed_at: new Date().toISOString(),
-            }).eq("id", msg.id);
-            console.error("[queue-worker] PENDING dead letter:", msg.id);
-          } else {
-            await admin.from("whatsapp_messages").update({
-              retry_count: newRetryCount,
-            }).eq("id", msg.id);
-            console.warn("[queue-worker] PENDING mantem na fila, tentativa", newRetryCount);
-          }
+          await admin.from("whatsapp_messages").update({
+            status: "sent",
+          }).eq("id", msg.id);
           continue;
         }
 
