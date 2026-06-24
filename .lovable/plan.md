@@ -1,25 +1,39 @@
-## Objetivo
+## Causa do bug
 
-Mostrar a origem do lead (ex: "Instagram", "Facebook") por escrito dentro do card no Funil de Vendas, junto com a tag de interesse ("Exame").
+O wrapper da página em `src/pages/WhatsApp.tsx` (linha 216) usa altura calculada com `100dvh`:
 
-## Mudança
+```
+h-[calc(100dvh-3.5rem-5rem)] ... data-[chat=open]:h-[100dvh] ...
+```
 
-Arquivo: `src/components/KanbanBoard.tsx`
+Esse wrapper já está **dentro** do `<main className="flex-1 min-h-0 overflow-auto pb-20 ...">` em `src/components/AppLayout.tsx`, que tem altura real menor que `100dvh` (subtrai header e, em mobile sem chat-fullscreen, o BottomNav).
 
-No bloco onde já aparece a tag de interesse (`lead.interest_tag`, próximo da linha 230), adicionar uma nova "pílula" ao lado mostrando `lead.lead_source` quando existir, com:
+Resultado: o filho é mais alto que o pai → o `<main>` ganha barra de rolagem expondo um vazio. Em mobile, como `100dvh` cresce quando a barra de URL do navegador retrai durante o scroll, a altura recalcula e o scroll "nunca para" — cada scroll dispara novo recálculo e mais espaço aparece embaixo.
 
-- Emoji da origem (Instagram, Facebook, WhatsApp, etc — já existe o mapa `SOURCE_EMOJI`)
-- Nome da origem escrito (ex: "Instagram")
-- Visual coerente com a tag "Exame" (pílula arredondada, fonte pequena, semibold), mas com cor neutra/diferente para distinguir das tags de interesse
+## Correção (apenas CSS no wrapper)
 
-O ícone-emoji que hoje fica no topo direito do card (linhas 205-212) será removido, já que a informação passa a ficar visível por escrito mais abaixo — evita duplicação.
+Em `src/pages/WhatsApp.tsx` linha 216, substituir o cálculo de altura por `h-full`, deixando o `<main>` (já com `min-h-0 overflow-auto`) ser a única fonte de altura. Remover também o `data-[chat=open]:h-[100dvh]` e variantes md/lg — não são mais necessárias, pois o AppLayout já trata `body[data-chat-fullscreen]` removendo o `pb-20` do `<main>`.
 
-## Resultado visual
+Antes:
+```tsx
+<div className="flex h-[calc(100dvh-3.5rem-5rem)] md:h-[calc(100dvh-3.5rem-5rem)] lg:h-[calc(100dvh-3.5rem)] data-[chat=open]:h-[100dvh] md:data-[chat=open]:h-[calc(100dvh-3.5rem-5rem)] lg:data-[chat=open]:h-[calc(100dvh-3.5rem)] w-full overflow-hidden bg-background" data-chat={selected ? "open" : "closed"}>
+```
 
-No card do lead, abaixo do telefone, aparecerá:
+Depois:
+```tsx
+<div className="flex h-full w-full overflow-hidden bg-background" data-chat={selected ? "open" : "closed"}>
+```
 
-`[🟢 Exame]  [📷 Instagram]`
+Isso garante:
+- O wrapper nunca excede a altura real do `<main>`, então o `<main>` para de rolar.
+- A cadeia interna `flex-1 min-h-0` até o `MessageThread` continua intacta — a única área rolável é a thread, e ela só rola quando há mensagens suficientes.
+- O atributo `data-chat={selected ? "open" : "closed"}` é mantido (pode ser útil para CSS futuro), só removemos as variantes de altura.
 
-Ao invés de só `[🟢 Exame]` com um emojizinho discreto no canto superior.
+## Verificação
 
-Nenhuma alteração em banco, tipos ou lógica — apenas apresentação.
+Após o ajuste, abrir o chat no preview (mobile e desktop) e confirmar:
+1. Não há mais scroll vertical fora da MessageThread.
+2. Com poucas mensagens, não dá pra rolar pra baixo (sem espaço vazio).
+3. Com muitas mensagens, o scroll da thread funciona normalmente e para no fim.
+
+Nenhuma lógica de envio, deduplicação ou edge function é tocada.
