@@ -538,6 +538,7 @@ export function ChatPanel({
       }
     }
     setIsSending(false);
+    sendingLockRef.current = false;
   };
 
   const applyScript = (scriptType: "agendar" | "receita" | "resgate" | "confirmar") => {
