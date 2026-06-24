@@ -110,17 +110,24 @@ function QuoteBlock({ text }: { text: string }) {
 }
 
 export function MessageThread({ messages, sentMessages, isTyping, onReply, onRetry, leadId }: Props) {
-  const endRef = useRef<HTMLDivElement | null>(null);
+  const scrollRef = useRef<HTMLDivElement | null>(null);
   const [lightbox, setLightbox] = useState<string | null>(null);
 
-  // Instant scroll when switching leads (no animation)
+  const scrollToBottom = () => {
+    const el = scrollRef.current;
+    if (!el) return;
+    el.scrollTop = el.scrollHeight;
+  };
+
+  // Instant scroll when switching leads
   useEffect(() => {
-    endRef.current?.scrollIntoView({ behavior: "auto", block: "end" });
+    scrollToBottom();
   }, [leadId]);
 
-  // Smooth scroll for new messages / typing
+  // Scroll on new messages / typing — rAF so layout has settled
   useEffect(() => {
-    endRef.current?.scrollIntoView({ behavior: "smooth", block: "end" });
+    const id = requestAnimationFrame(scrollToBottom);
+    return () => cancelAnimationFrame(id);
   }, [messages.length, sentMessages.length, isTyping]);
 
   useEffect(() => {
@@ -138,7 +145,7 @@ export function MessageThread({ messages, sentMessages, isTyping, onReply, onRet
   }, [lightbox]);
 
   return (
-    <div className="flex-1 overflow-y-auto bg-muted/40 px-3 py-4 space-y-2">
+    <div ref={scrollRef} className="flex-1 min-h-0 overflow-y-auto overscroll-contain bg-muted/40 px-3 py-4 space-y-2">
       {messages.map((m, i) => {
         const { quote, body } = parseQuote(m.text ?? "");
         return (
@@ -230,7 +237,7 @@ export function MessageThread({ messages, sentMessages, isTyping, onReply, onRet
           </div>
         </div>
       )}
-      <div ref={endRef} />
+      
       {lightbox && (
         <div
           className="fixed inset-0 z-[100] bg-black/90 flex items-center justify-center p-4 animate-in fade-in"
