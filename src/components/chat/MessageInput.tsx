@@ -25,6 +25,7 @@ interface Props {
   onSendAudio?: (blob: Blob) => Promise<void> | void;
   onSendMedia?: (file: File) => Promise<void> | void;
   isSending?: boolean;
+  isSendLocked?: () => boolean;
   storeId?: string | null;
   leadName?: string | null;
   canEdit?: boolean;
@@ -43,6 +44,7 @@ export function MessageInput({
   onSendAudio,
   onSendMedia,
   isSending = false,
+  isSendLocked,
   storeId = null,
   leadName = null,
   canEdit = false,
@@ -116,6 +118,18 @@ export function MessageInput({
 
   const fmt = (s: number) =>
     `${String(Math.floor(s / 60)).padStart(2, "0")}:${String(s % 60).padStart(2, "0")}`;
+
+  const canSendNow = () => !isSending && !isSendLocked?.();
+
+  const handleTextSend = () => {
+    if (canSendNow() && value.trim()) onSend();
+  };
+
+  const handleButtonSend = () => {
+    if (!canSendNow()) return;
+    if (pendingDef) onSendFollowUp();
+    else if (value.trim()) onSend();
+  };
 
   return (
     <footer className="shrink-0 border-t bg-card p-2 pb-[max(0.5rem,env(safe-area-inset-bottom))] flex items-center gap-1">
@@ -398,16 +412,14 @@ export function MessageInput({
         <AutoResizeTextarea
           value={value}
           onChange={onChange}
-          onEnter={() => {
-            if (!isSending && value.trim()) onSend();
-          }}
+          onEnter={handleTextSend}
           disabled={isSending}
         />
       )}
       <Button
         size={pendingDef ? "default" : "icon"}
         type="button"
-        onClick={pendingDef ? onSendFollowUp : onSend}
+        onClick={handleButtonSend}
         disabled={isSending || (!pendingDef && !value.trim())}
         aria-busy={isSending}
         className={cn(

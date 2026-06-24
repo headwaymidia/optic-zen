@@ -432,10 +432,6 @@ Deno.serve(async (req) => {
           message: `Mensagem PENDING — marcada como enviada (sem reenvio). Religando ${instance}. Lead: ${body.lead_id ?? "?"}`,
         }).catch(() => {});
         evo(`/instance/connect/${instance}`, { method: "GET" }).catch(() => {});
-        return new Response(
-          JSON.stringify({ success: true, pending: true, retry: false, data: send.data }),
-          { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } },
-        );
       }
 
       let leadId: string | null = body.lead_id ?? null;

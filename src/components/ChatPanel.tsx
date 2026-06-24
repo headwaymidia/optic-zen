@@ -219,235 +219,257 @@ export function ChatPanel({
     }
   };
 
-  const handleSend = async () => {
-    if (sendingLockRef.current || isSending) return;
+  const beginSending = () => {
+    if (sendingLockRef.current) return false;
     sendingLockRef.current = true;
-    const raw = message.trim();
-    if (!raw) return;
-    if (!currentStoreId) {
-      toast({ title: "Selecione uma loja antes de enviar", variant: "destructive" });
-      return;
-    }
-    if (!lead.phone) {
-      toast({ title: "Lead sem telefone", variant: "destructive" });
-      return;
-    }
-    const phoneErr = validatePhoneBR(lead.phone);
-    if (phoneErr) {
-      toast({ title: "Telefone inválido", description: phoneErr, variant: "destructive" });
-      return;
-    }
-    const text = replyTo
-      ? `> ${replyTo.text.split("\n").join("\n> ")}\n\n${raw}`
-      : raw;
-    promoteToInAttendance();
-    setMessage("");
-    setReplyTo(null);
     setIsSending(true);
+    return true;
+  };
 
-    const optimisticId = crypto.randomUUID();
-    const now = new Date();
-    const optimistic: SentMessage = {
-      id: optimisticId,
-      from: "us",
-      text,
-      time: now.toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" }),
-      status: "sending",
-    };
-    setSentMessages((prev) => [...prev, optimistic]);
-
-    const ok = await sendWithRetry(
-      optimisticId,
-      async () => {
-        await ensureWhatsAppConnected();
-        const { data, error } = await supabase.functions.invoke(waFunction, {
-          body: {
-            action: "sendMessage",
-            store_id: currentStoreId,
-            lead_id: lead.id,
-            phone: lead.phone,
-            message: text,
-          },
-        });
-        if (error) throw error;
-        if (data?.error) throw new Error(data.error);
-      },
-      "Falha ao enviar mensagem",
-      async () => enqueueMessage({ body: text }),
-    );
-
-    if (ok) {
-      // Refetch imediato + retries para cobrir atraso entre invoke() retornar
-      // e a Edge Function persistir a linha no banco.
-      await refetchMessages();
-      setTimeout(() => { refetchMessages(); }, 1000);
-      // Remove otimista após refetch
-      setTimeout(() => {
-        setSentMessages((prev) => prev.filter((m) => m.id !== optimisticId));
-      }, 1200);
-    }
-    setIsSending(false);
+  const endSending = () => {
     sendingLockRef.current = false;
+    setIsSending(false);
+  };
+
+  const handleSend = async () => {
+    if (!beginSending()) return;
+    try {
+      const raw = message.trim();
+      if (!raw) return;
+      if (!currentStoreId) {
+        toast({ title: "Selecione uma loja antes de enviar", variant: "destructive" });
+        return;
+      }
+      if (!lead.phone) {
+        toast({ title: "Lead sem telefone", variant: "destructive" });
+        return;
+      }
+      const phoneErr = validatePhoneBR(lead.phone);
+      if (phoneErr) {
+        toast({ title: "Telefone inválido", description: phoneErr, variant: "destructive" });
+        return;
+      }
+      const text = replyTo
+        ? `> ${replyTo.text.split("\n").join("\n> ")}\n\n${raw}`
+        : raw;
+      promoteToInAttendance();
+      setMessage("");
+      setReplyTo(null);
+
+      const optimisticId = crypto.randomUUID();
+      const now = new Date();
+      const optimistic: SentMessage = {
+        id: optimisticId,
+        from: "us",
+        text,
+        time: now.toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" }),
+        status: "sending",
+      };
+      setSentMessages((prev) => [...prev, optimistic]);
+
+      const ok = await sendWithRetry(
+        optimisticId,
+        async () => {
+          await ensureWhatsAppConnected();
+          const { data, error } = await supabase.functions.invoke(waFunction, {
+            body: {
+              action: "sendMessage",
+              store_id: currentStoreId,
+              lead_id: lead.id,
+              phone: lead.phone,
+              message: text,
+            },
+          });
+          if (error) throw error;
+          if (data?.error) throw new Error(data.error);
+        },
+        "Falha ao enviar mensagem",
+        async () => enqueueMessage({ body: text }),
+      );
+
+      if (ok) {
+        // Refetch imediato + retries para cobrir atraso entre invoke() retornar
+        // e a Edge Function persistir a linha no banco.
+        await refetchMessages();
+        setTimeout(() => { refetchMessages(); }, 1000);
+        // Remove otimista após refetch
+        setTimeout(() => {
+          setSentMessages((prev) => prev.filter((m) => m.id !== optimisticId));
+        }, 1200);
+      }
+    } finally {
+      endSending();
+    }
   };
 
   const handleSendAudio = async (blob: Blob) => {
-    if (!currentStoreId) {
-      toast({ title: "Selecione uma loja antes de enviar", variant: "destructive" });
-      return;
-    }
-    if (!lead.phone) {
-      toast({ title: "Lead sem telefone", variant: "destructive" });
-      return;
-    }
-    promoteToInAttendance();
+    if (!beginSending()) return;
+    try {
+      if (!currentStoreId) {
+        toast({ title: "Selecione uma loja antes de enviar", variant: "destructive" });
+        return;
+      }
+      if (!lead.phone) {
+        toast({ title: "Lead sem telefone", variant: "destructive" });
+        return;
+      }
+      promoteToInAttendance();
 
-    const base64: string = await new Promise((resolve, reject) => {
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        const result = reader.result as string;
-        resolve(result.split(",")[1] ?? "");
-      };
-      reader.onerror = () => reject(reader.error);
-      reader.readAsDataURL(blob);
-    });
+      const base64: string = await new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onloadend = () => {
+          const result = reader.result as string;
+          resolve(result.split(",")[1] ?? "");
+        };
+        reader.onerror = () => reject(reader.error);
+        reader.readAsDataURL(blob);
+      });
 
-    const optimisticId = crypto.randomUUID();
-    const now = new Date();
-    const audioUrl = URL.createObjectURL(blob);
-    setSentMessages((prev) => [
-      ...prev,
-      {
-        id: optimisticId,
-        from: "us",
-        text: "",
-        time: now.toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" }),
-        media_type: "audio",
-        media_url: audioUrl,
-        status: "sending",
-      },
-    ]);
+      const optimisticId = crypto.randomUUID();
+      const now = new Date();
+      const audioUrl = URL.createObjectURL(blob);
+      setSentMessages((prev) => [
+        ...prev,
+        {
+          id: optimisticId,
+          from: "us",
+          text: "",
+          time: now.toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" }),
+          media_type: "audio",
+          media_url: audioUrl,
+          status: "sending",
+        },
+      ]);
 
-    const ok = await sendWithRetry(
-      optimisticId,
-      async () => {
-        await ensureWhatsAppConnected();
-        const { data, error } = await supabase.functions.invoke(waFunction, {
-          body: {
-            action: "sendMessage",
-            store_id: currentStoreId,
-            lead_id: lead.id,
-            phone: lead.phone,
-            audioMessage: { base64, mimetype: "audio/ogg; codecs=opus" },
-          },
-        });
-        if (error) throw error;
-        if (data?.error) throw new Error(data.error);
-      },
-      "Falha ao enviar áudio",
-    );
-    if (ok) {
-      await refetchMessages();
-      setSentMessages((prev) => prev.filter((m) => m.id !== optimisticId));
+      const ok = await sendWithRetry(
+        optimisticId,
+        async () => {
+          await ensureWhatsAppConnected();
+          const { data, error } = await supabase.functions.invoke(waFunction, {
+            body: {
+              action: "sendMessage",
+              store_id: currentStoreId,
+              lead_id: lead.id,
+              phone: lead.phone,
+              audioMessage: { base64, mimetype: "audio/ogg; codecs=opus" },
+            },
+          });
+          if (error) throw error;
+          if (data?.error) throw new Error(data.error);
+        },
+        "Falha ao enviar áudio",
+      );
+      if (ok) {
+        await refetchMessages();
+        setSentMessages((prev) => prev.filter((m) => m.id !== optimisticId));
+      }
+    } finally {
+      endSending();
     }
   };
 
   const handleSendMedia = async (file: File) => {
-    if (!currentStoreId) {
-      toast({ title: "Selecione uma loja antes de enviar", variant: "destructive" });
-      return;
-    }
-    if (!lead.phone) {
-      toast({ title: "Lead sem telefone", variant: "destructive" });
-      return;
-    }
-    const isImage = file.type.startsWith("image/");
-    const isVideo = file.type.startsWith("video/");
-    if (!isImage && !isVideo) {
-      toast({ title: "Formato não suportado", variant: "destructive" });
-      return;
-    }
-    const MAX_BYTES = isImage ? 2 * 1024 * 1024 : 50 * 1024 * 1024;
-    if (file.size > MAX_BYTES) {
-      const limitLabel = isImage ? "2MB" : "50MB";
-      toast({
-        title: "Arquivo muito grande",
-        description: `O tamanho máximo para ${isImage ? "imagens" : "vídeos"} é ${limitLabel}.`,
-        variant: "destructive",
-      });
-      return;
-    }
-    promoteToInAttendance();
-
-    const optimisticId = crypto.randomUUID();
-    const now = new Date();
-    const localUrl = URL.createObjectURL(file);
-    setSentMessages((prev) => [
-      ...prev,
-      {
-        id: optimisticId,
-        from: "us",
-        text: "",
-        time: now.toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" }),
-        media_type: isImage ? "image" : "video",
-        media_url: localUrl,
-        status: "sending",
-      },
-    ]);
-
-    // 1) Upload para o Storage e obtenção da URL pública.
-    let publicMediaUrl: string | null = null;
+    if (!beginSending()) return;
     try {
-      const ext = file.name.includes(".") ? file.name.split(".").pop() : (isImage ? "jpg" : "mp4");
-      const path = `${currentStoreId}/${Date.now()}-${crypto.randomUUID()}.${ext}`;
-      const { error: upErr } = await supabase.storage
-        .from("whatsapp-media")
-        .upload(path, file, { contentType: file.type, upsert: false });
-      if (upErr) {
-        console.error("[handleSendMedia] upload erro", upErr);
-        throw upErr;
+      if (!currentStoreId) {
+        toast({ title: "Selecione uma loja antes de enviar", variant: "destructive" });
+        return;
       }
-      const { data: pub } = supabase.storage.from("whatsapp-media").getPublicUrl(path);
-      publicMediaUrl = pub?.publicUrl ?? null;
-      if (!publicMediaUrl) throw new Error("URL pública indisponível");
-    } catch (e) {
-      console.error("[handleSendMedia] upload error:", e);
-      toast({ title: "Falha ao enviar mídia para o storage", variant: "destructive" });
-      setSentMessages((prev) => prev.filter((m) => m.id !== optimisticId));
-      return;
-    }
+      if (!lead.phone) {
+        toast({ title: "Lead sem telefone", variant: "destructive" });
+        return;
+      }
+      const isImage = file.type.startsWith("image/");
+      const isVideo = file.type.startsWith("video/");
+      if (!isImage && !isVideo) {
+        toast({ title: "Formato não suportado", variant: "destructive" });
+        return;
+      }
+      const MAX_BYTES = isImage ? 2 * 1024 * 1024 : 50 * 1024 * 1024;
+      if (file.size > MAX_BYTES) {
+        const limitLabel = isImage ? "2MB" : "50MB";
+        toast({
+          title: "Arquivo muito grande",
+          description: `O tamanho máximo para ${isImage ? "imagens" : "vídeos"} é ${limitLabel}.`,
+          variant: "destructive",
+        });
+        return;
+      }
+      promoteToInAttendance();
 
-    const ok = await sendWithRetry(
-      optimisticId,
-      async () => {
-        await ensureWhatsAppConnected();
-        const payload = {
-          action: "sendMessage",
-          store_id: currentStoreId,
-          lead_id: lead.id,
-          phone: lead.phone,
-          mediaUrl: publicMediaUrl,
-          mediaType: isImage ? "image" : "video",
-          mimetype: file.type,
-          fileName: file.name,
-          caption: "",
-        };
-        const { data, error } = await supabase.functions.invoke(waFunction, { body: payload });
-        if (error) {
-          console.error("[handleSendMedia] evolution erro", error);
-          throw error;
+      const optimisticId = crypto.randomUUID();
+      const now = new Date();
+      const localUrl = URL.createObjectURL(file);
+      setSentMessages((prev) => [
+        ...prev,
+        {
+          id: optimisticId,
+          from: "us",
+          text: "",
+          time: now.toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" }),
+          media_type: isImage ? "image" : "video",
+          media_url: localUrl,
+          status: "sending",
+        },
+      ]);
+
+      // 1) Upload para o Storage e obtenção da URL pública.
+      let publicMediaUrl: string | null = null;
+      try {
+        const ext = file.name.includes(".") ? file.name.split(".").pop() : (isImage ? "jpg" : "mp4");
+        const path = `${currentStoreId}/${Date.now()}-${crypto.randomUUID()}.${ext}`;
+        const { error: upErr } = await supabase.storage
+          .from("whatsapp-media")
+          .upload(path, file, { contentType: file.type, upsert: false });
+        if (upErr) {
+          console.error("[handleSendMedia] upload erro", upErr);
+          throw upErr;
         }
-        if (data?.error) {
-          console.error("[handleSendMedia] evolution erro", data.error);
-          throw new Error(data.error);
-        }
-      },
-      isImage ? "Falha ao enviar imagem" : "Falha ao enviar vídeo",
-    );
+        const { data: pub } = supabase.storage.from("whatsapp-media").getPublicUrl(path);
+        publicMediaUrl = pub?.publicUrl ?? null;
+        if (!publicMediaUrl) throw new Error("URL pública indisponível");
+      } catch (e) {
+        console.error("[handleSendMedia] upload error:", e);
+        toast({ title: "Falha ao enviar mídia para o storage", variant: "destructive" });
+        setSentMessages((prev) => prev.filter((m) => m.id !== optimisticId));
+        return;
+      }
+
+      const ok = await sendWithRetry(
+        optimisticId,
+        async () => {
+          await ensureWhatsAppConnected();
+          const payload = {
+            action: "sendMessage",
+            store_id: currentStoreId,
+            lead_id: lead.id,
+            phone: lead.phone,
+            mediaUrl: publicMediaUrl,
+            mediaType: isImage ? "image" : "video",
+            mimetype: file.type,
+            fileName: file.name,
+            caption: "",
+          };
+          const { data, error } = await supabase.functions.invoke(waFunction, { body: payload });
+          if (error) {
+            console.error("[handleSendMedia] evolution erro", error);
+            throw error;
+          }
+          if (data?.error) {
+            console.error("[handleSendMedia] evolution erro", data.error);
+            throw new Error(data.error);
+          }
+        },
+        isImage ? "Falha ao enviar imagem" : "Falha ao enviar vídeo",
+      );
 
 
-    if (ok) {
-      await refetchMessages();
-      setSentMessages((prev) => prev.filter((m) => m.id !== optimisticId));
+      if (ok) {
+        await refetchMessages();
+        setSentMessages((prev) => prev.filter((m) => m.id !== optimisticId));
+      }
+    } finally {
+      endSending();
     }
   };
 
@@ -457,88 +479,88 @@ export function ChatPanel({
   };
 
   const handleSendFollowUp = async () => {
-    if (sendingLockRef.current || isSending) return;
-    if (!message.trim() || !pendingDef) return;
-    sendingLockRef.current = true;
-    if (!currentStoreId) {
-      toast({ title: "Selecione uma loja antes de enviar", variant: "destructive" });
-      return;
-    }
-    if (!lead.phone) {
-      toast({ title: "Lead sem telefone", variant: "destructive" });
-      return;
-    }
-    const phoneErr = validatePhoneBR(lead.phone);
-    if (phoneErr) {
-      toast({ title: "Telefone inválido", description: phoneErr, variant: "destructive" });
-      return;
-    }
-    const text = message.trim();
-    const now = new Date();
-
-    promoteToInAttendance();
-    setMessage("");
-    setIsSending(true);
-
-    const optimisticId = crypto.randomUUID();
-    setSentMessages((prev) => [
-      ...prev,
-      {
-        id: optimisticId,
-        from: "us",
-        text,
-        time: now.toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" }),
-        status: "sending",
-      },
-    ]);
-
-    // ENVIO ÚNICO via edge function (que persiste em whatsapp_messages).
-    const ok = await sendWithRetry(
-      optimisticId,
-      async () => {
-        await ensureWhatsAppConnected();
-        const { data, error } = await supabase.functions.invoke(waFunction, {
-          body: {
-            action: "sendMessage",
-            store_id: currentStoreId,
-            lead_id: lead.id,
-            phone: lead.phone,
-            message: text,
-          },
-        });
-        if (error) throw error;
-        if (data?.error) throw new Error(data.error);
-      },
-      "Falha ao enviar follow-up",
-      async () => enqueueMessage({ body: text }),
-    );
-
-    if (ok) {
-      await refetchMessages();
-      setTimeout(() => { refetchMessages(); }, 1000);
-      setTimeout(() => {
-        setSentMessages((prev) => prev.filter((m) => m.id !== optimisticId));
-      }, 1200);
-
-      try {
-        await updateLead(lead.id, {
-          follow_up_count: (lead.follow_up_count ?? 0) + 1,
-          last_follow_up_at: now.toISOString(),
-        });
-        toast({
-          title: `Follow-up ${pendingLevel} enviado`,
-          description: `Registrado no histórico de ${firstName}.`,
-        });
-      } catch (err: any) {
-        toast({
-          title: "Falha ao registrar follow-up",
-          description: humanizeError(err),
-          variant: "destructive",
-        });
+    if (!beginSending()) return;
+    try {
+      if (!message.trim() || !pendingDef) return;
+      if (!currentStoreId) {
+        toast({ title: "Selecione uma loja antes de enviar", variant: "destructive" });
+        return;
       }
+      if (!lead.phone) {
+        toast({ title: "Lead sem telefone", variant: "destructive" });
+        return;
+      }
+      const phoneErr = validatePhoneBR(lead.phone);
+      if (phoneErr) {
+        toast({ title: "Telefone inválido", description: phoneErr, variant: "destructive" });
+        return;
+      }
+      const text = message.trim();
+      const now = new Date();
+
+      promoteToInAttendance();
+      setMessage("");
+
+      const optimisticId = crypto.randomUUID();
+      setSentMessages((prev) => [
+        ...prev,
+        {
+          id: optimisticId,
+          from: "us",
+          text,
+          time: now.toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" }),
+          status: "sending",
+        },
+      ]);
+
+      // ENVIO ÚNICO via edge function (que persiste em whatsapp_messages).
+      const ok = await sendWithRetry(
+        optimisticId,
+        async () => {
+          await ensureWhatsAppConnected();
+          const { data, error } = await supabase.functions.invoke(waFunction, {
+            body: {
+              action: "sendMessage",
+              store_id: currentStoreId,
+              lead_id: lead.id,
+              phone: lead.phone,
+              message: text,
+            },
+          });
+          if (error) throw error;
+          if (data?.error) throw new Error(data.error);
+        },
+        "Falha ao enviar follow-up",
+        async () => enqueueMessage({ body: text }),
+      );
+
+      if (ok) {
+        await refetchMessages();
+        setTimeout(() => { refetchMessages(); }, 1000);
+        setTimeout(() => {
+          setSentMessages((prev) => prev.filter((m) => m.id !== optimisticId));
+        }, 1200);
+
+        try {
+          await updateLead(lead.id, {
+            follow_up_count: (lead.follow_up_count ?? 0) + 1,
+            last_follow_up_at: now.toISOString(),
+          });
+          toast({
+            title: `Follow-up ${pendingLevel} enviado`,
+            description: `Registrado no histórico de ${firstName}.`,
+          });
+        } catch (err: any) {
+          toast({
+            title: "Falha ao registrar follow-up",
+            description: humanizeError(err),
+            variant: "destructive",
+          });
+        }
+      }
+    } finally {
+      endSending();
     }
-    setIsSending(false);
-    sendingLockRef.current = false;
   };
 
   const applyScript = (scriptType: "agendar" | "receita" | "resgate" | "confirmar") => {
@@ -684,32 +706,37 @@ export function ChatPanel({
               onReply={(m) => setReplyTo({ from: m.from, text: m.text })}
               onRetry={async (m) => {
                 if (!m.id) return;
-                updateOptimistic(m.id, { status: "sending" });
-                const textToSend = m.text ?? "";
-                const ok = await sendWithRetry(
-                  m.id,
-                  async () => {
-                    await ensureWhatsAppConnected();
-                    const { data, error } = await supabase.functions.invoke(waFunction, {
-                      body: {
-                        action: "sendMessage",
-                        store_id: currentStoreId,
-                        lead_id: lead.id,
-                        phone: lead.phone,
-                        message: textToSend,
-                      },
-                    });
-                    if (error) throw error;
-                    if (data?.error) throw new Error(data.error);
-                  },
-                  "Falha ao reenviar mensagem",
-                  async () => enqueueMessage({ body: textToSend }),
-                );
-                if (ok) {
-                  await refetchMessages();
-                  setTimeout(() => {
-                    setSentMessages((prev) => prev.filter((msg) => msg.id !== m.id));
-                  }, 2000);
+                if (!beginSending()) return;
+                try {
+                  updateOptimistic(m.id, { status: "sending" });
+                  const textToSend = m.text ?? "";
+                  const ok = await sendWithRetry(
+                    m.id,
+                    async () => {
+                      await ensureWhatsAppConnected();
+                      const { data, error } = await supabase.functions.invoke(waFunction, {
+                        body: {
+                          action: "sendMessage",
+                          store_id: currentStoreId,
+                          lead_id: lead.id,
+                          phone: lead.phone,
+                          message: textToSend,
+                        },
+                      });
+                      if (error) throw error;
+                      if (data?.error) throw new Error(data.error);
+                    },
+                    "Falha ao reenviar mensagem",
+                    async () => enqueueMessage({ body: textToSend }),
+                  );
+                  if (ok) {
+                    await refetchMessages();
+                    setTimeout(() => {
+                      setSentMessages((prev) => prev.filter((msg) => msg.id !== m.id));
+                    }, 2000);
+                  }
+                } finally {
+                  endSending();
                 }
               }}
               leadId={lead.id}
@@ -775,6 +802,7 @@ export function ChatPanel({
             onSendAudio={handleSendAudio}
             onSendMedia={handleSendMedia}
             isSending={isSending}
+            isSendLocked={() => sendingLockRef.current}
             storeId={currentStoreId}
             leadName={lead.name?.split(" ")[0] ?? null}
             canEdit={currentStore?.role === "Dono" || currentStore?.role === "Gerente"}
