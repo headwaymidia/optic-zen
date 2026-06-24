@@ -422,9 +422,11 @@ Deno.serve(async (req) => {
       // PENDING: Evolution retorna 200 = mensagem JA SAIU. PENDING e so o ack pendente,
       // NAO significa falha. NAO sinalizar retry (causava envio 3x). Religar sessao em background.
       const sendStatus = String(send.data?.status ?? "").toUpperCase();
-      if (sendStatus === "PENDING") {
-        console.warn("[sendMessage] PENDING — tratado como enviado, sem reenvio:", instance);
-        // .insert() do supabase NAO e thenable com .catch() — usar try/catch.
+      const isPending = sendStatus === "PENDING";
+      if (isPending) {
+        // PENDING = mensagem JA SAIU. NAO reenviar, mas TAMBEM nao retornar cedo —
+        // precisamos continuar e GRAVAR a mensagem no banco (senao some do CRM).
+        console.warn("[sendMessage] PENDING — tratado como enviado, persistindo mesmo assim:", instance);
         try {
           await admin.from("logs").insert({
             store_id: storeId,
@@ -434,13 +436,10 @@ Deno.serve(async (req) => {
             message: `Mensagem PENDING — marcada como enviada (sem reenvio). Religando ${instance}. Lead: ${body.lead_id ?? "?"}`,
           });
         } catch (_logErr) {
-          // log e best-effort; nunca deixar o log derrubar o envio
+          // log best-effort
         }
         evo(`/instance/connect/${instance}`, { method: "GET" }).catch(() => {});
-        return new Response(
-          JSON.stringify({ success: true, pending: true, retry: false, data: send.data }),
-          { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } },
-        );
+        // NAO retorna aqui — segue o fluxo para o upsert em whatsapp_messages.
       }
 
       let leadId: string | null = body.lead_id ?? null;
@@ -498,7 +497,7 @@ Deno.serve(async (req) => {
       }
 
       return new Response(
-        JSON.stringify({ ok: true, message_id: messageId, lead_id: leadId }),
+        JSON.stringify({ ok: true, message_id: messageId, lead_id: leadId, pending: isPending }),
         { headers: { ...corsHeaders, "Content-Type": "application/json" } },
       );
     }
