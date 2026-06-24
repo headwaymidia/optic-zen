@@ -453,7 +453,8 @@ function AutoResizeTextarea({
       value={value}
       onChange={(e) => onChange(e.target.value)}
       onKeyDown={(e) => {
-        if (e.key === "Enter" && !e.shiftKey) {
+        // e.repeat: ignora auto-repeticao ao segurar Enter (causava envio 2-3x).
+        if (e.key === "Enter" && !e.shiftKey && !e.repeat) {
           e.preventDefault();
           onEnter();
         }
