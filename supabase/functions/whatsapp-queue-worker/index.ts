@@ -206,13 +206,15 @@ Deno.serve(async (req) => {
           // NAO reenviar — marcar como enviada e religar a sessao em background.
           storeResult.sent++;
           evo(`/instance/connect/${instance}`, { method: "GET" }).catch(() => {});
-          await admin.from("logs").insert({
-            store_id: msg.store_id ?? null,
-            function_name: "whatsapp-queue-worker",
-            level: "warn",
-            event: "pending_recovery",
-            message: `Fila PENDING ${instance} — marcada como enviada (sem reenvio). Msg: ${msg.id}`,
-          }).catch(() => {});
+          try {
+            await admin.from("logs").insert({
+              store_id: msg.store_id ?? null,
+              function_name: "whatsapp-queue-worker",
+              level: "warn",
+              event: "pending_recovery",
+              message: `Fila PENDING ${instance} — marcada como enviada (sem reenvio). Msg: ${msg.id}`,
+            });
+          } catch (_logErr) { /* best-effort */ }
           await admin.from("whatsapp_messages").update({
             status: "sent",
           }).eq("id", msg.id);

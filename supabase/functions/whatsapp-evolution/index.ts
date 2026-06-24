@@ -424,13 +424,18 @@ Deno.serve(async (req) => {
       const sendStatus = String(send.data?.status ?? "").toUpperCase();
       if (sendStatus === "PENDING") {
         console.warn("[sendMessage] PENDING — tratado como enviado, sem reenvio:", instance);
-        await admin.from("logs").insert({
-          store_id: storeId,
-          function_name: "whatsapp-evolution",
-          level: "warn",
-          event: "pending_recovery",
-          message: `Mensagem PENDING — marcada como enviada (sem reenvio). Religando ${instance}. Lead: ${body.lead_id ?? "?"}`,
-        }).catch(() => {});
+        // .insert() do supabase NAO e thenable com .catch() — usar try/catch.
+        try {
+          await admin.from("logs").insert({
+            store_id: storeId,
+            function_name: "whatsapp-evolution",
+            level: "warn",
+            event: "pending_recovery",
+            message: `Mensagem PENDING — marcada como enviada (sem reenvio). Religando ${instance}. Lead: ${body.lead_id ?? "?"}`,
+          });
+        } catch (_logErr) {
+          // log e best-effort; nunca deixar o log derrubar o envio
+        }
         evo(`/instance/connect/${instance}`, { method: "GET" }).catch(() => {});
         return new Response(
           JSON.stringify({ success: true, pending: true, retry: false, data: send.data }),
