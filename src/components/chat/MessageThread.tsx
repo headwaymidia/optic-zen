@@ -237,7 +237,7 @@ export function MessageThread({ messages, sentMessages, isTyping, onReply, onRet
           </div>
         </div>
       )}
-      <div ref={endRef} />
+      
       {lightbox && (
         <div
           className="fixed inset-0 z-[100] bg-black/90 flex items-center justify-center p-4 animate-in fade-in"
