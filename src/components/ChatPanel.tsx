@@ -451,36 +451,86 @@ export function ChatPanel({
   };
 
   const handleSendFollowUp = async () => {
+    if (isSending) return;
     if (!message.trim() || !pendingDef) return;
+    if (!currentStoreId) {
+      toast({ title: "Selecione uma loja antes de enviar", variant: "destructive" });
+      return;
+    }
+    if (!lead.phone) {
+      toast({ title: "Lead sem telefone", variant: "destructive" });
+      return;
+    }
+    const phoneErr = validatePhoneBR(lead.phone);
+    if (phoneErr) {
+      toast({ title: "Telefone inválido", description: phoneErr, variant: "destructive" });
+      return;
+    }
     const text = message.trim();
     const now = new Date();
-    const time = now.toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" });
 
     promoteToInAttendance();
     setMessage("");
+    setIsSending(true);
 
-    setIsTyping(true);
-    await new Promise((r) => setTimeout(r, 400));
-    setIsTyping(false);
+    const optimisticId = crypto.randomUUID();
+    setSentMessages((prev) => [
+      ...prev,
+      {
+        id: optimisticId,
+        from: "us",
+        text,
+        time: now.toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" }),
+        status: "sending",
+      },
+    ]);
 
-    setSentMessages((prev) => [...prev, { from: "us", text, time }]);
+    // ENVIO ÚNICO via edge function (que persiste em whatsapp_messages).
+    const ok = await sendWithRetry(
+      optimisticId,
+      async () => {
+        await ensureWhatsAppConnected();
+        const { data, error } = await supabase.functions.invoke(waFunction, {
+          body: {
+            action: "sendMessage",
+            store_id: currentStoreId,
+            lead_id: lead.id,
+            phone: lead.phone,
+            message: text,
+          },
+        });
+        if (error) throw error;
+        if (data?.error) throw new Error(data.error);
+      },
+      "Falha ao enviar follow-up",
+      async () => enqueueMessage({ body: text }),
+    );
 
-    try {
-      await updateLead(lead.id, {
-        follow_up_count: (lead.follow_up_count ?? 0) + 1,
-        last_follow_up_at: now.toISOString(),
-      });
-      toast({
-        title: `Follow-up ${pendingLevel} enviado`,
-        description: `Registrado no histórico de ${firstName}.`,
-      });
-    } catch (err: any) {
-      toast({
-        title: "Falha ao registrar follow-up",
-        description: humanizeError(err),
-        variant: "destructive",
-      });
+    if (ok) {
+      await refetchMessages();
+      setTimeout(() => { refetchMessages(); }, 1000);
+      setTimeout(() => {
+        setSentMessages((prev) => prev.filter((m) => m.id !== optimisticId));
+      }, 1200);
+
+      try {
+        await updateLead(lead.id, {
+          follow_up_count: (lead.follow_up_count ?? 0) + 1,
+          last_follow_up_at: now.toISOString(),
+        });
+        toast({
+          title: `Follow-up ${pendingLevel} enviado`,
+          description: `Registrado no histórico de ${firstName}.`,
+        });
+      } catch (err: any) {
+        toast({
+          title: "Falha ao registrar follow-up",
+          description: humanizeError(err),
+          variant: "destructive",
+        });
+      }
     }
+    setIsSending(false);
   };
 
   const applyScript = (scriptType: "agendar" | "receita" | "resgate" | "confirmar") => {
