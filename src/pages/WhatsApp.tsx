@@ -173,6 +173,7 @@ export default function WhatsAppPage() {
   useEffect(() => {
     if (selectedId) {
       document.body.setAttribute("data-chat-fullscreen", "true");
+      document.querySelector("main")?.scrollTo({ top: 0, left: 0 });
     } else {
       document.body.removeAttribute("data-chat-fullscreen");
     }
@@ -213,7 +214,7 @@ export default function WhatsAppPage() {
   const selected = leads.find((l) => l.id === selectedId) ?? null;
 
   return (
-    <div className="flex h-full w-full overflow-hidden bg-background" data-chat={selected ? "open" : "closed"}>
+    <div className="flex h-full max-h-full min-h-0 w-full overflow-hidden bg-background" data-chat={selected ? "open" : "closed"}>
       <aside
         className={cn(
           "w-full md:w-[320px] md:shrink-0 border-r flex flex-col bg-card min-h-0",
@@ -420,7 +421,7 @@ export default function WhatsAppPage() {
         </div>
       </aside>
 
-      <section className={cn("flex-1 flex flex-col min-w-0 min-h-0", !selected && "hidden md:flex")}>
+      <section className={cn("flex-1 flex flex-col min-w-0 min-h-0 overflow-hidden", !selected && "hidden md:flex")}>
         {!selected ? (
           <div className="flex-1 flex items-center justify-center text-muted-foreground text-sm">
             Selecione um contato para iniciar a conversa
