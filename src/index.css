@@ -93,6 +93,10 @@
     overscroll-behavior-y: none;
   }
 
+  body[data-chat-fullscreen] {
+    overflow: hidden;
+  }
+
   /* user-select: none somente em alvos de drag/drop e UI sensível a seleção */
   [draggable="true"],
   [data-draggable="true"],

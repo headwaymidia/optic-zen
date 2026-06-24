@@ -173,6 +173,7 @@ export default function WhatsAppPage() {
   useEffect(() => {
     if (selectedId) {
       document.body.setAttribute("data-chat-fullscreen", "true");
+      document.querySelector("main")?.scrollTo({ top: 0, left: 0 });
     } else {
       document.body.removeAttribute("data-chat-fullscreen");
     }
