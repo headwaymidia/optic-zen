@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { Reply, Search, Sparkles, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -78,6 +78,10 @@ export function ChatPanel({
   const [isTyping, setIsTyping] = useState(false);
   const [sentMessages, setSentMessages] = useState<SentMessage[]>([]);
   const [isSending, setIsSending] = useState(false);
+  // Lock SÍNCRONO contra double-fire (Enter + click, clique rápido 2-3x).
+  // useState é assíncrono — entre 2 cliques o re-render ainda não rodou e o
+  // guard `if (isSending) return` passa, disparando 2-3 invokes. Ref resolve.
+  const sendingLockRef = useRef(false);
   const [searchOpen, setSearchOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [replyTo, setReplyTo] = useState<{ from: "us" | "lead"; text: string } | null>(null);
@@ -216,7 +220,8 @@ export function ChatPanel({
   };
 
   const handleSend = async () => {
-    if (isSending) return;
+    if (sendingLockRef.current || isSending) return;
+    sendingLockRef.current = true;
     const raw = message.trim();
     if (!raw) return;
     if (!currentStoreId) {
@@ -282,6 +287,7 @@ export function ChatPanel({
       }, 1200);
     }
     setIsSending(false);
+    sendingLockRef.current = false;
   };
 
   const handleSendAudio = async (blob: Blob) => {
@@ -451,8 +457,9 @@ export function ChatPanel({
   };
 
   const handleSendFollowUp = async () => {
-    if (isSending) return;
+    if (sendingLockRef.current || isSending) return;
     if (!message.trim() || !pendingDef) return;
+    sendingLockRef.current = true;
     if (!currentStoreId) {
       toast({ title: "Selecione uma loja antes de enviar", variant: "destructive" });
       return;
