@@ -220,8 +220,7 @@ export function ChatPanel({
   };
 
   const handleSend = async () => {
-    if (sendingLockRef.current || isSending) return;
-    sendingLockRef.current = true;
+    // Validacao ANTES do lock — assim uma validacao que falha nao trava o lock.
     const raw = message.trim();
     if (!raw) return;
     if (!currentStoreId) {
@@ -237,6 +236,9 @@ export function ChatPanel({
       toast({ title: "Telefone inválido", description: phoneErr, variant: "destructive" });
       return;
     }
+    // Lock sincrono: segundo disparo (Enter + clique no mesmo frame) e descartado.
+    if (sendingLockRef.current || isSending) return;
+    sendingLockRef.current = true;
     const text = replyTo
       ? `> ${replyTo.text.split("\n").join("\n> ")}\n\n${raw}`
       : raw;
@@ -457,9 +459,7 @@ export function ChatPanel({
   };
 
   const handleSendFollowUp = async () => {
-    if (sendingLockRef.current || isSending) return;
     if (!message.trim() || !pendingDef) return;
-    sendingLockRef.current = true;
     if (!currentStoreId) {
       toast({ title: "Selecione uma loja antes de enviar", variant: "destructive" });
       return;
@@ -473,6 +473,8 @@ export function ChatPanel({
       toast({ title: "Telefone inválido", description: phoneErr, variant: "destructive" });
       return;
     }
+    if (sendingLockRef.current || isSending) return;
+    sendingLockRef.current = true;
     const text = message.trim();
     const now = new Date();
 
