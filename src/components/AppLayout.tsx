@@ -7,6 +7,7 @@ import { ThemeToggle } from "./ThemeToggle";
 import { NotificationBell } from "./NotificationBell";
 import { PushNotificationBell } from "./PushNotificationBell";
 import { useAutoPushPrompt } from "@/hooks/useAutoPushPrompt";
+import { useIncomingMessageNotifier } from "@/hooks/useIncomingMessageNotifier";
 import { TrialBanner } from "./TrialBanner";
 import { useAuth } from "@/hooks/useAuth";
 import { LeadsProvider } from "@/hooks/useLeads";
@@ -26,7 +27,8 @@ function TrialGuard({ children }: { children: React.ReactNode }) {
 
 export default function AppLayout() {
   const { session, profile, user, loading } = useAuth();
-  const { stores, currentStore, loading: storesLoading } = useStores();
+  const { stores, currentStore, currentStoreId, loading: storesLoading } = useStores();
+  useIncomingMessageNotifier(currentStoreId);
 
   if (loading || storesLoading) {
     return (
