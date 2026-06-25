@@ -98,6 +98,31 @@ export function useIncomingMessageNotifier(storeId: string | null | undefined) {
     };
   }, []);
 
+  // Unlock do WebAudio na primeira interação do usuário (política de autoplay).
+  // Sem isso, o navegador silencia o beep até o primeiro gesto.
+  useEffect(() => {
+    const unlock = () => {
+      try {
+        const Ctx =
+          (window as any).AudioContext || (window as any).webkitAudioContext;
+        if (!Ctx) return;
+        if (!audioCtxRef.current) audioCtxRef.current = new Ctx();
+        const ctx = audioCtxRef.current!;
+        if (ctx.state === "suspended") ctx.resume().catch(() => {});
+      } catch {
+        /* noop */
+      }
+    };
+    window.addEventListener("pointerdown", unlock, { once: true });
+    window.addEventListener("keydown", unlock, { once: true });
+    window.addEventListener("touchstart", unlock, { once: true });
+    return () => {
+      window.removeEventListener("pointerdown", unlock);
+      window.removeEventListener("keydown", unlock);
+      window.removeEventListener("touchstart", unlock);
+    };
+  }, []);
+
   // Assina inserts de whatsapp_messages da loja atual.
   useEffect(() => {
     if (!storeId) return;
