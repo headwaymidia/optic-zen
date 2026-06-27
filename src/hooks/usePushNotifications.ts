@@ -6,7 +6,7 @@ import { toast } from "@/components/ui/use-toast";
 // VAPID public key — de env (fallback pro valor do projeto pra nao quebrar em prod).
 const VAPID_PUBLIC_KEY =
   import.meta.env.VITE_VAPID_PUBLIC_KEY ??
-  "BM5V_XFoV7RwQjtQFSKPUT6n6wrgCv_ulJhWa5rW7kuqVSzehPYYPc5VAVjX0Aw8F0dl1EnxQkQyKAsqZQGekrE";
+  "BO-_p-meX8WIzlJcL3kYP-shdlE5BLfI6EIHiD_50NRB1DisjWSiGvLB0mdwZOVXzxf4s8Y3sBa-_HYmUCNgStY";
 
 function urlBase64ToUint8Array(base64String: string): Uint8Array {
   const padding = "=".repeat((4 - (base64String.length % 4)) % 4);
