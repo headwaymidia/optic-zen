@@ -24,36 +24,8 @@ export interface WhatsAppConnection {
   updated_at: string;
 }
 
-const EVOLUTION_FN_URL =
-  "https://fxcgvlukzjmwzpzuvzcp.supabase.co/functions/v1/whatsapp-evolution";
-const PUBLISHABLE_KEY = "sb_publishable_BgnFYgwfBCXxZcqO2rQJWA_qDAjT4_R";
-
-async function callEvolution(action: "status" | "connect", storeId: string) {
-  const { data: sess } = await supabase.auth.getSession();
-  const token = sess?.session?.access_token;
-  if (!token) throw new Error("Sessão expirada");
-
-  const res = await fetch(EVOLUTION_FN_URL, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      Authorization: `Bearer ${token}`,
-      apikey: PUBLISHABLE_KEY,
-    },
-    body: JSON.stringify({ action, store_id: storeId }),
-  });
-  const text = await res.text();
-  let data: any = null;
-  try { data = text ? JSON.parse(text) : null; } catch { data = null; }
-  if (!res.ok) throw new Error(data?.error || `Erro ${res.status}`);
-  return data;
-}
-
-function isConnectedResponse(res: any): boolean {
-  const state =
-    res?.instance?.state ?? res?.state ?? res?.instance?.status ?? res?.status;
-  return state === "open" || state === "connected";
-}
+// (codigo morto removido: callEvolution + isConnectedResponse duplicado +
+//  URL/chave hardcoded — nada disso era usado neste hook.)
 
 export function useWhatsAppConnection(storeId?: string | null) {
   const queryClient = useQueryClient();
