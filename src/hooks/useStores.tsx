@@ -313,19 +313,14 @@ export function StoresProvider({ children }: { children: ReactNode }) {
       });
       setCurrentStoreId(created.id);
 
-      // Provisionar instância WhatsApp automaticamente (fire and forget)
-      supabase.auth.getSession().then(({ data: { session } }) => {
-        if (!session) return;
-        fetch("https://fxcgvlukzjmwzpzuvzcp.supabase.co/functions/v1/whatsapp-evolution", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            "Authorization": `Bearer ${session.access_token}`,
-            "apikey": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZ4Y2d2bHVremptd3pwenV2emNwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzY5NTc5MzcsImV4cCI6MjA5MjUzMzkzN30.hJayaGjRSXTtRo72OIAW23q4d6dOJl_N1h4sb6hYuR8",
-          },
-          body: JSON.stringify({ action: "connect", store_id: storeRow.id }),
-        }).catch(() => {}); // falha silenciosa — usuário vai conectar manualmente se precisar
-      });
+      // Provisionar instância WhatsApp automaticamente (fire and forget).
+      // Usa invoke() — injeta URL e anon key automaticamente (sem hardcode,
+      // funciona em staging/prod, nao quebra ao rotacionar a chave).
+      supabase.functions
+        .invoke("whatsapp-evolution", {
+          body: { action: "connect", store_id: storeRow.id },
+        })
+        .catch(() => {}); // falha silenciosa — usuário conecta manualmente se precisar
 
       return created;
     },
@@ -340,9 +335,9 @@ export function StoresProvider({ children }: { children: ReactNode }) {
   const filterByCurrentStore = useCallback(
     <T extends { store_id?: string | null }>(items: T[]): T[] => {
       if (!currentStore) return [];
-      return items.filter(
-        (it) => !it.store_id || it.store_id === currentStore.id
-      );
+      // Multi-tenancy real: item SEM store_id nao deve vazar para todas as lojas.
+      // So passa o que pertence explicitamente a loja ativa.
+      return items.filter((it) => it.store_id === currentStore.id);
     },
     [currentStore]
   );
