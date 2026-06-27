@@ -1,120 +1,123 @@
 // send-push-notification — envia Web Push para todos os dispositivos
 // inscritos de uma loja quando chega uma mensagem nova.
-// Chamada pelo whatsapp-webhook após inserir a mensagem.
+// Usa npm:web-push para fazer a criptografia ECDH+HKDF+AES128GCM
+// exigida pelo RFC 8291 (NÃO implementar isso manualmente).
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.0";
+import webpush from "npm:web-push@3.6.7";
 
 const SUPABASE_URL = Deno.env.get("SUPABASE_URL")!;
 const SERVICE_ROLE = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
 
-// VAPID keys — devem ser as mesmas do frontend
 const VAPID_PRIVATE_KEY = Deno.env.get("VAPID_PRIVATE_KEY") ?? "";
-const VAPID_PUBLIC_KEY = Deno.env.get("VAPID_PUBLIC_KEY") ??
+const VAPID_PUBLIC_KEY =
+  Deno.env.get("VAPID_PUBLIC_KEY") ??
   "BM5V_XFoV7RwQjtQFSKPUT6n6wrgCv_ulJhWa5rW7kuqVSzehPYYPc5VAVjX0Aw8F0dl1EnxQkQyKAsqZQGekrE";
 const VAPID_SUBJECT = "mailto:felipe@headwaymidia.com.br";
 
 const admin = createClient(SUPABASE_URL, SERVICE_ROLE);
 
-async function signVapid(audience: string): Promise<string> {
-  const header = { alg: "ES256", typ: "JWT" };
-  const now = Math.floor(Date.now() / 1000);
-  const payload = {
-    aud: audience,
-    exp: now + 12 * 3600,
-    sub: VAPID_SUBJECT,
-  };
-
-  const encode = (obj: object) =>
-    btoa(JSON.stringify(obj)).replace(/\+/g, "-").replace(/\//g, "_").replace(/=/g, "");
-
-  const token = `${encode(header)}.${encode(payload)}`;
-
-  // Import VAPID private key (base64url encoded)
-  const keyBytes = Uint8Array.from(atob(VAPID_PRIVATE_KEY.replace(/-/g, "+").replace(/_/g, "/")), (c) =>
-    c.charCodeAt(0)
-  );
-  const cryptoKey = await crypto.subtle.importKey(
-    "pkcs8",
-    keyBytes,
-    { name: "ECDSA", namedCurve: "P-256" },
-    false,
-    ["sign"]
-  );
-
-  const signature = await crypto.subtle.sign(
-    { name: "ECDSA", hash: "SHA-256" },
-    cryptoKey,
-    new TextEncoder().encode(token)
-  );
-
-  const sigB64 = btoa(String.fromCharCode(...new Uint8Array(signature)))
-    .replace(/\+/g, "-")
-    .replace(/\//g, "_")
-    .replace(/=/g, "");
-
-  return `${token}.${sigB64}`;
+if (VAPID_PRIVATE_KEY) {
+  try {
+    webpush.setVapidDetails(VAPID_SUBJECT, VAPID_PUBLIC_KEY, VAPID_PRIVATE_KEY);
+  } catch (e) {
+    console.error("[send-push] setVapidDetails falhou:", e);
+  }
 }
 
+const corsHeaders = {
+  "Access-Control-Allow-Origin": "*",
+  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
+};
+
 Deno.serve(async (req) => {
+  if (req.method === "OPTIONS") {
+    return new Response("ok", { headers: corsHeaders });
+  }
+
   try {
+    if (!VAPID_PRIVATE_KEY) {
+      return new Response(
+        JSON.stringify({ error: "VAPID_PRIVATE_KEY não configurada" }),
+        { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } },
+      );
+    }
+
     const { store_id, title, body, lead_id } = await req.json();
 
     if (!store_id || !title) {
-      return new Response(JSON.stringify({ error: "store_id e title são obrigatórios" }), {
-        status: 400,
-      });
+      return new Response(
+        JSON.stringify({ error: "store_id e title são obrigatórios" }),
+        { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } },
+      );
     }
 
-    // Buscar todas as subscrições da loja
     const { data: subs, error } = await admin
       .from("push_subscriptions")
       .select("endpoint, p256dh, auth")
       .eq("store_id", store_id);
 
-    if (error || !subs?.length) {
-      return new Response(JSON.stringify({ ok: true, sent: 0 }));
+    if (error) {
+      console.error("[send-push] erro ao listar subs:", error);
+      return new Response(
+        JSON.stringify({ error: error.message }),
+        { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } },
+      );
     }
 
-    const payload = JSON.stringify({ title, body, tag: `lead-${lead_id}`, data: { lead_id } });
+    if (!subs?.length) {
+      return new Response(
+        JSON.stringify({ ok: true, sent: 0 }),
+        { headers: { ...corsHeaders, "Content-Type": "application/json" } },
+      );
+    }
+
+    const payload = JSON.stringify({
+      title,
+      body,
+      tag: `lead-${lead_id}`,
+      data: { lead_id },
+    });
 
     let sent = 0;
-    const failed: string[] = [];
+    const expired: string[] = [];
 
-    for (const sub of subs) {
-      try {
-        const url = new URL(sub.endpoint);
-        const audience = `${url.protocol}//${url.host}`;
-        const jwt = await signVapid(audience);
-
-        const res = await fetch(sub.endpoint, {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/octet-stream",
-            Authorization: `vapid t=${jwt},k=${VAPID_PUBLIC_KEY}`,
-            TTL: "86400",
-          },
-          body: new TextEncoder().encode(payload),
-        });
-
-        if (res.ok || res.status === 201) {
+    await Promise.all(
+      subs.map(async (sub) => {
+        try {
+          await webpush.sendNotification(
+            {
+              endpoint: sub.endpoint,
+              keys: { p256dh: sub.p256dh, auth: sub.auth },
+            },
+            payload,
+            { TTL: 86400 },
+          );
           sent++;
-        } else if (res.status === 410 || res.status === 404) {
-          // Subscrição expirada — remover
-          failed.push(sub.endpoint);
+        } catch (e: any) {
+          const status = e?.statusCode;
+          if (status === 404 || status === 410) {
+            expired.push(sub.endpoint);
+          } else {
+            console.warn("[send-push] erro:", status, e?.body ?? e?.message ?? e);
+          }
         }
-      } catch (e) {
-        console.warn("[send-push] erro ao enviar para", sub.endpoint, e);
-      }
+      }),
+    );
+
+    if (expired.length > 0) {
+      await admin.from("push_subscriptions").delete().in("endpoint", expired);
     }
 
-    // Limpar subscrições expiradas
-    if (failed.length > 0) {
-      await admin.from("push_subscriptions").delete().in("endpoint", failed);
-    }
-
-    return new Response(JSON.stringify({ ok: true, sent, cleaned: failed.length }));
+    return new Response(
+      JSON.stringify({ ok: true, sent, cleaned: expired.length, total: subs.length }),
+      { headers: { ...corsHeaders, "Content-Type": "application/json" } },
+    );
   } catch (err) {
     const msg = err instanceof Error ? err.message : "Erro desconhecido";
     console.error("[send-push-notification]", msg);
-    return new Response(JSON.stringify({ error: msg }), { status: 500 });
+    return new Response(
+      JSON.stringify({ error: msg }),
+      { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } },
+    );
   }
 });
