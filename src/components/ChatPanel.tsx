@@ -144,8 +144,8 @@ export function ChatPanel({
         })
         .catch(() => {});
 
-      // Aguarda até 5s, fazendo polling do status a cada 1s
-      const deadline = Date.now() + 5000;
+      // Aguarda até 2s (era 5s — travava o envio com sessão instável)
+      const deadline = Date.now() + 2000;
       while (Date.now() < deadline) {
         await new Promise((r) => setTimeout(r, 1000));
         try {
@@ -350,6 +350,7 @@ export function ChatPanel({
     if (ok) {
       await refetchMessages();
       setSentMessages((prev) => prev.filter((m) => m.id !== optimisticId));
+      URL.revokeObjectURL(audioUrl); // libera o blob da memoria
     }
   };
 
@@ -450,6 +451,7 @@ export function ChatPanel({
     if (ok) {
       await refetchMessages();
       setSentMessages((prev) => prev.filter((m) => m.id !== optimisticId));
+      URL.revokeObjectURL(localUrl); // libera o blob da memoria
     }
   };
 
@@ -686,6 +688,9 @@ export function ChatPanel({
               onReply={(m) => setReplyTo({ from: m.from, text: m.text })}
               onRetry={async (m) => {
                 if (!m.id) return;
+                // Guard sincrono: evita reenvio multiplo em cliques rapidos.
+                if (sendingLockRef.current) return;
+                sendingLockRef.current = true;
                 updateOptimistic(m.id, { status: "sending" });
                 const textToSend = m.text ?? "";
                 const ok = await sendWithRetry(
@@ -713,6 +718,7 @@ export function ChatPanel({
                     setSentMessages((prev) => prev.filter((msg) => msg.id !== m.id));
                   }, 2000);
                 }
+                sendingLockRef.current = false;
               }}
               leadId={lead.id}
             />
