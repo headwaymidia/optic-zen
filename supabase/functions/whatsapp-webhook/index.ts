@@ -398,7 +398,7 @@ Deno.serve(async (req)=>{
             ad_creative_name: adCreativeName,
             created_at: new Date().toISOString(),
             updated_at: new Date().toISOString()
-          }, { onConflict: "store_id,phone", ignoreDuplicates: false }).select("id").single();
+          }, { onConflict: "store_id,phone", ignoreDuplicates: false }).select("id").maybeSingle();
           leadId = newLead?.id ?? null;
           console.log("[whatsapp-webhook] lead auto-criado:", leadId, fullPhone, pushName, ctwaClid ? "(via anúncio)" : "");
 
@@ -474,6 +474,18 @@ Deno.serve(async (req)=>{
         if (leadId && !isDuplicate) {
           const previewText = (body || (mediaType ? `[${mediaType}]` : "")).slice(0, 100);
           if (!fromMe) {
+            // Recupera nome real: se o lead esta com placeholder (numero/vazio) e
+            // chegou pushName numa mensagem RECEBIDA, atualiza o nome.
+            const pushName2 = msg.pushName?.trim() || null;
+            if (pushName2) {
+              const { data: curName } = await admin
+                .from("leads").select("name").eq("id", leadId).maybeSingle();
+              const atual = curName?.name ?? "";
+              const ehPlaceholder = !atual || /^\+?55\d{8,}$/.test(atual.replace(/\D/g, "")) || atual.startsWith("+");
+              if (ehPlaceholder && atual !== pushName2) {
+                await admin.from("leads").update({ name: pushName2 }).eq("id", leadId);
+              }
+            }
             const { error: rpcErr } = await admin.rpc("increment_lead_unread", {
               _lead_id: leadId,
               _preview: previewText,
