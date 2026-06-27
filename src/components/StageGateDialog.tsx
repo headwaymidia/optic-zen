@@ -94,7 +94,12 @@ export function StageGateDialog({ open, lead, targetStatus, onCancel, onConfirm 
     try {
       if (targetStatus === "Agendou Exame") {
         // Persist scheduled exam in exam_date (timestamptz). Also keep follow_up_date in sync for legacy views.
-        const iso = new Date(examAt).toISOString();
+        // Parse manual componente-a-componente (mesmo padrao de Agenda/LeadSections)
+        // para forcar horario LOCAL e evitar shift de UTC no input datetime-local.
+        const [dPart, tPart = "00:00"] = examAt.split("T");
+        const [yy, mm, dd] = dPart.split("-").map(Number);
+        const [hh, mi] = tPart.split(":").map(Number);
+        const iso = new Date(yy, mm - 1, dd, hh || 0, mi || 0, 0, 0).toISOString();
         await onConfirm({ status: "Agendou Exame", exam_date: iso, follow_up_date: iso });
       } else if (targetStatus === "Compareceu e Comprou") {
         await onConfirm({
