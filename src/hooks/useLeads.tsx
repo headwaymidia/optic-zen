@@ -9,7 +9,7 @@ import { Lead, LeadStatus, supabase } from "@/integrations/supabase/client";
 import { useStores } from "@/hooks/useStores";
 
 // Dispara evento para Meta Conversions API de forma silenciosa
-async function fireMetaEvent(storeId: string, eventName: string, lead?: { phone?: string | null; name?: string | null; value?: number; ctwaClid?: string | null }) {
+async function fireMetaEvent(storeId: string, eventName: string, lead?: { phone?: string | null; name?: string | null; value?: number; ctwaClid?: string | null; eventId?: string }) {
   try {
     await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/meta-conversions`, {
       method: "POST",
@@ -25,7 +25,9 @@ async function fireMetaEvent(storeId: string, eventName: string, lead?: { phone?
         value: lead?.value,
         currency: "BRL",
         ctwa_clid: lead?.ctwaClid ?? null,
-        event_id: `${storeId}-${eventName}-${Date.now()}`,
+        // event_id deterministico (quando fornecido) para o Meta DEDUPLICAR.
+        // Sem isso, 2 cliques = 2 Purchases = conversao contada em dobro.
+        event_id: lead?.eventId ?? `${storeId}-${eventName}-${Date.now()}`,
       }),
     });
   } catch {
@@ -266,12 +268,14 @@ export function LeadsProvider({ children }: { children: ReactNode }) {
           phone: leadData?.phone,
           name: leadData?.name,
           ctwaClid: leadData?.ctwa_clid,
+          eventId: `${currentStoreId}-Schedule-${leadId}`,
         });
       } else if (status === "Compareceu e Comprou") {
         fireMetaEvent(currentStoreId, "Purchase", {
           phone: leadData?.phone,
           name: leadData?.name,
           ctwaClid: leadData?.ctwa_clid,
+          eventId: `${currentStoreId}-Purchase-${leadId}`,
         });
       }
     },
