@@ -1,4 +1,4 @@
-import React, { useState, memo } from "react";
+import React, { useState, useMemo, memo } from "react";
 import { useNavigate } from "react-router-dom";
 import { LEAD_STATUSES, Lead, LeadStatus } from "@/integrations/supabase/client";
 import { useStoreMembers } from "@/hooks/useStoreMembers";
@@ -637,7 +637,7 @@ export function KanbanBoard({
   const fromMs = createdFrom ? createdFrom.getTime() : null;
   const toMs = createdTo ? createdTo.getTime() : null;
   const hasFilters = term.length > 0 || !!salesFilter || cadenceActive || fromMs !== null;
-  const filteredLeads = leads.filter((l) => {
+  const filteredLeads = useMemo(() => leads.filter((l) => {
     if (salesFilter && (l.responsible_id ?? "") !== salesFilter) return false;
     if (fromMs !== null) {
       const t = l.created_at ? new Date(l.created_at).getTime() : 0;
@@ -655,7 +655,25 @@ export function KanbanBoard({
       if (fu !== cadenceFilter) return false;
     }
     return true;
-  });
+  }), [leads, salesFilter, fromMs, toMs, term, onlyDigits, cadenceActive, cadenceFilter]);
+
+  // Agrupa+ordena por coluna UMA vez (memoizado) em vez de 9x filter+sort por render.
+  const leadsByStatus = useMemo(() => {
+    const map = {} as Record<LeadStatus, Lead[]>;
+    for (const status of LEAD_STATUSES) {
+      map[status] = filteredLeads
+        .filter((l) => l.status === status)
+        .sort((a, b) => {
+          if (status === "Agendou Exame") {
+            const av = a.follow_up_date ? new Date(a.follow_up_date).getTime() : Infinity;
+            const bv = b.follow_up_date ? new Date(b.follow_up_date).getTime() : Infinity;
+            return av - bv;
+          }
+          return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
+        });
+    }
+    return map;
+  }, [filteredLeads]);
 
   return (
     <>
@@ -670,18 +688,7 @@ export function KanbanBoard({
           style={{ WebkitOverflowScrolling: "touch" }}
         >
           {LEAD_STATUSES.map((status) => {
-            const colLeads = filteredLeads
-              .filter((l) => l.status === status)
-              .sort((a, b) => {
-                if (status === "Agendou Exame") {
-                  // Próximos/atrasados primeiro; sem data vai para o fim
-                  const av = a.follow_up_date ? new Date(a.follow_up_date).getTime() : Infinity;
-                  const bv = b.follow_up_date ? new Date(b.follow_up_date).getTime() : Infinity;
-                  return av - bv;
-                }
-                // DESC: mais novos no topo
-                return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
-              });
+            const colLeads = leadsByStatus[status] ?? [];
             return (
               <DroppableColumn
                 key={status}
