@@ -2,7 +2,6 @@ import { useEffect } from "react";
 import { usePushNotifications } from "./usePushNotifications";
 import { useStores } from "./useStores";
 
-const PROMPT_KEY = "od.push.prompted.v1";
 
 export function useAutoPushPrompt() {
   const { permission, subscribed, isSupported, subscribe } = usePushNotifications();
@@ -12,18 +11,14 @@ export function useAutoPushPrompt() {
     if (!isSupported) return;
     if (!currentStoreId) return;
     if (subscribed) return;
-    if (permission === "denied") return;
+    // SO re-inscreve automaticamente se a permissao JA foi concedida antes
+    // (nao mostra popup nenhum — seguro).
     if (permission === "granted") {
       subscribe();
-      return;
     }
-    try {
-      if (localStorage.getItem(PROMPT_KEY) === "1") return;
-    } catch {}
-    const timer = setTimeout(() => {
-      try { localStorage.setItem(PROMPT_KEY, "1"); } catch {}
-      subscribe();
-    }, 3000);
-    return () => clearTimeout(timer);
+    // Quando a permissao ainda e "default", NAO pedimos automaticamente:
+    // navegadores penalizam pedido sem gesto do usuario, e o popup "do nada"
+    // faz muita gente clicar em Bloquear (mata o push pra sempre).
+    // A ativacao acontece pelo sininho (PushNotificationBell), que tem o clique.
   }, [isSupported, currentStoreId, subscribed, permission, subscribe]);
 }
