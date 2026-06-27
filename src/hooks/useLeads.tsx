@@ -275,6 +275,8 @@ export function LeadsProvider({ children }: { children: ReactNode }) {
           phone: leadData?.phone,
           name: leadData?.name,
           ctwaClid: leadData?.ctwa_clid,
+          // value: rastreia o VALOR da compra no Meta (ROAS por valor, nao so contagem).
+          value: typeof leadData?.sale_value === "number" ? leadData.sale_value : undefined,
           eventId: `${currentStoreId}-Purchase-${leadId}`,
         });
       }
@@ -301,6 +303,30 @@ export function LeadsProvider({ children }: { children: ReactNode }) {
     onError: (error, _vars, ctx) => {
       if (ctx?.prev) queryClient.setQueryData(queryKey, ctx.prev);
       toast({ title: "Erro ao atualizar lead", description: humanizeError(error), variant: "destructive" });
+    },
+    onSuccess: (_data, { leadId, patch }) => {
+      // Dispara Meta quando a venda e confirmada via updateLead (caminho do StageGate/Kanban).
+      // event_id deterministico => Meta DEDUPLICA se updateStatus tambem disparar Purchase.
+      if (!currentStoreId) return;
+      const lead = queryClient.getQueryData<any>(queryKey);
+      const leadData = lead?.pages?.flat()?.find((l: any) => l.id === leadId);
+      if (patch.status === "Compareceu e Comprou") {
+        fireMetaEvent(currentStoreId, "Purchase", {
+          phone: leadData?.phone,
+          name: leadData?.name,
+          ctwaClid: leadData?.ctwa_clid,
+          value: typeof patch.sale_value === "number" ? patch.sale_value
+            : (typeof leadData?.sale_value === "number" ? leadData.sale_value : undefined),
+          eventId: `${currentStoreId}-Purchase-${leadId}`,
+        });
+      } else if (patch.status === "Agendou Exame") {
+        fireMetaEvent(currentStoreId, "Schedule", {
+          phone: leadData?.phone,
+          name: leadData?.name,
+          ctwaClid: leadData?.ctwa_clid,
+          eventId: `${currentStoreId}-Schedule-${leadId}`,
+        });
+      }
     },
     onSettled: () => {
       queryClient.invalidateQueries({ queryKey });
