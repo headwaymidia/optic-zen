@@ -3,9 +3,10 @@ import { supabase } from "@/integrations/supabase/client";
 import { useStores } from "@/hooks/useStores";
 import { toast } from "@/components/ui/use-toast";
 
-// VAPID public key — gerada para o projeto
-// Em produção deve vir de variável de ambiente
-const VAPID_PUBLIC_KEY = "BM5V_XFoV7RwQjtQFSKPUT6n6wrgCv_ulJhWa5rW7kuqVSzehPYYPc5VAVjX0Aw8F0dl1EnxQkQyKAsqZQGekrE";
+// VAPID public key — de env (fallback pro valor do projeto pra nao quebrar em prod).
+const VAPID_PUBLIC_KEY =
+  import.meta.env.VITE_VAPID_PUBLIC_KEY ??
+  "BM5V_XFoV7RwQjtQFSKPUT6n6wrgCv_ulJhWa5rW7kuqVSzehPYYPc5VAVjX0Aw8F0dl1EnxQkQyKAsqZQGekrE";
 
 function urlBase64ToUint8Array(base64String: string): Uint8Array {
   const padding = "=".repeat((4 - (base64String.length % 4)) % 4);
@@ -31,6 +32,16 @@ export function usePushNotifications() {
     "serviceWorker" in navigator &&
     "PushManager" in window &&
     "Notification" in window;
+
+  // iOS so suporta Web Push se o site estiver INSTALADO na tela inicial (standalone).
+  const isIOS =
+    typeof navigator !== "undefined" &&
+    /iphone|ipad|ipod/i.test(navigator.userAgent);
+  const isStandalone =
+    typeof window !== "undefined" &&
+    (window.matchMedia?.("(display-mode: standalone)").matches ||
+      (navigator as any).standalone === true);
+  const iosNeedsInstall = isIOS && !isStandalone;
 
   useEffect(() => {
     if (!isSupported) {
@@ -65,6 +76,14 @@ export function usePushNotifications() {
 
   const subscribe = useCallback(async () => {
     if (!isSupported || !currentStoreId) return;
+    // iOS: sem instalar na tela inicial, o push nao funciona — orienta em vez de falhar mudo.
+    if (iosNeedsInstall) {
+      toast({
+        title: "Instale o app primeiro",
+        description: "No iPhone: toque em Compartilhar → 'Adicionar à Tela de Início', abra pelo ícone e ative as notificações por lá.",
+      });
+      return;
+    }
     setLoading(true);
     try {
       const perm = await Notification.requestPermission();
@@ -134,5 +153,5 @@ export function usePushNotifications() {
     }
   }, [isSupported]);
 
-  return { permission, subscribed, loading, isSupported, subscribe, unsubscribe };
+  return { permission, subscribed, loading, isSupported, iosNeedsInstall, subscribe, unsubscribe };
 }
