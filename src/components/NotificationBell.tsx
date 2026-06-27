@@ -13,6 +13,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { supabase } from "@/integrations/supabase/client";
+import { useStores } from "@/hooks/useStores";
 import { useAuth } from "@/hooks/useAuth";
 import { cn } from "@/lib/utils";
 
@@ -46,20 +47,24 @@ const ICON_COLORS: Record<string, string> = {
 
 export function NotificationBell() {
   const { user } = useAuth();
+  const { currentStoreId } = useStores();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const userId = user?.id;
-  const queryKey = ["notifications", userId] as const;
+  // store_id no queryKey: cache separado por loja, atualiza ao trocar de loja.
+  const queryKey = ["notifications", userId, currentStoreId] as const;
   const [open, setOpen] = useState(false);
 
   const { data: items = [] } = useQuery({
     queryKey,
     enabled: !!userId,
     queryFn: async () => {
-      const { data } = await supabase
+      let q = supabase
         .from("notifications")
         .select("*")
-        .eq("user_id", userId!)
+        .eq("user_id", userId!);
+      if (currentStoreId) q = q.eq("store_id", currentStoreId);
+      const { data } = await q
         .order("created_at", { ascending: false })
         .limit(20);
       return (data ?? []) as Notification[];
@@ -68,10 +73,20 @@ export function NotificationBell() {
 
   useEffect(() => {
     if (!userId) return;
-    // Generate cooling notifications occasionally
-    supabase.rpc("generate_cooling_notifications").then(() => {
-      queryClient.invalidateQueries({ queryKey: ["notifications", userId] });
-    });
+    // Generate cooling notifications — no maximo 1x a cada 10min (evita rodar a
+    // RPC a cada montagem do componente / troca de loja).
+    const COOL_KEY = "od.cooling.lastrun.v1";
+    let shouldRun = true;
+    try {
+      const last = Number(localStorage.getItem(COOL_KEY) ?? "0");
+      if (Date.now() - last < 10 * 60 * 1000) shouldRun = false;
+    } catch {}
+    if (shouldRun) {
+      try { localStorage.setItem(COOL_KEY, String(Date.now())); } catch {}
+      supabase.rpc("generate_cooling_notifications").then(() => {
+        queryClient.invalidateQueries({ queryKey: ["notifications", userId] });
+      });
+    }
 
     const channel = supabase
       .channel(`notifications:${userId}`)
