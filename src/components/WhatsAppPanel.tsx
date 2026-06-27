@@ -85,30 +85,12 @@ export function WhatsAppPanel({ storeId, role }: Props) {
     : null;
 
   async function callEvo(action: "status" | "connect" | "qr" | "disconnect") {
-    const { data: sess } = await supabase.auth.getSession();
-    const token = sess?.session?.access_token;
-    if (!token) throw new Error("Sessão expirada. Faça login novamente.");
-
-    const res = await fetch(
-      "https://fxcgvlukzjmwzpzuvzcp.supabase.co/functions/v1/whatsapp-evolution",
-      {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-          apikey: "sb_publishable_BgnFYgwfBCXxZcqO2rQJWA_qDAjT4_R",
-        },
-        body: JSON.stringify({ action, store_id: storeId }),
-      },
-    );
-
-    let data: any = null;
-    const text = await res.text();
-    try { data = text ? JSON.parse(text) : null; } catch { data = { raw: text }; }
-
-    if (!res.ok) {
-      throw new Error(data?.error || data?.message || `Erro ${res.status} ao chamar whatsapp-evolution`);
-    }
+    // Usa invoke() — injeta URL e auth automaticamente (sem URL/chave hardcoded,
+    // funciona em staging/prod e nao quebra ao rotacionar a chave).
+    const { data, error } = await supabase.functions.invoke("whatsapp-evolution", {
+      body: { action, store_id: storeId },
+    });
+    if (error) throw new Error(error.message || `Erro ao chamar whatsapp-evolution`);
     if (data?.error) throw new Error(data.error);
     return data;
   }
