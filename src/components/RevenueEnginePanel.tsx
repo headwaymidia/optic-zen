@@ -51,13 +51,13 @@ export function RevenueEnginePanel({
       ).length;
       const vendas = leads.filter((l) => {
         if (l.status !== "Compareceu e Comprou") return false;
-        const ref = l.updated_at ?? l.created_at;
+        const ref = l.sale_date ?? l.updated_at ?? l.created_at;
         return ref && isSameDay(new Date(ref), d);
       }).length;
       const valor = leads
         .filter((l) => {
           if (l.status !== "Compareceu e Comprou") return false;
-          const ref = l.updated_at ?? l.created_at;
+          const ref = l.sale_date ?? l.updated_at ?? l.created_at;
           return ref && isSameDay(new Date(ref), d);
         })
         .reduce((s, l) => s + (Number(l.sale_value) || 0), 0);

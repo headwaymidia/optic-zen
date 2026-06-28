@@ -49,7 +49,7 @@ export function BIStatsRow({ leads, loading }: BIProps) {
 
     // Métricas mês corrente
     const buyersCM = leads.filter(
-      (l) => l.status === "Compareceu e Comprou" && inCurrent(l.updated_at ?? l.created_at)
+      (l) => l.status === "Compareceu e Comprou" && inCurrent(l.sale_date ?? l.updated_at ?? l.created_at)
     );
     const faturamentoCM = buyersCM.reduce((s, l) => s + (Number(l.sale_value) || 0), 0);
     const totalLeadsCM = leads.filter((l) => inCurrent(l.created_at)).length;
@@ -63,7 +63,7 @@ export function BIStatsRow({ leads, loading }: BIProps) {
 
     // Mês anterior
     const buyersPM = leads.filter(
-      (l) => l.status === "Compareceu e Comprou" && inPrev(l.updated_at ?? l.created_at)
+      (l) => l.status === "Compareceu e Comprou" && inPrev(l.sale_date ?? l.updated_at ?? l.created_at)
     );
     const faturamentoPM = buyersPM.reduce((s, l) => s + (Number(l.sale_value) || 0), 0);
     const totalLeadsPM = leads.filter((l) => inPrev(l.created_at)).length;
@@ -82,7 +82,7 @@ export function BIStatsRow({ leads, loading }: BIProps) {
       const dayBuyers = leads.filter(
         (l) =>
           l.status === "Compareceu e Comprou" &&
-          isSameDay(new Date(l.updated_at ?? l.created_at!), d)
+          isSameDay(new Date(l.sale_date ?? l.updated_at ?? l.created_at!), d)
       );
       const dayAgend = leads.filter(
         (l) =>
