@@ -103,7 +103,8 @@ export function TeamPerformancePanel({ leads }: Props) {
       leads
         .filter((l) => {
           if (l.status !== "Compareceu e Comprou") return false;
-          const d = new Date(l.updated_at ?? l.created_at);
+          // data da venda (sale_date), fallback updated_at p/ vendas antigas
+          const d = new Date(l.sale_date ?? l.updated_at ?? l.created_at);
           return isWithinInterval(d, { start: from, end: to });
         })
         .reduce((s, l) => s + (Number(l.sale_value) || 0), 0);
@@ -194,8 +195,8 @@ export function TeamPerformancePanel({ leads }: Props) {
     const monthSales = leads.filter(
       (l) =>
         l.status === "Compareceu e Comprou" &&
-        l.updated_at &&
-        isSameMonth(new Date(l.updated_at), now)
+        (l.sale_date ?? l.updated_at) &&
+        isSameMonth(new Date(l.sale_date ?? l.updated_at!), now)
     );
 
     const schedRate =
