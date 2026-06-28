@@ -50,12 +50,12 @@ export function PeriodKPIRow({ leads, range, inline = false }: Props) {
     const vCur = leads.filter(
       (l) =>
         l.status === "Compareceu e Comprou" &&
-        inCur(l.updated_at ?? l.created_at)
+        inCur(l.sale_date ?? l.updated_at ?? l.created_at)
     ).length;
     const vPrev = leads.filter(
       (l) =>
         l.status === "Compareceu e Comprou" &&
-        inPrev(l.updated_at ?? l.created_at)
+        inPrev(l.sale_date ?? l.updated_at ?? l.created_at)
     ).length;
 
     return [

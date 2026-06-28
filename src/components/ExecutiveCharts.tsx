@@ -146,7 +146,7 @@ function LeadsVsSalesTimelineImpl({ leads, embedded = false }: { leads: Lead[]; 
       const novos = leads.filter((l) => l.created_at && isSameDay(new Date(l.created_at), d)).length;
       const vendas = leads.filter((l) => {
         if (l.status !== "Compareceu e Comprou") return false;
-        const ref = l.updated_at ?? l.created_at;
+        const ref = l.sale_date ?? l.updated_at ?? l.created_at;
         return ref && isSameDay(new Date(ref), d);
       }).length;
       return { date: format(d, "EEE dd", { locale: ptBR }), novos, vendas };
