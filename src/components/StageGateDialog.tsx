@@ -105,6 +105,7 @@ export function StageGateDialog({ open, lead, targetStatus, onCancel, onConfirm 
         await onConfirm({
           status: "Compareceu e Comprou",
           sale_value: parsedSale,
+          sale_date: new Date().toISOString(), // marca o momento real da venda
           lab_status: needsLab ? "Pedido feito" : null,
         });
       }

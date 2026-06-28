@@ -175,7 +175,7 @@ function ExamConfirmBanner({ lead, updateStatus }) {
   const [saleValue, setSaleValue] = React.useState("");
   async function handleConfirmSale() {
     const value = parseFloat(saleValue.replace(",", ".")) || 0;
-    await updateLead(lead.id, { sale_value: value });
+    await updateLead(lead.id, { sale_value: value, sale_date: new Date().toISOString() });
     updateStatus(lead.id, "Compareceu e Comprou");
   }
   return (

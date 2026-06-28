@@ -118,7 +118,8 @@ function RevenueEvolutionChartImpl({ leads }: Props) {
         .filter(
           (l) =>
             l.status === "Compareceu e Comprou" &&
-            isSameDay(new Date(l.updated_at ?? l.created_at!), d)
+            // usa sale_date (momento real da venda); fallback updated_at p/ vendas antigas sem sale_date
+            isSameDay(new Date(l.sale_date ?? l.updated_at ?? l.created_at!), d)
         )
         .reduce((s, l) => s + (Number(l.sale_value) || 0), 0);
 
