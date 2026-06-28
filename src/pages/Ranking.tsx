@@ -34,11 +34,16 @@ export default function Ranking() {
 
   const range = useMemo(() => getPeriodRange("month"), []);
   const storeLeads = useMemo(() => filterByCurrentStore(leads), [leads, filterByCurrentStore]);
+  // Ranking de VENDAS do periodo: filtra pela data da VENDA (sale_date), nao pela
+  // criacao do lead. Assim uma venda fechada hoje de um lead antigo conta no periodo
+  // certo. Fallback updated_at p/ vendas antigas sem sale_date. So entram compradores.
   const filtered = useMemo(
     () =>
-      storeLeads.filter(
-        (l) => l.created_at && isWithinInterval(new Date(l.created_at), { start: range.from, end: range.to })
-      ),
+      storeLeads.filter((l) => {
+        if (l.status !== "Compareceu e Comprou") return false;
+        const ref = l.sale_date ?? l.updated_at ?? l.created_at;
+        return ref && isWithinInterval(new Date(ref), { start: range.from, end: range.to });
+      }),
     [storeLeads, range]
   );
   const ranking = useSalesRanking(filtered, 3);
