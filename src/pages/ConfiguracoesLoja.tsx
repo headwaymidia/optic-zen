@@ -287,11 +287,15 @@ function MetaPixelInput({ store, canEdit }: { store: { id: string; role: string 
 
   async function save() {
     setSaving(true);
-    await supabase.from("stores").update({
+    const { error } = await supabase.from("stores").update({
       meta_pixel_id: pixelId || null,
       meta_access_token: accessToken || null,
     } as any).eq("id", store.id);
     setSaving(false);
+    if (error) {
+      toast({ title: "Erro ao salvar Pixel", description: humanizeError(error), variant: "destructive" });
+      return;
+    }
     toast({ title: "Pixel salvo com sucesso" });
   }
 
