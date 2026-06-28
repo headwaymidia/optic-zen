@@ -4,6 +4,18 @@ const EVOLUTION_KEY = Deno.env.get("EVOLUTION_API_KEY");
 const SUPABASE_URL = Deno.env.get("SUPABASE_URL");
 const SERVICE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
 const cors = { "Access-Control-Allow-Origin": "*", "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type" };
+
+// Dispara push para o celular dos donos/gerentes (alem da notificacao no sininho).
+// Nunca bloqueia o monitor — best effort.
+async function pushAlert(storeId: string, title: string, body: string) {
+  try {
+    await fetch(`${SUPABASE_URL}/functions/v1/send-push-notification`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json", "Authorization": `Bearer ${SERVICE_KEY}` },
+      body: JSON.stringify({ store_id: storeId, title, body }),
+    });
+  } catch (_) { /* ignora */ }
+}
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response("ok", { headers: cors });
   const admin = createClient(SUPABASE_URL!, SERVICE_KEY!);
@@ -33,6 +45,7 @@ Deno.serve(async (req) => {
         await admin.from("whatsapp_connections").update({ status: "disconnected" }).eq("store_id", conn.store_id);
         const { data: members } = await admin.from("store_members").select("user_id").eq("store_id", conn.store_id).in("role", ["Dono", "Gerente"]);
         if (members?.length) await admin.from("notifications").insert(members.map((m: any) => ({ user_id: m.user_id, store_id: conn.store_id, type: "whatsapp_disconnected", title: "WhatsApp desconectado", body: "Reconecte em Configuracoes > WhatsApp.", read: false })));
+        await pushAlert(conn.store_id, "WhatsApp desconectado", "O WhatsApp da loja caiu. Reconecte em Configuracoes > WhatsApp.");
       }
     } catch(e: any) { results.push(`${instance}: erro ${e.message}`); }
   }
