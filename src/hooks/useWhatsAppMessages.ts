@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { createReconnectingChannel } from "@/lib/realtime-channel";
+import { useRevalidateOnResume } from "@/hooks/useRevalidateOnResume";
 import { useStores } from "@/hooks/useStores";
 
 export interface WhatsAppMessageRow {
@@ -145,6 +146,10 @@ export function useWhatsAppMessages(leadId: string | undefined) {
   }, [leadId, currentStoreId, fetchMessages]);
 
   const refetch = useCallback(() => fetchMessages(), [fetchMessages]);
+
+  // Ao voltar a aba/app (inclusive mobile: pageshow/online), recarrega as
+  // mensagens da conversa aberta — pega o que chegou com o app em background.
+  useRevalidateOnResume(() => fetchMessages(), !!leadId);
 
   return { messages, loading, error, refetch };
 }

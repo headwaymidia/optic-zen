@@ -7,6 +7,7 @@ import {
 } from "@tanstack/react-query";
 import { Lead, LeadStatus, supabase } from "@/integrations/supabase/client";
 import { createReconnectingChannel } from "@/lib/realtime-channel";
+import { useRevalidateOnResume } from "@/hooks/useRevalidateOnResume";
 import { useStores } from "@/hooks/useStores";
 
 // Dispara evento para Meta Conversions API de forma silenciosa
@@ -255,24 +256,13 @@ export function LeadsProvider({ children }: { children: ReactNode }) {
     return () => { handle.remove(); };
   }, [currentStoreId, queryClient]);
 
-  // Rede de seguranca: ao voltar o foco/visibilidade da aba, revalida os leads.
-  // Cobre o caso do websocket ter sido suspenso enquanto a aba ficou em background
-  // (comum: vendedora deixa o CRM aberto atras de outras abas). Assim, ao voltar,
-  // ela ve tudo que chegou mesmo que o realtime tenha perdido eventos.
-  useEffect(() => {
-    if (!currentStoreId) return;
-    const revalidate = () => {
-      if (document.visibilityState === "visible") {
-        queryClient.invalidateQueries({ queryKey });
-      }
-    };
-    document.addEventListener("visibilitychange", revalidate);
-    window.addEventListener("focus", revalidate);
-    return () => {
-      document.removeEventListener("visibilitychange", revalidate);
-      window.removeEventListener("focus", revalidate);
-    };
-  }, [currentStoreId, queryClient]);
+  // Rede de seguranca: ao voltar a aba/app (inclusive no MOBILE — pageshow do
+  // bfcache, online ao recuperar rede), revalida os leads. Cobre o websocket
+  // suspenso enquanto o CRM ficou em background (comum no celular das vendedoras).
+  useRevalidateOnResume(
+    () => queryClient.invalidateQueries({ queryKey }),
+    !!currentStoreId
+  );
 
   const updateStatusMutation = useMutation({
     mutationFn: async ({ leadId, status }: { leadId: string; status: LeadStatus }) => {
