@@ -301,6 +301,9 @@ export function ChatPanel({
       toast({ title: "Lead sem telefone", variant: "destructive" });
       return;
     }
+    // Lock sincrono: impede envios multiplos da MESMA midia (duplicava no WhatsApp).
+    if (sendingLockRef.current) return;
+    sendingLockRef.current = true;
     promoteToInAttendance();
 
     const optimisticId = crypto.randomUUID();
@@ -337,6 +340,7 @@ export function ChatPanel({
       toast({ title: "Falha ao preparar o audio para envio", variant: "destructive" });
       setSentMessages((prev) => prev.filter((m) => m.id !== optimisticId));
       URL.revokeObjectURL(audioUrl);
+      sendingLockRef.current = false;
       return;
     }
 
@@ -363,6 +367,7 @@ export function ChatPanel({
       setSentMessages((prev) => prev.filter((m) => m.id !== optimisticId));
       URL.revokeObjectURL(audioUrl); // libera o blob da memoria
     }
+    sendingLockRef.current = false;
   };
 
   const handleSendMedia = async (file: File) => {
@@ -388,6 +393,9 @@ export function ChatPanel({
       });
       return;
     }
+    // Lock sincrono: impede envios multiplos da MESMA midia (imagem duplicava no WhatsApp).
+    if (sendingLockRef.current) return;
+    sendingLockRef.current = true;
     promoteToInAttendance();
 
     const optimisticId = crypto.randomUUID();
@@ -425,6 +433,7 @@ export function ChatPanel({
       console.error("[handleSendMedia] upload error:", e);
       toast({ title: "Falha ao enviar mídia para o storage", variant: "destructive" });
       setSentMessages((prev) => prev.filter((m) => m.id !== optimisticId));
+      sendingLockRef.current = false;
       return;
     }
 
@@ -462,6 +471,7 @@ export function ChatPanel({
       setSentMessages((prev) => prev.filter((m) => m.id !== optimisticId));
       URL.revokeObjectURL(localUrl); // libera o blob da memoria
     }
+    sendingLockRef.current = false;
   };
 
   const handleApplyFollowUpScript = () => {
