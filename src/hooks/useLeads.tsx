@@ -223,14 +223,25 @@ export function LeadsProvider({ children }: { children: ReactNode }) {
           filter: `store_id=eq.${currentStoreId}`,
         },
         (payload) => {
-          const row = payload.new as { lead_id?: string | null; timestamp?: string | null; created_at?: string | null; body?: string | null; media_type?: string | null } | undefined;
+          const row = payload.new as { lead_id?: string | null; from_me?: boolean | null; timestamp?: string | null; created_at?: string | null; body?: string | null; media_type?: string | null } | undefined;
           if (payload.eventType === "INSERT" && row?.lead_id) {
             const lastMessageAt = row.timestamp ?? row.created_at ?? new Date().toISOString();
+            // Mensagem RECEBIDA (nao enviada por nos) => acende o badge de nao-lidas
+            // NA HORA, sem depender da ordem de chegada do UPDATE de leads.
+            // (Ao abrir a conversa, reset_unread zera — entao nao conta errado.)
+            const isInbound = row.from_me === false;
             queryClient.setQueryData<LeadsPages>(queryKey, (old) =>
               mapPages(old, (page) =>
                 page.map((lead) =>
                   lead.id === row.lead_id
-                    ? { ...lead, last_message_at: lastMessageAt, last_message_preview: getMessagePreview(row) }
+                    ? {
+                        ...lead,
+                        last_message_at: lastMessageAt,
+                        last_message_preview: getMessagePreview(row),
+                        unread_count: isInbound
+                          ? (lead.unread_count ?? 0) + 1
+                          : lead.unread_count,
+                      }
                     : lead
                 )
               )
