@@ -303,16 +303,6 @@ export function ChatPanel({
     }
     promoteToInAttendance();
 
-    const base64: string = await new Promise((resolve, reject) => {
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        const result = reader.result as string;
-        resolve(result.split(",")[1] ?? "");
-      };
-      reader.onerror = () => reject(reader.error);
-      reader.readAsDataURL(blob);
-    });
-
     const optimisticId = crypto.randomUUID();
     const now = new Date();
     const audioUrl = URL.createObjectURL(blob);
@@ -329,6 +319,27 @@ export function ChatPanel({
       },
     ]);
 
+    // Upload do audio para o Storage e envio por URL (nao por base64 no corpo).
+    // base64 de audio longo (1-2 min) estoura o limite de payload da edge function
+    // -> por isso audio longo nao ia. URL e pequena, resolve independente da duracao.
+    let audioPublicUrl: string | null = null;
+    try {
+      const path = `${currentStoreId}/audio-${Date.now()}-${crypto.randomUUID()}.ogg`;
+      const { error: upErr } = await supabase.storage
+        .from("whatsapp-media")
+        .upload(path, blob, { contentType: "audio/ogg", upsert: false });
+      if (upErr) throw upErr;
+      const { data: pub } = supabase.storage.from("whatsapp-media").getPublicUrl(path);
+      audioPublicUrl = pub?.publicUrl ?? null;
+      if (!audioPublicUrl) throw new Error("URL publica indisponivel");
+    } catch (e) {
+      console.error("[handleSendAudio] upload error:", e);
+      toast({ title: "Falha ao preparar o audio para envio", variant: "destructive" });
+      setSentMessages((prev) => prev.filter((m) => m.id !== optimisticId));
+      URL.revokeObjectURL(audioUrl);
+      return;
+    }
+
     const ok = await sendWithRetry(
       optimisticId,
       async () => {
@@ -339,7 +350,7 @@ export function ChatPanel({
             store_id: currentStoreId,
             lead_id: lead.id,
             phone: lead.phone,
-            audioMessage: { base64, mimetype: "audio/ogg; codecs=opus" },
+            audioMessage: { url: audioPublicUrl, mimetype: "audio/ogg; codecs=opus" },
           },
         });
         if (error) throw error;
@@ -365,16 +376,14 @@ export function ChatPanel({
     }
     const isImage = file.type.startsWith("image/");
     const isVideo = file.type.startsWith("video/");
-    if (!isImage && !isVideo) {
-      toast({ title: "Formato não suportado", variant: "destructive" });
-      return;
-    }
-    const MAX_BYTES = isImage ? 2 * 1024 * 1024 : 50 * 1024 * 1024;
+    const isDocument = !isImage && !isVideo; // PDF e demais arquivos
+    const kind: "image" | "video" | "document" = isImage ? "image" : isVideo ? "video" : "document";
+    const MAX_BYTES = isImage ? 2 * 1024 * 1024 : 50 * 1024 * 1024; // doc usa o limite de 50MB
     if (file.size > MAX_BYTES) {
       const limitLabel = isImage ? "2MB" : "50MB";
       toast({
         title: "Arquivo muito grande",
-        description: `O tamanho máximo para ${isImage ? "imagens" : "vídeos"} é ${limitLabel}.`,
+        description: `O tamanho máximo para ${isImage ? "imagens" : isVideo ? "vídeos" : "arquivos"} é ${limitLabel}.`,
         variant: "destructive",
       });
       return;
@@ -391,7 +400,7 @@ export function ChatPanel({
         from: "us",
         text: "",
         time: now.toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" }),
-        media_type: isImage ? "image" : "video",
+        media_type: kind,
         media_url: localUrl,
         status: "sending",
       },
@@ -400,7 +409,7 @@ export function ChatPanel({
     // 1) Upload para o Storage e obtenção da URL pública.
     let publicMediaUrl: string | null = null;
     try {
-      const ext = file.name.includes(".") ? file.name.split(".").pop() : (isImage ? "jpg" : "mp4");
+      const ext = file.name.includes(".") ? file.name.split(".").pop() : (isImage ? "jpg" : isVideo ? "mp4" : "bin");
       const path = `${currentStoreId}/${Date.now()}-${crypto.randomUUID()}.${ext}`;
       const { error: upErr } = await supabase.storage
         .from("whatsapp-media")
@@ -429,7 +438,7 @@ export function ChatPanel({
           lead_id: lead.id,
           phone: lead.phone,
           mediaUrl: publicMediaUrl,
-          mediaType: isImage ? "image" : "video",
+          mediaType: kind,
           mimetype: file.type,
           fileName: file.name,
           caption: "",
@@ -444,7 +453,7 @@ export function ChatPanel({
           throw new Error(data.error);
         }
       },
-      isImage ? "Falha ao enviar imagem" : "Falha ao enviar vídeo",
+      isImage ? "Falha ao enviar imagem" : isVideo ? "Falha ao enviar vídeo" : "Falha ao enviar arquivo",
     );
 
 

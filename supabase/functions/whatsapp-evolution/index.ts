@@ -309,13 +309,13 @@ Deno.serve(async (req) => {
       const phone = String(body.phone ?? "");
       const message = String(body.message ?? "");
       const audioMessage = body.audioMessage as
-        | { base64?: string; mimetype?: string }
+        | { base64?: string; url?: string; mimetype?: string }
         | undefined;
       const inMediaUrl = body.mediaUrl ? String(body.mediaUrl) : "";
       const inMediaType = body.mediaType ? String(body.mediaType) : "";
       const caption = body.caption ? String(body.caption) : "";
-      const isAudio = !!audioMessage?.base64;
-      const isMedia = !!inMediaUrl && (inMediaType === "image" || inMediaType === "video");
+      const isAudio = !!audioMessage?.base64 || !!audioMessage?.url;
+      const isMedia = !!inMediaUrl && (inMediaType === "image" || inMediaType === "video" || inMediaType === "document");
 
       if (!phone) throw new Error("phone é obrigatório");
       if (!isAudio && !isMedia && !message.trim()) {
@@ -335,6 +335,8 @@ Deno.serve(async (req) => {
           ? String(body.mimetype)
           : inMediaType === "image"
           ? "image/jpeg"
+          : inMediaType === "document"
+          ? "application/octet-stream"
           : "video/mp4";
         const fileName = body.fileName ? String(body.fileName) : undefined;
 
@@ -356,39 +358,47 @@ Deno.serve(async (req) => {
         }
 
       } else if (isAudio) {
+        // audio pode vir por URL (preferido, sem limite de tamanho) ou base64 (legado).
+        const audioPayload = audioMessage!.url ?? audioMessage!.base64;
         send = await evo(`/message/sendWhatsAppAudio/${instance}`, {
           method: "POST",
           body: JSON.stringify({
             number: phoneDigits,
-            audio: audioMessage!.base64,
+            audio: audioPayload,
           }),
         });
 
         if (send.status < 400) {
-          try {
-            const bin = Uint8Array.from(atob(audioMessage!.base64!), (c) =>
-              c.charCodeAt(0),
-            );
-            const ext =
-              (audioMessage!.mimetype ?? "").includes("ogg") ? "ogg" : "webm";
-            const path = `${storeId}/${Date.now()}-${crypto.randomUUID()}.${ext}`;
-            const { error: upErr } = await admin.storage
-              .from("whatsapp-media")
-              .upload(path, bin, {
-                contentType: audioMessage!.mimetype ?? "audio/ogg",
-                upsert: false,
-              });
-            if (upErr) {
-              console.error("[sendMessage] storage upload error:", upErr);
-            } else {
-              const { data: signed } = await admin.storage
+          if (audioMessage!.url) {
+            // Ja temos URL publica — persiste direto, sem re-upload.
+            mediaUrl = audioMessage!.url;
+            mediaType = "audio";
+          } else {
+            try {
+              const bin = Uint8Array.from(atob(audioMessage!.base64!), (c) =>
+                c.charCodeAt(0),
+              );
+              const ext =
+                (audioMessage!.mimetype ?? "").includes("ogg") ? "ogg" : "webm";
+              const path = `${storeId}/${Date.now()}-${crypto.randomUUID()}.${ext}`;
+              const { error: upErr } = await admin.storage
                 .from("whatsapp-media")
-                .createSignedUrl(path, 60 * 60 * 24 * 365 * 5);
-              mediaUrl = signed?.signedUrl ?? null;
-              mediaType = "audio";
+                .upload(path, bin, {
+                  contentType: audioMessage!.mimetype ?? "audio/ogg",
+                  upsert: false,
+                });
+              if (upErr) {
+                console.error("[sendMessage] storage upload error:", upErr);
+              } else {
+                const { data: signed } = await admin.storage
+                  .from("whatsapp-media")
+                  .createSignedUrl(path, 60 * 60 * 24 * 365 * 5);
+                mediaUrl = signed?.signedUrl ?? null;
+                mediaType = "audio";
+              }
+            } catch (e) {
+              console.error("[sendMessage] storage exception:", e);
             }
-          } catch (e) {
-            console.error("[sendMessage] storage exception:", e);
           }
         }
       } else {
@@ -463,7 +473,7 @@ Deno.serve(async (req) => {
 
       const bodyText = isMedia ? (caption || null) : isAudio ? null : message;
       const preview = isMedia
-        ? (inMediaType === "image" ? "📷 Imagem" : "🎬 Vídeo")
+        ? (inMediaType === "image" ? "📷 Imagem" : inMediaType === "document" ? "📄 Documento" : "🎬 Vídeo")
         : isAudio
         ? "🎵 Áudio"
         : message.slice(0, 100);
