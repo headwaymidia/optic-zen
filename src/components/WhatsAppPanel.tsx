@@ -9,6 +9,7 @@ import { toast } from "@/components/ui/use-toast";
 import { humanizeError } from "@/lib/error-handler";
 import { cn } from "@/lib/utils";
 import { supabase } from "@/integrations/supabase/client";
+import { createReconnectingChannel } from "@/lib/realtime-channel";
 import {
   AlertCircle,
   CheckCircle2,
@@ -214,9 +215,10 @@ export function WhatsAppPanel({ storeId, role }: Props) {
   // mantendo sidebar e painel sincronizados a partir da mesma fonte.
   useEffect(() => {
     if (!storeId) return;
-    const channel = supabase
-      .channel(`wa-conn-${storeId}`)
-      .on(
+    const handle = createReconnectingChannel({
+      name: `wa-conn-${storeId}`,
+      onResubscribe: () => queryClient.invalidateQueries({ queryKey: ["whatsapp-connection", storeId] }),
+      setup: (ch) => ch.on(
         "postgres_changes",
         {
           event: "*",
@@ -227,10 +229,10 @@ export function WhatsAppPanel({ storeId, role }: Props) {
         () => {
           queryClient.invalidateQueries({ queryKey: ["whatsapp-connection", storeId] });
         },
-      )
-      .subscribe();
+      ),
+    });
     return () => {
-      supabase.removeChannel(channel);
+      handle.remove();
     };
   }, [storeId, queryClient]);
 

@@ -13,6 +13,7 @@ import {
   Activity,
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
+import { createReconnectingChannel } from "@/lib/realtime-channel";
 import { cn } from "@/lib/utils";
 import { DataSkeleton } from "@/components/ui/DataSkeleton";
 
@@ -71,18 +72,19 @@ export function LeadActivityTimeline({
     }
     load();
 
-    const channel = supabase
-      .channel(`lead_activities:${leadId}`)
-      .on(
+    const handle = createReconnectingChannel({
+      name: `lead_activities:${leadId}`,
+      onResubscribe: () => load(),
+      setup: (ch) => ch.on(
         "postgres_changes",
         { event: "INSERT", schema: "public", table: "lead_activities", filter: `lead_id=eq.${leadId}` },
         () => load()
-      )
-      .subscribe();
+      ),
+    });
 
     return () => {
       active = false;
-      supabase.removeChannel(channel);
+      handle.remove();
     };
   }, [leadId, limit]);
 

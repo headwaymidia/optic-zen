@@ -13,6 +13,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { supabase } from "@/integrations/supabase/client";
+import { createReconnectingChannel } from "@/lib/realtime-channel";
 import { useStores } from "@/hooks/useStores";
 import { useAuth } from "@/hooks/useAuth";
 import { cn } from "@/lib/utils";
@@ -88,19 +89,20 @@ export function NotificationBell() {
       });
     }
 
-    const channel = supabase
-      .channel(`notifications:${userId}`)
-      .on(
+    const handle = createReconnectingChannel({
+      name: `notifications:${userId}`,
+      onResubscribe: () => queryClient.invalidateQueries({ queryKey: ["notifications", userId] }),
+      setup: (ch) => ch.on(
         "postgres_changes",
         { event: "*", schema: "public", table: "notifications", filter: `user_id=eq.${userId}` },
         () => {
           queryClient.invalidateQueries({ queryKey: ["notifications", userId] });
         }
-      )
-      .subscribe();
+      ),
+    });
 
     return () => {
-      supabase.removeChannel(channel);
+      handle.remove();
     };
   }, [userId, queryClient]);
 

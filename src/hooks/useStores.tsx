@@ -8,6 +8,7 @@ import {
   ReactNode,
 } from "react";
 import { supabase } from "@/integrations/supabase/client";
+import { createReconnectingChannel } from "@/lib/realtime-channel";
 import { useAuth } from "@/hooks/useAuth";
 import { toast } from "@/components/ui/use-toast";
 import { humanizeError } from "@/lib/error-handler";
@@ -165,26 +166,28 @@ export function StoresProvider({ children }: { children: ReactNode }) {
   // Realtime: refaz busca quando store_members muda para esse usuário
   useEffect(() => {
     if (!authContextUser) return;
-    const ch = supabase
-      .channel(`store-members-${authContextUser.id}`)
-      .on(
-        "postgres_changes",
-        {
-          event: "*",
-          schema: "public",
-          table: "store_members",
-          filter: `user_id=eq.${authContextUser.id}`,
-        },
-        () => fetchStores()
-      )
-      .on(
-        "postgres_changes",
-        { event: "UPDATE", schema: "public", table: "stores" },
-        () => fetchStores()
-      )
-      .subscribe();
+    const handle = createReconnectingChannel({
+      name: `store-members-${authContextUser.id}`,
+      onResubscribe: () => fetchStores(),
+      setup: (ch) => ch
+        .on(
+          "postgres_changes",
+          {
+            event: "*",
+            schema: "public",
+            table: "store_members",
+            filter: `user_id=eq.${authContextUser.id}`,
+          },
+          () => fetchStores()
+        )
+        .on(
+          "postgres_changes",
+          { event: "UPDATE", schema: "public", table: "stores" },
+          () => fetchStores()
+        ),
+    });
     return () => {
-      supabase.removeChannel(ch);
+      handle.remove();
     };
   }, [authContextUser, fetchStores]);
 

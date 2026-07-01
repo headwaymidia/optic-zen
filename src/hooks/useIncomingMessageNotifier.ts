@@ -1,5 +1,6 @@
 import { useEffect, useRef } from "react";
 import { supabase } from "@/integrations/supabase/client";
+import { createReconnectingChannel } from "@/lib/realtime-channel";
 
 /**
  * Camada de notificação para mensagens recebidas (from_me=false) via realtime.
@@ -126,9 +127,9 @@ export function useIncomingMessageNotifier(storeId: string | null | undefined) {
   // Assina inserts de whatsapp_messages da loja atual.
   useEffect(() => {
     if (!storeId) return;
-    const channel = supabase
-      .channel(`wa-notify-${storeId}`)
-      .on(
+    const handle = createReconnectingChannel({
+      name: `wa-notify-${storeId}`,
+      setup: (ch) => ch.on(
         "postgres_changes",
         {
           event: "INSERT",
@@ -157,10 +158,10 @@ export function useIncomingMessageNotifier(storeId: string | null | undefined) {
             startBlink();
           }
         }
-      )
-      .subscribe();
+      ),
+    });
     return () => {
-      supabase.removeChannel(channel);
+      handle.remove();
     };
   }, [storeId]);
 
