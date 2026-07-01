@@ -6,6 +6,7 @@ import {
   InfiniteData,
 } from "@tanstack/react-query";
 import { Lead, LeadStatus, supabase } from "@/integrations/supabase/client";
+import { createReconnectingChannel } from "@/lib/realtime-channel";
 import { useStores } from "@/hooks/useStores";
 
 // Dispara evento para Meta Conversions API de forma silenciosa
@@ -167,9 +168,10 @@ export function LeadsProvider({ children }: { children: ReactNode }) {
   // Realtime: leads table changes -> patch pages in place.
   useEffect(() => {
     if (!currentStoreId) return;
-    const channel = supabase
-      .channel(`leads-${currentStoreId}`)
-      .on(
+    const handle = createReconnectingChannel({
+      name: `leads-${currentStoreId}`,
+      onResubscribe: () => queryClient.invalidateQueries({ queryKey }),
+      setup: (ch) => ch.on(
         "postgres_changes",
         { event: "*", schema: "public", table: "leads", filter: `store_id=eq.${currentStoreId}` },
         (payload) => {
@@ -201,17 +203,18 @@ export function LeadsProvider({ children }: { children: ReactNode }) {
             return next;
           });
         }
-      )
-      .subscribe();
-    return () => { supabase.removeChannel(channel); };
+      ),
+    });
+    return () => { handle.remove(); };
   }, [currentStoreId, queryClient]);
 
   // Realtime: novas mensagens de WhatsApp -> atualiza preview/ordem.
   useEffect(() => {
     if (!currentStoreId) return;
-    const channel = supabase
-      .channel(`wa-msgs-leads-${currentStoreId}`)
-      .on(
+    const handle = createReconnectingChannel({
+      name: `wa-msgs-leads-${currentStoreId}`,
+      onResubscribe: () => queryClient.invalidateQueries({ queryKey }),
+      setup: (ch) => ch.on(
         "postgres_changes",
         {
           event: "*",
@@ -236,9 +239,28 @@ export function LeadsProvider({ children }: { children: ReactNode }) {
           }
           queryClient.invalidateQueries({ queryKey });
         }
-      )
-      .subscribe();
-    return () => { supabase.removeChannel(channel); };
+      ),
+    });
+    return () => { handle.remove(); };
+  }, [currentStoreId, queryClient]);
+
+  // Rede de seguranca: ao voltar o foco/visibilidade da aba, revalida os leads.
+  // Cobre o caso do websocket ter sido suspenso enquanto a aba ficou em background
+  // (comum: vendedora deixa o CRM aberto atras de outras abas). Assim, ao voltar,
+  // ela ve tudo que chegou mesmo que o realtime tenha perdido eventos.
+  useEffect(() => {
+    if (!currentStoreId) return;
+    const revalidate = () => {
+      if (document.visibilityState === "visible") {
+        queryClient.invalidateQueries({ queryKey });
+      }
+    };
+    document.addEventListener("visibilitychange", revalidate);
+    window.addEventListener("focus", revalidate);
+    return () => {
+      document.removeEventListener("visibilitychange", revalidate);
+      window.removeEventListener("focus", revalidate);
+    };
   }, [currentStoreId, queryClient]);
 
   const updateStatusMutation = useMutation({

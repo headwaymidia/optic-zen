@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
+import { createReconnectingChannel } from "@/lib/realtime-channel";
 import { useStores } from "@/hooks/useStores";
 
 export interface WhatsAppMessageRow {
@@ -79,9 +80,10 @@ export function useWhatsAppMessages(leadId: string | undefined) {
   useEffect(() => {
     if (!leadId) return;
     const channelName = `wa-msgs-${currentStoreId ?? "no-store"}-${leadId}`;
-    const channel = supabase
-      .channel(channelName)
-      .on(
+    const handle = createReconnectingChannel({
+      name: channelName,
+      onResubscribe: () => fetchMessages(), // ao reconectar, pega o que perdeu
+      setup: (ch) => ch.on(
         "postgres_changes",
         { event: "*", schema: "public", table: "whatsapp_messages" },
         (payload) => {
@@ -135,10 +137,10 @@ export function useWhatsAppMessages(leadId: string | undefined) {
             return next;
           });
         }
-      )
-      .subscribe();
+      ),
+    });
     return () => {
-      supabase.removeChannel(channel);
+      handle.remove();
     };
   }, [leadId, currentStoreId, fetchMessages]);
 
