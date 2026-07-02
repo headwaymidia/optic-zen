@@ -79,14 +79,17 @@ export function useWhatsAppMessages(leadId: string | undefined) {
   // Realtime: escuta TODOS os inserts/updates/deletes em whatsapp_messages
   // (sem filtro por from_me — mensagens enviadas pelo CRM também precisam aparecer).
   useEffect(() => {
-    if (!leadId) return;
-    const channelName = `wa-msgs-${currentStoreId ?? "no-store"}-${leadId}`;
+    if (!leadId || !currentStoreId) return; // sem store_id nao cria canal (evitava escutar a tabela inteira)
+    const channelName = `wa-msgs-${currentStoreId}-${leadId}`;
     const handle = createReconnectingChannel({
       name: channelName,
       onResubscribe: () => fetchMessages(), // ao reconectar, pega o que perdeu
       setup: (ch) => ch.on(
         "postgres_changes",
-        { event: "*", schema: "public", table: "whatsapp_messages" },
+        // FILTRO no servidor: so as mensagens desta loja. Antes escutava a tabela
+        // INTEIRA (86k linhas, todos os clientes) -> sobrecarregava o Realtime
+        // e causava "too many database timeouts" cronicos.
+        { event: "*", schema: "public", table: "whatsapp_messages", filter: `store_id=eq.${currentStoreId}` },
         (payload) => {
           const row = (payload.new ?? payload.old) as Partial<WhatsAppMessageRow> | undefined;
           if (!row) return;
