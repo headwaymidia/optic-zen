@@ -2,35 +2,31 @@ import { supabase } from "@/integrations/supabase/client";
 import type { RealtimeChannel } from "@supabase/supabase-js";
 
 /**
- * Cria um canal de realtime que se RECONECTA sozinho quando a conexao cai.
+ * Canal de realtime que reconecta sozinho quando a conexao cai — mas com
+ * salvaguardas contra LOOP (importante quando o servico Realtime do Supabase
+ * esta instavel: sem cuidado, erro->reconecta->erro vira loop e a UI "pisca").
  *
- * Problema que isto resolve: `channel.subscribe()` puro nao reconecta de forma
- * confiavel quando o websocket morre (rede oscila, aba em background, servidor
- * reinicia, incidente de capacidade). O canal entra em CHANNEL_ERROR/TIMED_OUT/
- * CLOSED e para de receber eventos silenciosamente — o app "acha" que ouve, mas
- * nao ouve. Sintoma: mensagens chegam no banco mas nao aparecem ate dar F5.
- *
- * Uso:
- *   const handle = createReconnectingChannel({
- *     name: `leads-${storeId}`,
- *     setup: (ch) => ch.on("postgres_changes", {...}, handler),
- *     onResubscribe: () => refetch(), // opcional: revalida ao reconectar (pega o que perdeu)
- *   });
- *   return () => handle.remove();
+ * Salvaguardas:
+ * - onResubscribe SO dispara em RE-conexao (nao na 1a), evitando refetch em
+ *   cadeia logo na montagem.
+ * - backoff exponencial comeca em 2s e vai ate 60s (nao martela o servidor).
+ * - teto de tentativas: apos MAX_RETRIES desiste (evita loop infinito); a rede
+ *   de seguranca (useRevalidateOnResume) cobre a re-sincronizacao ao voltar a aba.
  */
 export function createReconnectingChannel(opts: {
   name: string;
   setup: (channel: RealtimeChannel) => RealtimeChannel;
   onResubscribe?: () => void;
 }) {
+  const MAX_RETRIES = 6;
   let channel: RealtimeChannel | null = null;
   let retry = 0;
+  let hasConnectedOnce = false;
   let timer: ReturnType<typeof setTimeout> | null = null;
   let removed = false;
 
   const connect = () => {
     if (removed) return;
-    // limpa canal anterior antes de recriar
     if (channel) {
       supabase.removeChannel(channel);
       channel = null;
@@ -40,21 +36,21 @@ export function createReconnectingChannel(opts: {
     ch.subscribe((status) => {
       if (removed) return;
       if (status === "SUBSCRIBED") {
+        // So revalida se for RE-conexao (nao na primeira) — evita refetch em cadeia.
+        if (hasConnectedOnce) {
+          opts.onResubscribe?.();
+        }
+        hasConnectedOnce = true;
         retry = 0;
-        // Ao (re)conectar, revalida os dados: cobre o que chegou enquanto
-        // o canal estava caido.
-        opts.onResubscribe?.();
-      } else if (
-        status === "CHANNEL_ERROR" ||
-        status === "TIMED_OUT" ||
-        status === "CLOSED"
-      ) {
-        // backoff exponencial com teto de 30s
-        const delay = Math.min(1000 * 2 ** retry, 30_000);
+      } else if (status === "CHANNEL_ERROR" || status === "TIMED_OUT") {
+        if (retry >= MAX_RETRIES) return; // desiste — evita loop infinito
+        const delay = Math.min(2000 * 2 ** retry, 60_000);
         retry += 1;
         if (timer) clearTimeout(timer);
         timer = setTimeout(connect, delay);
       }
+      // CLOSED: nao reconecta automaticamente (normalmente e fechamento proposital
+      // ou cleanup; reconectar aqui e o que causava loop).
     });
   };
 
