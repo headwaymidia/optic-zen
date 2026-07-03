@@ -11,6 +11,7 @@ const SERVICE_ROLE = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
 
 const EXPECTED_WEBHOOK_URL = `${SUPABASE_URL}/functions/v1/whatsapp-webhook`;
 const EXPECTED_AUTH_PREFIX = "Bearer ";
+const WEBHOOK_SECRET = Deno.env.get("WEBHOOK_SECRET") ?? "";
 const ADMIN_EMAIL = "headwaymidia@gmail.com";
 
 // Envia notificação interna quando loja desconecta
@@ -100,6 +101,7 @@ async function fixWebhook(instance: string): Promise<boolean> {
         enabled: true,
         headers: {
           Authorization: `Bearer ${SUPABASE_ANON}`,
+          ...(WEBHOOK_SECRET ? { "x-webhook-secret": WEBHOOK_SECRET } : {}),
         },
         events: ["MESSAGES_UPSERT", "MESSAGES_UPDATE", "CONNECTION_UPDATE"],
       },
@@ -170,21 +172,29 @@ Deno.serve(async (req) => {
 
       const headers = webhookData?.headers ?? null;
       const authHeader = headers?.Authorization ?? headers?.authorization ?? null;
+      const secretHeader = headers?.["x-webhook-secret"] ?? headers?.["X-Webhook-Secret"] ?? null;
       const webhookUrl = webhookData?.url ?? "";
 
       // headers: null OU headers: {} (objeto vazio) sao ambos invalidos
       const headersEmpty = !headers || Object.keys(headers).length === 0;
       const hasCorrectAuth = !headersEmpty && !!authHeader && authHeader.startsWith(EXPECTED_AUTH_PREFIX);
+      // O x-webhook-secret e o header que o whatsapp-webhook REALMENTE valida.
+      // Sem ele, toda mensagem da instancia leva 401 e se perde.
+      const hasCorrectSecret = !WEBHOOK_SECRET || secretHeader === WEBHOOK_SECRET;
       const hasCorrectUrl = webhookUrl === EXPECTED_WEBHOOK_URL;
 
-      if (hasCorrectAuth && hasCorrectUrl) {
+      if (hasCorrectAuth && hasCorrectSecret && hasCorrectUrl) {
         results.push({ instance, store_id: conn.store_id, status: "ok", action: "none" });
         console.log(`[healthcheck] ok: ${instance}`);
         continue;
       }
 
       // Precisa corrigir
-      const reason = !hasCorrectAuth ? "sem Authorization header" : "URL incorreta";
+      const reason = !hasCorrectAuth
+        ? "sem Authorization header"
+        : !hasCorrectSecret
+        ? "x-webhook-secret ausente/errado"
+        : "URL incorreta";
       console.warn(`[healthcheck] corrigindo ${instance} — ${reason}`);
 
       const fixed = await fixWebhook(instance);
