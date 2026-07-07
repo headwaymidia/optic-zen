@@ -116,9 +116,15 @@ export default function WhatsAppPage() {
   const STORAGE_KEY = currentStoreId ? `wa-last-lead-${currentStoreId}` : null;
   const [selectedId, setSelectedId] = useState<string | null>(null);
 
-  // Restaura último lead ao carregar a loja (evita race condition com currentStoreId null)
+  // Restaura a conversa ao carregar/voltar para a pagina.
+  // Prioridade: ?lead= na URL (sobrevive a navegacao/back do navegador) > localStorage.
   useEffect(() => {
     if (!STORAGE_KEY) return;
+    const fromUrl = new URLSearchParams(window.location.search).get("lead");
+    if (fromUrl) {
+      setSelectedId(fromUrl);
+      return;
+    }
     try {
       const saved = localStorage.getItem(STORAGE_KEY);
       if (saved) setSelectedId(saved);
@@ -126,11 +132,30 @@ export default function WhatsAppPage() {
   }, [STORAGE_KEY]);
 
   // Salva último lead aberto no localStorage para restaurar ao voltar
+  // Fecha a vista do chat SEM esquecer a conversa: mantem o localStorage para
+  // que, ao ir para Agenda/outra pagina e voltar, a mesma conversa reabra.
+  const closeChatKeepMemory = () => {
+    setSelectedId(null);
+    try {
+      const url = new URL(window.location.href);
+      url.searchParams.delete("lead");
+      window.history.replaceState(window.history.state, "", url);
+    } catch {}
+  };
+
   const setSelectedIdPersist = (id: string | null) => {
     setSelectedId(id);
     try {
-      if (id) localStorage.setItem(STORAGE_KEY, id);
-      else localStorage.removeItem(STORAGE_KEY);
+      if (id) localStorage.setItem(STORAGE_KEY!, id);
+      else localStorage.removeItem(STORAGE_KEY!);
+    } catch {}
+    // Mantem a conversa na URL: navegar para outra pagina e voltar (ou usar o
+    // botao "voltar" do navegador) reabre a mesma conversa sem procurar de novo.
+    try {
+      const url = new URL(window.location.href);
+      if (id) url.searchParams.set("lead", id);
+      else url.searchParams.delete("lead");
+      window.history.replaceState(window.history.state, "", url);
     } catch {}
   };
   const [searchParams, setSearchParams] = useSearchParams();
@@ -211,7 +236,28 @@ export default function WhatsAppPage() {
       : format(customRange.from, "dd/MM/yyyy", { locale: ptBR })
     : "Selecionar datas";
 
-  const selected = leads.find((l) => l.id === selectedId) ?? null;
+  // Fallback: se o lead selecionado nao esta nas paginas carregadas (paginacao/filtros),
+  // busca direto pelo id — assim a conversa reabre mesmo que o lead nao esteja na 1a pagina.
+  const [fallbackLead, setFallbackLead] = useState<(typeof leads)[number] | null>(null);
+  useEffect(() => {
+    if (!selectedId || !currentStoreId || loading) { return; }
+    if (leads.some((l) => l.id === selectedId)) { setFallbackLead(null); return; }
+    let active = true;
+    supabase
+      .from("leads")
+      .select("*")
+      .eq("id", selectedId)
+      .eq("store_id", currentStoreId)
+      .maybeSingle()
+      .then(({ data }) => {
+        if (active) setFallbackLead((data as (typeof leads)[number]) ?? null);
+      });
+    return () => { active = false; };
+  }, [selectedId, currentStoreId, loading, leads]);
+
+  const selected =
+    leads.find((l) => l.id === selectedId) ??
+    (fallbackLead && fallbackLead.id === selectedId ? fallbackLead : null);
 
   return (
     <div className="flex h-full max-h-full min-h-0 w-full overflow-hidden bg-background" data-chat={selected ? "open" : "closed"}>
@@ -427,7 +473,7 @@ export default function WhatsAppPage() {
             Selecione um contato para iniciar a conversa
           </div>
         ) : (
-          <ChatPanel key={selected?.id} lead={selected} onBack={() => setSelectedIdPersist(null)} chatOnly initialMessage={draftMessage} onDraftConsumed={() => setDraftMessage("")} />
+          <ChatPanel key={selected?.id} lead={selected} onBack={closeChatKeepMemory} chatOnly initialMessage={draftMessage} onDraftConsumed={() => setDraftMessage("")} />
         )}
       </section>
 

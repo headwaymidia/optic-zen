@@ -12,10 +12,33 @@ function parseQuote(text: string): { quote: string | null; body: string } {
   return { quote: quoteBlock, body: text.slice(sepIdx + 2) };
 }
 
+/** Rotulo do separador de dia: "Hoje", "Ontem" ou dd/mm/aaaa. */
+function dayLabel(iso?: string | null): string | null {
+  if (!iso) return null;
+  const d = new Date(iso);
+  if (isNaN(d.getTime())) return null;
+  const startOfDay = (x: Date) => new Date(x.getFullYear(), x.getMonth(), x.getDate()).getTime();
+  const diffDays = Math.round((startOfDay(new Date()) - startOfDay(d)) / 86400000);
+  if (diffDays === 0) return "Hoje";
+  if (diffDays === 1) return "Ontem";
+  return d.toLocaleDateString("pt-BR", { day: "2-digit", month: "2-digit", year: "numeric" });
+}
+
+/** True se as duas datas caem em dias diferentes (ou a anterior nao existe). */
+function isNewDay(curr?: string | null, prev?: string | null): boolean {
+  if (!curr) return false;
+  if (!prev) return true;
+  const a = new Date(curr), b = new Date(prev);
+  if (isNaN(a.getTime()) || isNaN(b.getTime())) return false;
+  return a.getFullYear() !== b.getFullYear() || a.getMonth() !== b.getMonth() || a.getDate() !== b.getDate();
+}
+
 export interface ChatMessage {
   from: "lead" | "us";
   text: string;
   time: string;
+  /** ISO timestamp da mensagem — usado para os separadores de dia ("Hoje", "Ontem", data). */
+  dateISO?: string | null;
   status?: string | null;
   media_type?: string | null;
   media_url?: string | null;
@@ -148,8 +171,18 @@ export function MessageThread({ messages, sentMessages, isTyping, onReply, onRet
     <div ref={scrollRef} className="flex-1 min-h-0 overflow-y-auto overscroll-contain bg-muted/40 px-3 py-4 space-y-2">
       {messages.map((m, i) => {
         const { quote, body } = parseQuote(m.text ?? "");
+        const showDay = isNewDay(m.dateISO, messages[i - 1]?.dateISO);
+        const label = showDay ? dayLabel(m.dateISO) : null;
         return (
-          <div key={i} className={cn("group flex items-center gap-1", m.from === "us" ? "justify-end" : "justify-start")}>
+          <div key={i}>
+            {label && (
+              <div className="flex justify-center my-3">
+                <span className="rounded-full border bg-background/90 px-3 py-1 text-[11px] font-medium text-muted-foreground shadow-sm">
+                  {label}
+                </span>
+              </div>
+            )}
+          <div className={cn("group flex items-center gap-1", m.from === "us" ? "justify-end" : "justify-start")}>
             {m.from === "us" && onReply && (
               <button
                 type="button"
@@ -187,6 +220,7 @@ export function MessageThread({ messages, sentMessages, isTyping, onReply, onRet
                 <Reply className="h-3.5 w-3.5 text-muted-foreground" />
               </button>
             )}
+          </div>
           </div>
         );
       })}

@@ -578,6 +578,7 @@ export function ChatPanel({
   const allMessages: ChatMessage[] = waMessages.map((m) => ({
     from: m.from_me ? "us" : "lead",
     text: m.body ?? "",
+    dateISO: m.timestamp,
     time: new Date(m.timestamp).toLocaleTimeString("pt-BR", {
       hour: "2-digit",
       minute: "2-digit",
