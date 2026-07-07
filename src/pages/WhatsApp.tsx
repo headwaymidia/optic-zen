@@ -239,9 +239,12 @@ export default function WhatsAppPage() {
   // Fallback: se o lead selecionado nao esta nas paginas carregadas (paginacao/filtros),
   // busca direto pelo id — assim a conversa reabre mesmo que o lead nao esteja na 1a pagina.
   const [fallbackLead, setFallbackLead] = useState<(typeof leads)[number] | null>(null);
+  // Sinal estavel (boolean) para o efeito nao re-executar a cada re-render
+  // (o array `leads` muda de identidade em todo render do hook).
+  const selectedInList = !!selectedId && leads.some((l) => l.id === selectedId);
   useEffect(() => {
     if (!selectedId || !currentStoreId || loading) { return; }
-    if (leads.some((l) => l.id === selectedId)) { setFallbackLead(null); return; }
+    if (selectedInList) { setFallbackLead(null); return; }
     let active = true;
     supabase
       .from("leads")
@@ -253,7 +256,7 @@ export default function WhatsAppPage() {
         if (active) setFallbackLead((data as (typeof leads)[number]) ?? null);
       });
     return () => { active = false; };
-  }, [selectedId, currentStoreId, loading, leads]);
+  }, [selectedId, currentStoreId, loading, selectedInList]);
 
   const selected =
     leads.find((l) => l.id === selectedId) ??
