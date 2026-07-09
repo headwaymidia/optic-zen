@@ -148,11 +148,17 @@ Deno.serve(async (req)=>{
         connected_at: mapped === "connected" ? new Date().toISOString() : null
       }).eq("store_id", storeId);
 
-      // Quando conecta com sucesso: reconfigura webhook com Authorization header imediatamente
+      // Quando conecta com sucesso: reconfigura webhook com AMBOS os headers.
+      // CRITICO: precisa incluir o x-webhook-secret. Sem ele, a instancia passa a
+      // rejeitar as PROPRIAS mensagens com 401 (foi a causa de cliente novo conectar
+      // e nao receber nada). Antes so gravava Authorization -> quebrava o onboarding.
       if (mapped === "connected" && instance && EVOLUTION_URL && EVOLUTION_KEY && SUPABASE_ANON) {
         try {
           const webhookUrl = `${SUPABASE_URL}/functions/v1/whatsapp-webhook`;
-          await fetch(`${EVOLUTION_URL}/webhook/set/${instance}`, {
+          const onConnHeaders: Record<string, string> = { Authorization: `Bearer ${SUPABASE_ANON}` };
+          const wSecret = Deno.env.get("WEBHOOK_SECRET") ?? "";
+          if (wSecret) onConnHeaders["x-webhook-secret"] = wSecret;
+          const setRes = await fetch(`${EVOLUTION_URL}/webhook/set/${instance}`, {
             method: "POST",
             headers: { "apikey": EVOLUTION_KEY, "Content-Type": "application/json" },
             body: JSON.stringify({
@@ -161,12 +167,26 @@ Deno.serve(async (req)=>{
                 byEvents: false,
                 base64: false,
                 enabled: true,
-                headers: { Authorization: `Bearer ${SUPABASE_ANON}` },
+                headers: onConnHeaders,
                 events: ["MESSAGES_UPSERT", "MESSAGES_UPDATE", "CONNECTION_UPDATE"],
               }
             })
           });
-          console.log("[whatsapp-webhook] webhook reconfigurado on-connect:", instance);
+          // VERIFICACAO POS-CONEXAO: confirma que o webhook "pegou" na Evolution.
+          // Se nao pegou (status ruim), tenta mais uma vez — evita instancia zumbi
+          // que conecta mas nao recebe (o caso que exigia reconexao manual).
+          if (setRes.status >= 400) {
+            console.warn("[whatsapp-webhook] webhook on-connect falhou, tentando de novo:", instance, setRes.status);
+            await fetch(`${EVOLUTION_URL}/webhook/set/${instance}`, {
+              method: "POST",
+              headers: { "apikey": EVOLUTION_KEY, "Content-Type": "application/json" },
+              body: JSON.stringify({
+                webhook: { url: webhookUrl, byEvents: false, base64: false, enabled: true, headers: onConnHeaders, events: ["MESSAGES_UPSERT", "MESSAGES_UPDATE", "CONNECTION_UPDATE"] }
+              })
+            }).catch(() => {});
+          } else {
+            console.log("[whatsapp-webhook] webhook reconfigurado on-connect (com secret):", instance);
+          }
         } catch (e) {
           console.warn("[whatsapp-webhook] falha ao reconfigurar webhook on-connect:", e);
         }
