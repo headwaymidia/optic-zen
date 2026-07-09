@@ -194,6 +194,27 @@ export function ChatPanel({
     });
   };
 
+  // Confirma no banco se uma mensagem recem-enviada realmente saiu.
+  // Mensagens longas as vezes demoram a confirmar e o invoke() estoura o timeout
+  // ANTES da Evolution responder — mas a mensagem JA saiu. Antes de gritar "falhou",
+  // verificamos o banco: se a row existe, foi enviada (nao e erro, nao reenviar).
+  const confirmSentInDb = async (sinceIso: string): Promise<boolean> => {
+    if (!lead?.id || !currentStoreId) return false;
+    try {
+      const { data } = await supabase
+        .from("whatsapp_messages")
+        .select("id")
+        .eq("lead_id", lead.id)
+        .eq("store_id", currentStoreId)
+        .eq("from_me", true)
+        .gte("created_at", sinceIso)
+        .limit(1);
+      return !!data && data.length > 0;
+    } catch {
+      return false;
+    }
+  };
+
   const sendWithRetry = async (
     optimisticId: string,
     invoke: () => Promise<void>,
@@ -202,13 +223,24 @@ export function ChatPanel({
   ): Promise<boolean> => {
     // ENVIO UNICO — nunca reenviar no cliente. Um erro de RESPOSTA nao significa
     // que a mensagem nao saiu; reenviar duplicava (cliente recebia 2-3x).
+    const startedAt = new Date(Date.now() - 5000).toISOString(); // margem de 5s
     try {
       await invoke();
       return true;
     } catch (err: any) {
-      // A mensagem PODE ter saido mesmo com erro. NAO reenviar.
-      // Marcar como enviada-com-aviso e deixar o realtime trazer a row real se existir.
-      console.error("[sendWithRetry] invoke lancou erro (mensagem pode ter saido):", err);
+      // A mensagem PODE ter saido mesmo com erro (timeout de confirmacao em msg longa).
+      // Antes de mostrar falha: espera um instante e CONFIRMA no banco se ela saiu.
+      console.error("[sendWithRetry] invoke lancou erro (verificando se saiu):", err);
+      // Da tempo da Edge Function persistir + tenta 2 vezes.
+      for (let i = 0; i < 2; i++) {
+        await new Promise((r) => setTimeout(r, 1500));
+        if (await confirmSentInDb(startedAt)) {
+          // Saiu de verdade — trata como sucesso, sem alarme falso.
+          updateOptimistic(optimisticId, { status: "sent" });
+          return true;
+        }
+      }
+      // Realmente nao chegou no banco — ai sim e falha.
       updateOptimistic(optimisticId, { status: "failed" });
       toast({
         title: errorTitle,
