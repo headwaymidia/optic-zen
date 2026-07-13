@@ -205,6 +205,39 @@ export default function WhatsAppPage() {
     return () => document.body.removeAttribute("data-chat-fullscreen");
   }, [selectedId]);
 
+  // BUSCA NO BANCO: a lista carrega so 50 leads por pagina, entao filtrar apenas
+  // o que esta em memoria fazia a vendedora "nao achar" conversas antigas
+  // (parecia que o historico sumia). Com termo digitado, buscamos no banco inteiro.
+  const [searchResults, setSearchResults] = useState<typeof leads>([]);
+  const [searching, setSearching] = useState(false);
+  useEffect(() => {
+    const term = search.trim();
+    if (!term || !currentStoreId) {
+      setSearchResults([]);
+      setSearching(false);
+      return;
+    }
+    let active = true;
+    setSearching(true);
+    const timer = setTimeout(async () => {
+      const digits = term.replace(/\D/g, "");
+      // Busca por nome (parcial, sem case) OU por telefone (digitos)
+      const orParts = [`name.ilike.%${term}%`];
+      if (digits.length >= 3) orParts.push(`phone.ilike.%${digits}%`);
+      const { data } = await supabase
+        .from("leads")
+        .select("*")
+        .eq("store_id", currentStoreId)
+        .or(orParts.join(","))
+        .order("last_message_at", { ascending: false, nullsFirst: false })
+        .limit(50);
+      if (!active) return;
+      setSearchResults((data ?? []) as typeof leads);
+      setSearching(false);
+    }, 350); // debounce: nao busca a cada tecla
+    return () => { active = false; clearTimeout(timer); };
+  }, [search, currentStoreId]);
+
   const filtered = useMemo(() => {
     const range = getPeriodRange(period, customRange);
     const ts = (l: typeof leads[number]) => {
@@ -212,7 +245,10 @@ export default function WhatsAppPage() {
       return ref ? new Date(ref).getTime() : -Infinity;
     };
     const seen = new Set();
-    const uniqueLeads = leads.filter(l => { if (seen.has(l.id)) return false; seen.add(l.id); return true; });
+    // Com termo de busca: usa os resultados vindos do BANCO (todos os leads da loja).
+    // Sem termo: usa a lista paginada normal.
+    const base = search.trim() ? searchResults : leads;
+    const uniqueLeads = base.filter(l => { if (seen.has(l.id)) return false; seen.add(l.id); return true; });
     return uniqueLeads
       .filter((l) => {
         const term = search.toLowerCase();
@@ -228,7 +264,7 @@ export default function WhatsAppPage() {
         return true;
       })
       .sort((a, b) => ts(b) - ts(a));
-  }, [leads, search, period, customRange]);
+  }, [leads, searchResults, search, period, customRange]);
 
   const customLabel = customRange?.from
     ? customRange.to && customRange.to.getTime() !== customRange.from.getTime()
