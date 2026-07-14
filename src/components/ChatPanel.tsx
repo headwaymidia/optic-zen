@@ -131,6 +131,11 @@ export function ChatPanel({
     if (connection?.provider && connection.provider !== "evolution") return;
     // Se o estado local já diz conectado, não faz chamada extra
     if (connection?.status === "connected") return;
+    // "connecting" NAO impede envio: a sessao costuma estar funcional e a Evolution
+    // demora a reportar "open". Bloquear/atrasar aqui adicionava ~2s + 3 invokes por
+    // envio -> estourava o timeout e mostrava "Falha ao enviar" numa msg que SAIU.
+    // Se a sessao estiver mesmo caida, o envio falha adiante e o erro e mostrado.
+    if (connection?.status === "connecting") return;
     try {
       const { data: statusData } = await supabase.functions.invoke("whatsapp-evolution", {
         body: { action: "status", store_id: currentStoreId },
