@@ -143,10 +143,58 @@ Deno.serve(async (req)=>{
     if (event === "connection.update") {
       const state = payload.data?.state ?? payload.state;
       const mapped = state === "open" ? "connected" : state === "connecting" ? "connecting" : "disconnected";
+
+      // Estado ANTERIOR — para so avisar na TRANSICAO (evita spam a cada evento).
+      const { data: prevConn } = await admin
+        .from("whatsapp_connections")
+        .select("status")
+        .eq("store_id", storeId)
+        .maybeSingle();
+      const wasConnected = prevConn?.status === "connected";
+
       await admin.from("whatsapp_connections").update({
         status: mapped,
         connected_at: mapped === "connected" ? new Date().toISOString() : null
       }).eq("store_id", storeId);
+
+      // AVISO IMEDIATO na queda: antes so avisava depois de 3 tentativas de
+      // reconexao (>2min), e o monitor de 5min ignora quem ja esta "disconnected"
+      // -> a loja caia e NINGUEM sabia. A vendedora descobria tentando enviar e
+      // falhando. Agora avisa (sino + push) assim que cai.
+      if (mapped === "disconnected" && wasConnected) {
+        try {
+          const { data: mbs } = await admin
+            .from("store_members")
+            .select("user_id")
+            .eq("store_id", storeId)
+            .in("role", ["Dono", "Gerente"]);
+          if (mbs?.length) {
+            await admin.from("notifications").insert(
+              mbs.map((m: any) => ({
+                user_id: m.user_id,
+                store_id: storeId,
+                type: "whatsapp_disconnected",
+                title: "⚠️ WhatsApp desconectado",
+                body: "O WhatsApp da loja caiu. As mensagens não serão enviadas nem recebidas até reconectar em Configurações → WhatsApp.",
+                read: false,
+              }))
+            );
+          }
+          // Push no celular — o dono pode nao estar com o CRM aberto.
+          fetch(`${SUPABASE_URL}/functions/v1/send-push-notification`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json", "Authorization": `Bearer ${SERVICE_ROLE}` },
+            body: JSON.stringify({
+              store_id: storeId,
+              title: "⚠️ WhatsApp desconectado",
+              body: "O WhatsApp da loja caiu. Reconecte em Configurações → WhatsApp.",
+            }),
+          }).catch(() => {});
+          console.log("[whatsapp-webhook] alerta de desconexao enviado:", storeId);
+        } catch (e) {
+          console.warn("[whatsapp-webhook] falha ao alertar desconexao:", e);
+        }
+      }
 
       // Quando conecta com sucesso: reconfigura webhook com AMBOS os headers.
       // CRITICO: precisa incluir o x-webhook-secret. Sem ele, a instancia passa a
