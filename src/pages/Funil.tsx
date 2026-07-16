@@ -43,6 +43,8 @@ const STATUS_DOT_COLORS: Record<LeadStatus, string> = {
   "Compareceu e Não Comprou": "bg-rose-500",
   "Em Negociação": "bg-fuchsia-500",
   Repescagem: "bg-indigo-500",
+  Patologia: "bg-red-600",
+  "Fora de Região": "bg-slate-500",
 };
 
 const ALL_SALES = "__all__";

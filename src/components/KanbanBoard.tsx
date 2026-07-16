@@ -40,6 +40,8 @@ const STATUS_COLORS: Record<LeadStatus, string> = {
   "Compareceu e Não Comprou": "bg-rose-500",
   "Em Negociação": "bg-fuchsia-500",
   Repescagem: "bg-indigo-500",
+  Patologia: "bg-red-600",
+  "Fora de Região": "bg-slate-500",
 };
 
 const PRIORITY_VARIANT: Record<string, "default" | "secondary" | "destructive" | "outline"> = {
@@ -56,6 +58,8 @@ const INTEREST_TAG_STYLES: Record<string, string> = {
   "Lentes de Contato": "bg-cyan-100 text-cyan-800 dark:bg-cyan-900/40 dark:text-cyan-200",
   Armação: "bg-violet-100 text-violet-800 dark:bg-violet-900/40 dark:text-violet-200",
   Infantil: "bg-pink-100 text-pink-800 dark:bg-pink-900/40 dark:text-pink-200",
+  Patologia: "bg-red-100 text-red-800 dark:bg-red-900/40 dark:text-red-200",
+  "Fora de Região": "bg-slate-100 text-slate-700 dark:bg-slate-800/60 dark:text-slate-200",
 };
 
 const SOURCE_EMOJI: Record<string, string> = {

@@ -32,6 +32,8 @@ const STATUS_COLORS: Record<LeadStatus, string> = {
   "Compareceu e Não Comprou": "hsl(220 9% 55%)", // cinza
   "Em Negociação": "hsl(290 70% 55%)", // magenta
   Repescagem: "hsl(25 95% 58%)", // laranja
+  Patologia: "hsl(0 72% 45%)", // vermelho escuro
+  "Fora de Região": "hsl(215 16% 47%)", // cinza-azulado
 };
 
 interface DayDatum {

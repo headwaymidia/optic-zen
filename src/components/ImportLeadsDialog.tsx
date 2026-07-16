@@ -20,7 +20,8 @@ const MAX_ROWS = 500;
 const BATCH = 50;
 const VALID_STATUSES = new Set([
   "Novo Lead", "Em Atendimento", "Aguardando Resposta", "Agendou Exame",
-  "Não Compareceu", "Compareceu e Comprou", "Compareceu e Não Comprou", "Repescagem",
+  "Não Compareceu", "Compareceu e Comprou", "Compareceu e Não Comprou",
+  "Em Negociação", "Repescagem", "Patologia", "Fora de Região",
 ]);
 
 type ParsedRow = {

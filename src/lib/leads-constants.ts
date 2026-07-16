@@ -7,7 +7,9 @@ export type LeadStatus =
   | "Compareceu e Comprou"
   | "Compareceu e Não Comprou"
   | "Em Negociação"
-  | "Repescagem";
+  | "Repescagem"
+  | "Patologia"
+  | "Fora de Região";
 
 export type LeadPriority = "Baixa" | "Média" | "Alta";
 
@@ -21,6 +23,8 @@ export const LEAD_STATUSES: LeadStatus[] = [
   "Compareceu e Não Comprou",
   "Em Negociação",
   "Repescagem",
+  "Patologia",
+  "Fora de Região",
 ];
 
 export const PRIORITIES: LeadPriority[] = ["Baixa", "Média", "Alta"];
@@ -43,6 +47,8 @@ export const INTEREST_TAGS = [
   "Lentes de Contato",
   "Armação",
   "Infantil",
+  "Patologia",
+  "Fora de Região",
 ] as const;
 export type InterestTag = (typeof INTEREST_TAGS)[number];
 
