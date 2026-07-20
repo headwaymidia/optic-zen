@@ -156,6 +156,8 @@ function AgendaInner() {
   const [reschedOpen, setReschedOpen] = useState(false);
   const [reschedDate, setReschedDate] = useState<Date | undefined>();
   const [scheduleOpen, setScheduleOpen] = useState(false);
+  // Dia cujo detalhe (lista completa de agendamentos) esta aberto.
+  const [dayDetail, setDayDetail] = useState<Date | null>(null);
 
   const allEvents = useMemo(() => buildEvents(leads), [leads]);
   const events = useMemo(
@@ -306,9 +308,16 @@ function AgendaInner() {
                 >
                   <div className="flex justify-end">
                     <span
+                      role={dayEvents.length > 0 ? "button" : undefined}
+                      tabIndex={dayEvents.length > 0 ? 0 : undefined}
+                      onClick={() => { if (dayEvents.length > 0) setDayDetail(day); }}
+                      onKeyDown={(e) => { if (e.key === "Enter" && dayEvents.length > 0) setDayDetail(day); }}
+                      title={dayEvents.length > 0 ? `Ver ${dayEvents.length} agendamento(s) do dia` : undefined}
                       className={cn(
                         "text-xs h-6 w-6 inline-flex items-center justify-center rounded-full",
-                        isToday(day) && "bg-emerald-500 text-white font-semibold"
+                        isToday(day) && "bg-emerald-500 text-white font-semibold",
+                        dayEvents.length > 0 && !isToday(day) && "cursor-pointer hover:bg-muted font-medium",
+                        dayEvents.length > 0 && isToday(day) && "cursor-pointer"
                       )}
                     >
                       {format(day, "d")}
@@ -331,9 +340,14 @@ function AgendaInner() {
                       </button>
                     ))}
                     {dayEvents.length > 3 && (
-                      <span className="text-[10px] text-muted-foreground px-1">
+                      <button
+                        type="button"
+                        onClick={() => setDayDetail(day)}
+                        className="text-[10px] text-primary font-medium px-1 text-left hover:underline"
+                        title="Ver todos os agendamentos do dia"
+                      >
                         +{dayEvents.length - 3} mais
-                      </span>
+                      </button>
                     )}
                   </div>
                 </div>
@@ -394,11 +408,16 @@ function AgendaInner() {
                       {slotEvents.map((ev) => (
                         <span
                           key={ev.id}
+                          role="button"
+                          tabIndex={0}
+                          onClick={(e) => { e.stopPropagation(); openEvent(ev); }}
+                          onKeyDown={(e) => { if (e.key === "Enter") { e.stopPropagation(); openEvent(ev); } }}
                           className={cn(
-                            "block text-[11px] px-1.5 py-0.5 rounded border truncate",
+                            "block text-[11px] px-1.5 py-0.5 rounded border truncate cursor-pointer hover:brightness-95",
                             TYPE_STYLES[ev.type].bg,
                             ev.isPast && "opacity-50"
                           )}
+                          title={`${ev.label} — ${TYPE_STYLES[ev.type].label}`}
                         >
                           {ev.label}
                         </span>
@@ -454,6 +473,48 @@ function AgendaInner() {
       )}
       </>
       )}
+
+      {/* Detalhe do dia — lista TODOS os agendamentos (o mes so cabe 3 por celula) */}
+      <Dialog open={!!dayDetail} onOpenChange={(o) => !o && setDayDetail(null)}>
+        <DialogContent className="max-h-[80vh] overflow-y-auto">
+          {dayDetail && (() => {
+            const list = eventsByDay.get(format(dayDetail, "yyyy-MM-dd")) ?? [];
+            return (
+              <>
+                <DialogHeader>
+                  <DialogTitle>
+                    {format(dayDetail, "EEEE, dd 'de' MMMM", { locale: ptBR })}
+                  </DialogTitle>
+                </DialogHeader>
+                <p className="text-sm text-muted-foreground -mt-2">
+                  {list.length} agendamento{list.length === 1 ? "" : "s"} neste dia
+                </p>
+                <div className="flex flex-col gap-2 py-2">
+                  {list.map((ev) => (
+                    <button
+                      key={ev.id}
+                      type="button"
+                      onClick={() => { setDayDetail(null); openEvent(ev); }}
+                      className={cn(
+                        "text-sm px-3 py-2 rounded border text-left flex items-center gap-2 hover:brightness-95",
+                        TYPE_STYLES[ev.type].bg,
+                        ev.isPast && "opacity-60"
+                      )}
+                    >
+                      <span className={cn("h-2 w-2 rounded-full shrink-0", TYPE_STYLES[ev.type].dot)} />
+                      {ev.type === "exam" && (
+                        <span className="font-semibold tabular-nums">{format(ev.date, "HH:mm")}</span>
+                      )}
+                      <span className="truncate flex-1">{ev.label}</span>
+                      <span className="text-[10px] opacity-70 shrink-0">{TYPE_STYLES[ev.type].label}</span>
+                    </button>
+                  ))}
+                </div>
+              </>
+            );
+          })()}
+        </DialogContent>
+      </Dialog>
 
       {/* Event Modal */}
       <Dialog open={!!selectedEvent && !reschedOpen} onOpenChange={(o) => !o && setSelectedEvent(null)}>
