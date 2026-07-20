@@ -17,6 +17,7 @@ import {
   Loader2,
   LogOut,
   QrCode,
+  History,
   RefreshCw,
   ShieldOff,
   Smartphone,
@@ -50,7 +51,7 @@ export function WhatsAppPanel({ storeId, role }: Props) {
   };
 
   const [qrCode, setQrCode] = useState<string | null>(null);
-  const [busy, setBusy] = useState<"connect" | "disconnect" | null>(null);
+  const [busy, setBusy] = useState<"connect" | "disconnect" | "sync" | null>(null);
   const [lastConnectAt, setLastConnectAt] = useState<number>(0);
   const CONNECT_COOLDOWN_MS = 30000; // 30s entre tentativas de conexão
   const [localStatus, setLocalStatus] = useState<LocalWhatsAppStatus>("checking");
@@ -94,6 +95,44 @@ export function WhatsAppPanel({ storeId, role }: Props) {
     if (error) throw new Error(error.message || `Erro ao chamar whatsapp-evolution`);
     if (data?.error) throw new Error(data.error);
     return data;
+  }
+
+  // Puxa da Evolution as conversas recentes e importa o que faltou no CRM.
+  // Caso de uso: sessao caiu no fim de semana, vendedora respondeu pelo celular
+  // e na segunda a conversa aparece vazia. NAO desconecta nem mexe na sessao.
+  async function handleSyncHistory() {
+    setBusy("sync");
+    try {
+      const { data, error } = await supabase.functions.invoke("whatsapp-sync-history", {
+        body: { store_id: storeId, days: 7 },
+      });
+      if (error) throw new Error(error.message || "Erro ao sincronizar histórico");
+      if (data?.error) throw new Error(data.error);
+
+      const msgs = data?.mensagens_importadas ?? 0;
+      const leads = data?.leads_criados ?? 0;
+      if (msgs === 0) {
+        toast({
+          title: "Tudo em dia",
+          description: "Nenhuma mensagem nova encontrada nos últimos 7 dias.",
+        });
+      } else {
+        toast({
+          title: "Histórico sincronizado",
+          description: `${msgs} mensagem(ns) importada(s)${leads > 0 ? ` e ${leads} contato(s) novo(s)` : ""}.`,
+        });
+      }
+      // Atualiza as listas ja carregadas (conversas/leads) sem recarregar a pagina.
+      queryClient.invalidateQueries({ queryKey: ["leads"] });
+    } catch (err: any) {
+      toast({
+        title: "Não foi possível sincronizar",
+        description: humanizeError(err),
+        variant: "destructive",
+      });
+    } finally {
+      setBusy(null);
+    }
   }
 
   function extractQr(res: any): string | null {
@@ -399,6 +438,25 @@ export function WhatsAppPanel({ storeId, role }: Props) {
                       </p>
                     )}
                   </div>
+                </div>
+                <div className="space-y-2">
+                  <Button
+                    variant="outline"
+                    onClick={handleSyncHistory}
+                    disabled={busy !== null}
+                    className="w-full h-9 gap-2"
+                  >
+                    {busy === "sync" ? (
+                      <Loader2 className="h-4 w-4 animate-spin" />
+                    ) : (
+                      <History className="h-4 w-4" />
+                    )}
+                    Sincronizar histórico
+                  </Button>
+                  <p className="text-[11px] text-muted-foreground text-center px-2">
+                    Traz para o CRM as conversas dos últimos 7 dias respondidas pelo
+                    celular. Não desconecta o WhatsApp.
+                  </p>
                 </div>
                 {canEdit && (
                   <Button
