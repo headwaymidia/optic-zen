@@ -5,7 +5,7 @@ import { useLeads } from "@/hooks/useLeads";
 import { useStores } from "@/hooks/useStores";
 import { useStoreMembers } from "@/hooks/useStoreMembers";
 import { Input } from "@/components/ui/input";
-import { supabase } from "@/integrations/supabase/client";
+import { supabase, LEAD_STATUSES } from "@/integrations/supabase/client";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { ChatPanel } from "@/components/ChatPanel";
 import { Search, MessageSquarePlus, MessageCircle, CalendarRange } from "lucide-react";
@@ -264,7 +264,7 @@ export default function WhatsAppPage() {
         return true;
       })
       .sort((a, b) => ts(b) - ts(a));
-  }, [leads, searchResults, search, period, customRange]);
+  }, [leads, searchResults, search, statusFilter, sellerFilter, period, customRange]);
 
   const customLabel = customRange?.from
     ? customRange.to && customRange.to.getTime() !== customRange.from.getTime()
@@ -340,13 +340,11 @@ export default function WhatsAppPage() {
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="all">Todos os status</SelectItem>
-                <SelectItem value="Novo Lead">Novo Lead</SelectItem>
-                <SelectItem value="Em Atendimento">Em Atendimento</SelectItem>
-                <SelectItem value="Aguardando Resposta">Aguardando Resposta</SelectItem>
-                <SelectItem value="Agendou Exame">Agendou Exame</SelectItem>
-                <SelectItem value="Não Compareceu">Não Compareceu</SelectItem>
-                <SelectItem value="Compareceu e Comprou">Comprou</SelectItem>
-                <SelectItem value="Repescagem">Repescagem</SelectItem>
+                {/* Lista mestra: novos status (ex.: Patologia, Fora de Região)
+                    aparecem aqui automaticamente, sem ficar desatualizada. */}
+                {LEAD_STATUSES.map((st) => (
+                  <SelectItem key={st} value={st}>{st}</SelectItem>
+                ))}
               </SelectContent>
             </Select>
             {members.length > 0 && (
