@@ -41,11 +41,21 @@ export default function AppLayout() {
   if (!session) return <Navigate to="/auth" replace />;
   if (stores.length === 0) return <Navigate to="/onboarding" replace />;
 
+  // O SidebarProvider GRAVA a preferencia (cookie "sidebar:state") ao recolher,
+  // mas nunca a LIA de volta: sem defaultOpen, a barra reabria sozinha a cada
+  // montagem (ex.: ao voltar de outra aba). Aqui lemos a preferencia salva.
+  const sidebarDefaultOpen = (() => {
+    if (typeof document === "undefined") return true;
+    const m = document.cookie.match(/(?:^|;\s*)sidebar:state=([^;]*)/);
+    return m ? m[1] === "true" : true;
+  })();
+
   return (
     <LeadsProvider>
       <SubscriptionProvider>
         <TrialGuard>
           <SidebarProvider
+            defaultOpen={sidebarDefaultOpen}
             style={
               {
                 "--sidebar-width": "280px",
