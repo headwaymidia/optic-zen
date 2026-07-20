@@ -12,6 +12,11 @@ const SERVICE_ROLE = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
 const EXPECTED_WEBHOOK_URL = `${SUPABASE_URL}/functions/v1/whatsapp-webhook`;
 const EXPECTED_AUTH_PREFIX = "Bearer ";
 const WEBHOOK_SECRET = Deno.env.get("WEBHOOK_SECRET") ?? "";
+// Eventos que a instancia PRECISA assinar. MESSAGES_SET traz o historico enviado
+// pelo WhatsApp quando a sessao re-pareia (ex.: conversas do fim de semana feitas
+// pelo celular). Sem verificar isto aqui, instancias antigas nunca ganhariam o
+// evento novo — a verificacao passaria e o fix nunca rodaria.
+const REQUIRED_EVENTS = ["MESSAGES_UPSERT", "MESSAGES_UPDATE", "CONNECTION_UPDATE", "MESSAGES_SET"];
 const ADMIN_EMAIL = "headwaymidia@gmail.com";
 
 // Envia notificação interna quando loja desconecta
@@ -103,7 +108,7 @@ async function fixWebhook(instance: string): Promise<boolean> {
           Authorization: `Bearer ${SUPABASE_ANON}`,
           ...(WEBHOOK_SECRET ? { "x-webhook-secret": WEBHOOK_SECRET } : {}),
         },
-        events: ["MESSAGES_UPSERT", "MESSAGES_UPDATE", "CONNECTION_UPDATE"],
+        events: ["MESSAGES_UPSERT", "MESSAGES_UPDATE", "CONNECTION_UPDATE", "MESSAGES_SET"],
       },
     }),
   });
@@ -182,8 +187,10 @@ Deno.serve(async (req) => {
       // Sem ele, toda mensagem da instancia leva 401 e se perde.
       const hasCorrectSecret = !WEBHOOK_SECRET || secretHeader === WEBHOOK_SECRET;
       const hasCorrectUrl = webhookUrl === EXPECTED_WEBHOOK_URL;
+      const wEvents = Array.isArray(webhookData?.events) ? webhookData.events : [];
+      const hasAllEvents = REQUIRED_EVENTS.every((e) => wEvents.includes(e));
 
-      if (hasCorrectAuth && hasCorrectSecret && hasCorrectUrl) {
+      if (hasCorrectAuth && hasCorrectSecret && hasCorrectUrl && hasAllEvents) {
         results.push({ instance, store_id: conn.store_id, status: "ok", action: "none" });
         console.log(`[healthcheck] ok: ${instance}`);
         continue;
@@ -194,6 +201,8 @@ Deno.serve(async (req) => {
         ? "sem Authorization header"
         : !hasCorrectSecret
         ? "x-webhook-secret ausente/errado"
+        : !hasAllEvents
+        ? "faltam eventos (ex.: MESSAGES_SET)"
         : "URL incorreta";
       console.warn(`[healthcheck] corrigindo ${instance} — ${reason}`);
 

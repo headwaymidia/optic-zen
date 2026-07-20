@@ -231,7 +231,7 @@ Deno.serve(async (req) => {
             base64: false,
             enabled: true,
             headers: webhookHeaders,
-            events: ["MESSAGES_UPSERT", "MESSAGES_UPDATE", "CONNECTION_UPDATE"],
+            events: ["MESSAGES_UPSERT", "MESSAGES_UPDATE", "CONNECTION_UPDATE", "MESSAGES_SET"],
           }
         }),
       });

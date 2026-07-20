@@ -216,7 +216,7 @@ Deno.serve(async (req)=>{
                 base64: false,
                 enabled: true,
                 headers: onConnHeaders,
-                events: ["MESSAGES_UPSERT", "MESSAGES_UPDATE", "CONNECTION_UPDATE"],
+                events: ["MESSAGES_UPSERT", "MESSAGES_UPDATE", "CONNECTION_UPDATE", "MESSAGES_SET"],
               }
             })
           });
@@ -229,7 +229,7 @@ Deno.serve(async (req)=>{
               method: "POST",
               headers: { "apikey": EVOLUTION_KEY, "Content-Type": "application/json" },
               body: JSON.stringify({
-                webhook: { url: webhookUrl, byEvents: false, base64: false, enabled: true, headers: onConnHeaders, events: ["MESSAGES_UPSERT", "MESSAGES_UPDATE", "CONNECTION_UPDATE"] }
+                webhook: { url: webhookUrl, byEvents: false, base64: false, enabled: true, headers: onConnHeaders, events: ["MESSAGES_UPSERT", "MESSAGES_UPDATE", "CONNECTION_UPDATE", "MESSAGES_SET"] }
               })
             }).catch(() => {});
           } else {
@@ -323,6 +323,94 @@ Deno.serve(async (req)=>{
         }
       });
     }
+    // HISTORICO (messages.set): quando a instancia re-pareia (QR), o WhatsApp envia
+    // as conversas do periodo em que a sessao esteve caida (ex.: fim de semana
+    // respondido pelo celular). Antes este evento era IGNORADO — o historico chegava
+    // na Evolution e morria ali; o CRM mostrava a conversa "vazia" na segunda.
+    // Importacao SILENCIOSA: grava mensagens e cria leads, mas SEM push, SEM badge
+    // e SEM download de midia (sao mensagens antigas; corpo/tipo bastam).
+    if (event === "messages.set") {
+      const raw = payload.data;
+      const items = Array.isArray(raw) ? raw : Array.isArray(raw?.messages) ? raw.messages : [];
+      const cutoffMs = Date.now() - 30 * 24 * 60 * 60 * 1000; // janela: ultimos 30 dias
+      const MAX = 800; // protecao contra timeout da edge function
+      let imported = 0, skipped = 0;
+      const latestByLead = new Map();
+      for (const msg of items.slice(0, MAX)) {
+        try {
+          const key = msg?.key ?? {};
+          const remoteJid = key.remoteJid ?? "";
+          // grupos, broadcast e @lid (resolver lid = 1 chamada de API por msg; caro p/ lote)
+          if (!remoteJid || remoteJid.endsWith("@g.us") || remoteJid === "status@broadcast" || remoteJid.endsWith("@lid")) { skipped++; continue; }
+          const messageId = key.id ?? null;
+          if (!messageId) { skipped++; continue; }
+          const tsMs = msg.messageTimestamp ? Number(msg.messageTimestamp) * 1000 : NaN;
+          if (!Number.isFinite(tsMs) || tsMs < cutoffMs) { skipped++; continue; }
+          const fromMe = Boolean(key.fromMe);
+          const timestamp = new Date(tsMs).toISOString();
+          const phoneDigits = digitsOnly(remoteJid.split("@")[0]);
+          const last10 = phoneDigits.slice(-10);
+          if (!last10) { skipped++; continue; }
+          const body = extractText(msg.message);
+          const mediaType = detectMediaType(msg.message);
+          if (!body && !mediaType) { skipped++; continue; }
+
+          let leadId = null;
+          const { data: leadRow } = await admin.rpc("find_lead_by_phone", { p_store_id: storeId, p_last10: last10 });
+          leadId = leadRow ?? null;
+          if (!leadId) {
+            const fullPhone = phoneDigits.startsWith("55") ? phoneDigits : `55${phoneDigits}`;
+            const pushName = msg.pushName || null;
+            const { data: newLead } = await admin.from("leads").upsert({
+              store_id: storeId,
+              name: (!fromMe && pushName) ? pushName : `+${fullPhone}`,
+              phone: fullPhone,
+              status: fromMe ? "Em Atendimento" : "Novo Lead",
+              lead_source: "WhatsApp",
+              created_at: timestamp,
+              updated_at: new Date().toISOString(),
+            }, { onConflict: "store_id,phone", ignoreDuplicates: false }).select("id").maybeSingle();
+            leadId = newLead?.id ?? null;
+          }
+          if (!leadId) { skipped++; continue; }
+
+          await admin.from("whatsapp_messages").upsert({
+            store_id: storeId,
+            lead_id: leadId,
+            instance_name: instance,
+            remote_jid: remoteJid,
+            message_id: messageId,
+            from_me: fromMe,
+            body: body || null,
+            media_type: mediaType,
+            media_url: null,
+            timestamp,
+            status: fromMe ? "sent" : "received"
+          }, { onConflict: "message_id", ignoreDuplicates: true });
+          imported++;
+
+          const prev = latestByLead.get(leadId);
+          if (!prev || prev.ts < timestamp) {
+            latestByLead.set(leadId, { ts: timestamp, preview: (body || (mediaType ? `[${mediaType}]` : "")).slice(0, 100) });
+          }
+        } catch (_e) { skipped++; }
+      }
+      // Atualiza a ordenacao da lista de conversas — so se o historico e mais novo
+      // que o que o lead ja tem (nunca "volta" uma conversa no tempo).
+      for (const [lid, info] of latestByLead) {
+        try {
+          const { data: cur } = await admin.from("leads").select("last_message_at").eq("id", lid).maybeSingle();
+          if (!cur?.last_message_at || new Date(cur.last_message_at).getTime() < new Date(info.ts).getTime()) {
+            await admin.from("leads").update({ last_message_at: info.ts, last_message_preview: info.preview, updated_at: new Date().toISOString() }).eq("id", lid);
+          }
+        } catch (_e) { /* segue */ }
+      }
+      console.log(`[whatsapp-webhook] historico importado (${instance}): ${imported} msgs, ${skipped} ignoradas, ${latestByLead.size} leads`);
+      return new Response(JSON.stringify({ ok: true, imported, skipped }), {
+        headers: { ...corsHeaders, "Content-Type": "application/json" }
+      });
+    }
+
     if (event === "messages.update" || event === "messages.status" || event === "message.ack") {
       // Evolution envia atualizações de ACK aqui (DELIVERY_ACK, READ, etc.)
       const dataArr = Array.isArray(payload.data) ? payload.data : [payload.data];
