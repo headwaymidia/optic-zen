@@ -1,4 +1,4 @@
-import { createContext, useContext, useEffect, useState, ReactNode } from "react";
+import { createContext, useContext, useEffect, useState, useMemo, useRef, useCallback, ReactNode } from "react";
 import type { Session, User } from "@supabase/supabase-js";
 import { supabase, Profile } from "@/integrations/supabase/client";
 
@@ -17,20 +17,37 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [profile, setProfile] = useState<Profile | null>(null);
   const [loading, setLoading] = useState(true);
 
+  // Ultimo usuario visto — para so reagir a MUDANCA real de usuario.
+  const lastUserIdRef = useRef<string | null>(null);
+
   useEffect(() => {
     const { data: sub } = supabase.auth.onAuthStateChange((_evt, s) => {
-      setSession(s);
-      if (s?.user) {
-        setTimeout(() => {
-          fetchProfile(s.user.id);
-        }, 0);
-      } else {
-        setProfile(null);
+      const uid = s?.user?.id ?? null;
+
+      // Mantem o MESMO objeto de sessao quando e o mesmo usuario (ex.: evento
+      // TOKEN_REFRESHED disparado ao voltar para a aba). Antes, cada evento criava
+      // um objeto novo -> todos os consumidores re-renderizavam e seus efeitos
+      // re-rodavam (recarregando lojas/leads) -> a tela "resetava" e o usuario
+      // perdia o ponto onde estava ao trocar de aba e voltar.
+      setSession((prev) => {
+        if (prev && uid && prev.user?.id === uid) return prev;
+        return s;
+      });
+
+      // Perfil so e rebuscado quando o usuario realmente muda (login/logout).
+      if (uid !== lastUserIdRef.current) {
+        lastUserIdRef.current = uid;
+        if (uid) {
+          setTimeout(() => { fetchProfile(uid); }, 0);
+        } else {
+          setProfile(null);
+        }
       }
     });
 
     supabase.auth.getSession().then(({ data: { session: s } }) => {
       setSession(s);
+      lastUserIdRef.current = s?.user?.id ?? null;
       if (s?.user) {
         fetchProfile(s.user.id).finally(() => setLoading(false));
       } else {
@@ -54,18 +71,21 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setProfile(data as Profile | null);
   }
 
-  async function signOut() {
+  const signOut = useCallback(async () => {
     await supabase.auth.signOut();
     setProfile(null);
-  }
+    lastUserIdRef.current = null;
+  }, []);
 
-  return (
-    <AuthContext.Provider
-      value={{ session, user: session?.user ?? null, profile, loading, signOut }}
-    >
-      {children}
-    </AuthContext.Provider>
+  const user = session?.user ?? null;
+  // Memoizado: sem isto, cada render criava um objeto de contexto novo e
+  // re-disparava efeitos de quem consome useAuth().
+  const value = useMemo(
+    () => ({ session, user, profile, loading, signOut }),
+    [session, user, profile, loading, signOut]
   );
+
+  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 }
 
 export function useAuth() {
