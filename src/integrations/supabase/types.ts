@@ -116,7 +116,6 @@ export type Database = {
           responsible_id: string | null
           rua: string | null
           sale_value: number | null
-          sale_date: string | null
           status: string
           store_id: string
           unread_count: number
@@ -152,7 +151,6 @@ export type Database = {
           responsible_id?: string | null
           rua?: string | null
           sale_value?: number | null
-          sale_date?: string | null
           status?: string
           store_id: string
           unread_count?: number
@@ -188,7 +186,6 @@ export type Database = {
           responsible_id?: string | null
           rua?: string | null
           sale_value?: number | null
-          sale_date?: string | null
           status?: string
           store_id?: string
           unread_count?: number
