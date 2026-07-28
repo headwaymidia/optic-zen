@@ -365,12 +365,12 @@ export function ChatPanel({
     // base64 de audio longo (1-2 min) estoura o limite de payload da edge function
     // -> por isso audio longo nao ia. URL e pequena, resolve independente da duracao.
     let audioPublicUrl: string | null = null;
+    // Formato REAL do que foi gravado. Chrome grava webm; Firefox/alguns grava ogg.
+    // Forcar ".ogg" num arquivo webm fazia o WhatsApp nao tocar o audio.
+    const realType = blob.type || "audio/webm";
+    const isOgg = realType.includes("ogg");
+    const ext = isOgg ? "ogg" : "webm";
     try {
-      // Formato REAL do que foi gravado. Chrome grava webm; Firefox/alguns grava ogg.
-      // Forcar ".ogg" num arquivo webm fazia o WhatsApp nao tocar o audio.
-      const realType = blob.type || "audio/webm";
-      const isOgg = realType.includes("ogg");
-      const ext = isOgg ? "ogg" : "webm";
       const path = `${currentStoreId}/audio-${Date.now()}-${crypto.randomUUID()}.${ext}`;
       const { error: upErr } = await supabase.storage
         .from("whatsapp-media")

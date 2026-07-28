@@ -97,6 +97,7 @@ export interface Lead {
   notes: string | null;
   responsible_id: string | null;
   sale_value: number | null;
+  sale_date?: string | null;
   last_interaction: string | null;
   lead_source: LeadSource | string | null;
   interest_tag: InterestTag | string | null;
