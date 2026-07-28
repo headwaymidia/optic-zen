@@ -365,6 +365,10 @@ Deno.serve(async (req) => {
           body: JSON.stringify({
             number: phoneDigits,
             audio: audioPayload,
+            // encoding=true força a Evolution a transcodificar para Opus/OGG (o
+            // formato que o WhatsApp toca como mensagem de voz). Sem isto, um audio
+            // gravado em webm (Chrome) chegava sem tocar. Independe do navegador.
+            encoding: true,
           }),
         });
 
