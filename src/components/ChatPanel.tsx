@@ -236,8 +236,10 @@ export function ChatPanel({
       // A mensagem PODE ter saido mesmo com erro (timeout de confirmacao em msg longa).
       // Antes de mostrar falha: espera um instante e CONFIRMA no banco se ela saiu.
       console.error("[sendWithRetry] invoke lancou erro (verificando se saiu):", err);
-      // Da tempo da Edge Function persistir + tenta 2 vezes.
-      for (let i = 0; i < 2; i++) {
+      // Da tempo da Edge Function persistir + confirma no banco. Ate 5 tentativas
+      // (~7,5s): audio/midia demora mais a voltar (upload + Evolution + webhook)
+      // que texto, entao a janela precisa ser maior para nao dar falso erro.
+      for (let i = 0; i < 5; i++) {
         await new Promise((r) => setTimeout(r, 1500));
         if (await confirmSentInDb(startedAt)) {
           // Saiu de verdade — trata como sucesso, sem alarme falso.
