@@ -364,10 +364,15 @@ export function ChatPanel({
     // -> por isso audio longo nao ia. URL e pequena, resolve independente da duracao.
     let audioPublicUrl: string | null = null;
     try {
-      const path = `${currentStoreId}/audio-${Date.now()}-${crypto.randomUUID()}.ogg`;
+      // Formato REAL do que foi gravado. Chrome grava webm; Firefox/alguns grava ogg.
+      // Forcar ".ogg" num arquivo webm fazia o WhatsApp nao tocar o audio.
+      const realType = blob.type || "audio/webm";
+      const isOgg = realType.includes("ogg");
+      const ext = isOgg ? "ogg" : "webm";
+      const path = `${currentStoreId}/audio-${Date.now()}-${crypto.randomUUID()}.${ext}`;
       const { error: upErr } = await supabase.storage
         .from("whatsapp-media")
-        .upload(path, blob, { contentType: "audio/ogg", upsert: false });
+        .upload(path, blob, { contentType: realType, upsert: false });
       if (upErr) throw upErr;
       const { data: pub } = supabase.storage.from("whatsapp-media").getPublicUrl(path);
       audioPublicUrl = pub?.publicUrl ?? null;
@@ -391,7 +396,7 @@ export function ChatPanel({
             store_id: currentStoreId,
             lead_id: lead.id,
             phone: lead.phone,
-            audioMessage: { url: audioPublicUrl, mimetype: "audio/ogg; codecs=opus" },
+            audioMessage: { url: audioPublicUrl, mimetype: isOgg ? "audio/ogg; codecs=opus" : "audio/webm" },
           },
         });
         if (error) throw error;
